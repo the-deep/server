@@ -1677,7 +1677,6 @@ type ProjectDetailType {
   hasPubliclyViewableUnprotectedLeads: Boolean!
   hasPubliclyViewableRestrictedLeads: Boolean!
   hasPubliclyViewableConfidentialLeads: Boolean!
-  isDeleted: Boolean!
   deletedAt: Date
   currentUserRole: ProjectRoleTypeEnum
   allowedPermissions: [ProjectPermission!]!
@@ -2423,7 +2422,7 @@ scalar Upload
 type UserDelete {
   errors: [GenericScalar!]
   ok: Boolean
-  result: UserMeType
+  result: UserType
 }
 
 enum UserEmailConditionOptOutEnum {
@@ -2540,10 +2539,10 @@ input UserMeInputType {
 
 type UserMeType {
   id: ID!
-  firstName: String!
-  lastName: String!
   isActive: Boolean!
   lastLogin: DateTime
+  firstName: String!
+  lastName: String!
   email: String
   displayName: String
   displayPicture: ID
@@ -2554,20 +2553,19 @@ type UserMeType {
   jwtToken: JwtTokenType
   lastActiveProject: ProjectDetailType
   accessibleFeatures: [UserFeatureAccessType!]!
-  oldDisplayName: String
-  deletedAt: Date
 }
 
 type UserType {
   id: ID!
-  firstName: String!
-  lastName: String!
   isActive: Boolean!
   displayName: String
   displayPictureUrl: String
   organization: String
   language: String
   emailDisplay: String!
+  deletedAt: Date
+  firstName: String
+  lastName: String
 }
 
 input WidgetConditionalGqlInputType {

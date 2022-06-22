@@ -1,9 +1,9 @@
 import graphene
 from django.contrib.auth import login, logout
 from django.contrib.auth import update_session_auth_hash
-from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.db import models
 
 from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
 from utils.graphene.mutation import generate_input_type_for_serializer
@@ -15,9 +15,11 @@ from .serializers import (
     PasswordChangeSerializer,
     UserMeSerializer,
     HIDLoginSerializer,
-    UserDeleteSerializer,
 )
-from .schema import UserMeType
+from .schema import (
+    UserMeType,
+    UserType,
+)
 
 
 LoginInputType = generate_input_type_for_serializer('LoginInputType', LoginSerializer)
@@ -26,10 +28,6 @@ RegisterInputType = generate_input_type_for_serializer('RegisterInputType', Regi
 ResetPasswordInputType = generate_input_type_for_serializer('ResetPasswordInputType', ResetPasswordSerializer)
 PasswordChangeInputType = generate_input_type_for_serializer('PasswordChangeInputType', PasswordChangeSerializer)
 UserMeInputType = generate_input_type_for_serializer('UserMeInputType', UserMeSerializer)
-UserDeleteInputType = generate_input_type_for_serializer(
-    'UserDeleteInputType',
-    UserDeleteSerializer
-)
 
 
 class Login(graphene.Mutation):
@@ -180,31 +178,53 @@ class UserDelete(graphene.Mutation):
 
     errors = graphene.List(graphene.NonNull(CustomErrorType))
     ok = graphene.Boolean()
-    result = graphene.Field(UserMeType)
+    result = graphene.Field(UserType)
 
     @staticmethod
     def mutate(root, info, id):
-        user = User.objects.get(id=id)
+        user = User.objects.get(id=info.context.user.id)
         from project.models import ProjectMembership, ProjectRole
 
-        if ProjectMembership.objects.filter(
-            member=id,
-            role__type=ProjectRole.Type.ADMIN
-        ).exists():
+        # also check for the project user is member there is only one member
+        # check if user is owner of any of the project
+        user_projects = ProjectMembership.objects.filter(member=user).values('project')
+        # user only the memeber in project
+
+        def user_member_project(user_projects, owner=False):
+            if owner:
+                user_projects = user_projects.filter(role__type=ProjectRole.Type.PROJECT_OWNER)
+            return ProjectMembership.objects.order_by().values('project').filter(
+                project__in=user_projects,
+            ).annotate(
+                member_count=models.Count('member'),
+            ).filter(member_count=1).values_list('project', flat=True)
+
+        only_user_member_projects = user_member_project(user_projects)
+        if only_user_member_projects:
             return UserDelete(
                 errors=[
                     dict(
                         field='nonFieldErrors',
-                        messages='You are admin in Projects.Choose another Project admin before you delete yourself',
+                        messages='You are only the member in Projects %s.Choose other members before you delete yourself'
+                        % ','.join(map(str, only_user_member_projects)),
                     )
                 ], ok=False
             )
 
-        user.profile.old_display_name = user.username
-        user.first_name = settings.DELETED_USER_FIRST_NAME
-        user.last_name = settings.DELETED_USER_LAST_NAME
+        # user only the owner in the project
+        only_user_owner_role_in_projects = user_member_project(user_projects, owner=True)
+        if only_user_owner_role_in_projects:
+            return UserDelete(
+                errors=[
+                    dict(
+                        field='nonFieldErrors',
+                        messages='You are Owner in Projects %s .Choose another Project Owner before you delete yourself'
+                        % ','.join(map(str, only_user_owner_role_in_projects)),
+                    )
+                ], ok=False
+            )
         user.profile.deleted_at = timezone.now().date()
-        user.save()
+        user.profile.save(update_fields=['deleted_at'])
         return UserDelete(result=user, errors=None, ok=True)
 
 

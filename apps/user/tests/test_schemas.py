@@ -1,4 +1,6 @@
 from unittest import mock
+from datetime import datetime, timedelta
+
 from django.conf import settings
 from django.utils import timezone
 
@@ -639,11 +641,19 @@ class TestUserSchema(GraphQLTestCase):
             email='testuser@deep.com',
             username='testuser@deep.com'
         )
+        owner_user = UserFactory.create()
         af = AnalysisFrameworkFactory.create()
         project = ProjectFactory.create(analysis_framework=af)
+        project2 = ProjectFactory.create(analysis_framework=af)
+        project3 = ProjectFactory.create(analysis_framework=af)
 
         project.add_member(admin_user, role=self.project_role_admin)
         project.add_member(member_user, role=self.project_role_member)
+        project.add_member(owner_user, role=self.project_role_owner)
+
+        project2.add_member(member_user, role=self.project_role_member)
+
+        project3.add_member(owner_user, role=self.project_role_owner)
 
         query = '''
             mutation Mutation($id: ID!) {
@@ -653,7 +663,6 @@ class TestUserSchema(GraphQLTestCase):
                 result {
                     id
                     displayName
-                    oldDisplayName
                 }
               }
             }
@@ -662,23 +671,55 @@ class TestUserSchema(GraphQLTestCase):
         self.query_check(query, variables={'id': admin_user.id}, assert_for_error=True)
         # login with admin user
         self.force_login(admin_user)
-        self.query_check(query, variables={'id': admin_user.id}, okay=False)
+        self.query_check(query, variables={'id': admin_user.id}, okay=True)
 
-        # login with user that is not memeber in any of projects
+        # login with user that is member in any of projects
         self.force_login(member_user)
+        response = self.query_check(query, variables={'id': member_user.id}, okay=False)
+        # add another admin user in the project
+        project2.add_member(admin_user, role=self.project_role_admin)
         response = self.query_check(query, variables={'id': member_user.id}, okay=True)
         self.assertEqual(
             response['data']['deleteUser']['result']['displayName'],
             settings.DELETED_USER_FIRST_NAME + ' ' + settings.DELETED_USER_LAST_NAME
         )
 
-    def test_user_deletion_celery_method(self):
-        old_user_count = User.objects.count()
-        user = UserFactory.create()
-        self.assertEqual(User.objects.count(), old_user_count + 1)
-        user.profile.deleted_at = '2022-01-01'
-        user.save()
+        # login with owner user
+        self.force_login(owner_user)
+        response = self.query_check(query, variables={'id': owner_user.id}, okay=False)
 
+    def test_user_deletion_celery_method(self):
+        User.objects.all().delete()
+        old_user_count = User.objects.count()
+        user1 = UserFactory.create(
+            username='username1',
+            first_name='first_name',
+            last_name='last_name',
+        )
+        user1.profile.deleted_at = datetime.now() - timedelta(days=32)
+        user1.profile.save(update_fields=['deleted_at'])
+
+        user2 = UserFactory.create(
+            username='username2',
+            first_name='first_name',
+            last_name='last_name',
+        )
+        user2.profile.deleted_at = datetime.now() - timedelta(days=10)
+        user2.profile.save(update_fields=['deleted_at'])
+
+        user3 = UserFactory.create(
+            username='username3',
+            first_name='first_name',
+            last_name='last_name',
+        )
+        user3.profile.deleted_at = datetime.now() - timedelta(days=40)
+        user3.profile.save(update_fields=['deleted_at'])
+
+        # call the celery method
         user_deletion()
 
-        self.assertEqual(User.objects.count(), old_user_count)
+        self.assertEqual(User.objects.filter(is_active=False).count(), old_user_count + 2)
+
+        user_ids = User.objects.filter(is_active=False).values_list('id', flat=True)
+        self.assertEqual([id for id in user_ids], [user1.id, user3.id])
+        self.assertNotEqual([id for id in user_ids], [user2.id])

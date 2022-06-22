@@ -76,7 +76,6 @@ class Profile(models.Model):
     )
 
     # this is used in user deletion
-    old_display_name = models.CharField(max_length=255, null=True, blank=True)
     deleted_at = models.DateField(null=True, blank=True)
 
     def __str__(self):
