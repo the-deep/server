@@ -14,6 +14,7 @@ from .sources import (
     relief_web,
     humanitarian_response,
     pdna,
+    emm,
 )
 
 
@@ -106,6 +107,7 @@ class ConnectorSource(UserResource):
         UNHCR = 'unhcr-portal', 'UNHCR Portal'
         HUMANITARIAN_RESP = 'humanitarian-resp', 'Humanitarian Response'
         PDNA = 'pdna', 'Post Disaster Needs Assessments'
+        EMM = 'emm', 'European Media Monitor'
 
     class Status(models.IntegerChoices):
         PENDING = 0, 'Pending'
@@ -120,6 +122,7 @@ class ConnectorSource(UserResource):
         Source.UNHCR: unhcr_portal.UNHCRPortal,
         Source.HUMANITARIAN_RESP: humanitarian_response.HumanitarianResponse,
         Source.PDNA: pdna.PDNA,
+        Source.EMM: emm.EMM,
     }
 
     title = models.CharField(max_length=255)

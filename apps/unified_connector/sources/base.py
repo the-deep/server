@@ -138,5 +138,4 @@ class Source(ABC):
                 lead._emm_entities = ldata['emm_entities']
 
             leads.append(lead)
-
         return leads, total_count
