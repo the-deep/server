@@ -854,6 +854,16 @@ class ProjectGqSerializer(DeprecatedUserResourceSerializer):
                 })
         return data
 
+    def validate_title(self, title):
+        existing_projects = Project.objects.filter(title__iexact=title)
+        if self.instance:
+            existing_projects = existing_projects.exclude(id=self.instance.id)
+        if existing_projects.exists():
+            raise serializers.ValidationError(
+                f'Project title "{title}" already exists, please provide different title',
+            )
+        return title
+
     def create(self, validated_data):
         project = super().create(validated_data)
         ProjectMembership.objects.create(

@@ -265,16 +265,21 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
         self.assertMatchSnapshot(response, 'private-af-private-project-success')
 
         # Valid [public AF] + private project
+        minput['title'] = "Project 2"
         minput['analysisFramework'] = str(af.pk)
         minput['isPrivate'] = True
         response = _query_check(okay=True)['data']['projectCreate']
         self.assertMatchSnapshot(response, 'public-af-private-project-success')
 
         # Valid [public AF] + private project
+        minput['title'] = "Project 3"
         minput['analysisFramework'] = str(af.pk)
         minput['isPrivate'] = False
         response = _query_check(okay=True)['data']['projectCreate']
         self.assertMatchSnapshot(response, 'public-af-public-project-success')
+
+        minput['title'] = 'Project 1'
+        response = _query_check(okay=False)
 
     def test_project_update_mutation(self):
         query = '''

@@ -69,7 +69,7 @@ snapshots['ProjectMutationSnapshotTest::test_project_create_mutation public-af-p
         ],
         'startDate': '2020-01-01',
         'status': 'ACTIVE',
-        'title': 'Project 1'
+        'title': 'Project 2'
     }
 }
 
@@ -102,7 +102,7 @@ snapshots['ProjectMutationSnapshotTest::test_project_create_mutation public-af-p
         ],
         'startDate': '2020-01-01',
         'status': 'ACTIVE',
-        'title': 'Project 1'
+        'title': 'Project 3'
     }
 }
 
