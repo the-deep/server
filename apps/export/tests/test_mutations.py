@@ -45,7 +45,6 @@ class TestExportMutationSchema(GraphQLTestCase):
                     emmKeywords
                     emmRiskFactors
                     entriesFilterData {
-                      commentStatus
                       controlled
                       createdAt
                       createdAtGte
@@ -196,7 +195,6 @@ class TestExportMutationSchema(GraphQLTestCase):
                     emmKeywords
                     emmRiskFactors
                     entriesFilterData {
-                      commentStatus
                       controlled
                       createdAt
                       createdAtGte
@@ -305,7 +303,6 @@ class TestExportMutationSchema(GraphQLTestCase):
                     emmKeywords
                     emmRiskFactors
                     entriesFilterData {
-                      commentStatus
                       controlled
                       createdAt
                       createdAtGte

@@ -386,7 +386,6 @@ class TestEntryQuery(GraphQLTestCase):
             ),
             # TODO: ({'projectEntryLabels': []}, []),
             # TODO: ({'geoCustomShape': []}, []),
-            # TODO: After adding comment({'commentStatus': self.genum(EntryFilterMixin.CommentStatus.RESOLVED)}, []),
             # Lead filters
             ({'leadAuthoringOrganizationTypes': [org_type2.pk]}, [entry1_1, entry2_1, entry3_1]),
             ({'leadAuthoringOrganizationTypes': [org_type1.pk, org_type2.pk]}, [entry1_1, entry2_1, entry3_1, entry4_1]),
