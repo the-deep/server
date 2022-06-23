@@ -24,6 +24,7 @@ from analysis_framework.factories import AnalysisFrameworkFactory
 from geo.factories import RegionFactory, AdminLevelFactory, GeoAreaFactory
 from ary.factories import AssessmentTemplateFactory
 from export.factories import ExportFactory
+from quality_assurance.factories import EntryReviewCommentFactory
 
 from project.tasks import _generate_project_stats_cache
 from geo.enums import GeoAreaOrderingEnum
@@ -32,6 +33,63 @@ from .test_mutations import TestProjectGeneralMutation
 
 
 class TestProjectSchema(GraphQLTestCase):
+    def test_project_recent_activities(self):
+        query = '''
+           query MyQuery {
+                recentActivities {
+                    createdAt
+                    id
+                    type
+                    typeDisplay
+                    createdBy {
+                        displayName
+                        displayPictureUrl
+                        emailDisplay
+                        firstName
+                        id
+                        isActive
+                        language
+                        lastName
+                        organization
+                    }
+                    project {
+                        id
+                        startDate
+                        endDate
+                        description
+                        status
+                        statusDisplay
+                        title
+                    }
+                    leadId
+                }
+            }
+        '''
+        normal_user, member_user = UserFactory.create_batch(2)
+
+        af = AnalysisFrameworkFactory.create()
+        project = ProjectFactory.create(analysis_framework=af, created_by=member_user)
+        project.add_member(member_user)
+
+        # Leads
+        lead1 = LeadFactory(project=project, created_by=member_user)
+        LeadFactory.create_batch(2, project=project, created_by=member_user)
+
+        # Entries
+        EntryFactory.create_batch(7, lead=lead1, project=project, created_by=member_user)
+        entry = EntryFactory(lead=lead1, project=project, created_by=member_user)
+
+        # Entries Comments
+        EntryReviewCommentFactory(entry=entry, created_by=member_user)
+
+        self.force_login(normal_user)
+        response = self.query_check(query)
+        self.assertEqual(len(response['data']['recentActivities']), 0)
+
+        self.force_login(member_user)
+        response = self.query_check(query)
+        self.assertEqual(len(response['data']['recentActivities']), 12)
+
     def test_project_query(self):
         """
         Test private + non-private project behaviour

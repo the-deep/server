@@ -27,6 +27,12 @@ from django.utils import timezone
 from datetime import timedelta
 
 
+class RecentActivityType(models.TextChoices):
+    LEAD = 'lead', 'Source'
+    ENTRY = 'entry', 'Entry'
+    ENTRY_COMMENT = 'entry-comment', 'Entry Comment'
+
+
 class Project(UserResource):
     """
     Project model
@@ -253,30 +259,29 @@ class Project(UserResource):
             'id', 'created_at', 'project_id', 'project__title',
             'created_by_id', 'created_by__profile__display_picture__file',
             models.Value('lead', output_field=models.CharField()),
-            created_by_expression,
+            created_by_expression, 'id', 'id',  # here id has no use, it is added to resolve error for union
         )
         entry_qs = Entry.objects.filter(project__in=project_qs).values_list(
             'id', 'created_at', 'project_id', 'project__title',
             'created_by_id', 'created_by__profile__display_picture__file',
             models.Value('entry', output_field=models.CharField()),
-            created_by_expression,
+            created_by_expression, 'lead__id', 'id',
         )
         entry_comment_qs = EntryReviewComment.objects.filter(entry__project__in=project_qs).values_list(
             'id', 'created_at', 'entry__project_id', 'entry__project__title',
             'created_by_id', 'created_by__profile__display_picture__file',
             models.Value('entry-comment', output_field=models.CharField()),
-            created_by_expression,
+            created_by_expression, 'entry__lead__id', 'entry_id',
         ).distinct('id')
 
         def _get_activities():
-            return list(leads_qs.union(entry_qs).union(entry_comment_qs).order_by('-created_at')[:30])
+            return list(entry_qs.union(entry_comment_qs).union(leads_qs).order_by('-created_at')[:30])
 
         activities = cache.get_or_set(
             CacheKey.RECENT_ACTIVITIES_KEY_FORMAT.format(user.pk),
             _get_activities,
             60 * 5,  # 5min
         )
-
         return [
             {
                 field: item[index]
@@ -289,6 +294,8 @@ class Project(UserResource):
                     'created_by_display_picture',
                     'type',
                     'created_by_display_name',
+                    'lead_id',
+                    'entry_id',
                 ])
             }
             for item in activities
