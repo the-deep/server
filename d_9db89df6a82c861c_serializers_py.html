@@ -55,8 +55,8 @@
             </div>
         </aside>
         <h2>
-            <span class="text">479 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">436<span class="text"> run</span></button>
+            <span class="text">486 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">443<span class="text"> run</span></button>
             <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">43<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
             <button type="button" class="par run show_par button_toggle_par" value="par" data-shortcut="p" title="Toggle lines partially run">11<span class="text"> partial</span></button>
@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="d_9db89df6a82c861c_tasks_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.4.1</a>,
-            created at 2022-06-23 07:04 +0000
+            created at 2022-06-23 08:14 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"/>
@@ -938,14 +938,24 @@
     <p class="pln"><span class="n"><a id="t854" href="#t854">854</a></span><span class="t">                <span class="op">}</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t855" href="#t855">855</a></span><span class="t">        <span class="key">return</span> <span class="nam">data</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t856" href="#t856">856</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t857" href="#t857">857</a></span><span class="t">    <span class="key">def</span> <span class="nam">create</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">validated_data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t858" href="#t858">858</a></span><span class="t">        <span class="nam">project</span> <span class="op">=</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="nam">validated_data</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t859" href="#t859">859</a></span><span class="t">        <span class="nam">ProjectMembership</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t860" href="#t860">860</a></span><span class="t">            <span class="nam">project</span><span class="op">=</span><span class="nam">project</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t861" href="#t861">861</a></span><span class="t">            <span class="nam">member</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">current_user</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t862" href="#t862">862</a></span><span class="t">            <span class="nam">role</span><span class="op">=</span><span class="nam">ProjectRole</span><span class="op">.</span><span class="nam">get_owner_role</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t863" href="#t863">863</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t864" href="#t864">864</a></span><span class="t">        <span class="key">return</span> <span class="nam">project</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t857" href="#t857">857</a></span><span class="t">    <span class="key">def</span> <span class="nam">validate_title</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">title</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t858" href="#t858">858</a></span><span class="t">        <span class="nam">existing_projects</span> <span class="op">=</span> <span class="nam">Project</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">title__iexact</span><span class="op">=</span><span class="nam">title</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t859" href="#t859">859</a></span><span class="t">        <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t860" href="#t860">860</a></span><span class="t">            <span class="nam">existing_projects</span> <span class="op">=</span> <span class="nam">existing_projects</span><span class="op">.</span><span class="nam">exclude</span><span class="op">(</span><span class="nam">id</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">instance</span><span class="op">.</span><span class="nam">id</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t861" href="#t861">861</a></span><span class="t">        <span class="key">if</span> <span class="nam">existing_projects</span><span class="op">.</span><span class="nam">exists</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t862" href="#t862">862</a></span><span class="t">            <span class="key">raise</span> <span class="nam">serializers</span><span class="op">.</span><span class="nam">ValidationError</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t863" href="#t863">863</a></span><span class="t">                <span class="str">f'Project title "{title}" already exists, please provide different title'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t864" href="#t864">864</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t865" href="#t865">865</a></span><span class="t">        <span class="key">return</span> <span class="nam">title</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t866" href="#t866">866</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t867" href="#t867">867</a></span><span class="t">    <span class="key">def</span> <span class="nam">create</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">validated_data</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t868" href="#t868">868</a></span><span class="t">        <span class="nam">project</span> <span class="op">=</span> <span class="nam">super</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span><span class="nam">validated_data</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t869" href="#t869">869</a></span><span class="t">        <span class="nam">ProjectMembership</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">create</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t870" href="#t870">870</a></span><span class="t">            <span class="nam">project</span><span class="op">=</span><span class="nam">project</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t871" href="#t871">871</a></span><span class="t">            <span class="nam">member</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">current_user</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t872" href="#t872">872</a></span><span class="t">            <span class="nam">role</span><span class="op">=</span><span class="nam">ProjectRole</span><span class="op">.</span><span class="nam">get_owner_role</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t873" href="#t873">873</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t874" href="#t874">874</a></span><span class="t">        <span class="key">return</span> <span class="nam">project</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -955,7 +965,7 @@
             <a id="nextFileLink" class="nav" href="d_9db89df6a82c861c_tasks_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.4.1</a>,
-            created at 2022-06-23 07:04 +0000
+            created at 2022-06-23 08:14 +0000
         </p>
     </div>
 </footer>
