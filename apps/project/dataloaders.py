@@ -87,6 +87,18 @@ class OrganizationsLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key) for key in keys])
 
 
+class UserLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        users = {user.id: user for user in User.objects.filter(id__in=keys)}
+        return Promise.resolve([users.get(user_id) for user_id in keys])
+
+
+class ProjectLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        projects = {project.id: project for project in Project.objects.filter(id__in=keys)}
+        return Promise.resolve([projects.get(project_id) for project_id in keys])
+
+
 class ProjectExploreStatsLoader(WithContextMixin):
     def get_stats(self):
         now = timezone.now()
@@ -252,3 +264,11 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def project_rejected_status(self):
         return ProjectRejectStatusLoader(context=self.context)
+
+    @cached_property
+    def users(self):
+        return UserLoader(context=self.context)
+
+    @cached_property
+    def projects(self):
+        return ProjectLoader(context=self.context)
