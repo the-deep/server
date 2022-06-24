@@ -1020,6 +1020,42 @@ class TestProjectFilterSchema(GraphQLTestCase):
         self.assertEqual(content['data']['projects']['totalCount'], 1, content)  # Private will not show here
         self.assertListIds(content['data']['projects']['results'], [project3], content)
 
+    def test_query_test_projects_filter(self):
+        query = '''
+            query MyQuery ($isTest: Boolean!) {
+              projects(isTest: $isTest) {
+                page
+                pageSize
+                totalCount
+                results {
+                  id
+                  title
+                  isTest
+                  currentUserRole
+                }
+              }
+            }
+        '''
+
+        user = UserFactory.create()
+        project1, project2 = ProjectFactory.create_batch(2, is_test=True)
+        project3 = ProjectFactory.create()
+
+        # -- Without login
+        self.query_check(query, variables={'isTest': True}, assert_for_error=True)
+
+        # -- With login
+        self.force_login(user)
+
+        # test projects
+        content = self.query_check(query, variables={'isTest': True})
+        self.assertEqual(content['data']['projects']['totalCount'], 2, content)
+        self.assertListIds(content['data']['projects']['results'], [project1, project2], content)
+        # except test projects
+        content = self.query_check(query, variables={'isTest': False})
+        self.assertEqual(content['data']['projects']['totalCount'], 1, content)
+        self.assertListIds(content['data']['projects']['results'], [project3], content)
+
 
 class TestProjectMembersFilterSchema(GraphQLTestCase):
     def test_project(self):

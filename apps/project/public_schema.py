@@ -51,7 +51,7 @@ class PublicProjectListType(CustomDjangoListObjectType):
 
     @classmethod
     def queryset(cls):
-        return Project.objects.filter(is_private=False).annotate(
+        return Project.objects.filter(is_private=False, is_test=False).annotate(
             analysis_framework_title=models.Case(
                 models.When(
                     analysis_framework__is_private=False,
