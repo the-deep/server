@@ -10,6 +10,8 @@ from unified_connector.factories import (
 )
 from unified_connector.models import ConnectorSource
 from unified_connector.tests.mock_data.store import ConnectorSourceResponseMock
+from unified_connector.sources.base import OrganizationSearch
+from organization.models import Organization
 
 
 class TestUnifiedConnectorResponse(GraphQLTestCase):
@@ -54,3 +56,36 @@ class TestUnifiedConnectorResponse(GraphQLTestCase):
         response_mock = response_mock_patch.start()
         self._connector_response_check(source_type, response_mock)
         response_mock_patch.stop()
+
+    def test_source_organization(self):
+        Organization.objects.create(title='Organization 1', short_name='Organization 1', long_name='Organization 1')
+        raw_text_labels = [
+            'Organization 1',
+            'Relief Web', 'reliefweb', 'the relief web',
+        ]
+        search_organizaton = OrganizationSearch(raw_text_labels)
+
+        parent_org = Organization.objects.get(title='Relief Web')
+        for title in ['reliefweb', 'the relief web']:
+            child_org = Organization.objects.get(title__contains=title)
+            child_org.parent = parent_org
+            child_org.save(update_fields=('parent',))
+
+        for title in ['reliefweb', 'the relief web']:
+            self.assertEqual(search_organizaton.get(title), parent_org)
+
+        organization_count1 = Organization.objects.all().count()
+
+        raw_text_labels += [
+            'Organization 1', 'the relief web', 'the relief web2'
+        ]
+        search_organizaton = OrganizationSearch(raw_text_labels)
+
+        child_org = Organization.objects.get(title__contains='the relief web2')
+        child_org.parent = parent_org
+        child_org.save(update_fields=('parent',))
+
+        organization_count2 = Organization.objects.all().count()
+
+        self.assertEqual(search_organizaton.get('the relief web2'), parent_org)
+        self.assertEqual(organization_count1, organization_count2)
