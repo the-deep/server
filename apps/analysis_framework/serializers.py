@@ -300,7 +300,7 @@ def validate_items_limit(items, limit, error_message='Only %d items are allowed.
 class AfWidgetLimit():
     MAX_SECTIONS_ALLOWED = 5
     MAX_WIDGETS_ALLOWED_PER_SECTION = 10
-    MAX_WIDGETS_ALLOWED_IN_SECONDARY_TAGGING = 50
+    MAX_WIDGETS_ALLOWED_IN_SECONDARY_TAGGING = 100
 
 
 class WidgetConditionalGqlSerializer(serializers.Serializer):
