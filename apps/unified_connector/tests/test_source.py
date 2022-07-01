@@ -58,34 +58,57 @@ class TestUnifiedConnectorResponse(GraphQLTestCase):
         response_mock_patch.stop()
 
     def test_source_organization(self):
+        def _get_orgs(titles):
+            qs = Organization.objects.filter(title__in=titles)
+            return qs
+
         Organization.objects.create(title='Organization 1', short_name='Organization 1', long_name='Organization 1')
         raw_text_labels = [
+            # Existing
             'Organization 1',
-            'Relief Web', 'reliefweb', 'the relief web',
+            # New
+            'Relief Web',
+            'reliefweb',
+            'the relief web',
         ]
+
+        # Fetch/Create using raw_text_labels
+        qs = _get_orgs(raw_text_labels)
+        self.assertNotEqual(qs.count(), len(raw_text_labels))
         search_organizaton = OrganizationSearch(raw_text_labels)
+        # Check if all organizations are created
+        qs = _get_orgs(raw_text_labels)
+        self.assertEqual(qs.count(), len(raw_text_labels))
 
+        # Set Parent Organizations
         parent_org = Organization.objects.get(title='Relief Web')
-        for title in ['reliefweb', 'the relief web']:
-            child_org = Organization.objects.get(title__contains=title)
-            child_org.parent = parent_org
-            child_org.save(update_fields=('parent',))
+        child_titles = ['reliefweb', 'the relief web']
+        qs = _get_orgs(child_titles)
+        self.assertEqual(qs.count(), len(child_titles))
+        qs.update(parent=parent_org)
 
-        for title in ['reliefweb', 'the relief web']:
+        # Fetch/Create using raw_text_labels
+        search_organizaton = OrganizationSearch(raw_text_labels)
+        for title in child_titles:
             self.assertEqual(search_organizaton.get(title), parent_org)
 
-        organization_count1 = Organization.objects.all().count()
-
         raw_text_labels += [
-            'Organization 1', 'the relief web', 'the relief web2'
+            'Organization 1',  # We have a duplicate title here, using set for count now
+            'the relief web',
+            'the relief web2',
         ]
+
+        # Fetch/Create using raw_text_labels
+        qs = _get_orgs(raw_text_labels)
+        self.assertNotEqual(qs.count(), len(set(raw_text_labels)))
         search_organizaton = OrganizationSearch(raw_text_labels)
+        # Check if all organizations are created
+        qs = _get_orgs(raw_text_labels)
+        self.assertEqual(qs.count(), len(set(raw_text_labels)))
 
-        child_org = Organization.objects.get(title__contains='the relief web2')
-        child_org.parent = parent_org
-        child_org.save(update_fields=('parent',))
+        # Update newly created child relif web2 parent
+        Organization.objects.filter(title='the relief web2').update(parent=parent_org)
 
-        organization_count2 = Organization.objects.all().count()
-
+        # Fetch latest
+        search_organizaton = OrganizationSearch(raw_text_labels)
         self.assertEqual(search_organizaton.get('the relief web2'), parent_org)
-        self.assertEqual(organization_count1, organization_count2)
