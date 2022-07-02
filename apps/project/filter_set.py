@@ -102,10 +102,14 @@ class ProjectGqlFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
         field_name='is_current_user_member', method='filter_with_membership')
     has_permission_access = SimpleInputFilter(ProjectPermissionEnum, method='filter_has_permission_access')
     ordering = MultipleInputFilter(ProjectOrderingEnum, method='ordering_filter')
+    is_test = django_filters.BooleanFilter(field_name='is_test', method='filter_is_test')
 
     class Meta:
         model = Project
         fields = ()
+
+    def filter_is_test(self, qs, _, value):
+        return qs.filter(is_test=value)
 
     def filter_exclude_ids(self, qs, _, value):
         if not value:
@@ -211,4 +215,4 @@ class ProjectByRegionGqlFilterSet(django_filters.FilterSet):
 
 class PublicProjectByRegionGqlFileterSet(ProjectByRegionGqlFilterSet):
     def get_project_queryset(self):
-        return Project.objects.filter(is_private=False)
+        return Project.objects.filter(is_private=False, is_test=False)
