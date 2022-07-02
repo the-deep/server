@@ -228,7 +228,7 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
         only_fields = (
             'id', 'title', 'description', 'start_date', 'end_date',
             'analysis_framework', 'assessment_template',
-            'is_default', 'is_private', 'is_visualization_enabled',
+            'is_default', 'is_private', 'is_test', 'is_visualization_enabled',
             'created_at', 'created_by',
             'modified_at', 'modified_by',
         )
@@ -407,7 +407,7 @@ class ProjectDetailType(
             'category_editor', 'assessment_template', 'data',
             'created_at', 'created_by',
             'modified_at', 'modified_by',
-            'is_default', 'is_private', 'is_visualization_enabled',
+            'is_default', 'is_private', 'is_test', 'is_visualization_enabled',
             'has_publicly_viewable_unprotected_leads',
             'has_publicly_viewable_restricted_leads',
             'has_publicly_viewable_confidential_leads',
