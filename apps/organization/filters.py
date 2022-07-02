@@ -76,5 +76,10 @@ class OrganizationFilterSet(django_filters.FilterSet):
         qs = super().qs
         if 'ordering' not in self.data:
             # Default is Title Length
-            qs = self.ordering_filter(qs, None, [OrganizationOrderingEnum.ASC_TITLE_LENGTH.value])
+            qs = self.ordering_filter(
+                qs,
+                None,
+                # As the length is same, using id as secondary.
+                [OrganizationOrderingEnum.ASC_TITLE_LENGTH.value, OrganizationOrderingEnum.ASC_ID.value],
+            )
         return qs
