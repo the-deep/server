@@ -7,12 +7,15 @@ import graphene
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from django.utils import timezone
+from django.conf import settings
 
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from jwt_auth.token import AccessToken
+from deep.serializers import URLCachedFileField
 
 from project.models import Project
+
 from .models import User, Feature
 from .enums import UserEmailConditionOptOutEnum
 from .filters import UserGqlFilterSet
@@ -37,6 +40,44 @@ class UserFeatureAccessType(DjangoObjectType):
         only_fields = ('key', 'title', 'feature_type')
 
 
+class UserProfileType(graphene.ObjectType):
+    display_name = graphene.String()
+    first_name = graphene.String()
+    last_name = graphene.String()
+    display_picture_url = graphene.String()
+    organization = graphene.String()
+
+    @staticmethod
+    def resolve_display_name(root, info, **kwargs) -> Union[str, None]:
+        if root.deleted_at:
+            return f'{settings.DELETED_USER_FIRST_NAME} {settings.DELETED_USER_LAST_NAME}'
+        return root.get_display_name()
+
+    @staticmethod
+    def resolve_first_name(root, info, **kwargs) -> Union[str, None]:
+        if root.deleted_at:
+            return settings.DELETED_USER_FIRST_NAME
+        return root.user.first_name
+
+    @staticmethod
+    def resolve_last_name(root, info, **kwargs) -> Union[str, None]:
+        if root.deleted_at:
+            return settings.DELETED_USER_LAST_NAME
+        return root.user.last_name
+
+    @staticmethod
+    def resolve_display_picture_url(root, info, **kwargs) -> Union[str, None]:
+        return info.context.request.build_absolute_uri(
+            URLCachedFileField().to_representation(root.display_picture)
+        )
+
+    @staticmethod
+    def resolve_organization(root, info, **kwargs) -> Union[str, None]:
+        if root.deleted_at:
+            return settings.DELETED_USER_ORGANIZATION
+        return root.organization
+
+
 class UserType(DjangoObjectType):
     class Meta:
         model = User
@@ -44,45 +85,16 @@ class UserType(DjangoObjectType):
             'id', 'is_active',
         )
 
-    display_name = graphene.String()
-    # Profile fields
-    display_picture_url = graphene.String()
-    organization = graphene.String()
-    language = graphene.String()
     email_display = graphene.String(required=True)
-    deleted_at = graphene.Date()
-    first_name = graphene.String()
-    last_name = graphene.String()
-
-    @staticmethod
-    def resolve_display_picture_url(root, info, **kwargs) -> Union[str, None]:
-        # TODO: Need to merge profile to user before enabling this for all users to avoid N+1 issue.
-        # 3 table join is required right now.
-        return info.context.dl.user.display_picture.load(root.id)
-
-    @staticmethod
-    def resolve_organization(root, info, **kwargs) -> Union[str, None]:
-        return info.context.dl.user.organization.load(root.id)
+    profile = graphene.NonNull(UserProfileType)
 
     @staticmethod
     def resolve_email_display(root, info, **kwargs) -> Union[str, None]:
         return generate_hidden_email(root.email)
 
     @staticmethod
-    def resolve_deleted_at(root, info, **kwargs) -> Union[datetime.datetime.date, None]:
-        return root.profile.deleted_at
-
-    @staticmethod
-    def resolve_display_name(root, info, **kwargs) -> Union[str, None]:
-        return info.context.dl.user.display_name.load(root.id)
-
-    @staticmethod
-    def resolve_first_name(root, info, **kwargs) -> Union[str, None]:
-        return info.context.dl.user.first_name.load(root.id)
-
-    @staticmethod
-    def resolve_last_name(root, info, **kwargs) -> Union[str, None]:
-        return info.context.dl.user.last_name.load(root.id)
+    def resolve_profile(root, info, **kwargs) -> Union[str, None]:
+        return info.context.dl.user.profile.load(root.id)
 
 
 class UserMeType(DjangoObjectType):
@@ -105,6 +117,7 @@ class UserMeType(DjangoObjectType):
     jwt_token = graphene.Field(JwtTokenType)
     last_active_project = graphene.Field('project.schema.ProjectDetailType')
     accessible_features = graphene.List(graphene.NonNull(UserFeatureAccessType), required=True)
+    deleted_at = graphene.Date()
 
     @staticmethod
     @only_me
@@ -114,7 +127,9 @@ class UserMeType(DjangoObjectType):
     @staticmethod
     @only_me
     def resolve_display_picture_url(root, info, **kwargs) -> Union[str, None]:
-        return info.context.dl.user.display_picture.load(root.id)
+        return info.context.request.build_absolute_uri(
+            URLCachedFileField().to_representation(root.profile.display_picture)
+        )
 
     @staticmethod
     @only_me
@@ -162,6 +177,11 @@ class UserMeType(DjangoObjectType):
     @only_me
     def resolve_accessible_features(root, info, **kwargs) -> Union[Feature, None]:
         return root.get_accessible_features()
+
+    @staticmethod
+    @only_me
+    def resolve_deleted_at(root, info, **kwargs) -> Union[datetime.datetime.date, None]:
+        return root.profile.deleted_at
 
 
 class UserListType(CustomDjangoListObjectType):

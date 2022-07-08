@@ -42,7 +42,9 @@ class TestExportMutationSchema(GraphQLTestCase):
                 project
                 exportedBy {
                   id
-                  displayName
+                  profile {
+                      displayName
+                  }
                 }
                 analysis {
                     id
@@ -118,7 +120,9 @@ class TestExportMutationSchema(GraphQLTestCase):
                 project
                 exportedBy {
                   id
-                  displayName
+                  profile {
+                      displayName
+                  }
                 }
               }
             }
@@ -152,7 +156,9 @@ class TestExportMutationSchema(GraphQLTestCase):
                 project
                 exportedBy {
                   id
-                  displayName
+                  profile {
+                      displayName
+                  }
                 }
               }
             }

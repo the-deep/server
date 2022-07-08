@@ -1,5 +1,4 @@
 from django.utils.translation import gettext
-from django.utils import timezone
 
 import graphene
 from graphene_django import DjangoObjectType
@@ -164,12 +163,12 @@ class ProjectDelete(DeleteMutation):
 
     @staticmethod
     def mutate(root, info, **kwargs):
-        member = ProjectMembership.objects.filter(
+        membership_qs = ProjectMembership.objects.filter(
             project=info.context.active_project.id,
             member=info.context.user,
+            role__type=ProjectRole.Type.PROJECT_OWNER,
         )
-        role_type = member.first().role.type
-        if role_type != ProjectRole.Type.PROJECT_OWNER:
+        if not membership_qs.exists():
             return ProjectJoinRequestDelete(errors=[
                 dict(
                     field='nonFieldErrors',
@@ -179,9 +178,7 @@ class ProjectDelete(DeleteMutation):
                     ),
                 )
             ], ok=False)
-        root.is_deleted = True
-        root.deleted_at = timezone.now().date()
-        root.save(update_fields=['is_deleted', 'deleted_at'])
+        root.soft_delete()
         return ProjectDelete(result=root, errors=None, ok=True)
 
 

@@ -26,16 +26,22 @@ class TestUserGroupSchema(GraphQLTestCase):
                     role
                     member {
                       id
-                      displayName
+                      profile {
+                          displayName
+                      }
                     }
                   }
                   createdBy {
                     id
-                    displayName
+                    profile {
+                        displayName
+                    }
                   }
                   modifiedBy {
                     id
-                    displayName
+                    profile {
+                        displayName
+                    }
                   }
                 }
               }
@@ -94,16 +100,22 @@ class TestUserGroupSchema(GraphQLTestCase):
                   role
                   member {
                     id
-                    displayName
+                    profile {
+                        displayName
+                    }
                   }
                 }
                 createdBy {
                   id
-                  displayName
+                  profile {
+                      displayName
+                  }
                 }
                 modifiedBy {
                   id
-                  displayName
+                  profile {
+                      displayName
+                  }
                 }
               }
             }
@@ -143,23 +155,31 @@ class TestUserGroupSchema(GraphQLTestCase):
                   modifiedAt
                   modifiedBy {
                     id
-                    displayName
+                    profile {
+                        displayName
+                    }
                   }
                   createdBy {
                     id
-                    displayName
+                    profile {
+                        displayName
+                    }
                   }
                   createdAt
                   membershipsCount
                   memberships {
                     member {
                       id
-                      displayName
+                      profile {
+                          displayName
+                      }
                     }
                     role
                     addedBy {
                       id
-                      displayName
+                      profile {
+                          displayName
+                      }
                     }
                   }
                 }
@@ -191,23 +211,31 @@ class TestUserGroupSchema(GraphQLTestCase):
                       modifiedAt
                       modifiedBy {
                         id
-                        displayName
+                        profile {
+                            displayName
+                        }
                       }
                       createdBy {
                         id
-                        displayName
+                        profile {
+                            displayName
+                        }
                       }
                       createdAt
                       membershipsCount
                       memberships {
                         member {
                           id
-                          displayName
+                          profile {
+                              displayName
+                          }
                         }
                         role
                         addedBy {
                           id
-                          displayName
+                          profile {
+                              displayName
+                          }
                         }
                       }
                     }

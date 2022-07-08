@@ -489,13 +489,13 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(hour="*/6"),
     },
     # Project Deletion
-    'project_deletion': {
-        'task': 'project.tasks.project_deletion',
+    'permanently_delete_projects': {
+        'task': 'project.tasks.permanently_delete_projects',
         'schedule': crontab(minute=0, hour=0),  # excute every day
     },
     # User Deletion
-    'user_deletion': {
-        'task': 'project.tasks.user_deletion',
+    'permanently_delete_users': {
+        'task': 'project.tasks.permanently_delete_users',
         'schedule': crontab(minute=0, hour=0),
     }
 }

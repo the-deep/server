@@ -1,5 +1,5 @@
 from unittest import mock
-from datetime import datetime, timedelta
+from datetime import timedelta
 from factory import fuzzy
 
 from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
@@ -25,7 +25,7 @@ from project.factories import ProjectFactory, ProjectJoinRequestFactory
 from organization.factories import OrganizationFactory
 from geo.factories import RegionFactory
 
-from project.tasks import _generate_project_viz_stats, project_deletion
+from project.tasks import _generate_project_viz_stats, permanently_delete_projects
 
 from project.models import Project, ProjectOrganization
 from . import entry_stats_data
@@ -787,6 +787,7 @@ class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
 
 
 class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
+    ENABLE_NOW_PATCHER = True
 
     def _user_membership_bulk(self, user_role):
         query = '''
@@ -806,7 +807,9 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 joinedAt
                 addedBy {
                   id
-                  displayName
+                  profile {
+                      displayName
+                  }
                 }
                 role {
                   id
@@ -814,7 +817,9 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 }
                 member {
                   id
-                  displayName
+                  profile {
+                      displayName
+                  }
                 }
                 badges
               }
@@ -824,7 +829,9 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 joinedAt
                 member {
                   id
-                  displayName
+                  profile {
+                      displayName
+                  }
                 }
                 role {
                   id
@@ -833,7 +840,9 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 }
                 addedBy {
                   id
-                  displayName
+                  profile {
+                      displayName
+                  }
                 }
                 badges
               }
@@ -977,7 +986,9 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 joinedAt
                 addedBy {
                   id
-                  displayName
+                  profile {
+                      displayName
+                  }
                 }
                 role {
                   id
@@ -1004,7 +1015,9 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 }
                 addedBy {
                   id
-                  displayName
+                  profile {
+                      displayName
+                  }
                 }
                 badges
               }
@@ -1178,44 +1191,71 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         _query_check(okay=True)
 
     def test_project_deletion_celery_task(self):
-        old_project_count = Project.objects.count()
-        af = AnalysisFrameworkFactory.create()
-        project = ProjectFactory.create(analysis_framework=af)
+        def _get_project_ids():
+            return list(
+                Project.objects.values_list('id', flat=True)
+            )
 
-        # check for project_count
-        self.assertEqual(Project.objects.count(), old_project_count + 1)
+        # Check with single project
+        project = ProjectFactory.create()
         # now delete the project
-        project.is_deleted = True
-        project.deleted_at = '2022-01-01'
-        project.save()
-
+        project.soft_delete(deleted_at=self.now_datetime - timedelta(days=31))
+        self.assertEqual(_get_project_ids(), [project.id])
         # call the deletion method
-        project_deletion()
+        permanently_delete_projects()
+        self.assertEqual(_get_project_ids(), [])
 
-        self.assertEqual(Project.objects.count(), old_project_count)
-
+        # Check with multiple projects
         project1 = ProjectFactory.create(
             title='Test Project 1',
             is_deleted=True,
-            deleted_at=datetime.now() - timedelta(days=32)
+            deleted_at=self.now_datetime - timedelta(days=32)
         )
-        project2 = ProjectFactory.create(
-            title='Test Project 2',
+        project2 = ProjectFactory.create(title='Test Project 2')
+        project2_1 = ProjectFactory.create(
+            title="Test Project 2 [Don't Delete']",
+            deleted_at=self.now_datetime - timedelta(days=32),
         )
         project3 = ProjectFactory.create(
             title='Test Project 3',
             is_deleted=True,
-            deleted_at=datetime.now() - timedelta(days=42)
+            deleted_at=self.now_datetime - timedelta(days=42),
         )
         project4 = ProjectFactory.create(
             title='Test Project 4',
             is_deleted=True,
-            deleted_at=datetime.now() - timedelta(days=20)
+            deleted_at=self.now_datetime - timedelta(days=20),
+        )
+        project5 = ProjectFactory.create(
+            title='Test Project 5',
+            is_deleted=True,
+            deleted_at=self.now_datetime - timedelta(days=30),
+        )
+        project6 = ProjectFactory.create(
+            title='Test Project 6',
+            is_deleted=True,
+            deleted_at=self.now_datetime - timedelta(days=29),
         )
 
-        project_deletion()
+        permanently_delete_projects()
 
-        # project ids
-        project_ids = Project.objects.values_list('id', flat=True)
-        self.assertEqual([id for id in project_ids], [project2.id, project4.id])
-        self.assertNotEqual([id for id in project_ids], [project1.id, project3.id])
+        # Check active projects ids
+        project_ids = _get_project_ids()
+        # Deleted projects.
+        self.assertNotEqual(
+            project_ids,
+            [
+                project1.id,
+                project3.id,
+            ]
+        )
+        self.assertEqual(
+            project_ids,
+            [
+                project2.id,
+                project2_1.id,
+                project4.id,
+                project5.id,
+                project6.id,
+            ]
+        )

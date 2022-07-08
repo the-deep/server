@@ -1499,7 +1499,7 @@ type Mutation {
   resetPassword(data: ResetPasswordInputType!): ResetPassword
   changePassword(data: PasswordChangeInputType!): ChangeUserPassword
   updateMe(data: UserMeInputType!): UpdateMe
-  deleteUser(id: ID!): UserDelete
+  deleteUser: UserDelete
   analysisFrameworkCreate(data: AnalysisFrameworkInputType!): CreateAnalysisFramework
   analysisFramework(id: ID!): AnalysisFrameworkMutationType
 }
@@ -1677,7 +1677,6 @@ type ProjectDetailType {
   hasPubliclyViewableUnprotectedLeads: Boolean!
   hasPubliclyViewableRestrictedLeads: Boolean!
   hasPubliclyViewableConfidentialLeads: Boolean!
-  deletedAt: Date
   currentUserRole: ProjectRoleTypeEnum
   allowedPermissions: [ProjectPermission!]!
   stats(filters: LeadsFilterDataInputType): ProjectStatType
@@ -2422,7 +2421,7 @@ scalar Upload
 type UserDelete {
   errors: [GenericScalar!]
   ok: Boolean
-  result: UserType
+  result: UserMeType
 }
 
 enum UserEmailConditionOptOutEnum {
@@ -2553,19 +2552,22 @@ type UserMeType {
   jwtToken: JwtTokenType
   lastActiveProject: ProjectDetailType
   accessibleFeatures: [UserFeatureAccessType!]!
+  deletedAt: Date
+}
+
+type UserProfileType {
+  displayName: String
+  firstName: String
+  lastName: String
+  displayPictureUrl: String
+  organization: String
 }
 
 type UserType {
   id: ID!
   isActive: Boolean!
-  displayName: String
-  displayPictureUrl: String
-  organization: String
-  language: String
   emailDisplay: String!
-  deletedAt: Date
-  firstName: String
-  lastName: String
+  profile: UserProfileType!
 }
 
 input WidgetConditionalGqlInputType {

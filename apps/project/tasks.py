@@ -1,7 +1,7 @@
 import json
 import logging
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from celery import shared_task
 from django.core.files.base import ContentFile
@@ -256,16 +256,21 @@ def generate_project_geo_region_cache(project):
 
 
 @shared_task
-def project_deletion():
+def permanently_delete_projects():
     # check every project if there `is_deleted` is set True
-    # if greater than 30 days delete those projects
-    logger.info('Checking project is_deleted')
-    today = timezone.now().date()
+    # if greater than settings.USER_AND_PROJECT_DELETE_IN_DAYS days delete those projects
+    logger.info('[Project Delete] Checking project to delete.')
+    threshold = (
+        timezone.now() - timedelta(days=settings.USER_AND_PROJECT_DELETE_IN_DAYS)
+    )
     project_qs = Project.objects.filter(
         is_deleted=True,
-        deleted_at__lte=datetime.now() - timedelta(days=30)
+        deleted_at__isnull=False,
+        deleted_at__lt=threshold,
     )
+    logger.info(f'[Project Delete] Found {project_qs.count()} projects to delete.')
     for project in project_qs:
-        if abs((project.deleted_at - today).days) > settings.USER_AND_PROJECT_DELETE_IN_DAYS:
-            logger.info(f'Deleting Project {project.id}')
-            project.delete()
+        _meta = f'{project.id}::{project.title}'
+        logger.info(f'[Project Delete] Deleting {_meta}')
+        project_delete_response = project.delete()
+        logger.info(f'[Project Delete] Deleted {_meta}:: {project_delete_response}')

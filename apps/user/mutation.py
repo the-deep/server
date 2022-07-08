@@ -1,8 +1,6 @@
 import graphene
 from django.contrib.auth import login, logout
 from django.contrib.auth import update_session_auth_hash
-from django.utils import timezone
-from django.contrib.auth.models import User
 from django.db import models
 
 from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
@@ -16,10 +14,7 @@ from .serializers import (
     UserMeSerializer,
     HIDLoginSerializer,
 )
-from .schema import (
-    UserMeType,
-    UserType,
-)
+from .schema import UserMeType
 
 
 LoginInputType = generate_input_type_for_serializer('LoginInputType', LoginSerializer)
@@ -173,59 +168,66 @@ class UpdateMe(graphene.Mutation):
 
 
 class UserDelete(graphene.Mutation):
-    class Arguments:
-        id = graphene.ID(required=True)
-
     errors = graphene.List(graphene.NonNull(CustomErrorType))
     ok = graphene.Boolean()
-    result = graphene.Field(UserType)
+    result = graphene.Field(UserMeType)
 
     @staticmethod
-    def mutate(root, info, id):
-        user = User.objects.get(id=info.context.user.id)
+    def mutate(_, info):
         from project.models import ProjectMembership, ProjectRole
 
-        # also check for the project user is member there is only one member
-        # check if user is owner of any of the project
-        user_projects = ProjectMembership.objects.filter(member=user).values('project')
-        # user only the memeber in project
+        current_user = info.context.user
+        if current_user.profile.deleted_at:
+            return UserDelete(
+                errors=[
+                    dict(
+                        field='nonFieldErrors',
+                        messages='Already deleted.'
+                    )
+                ]
+            )
 
-        def user_member_project(user_projects, owner=False):
+        def user_member_project_ids(owner=False):
+            # Member in Projects
+            project_ids = ProjectMembership.objects.filter(member=current_user).values('project')
+            extra_filter = {}
             if owner:
-                user_projects = user_projects.filter(role__type=ProjectRole.Type.PROJECT_OWNER)
-            return ProjectMembership.objects.order_by().values('project').filter(
-                project__in=user_projects,
-            ).annotate(
-                member_count=models.Count('member'),
-            ).filter(member_count=1).values_list('project', flat=True)
+                project_ids = project_ids.filter(role__type=ProjectRole.Type.PROJECT_OWNER)
+                extra_filter['role__type'] = ProjectRole.Type.PROJECT_OWNER
+            return ProjectMembership.objects.filter(
+                member__profile__deleted_at__isnull=True,  # Exclude already deleted users
+                project__in=project_ids,
+                **extra_filter,
+            ).order_by().values('project').annotate(
+                member_count=models.Count('member', distinct=True),
+            ).filter(member_count=1).values_list('project', 'project__title')
 
-        only_user_member_projects = user_member_project(user_projects)
+        only_user_member_projects = user_member_project_ids()
         if only_user_member_projects:
             return UserDelete(
                 errors=[
                     dict(
                         field='nonFieldErrors',
-                        messages='You are only the member in Projects %s.Choose other members before you delete yourself'
-                        % ','.join(map(str, only_user_member_projects)),
+                        messages='You are only the member in Projects %s. Choose other members before you delete yourself.'
+                        % ', '.join([f'[{_id}]{title}' for _id, title in only_user_member_projects]),
                     )
                 ], ok=False
             )
 
         # user only the owner in the project
-        only_user_owner_role_in_projects = user_member_project(user_projects, owner=True)
+        only_user_owner_role_in_projects = user_member_project_ids(owner=True)
         if only_user_owner_role_in_projects:
             return UserDelete(
                 errors=[
                     dict(
                         field='nonFieldErrors',
-                        messages='You are Owner in Projects %s .Choose another Project Owner before you delete yourself'
-                        % ','.join(map(str, only_user_owner_role_in_projects)),
+                        messages='You are Owner in Projects %s. Choose another Project Owner before you delete yourself.'
+                        % ', '.join([f'[{_id}]{title}' for _id, title in only_user_owner_role_in_projects]),
                     )
                 ], ok=False
             )
-        user.profile.deleted_at = timezone.now().date()
-        user.profile.save(update_fields=['deleted_at'])
-        return UserDelete(result=user, errors=None, ok=True)
+        current_user.soft_delete()
+        return UserDelete(result=current_user, errors=None, ok=True)
 
 
 class Mutation():

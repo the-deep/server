@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q
 from django.conf import settings
+from django.utils import timezone
 
 from django_otp.plugins import (
     otp_static,
@@ -76,7 +77,8 @@ class Profile(models.Model):
     )
 
     # this is used in user deletion
-    deleted_at = models.DateField(null=True, blank=True)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    anonymized_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return str(self.user)
@@ -128,6 +130,15 @@ class Profile(models.Model):
         return None
         # return settings.LANGUAGE_CODE
 
+    def soft_delete(self, deleted_at=None, commit=True):
+        self.deleted_at = deleted_at or timezone.now()
+        if commit:
+            self.save(update_fields=('deleted_at',))
+
+    @staticmethod
+    def soft_delete_user(user, **kwargs):
+        return user.profile.soft_delete(**kwargs)
+
 
 def user_get_display_email(user):
     from .utils import generate_hidden_email
@@ -141,6 +152,7 @@ User.display_name = property(Profile.get_display_name_for_user)
 User.have_feature_access = Profile.have_feature_access_for_user
 User.get_accessible_features = Profile.get_user_accessible_features
 User.get_display_email = user_get_display_email
+User.soft_delete = Profile.soft_delete_user
 
 
 def get_for_project(project):
