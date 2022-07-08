@@ -202,8 +202,9 @@ class ExportExcelSelectedColumnSerializer(serializers.Serializer):
     static_column = serializers.ChoiceField(choices=Export.StaticColumn.choices, required=False)
 
     def validate(self, data):
-        if data['is_widget'] and data.get('widget_key') is None:
-            raise serializers.ValidationError('widget_key key is required when is widget is True')
+        if data['is_widget']:
+            if data.get('widget_key') is None:
+                raise serializers.ValidationError('widget_key key is required when is widget is True')
         elif data.get('static_column') is None:
             raise serializers.ValidationError('static_column is required when is widget is False')
         return data
