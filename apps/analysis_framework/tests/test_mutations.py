@@ -480,7 +480,9 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                 joinedAt
                 addedBy {
                   id
-                  displayName
+                  profile {
+                      displayName
+                  }
                 }
                 role {
                   id
@@ -488,7 +490,9 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                 }
                 member {
                   id
-                  displayName
+                  profile {
+                      displayName
+                  }
                 }
               }
               deletedResult {
@@ -497,7 +501,9 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                 joinedAt
                 member {
                   id
-                  displayName
+                  profile {
+                      displayName
+                  }
                 }
                 role {
                   id
@@ -505,7 +511,9 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                 }
                 addedBy {
                   id
-                  displayName
+                  profile {
+                      displayName
+                  }
                 }
               }
             }

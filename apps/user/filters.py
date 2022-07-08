@@ -53,3 +53,8 @@ class UserGqlFilterSet(django_filters.FilterSet):
                 models.Q(username__icontains=value)
             )
         return qs
+
+    @property
+    def qs(self):
+        # Filter out anonymized users
+        return super().qs.filter(profile__anonymized_at__isnull=True)

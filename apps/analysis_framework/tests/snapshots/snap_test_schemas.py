@@ -24,7 +24,9 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'id': '1',
                     'joinedAt': '2021-01-01T00:00:00.123456+00:00',
                     'member': {
-                        'displayName': 'Joshua Walker',
+                        'profile': {
+                            'displayName': 'Joshua Walker',
+                        },
                         'id': '2'
                     },
                     'role': {
@@ -37,7 +39,9 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'id': '2',
                     'joinedAt': '2021-01-01T00:00:00.123456+00:00',
                     'member': {
-                        'displayName': 'Danielle Johnson',
+                        'profile': {
+                            'displayName': 'Danielle Johnson',
+                        },
                         'id': '1'
                     },
                     'role': {

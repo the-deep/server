@@ -168,11 +168,15 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
                   joinedAt
                   addedBy {
                     id
-                    displayName
+                    profile {
+                        displayName
+                    }
                   }
                   member {
                     id
-                    displayName
+                    profile {
+                        displayName
+                    }
                   }
                   role {
                     id

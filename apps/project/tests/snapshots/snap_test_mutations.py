@@ -259,7 +259,9 @@ snapshots['TestProjectMembershipMutation::test_user_group_membership_admin_bulk 
         None,
         {
             'addedBy': {
-                'displayName': 'Danielle Johnson',
+                'profile': {
+                    'displayName': 'Danielle Johnson',
+                },
                 'id': '1'
             },
             'badges': [
@@ -278,7 +280,9 @@ snapshots['TestProjectMembershipMutation::test_user_group_membership_admin_bulk 
         },
         {
             'addedBy': {
-                'displayName': 'Danielle Johnson',
+                'profile': {
+                    'displayName': 'Danielle Johnson',
+                },
                 'id': '1'
             },
             'badges': [
@@ -427,7 +431,9 @@ snapshots['TestProjectMembershipMutation::test_user_group_membership_using_clair
         None,
         {
             'addedBy': {
-                'displayName': 'Danielle Johnson',
+                'profile': {
+                    'displayName': 'Danielle Johnson',
+                },
                 'id': '1'
             },
             'badges': [
@@ -446,7 +452,9 @@ snapshots['TestProjectMembershipMutation::test_user_group_membership_using_clair
         },
         {
             'addedBy': {
-                'displayName': 'Danielle Johnson',
+                'profile': {
+                    'displayName': 'Danielle Johnson',
+                },
                 'id': '1'
             },
             'badges': [
@@ -537,7 +545,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'
     'deletedResult': [
         {
             'addedBy': {
-                'displayName': 'Jeffery Wagner',
+                'profile': {
+                    'displayName': 'Jeffery Wagner',
+                },
                 'id': '6'
             },
             'badges': [
@@ -547,7 +557,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'
             'id': '1',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'displayName': 'Jeffery Wagner',
+                'profile': {
+                    'displayName': 'Jeffery Wagner',
+                },
                 'id': '6'
             },
             'role': {
@@ -593,7 +605,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'
         None,
         {
             'addedBy': {
-                'displayName': 'Joshua Walker',
+                'profile': {
+                    'displayName': 'Joshua Walker',
+                },
                 'id': '2'
             },
             'badges': [
@@ -602,7 +616,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'
             'id': '9',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'displayName': 'Debra Gardner',
+                'profile': {
+                    'displayName': 'Debra Gardner',
+                },
                 'id': '8'
             },
             'role': {
@@ -612,7 +628,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'
         },
         {
             'addedBy': {
-                'displayName': 'Joshua Walker',
+                'profile': {
+                    'displayName': 'Joshua Walker',
+                },
                 'id': '2'
             },
             'badges': [
@@ -621,7 +639,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'
             'id': '10',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'displayName': 'Jeffrey Lawrence',
+                'profile': {
+                    'displayName': 'Jeffrey Lawrence',
+                },
                 'id': '9'
             },
             'role': {
@@ -699,7 +719,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 2'
         None,
         {
             'addedBy': {
-                'displayName': 'Anthony Gonzalez',
+                'profile': {
+                    'displayName': 'Anthony Gonzalez',
+                },
                 'id': '7'
             },
             'badges': [
@@ -708,7 +730,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 2'
             'id': '2',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'displayName': 'Anthony Gonzalez',
+                'profile': {
+                    'displayName': 'Anthony Gonzalez',
+                },
                 'id': '7'
             },
             'role': {
@@ -723,7 +747,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
     'deletedResult': [
         {
             'addedBy': {
-                'displayName': 'Jeffery Wagner',
+                'profile': {
+                    'displayName': 'Jeffery Wagner',
+                },
                 'id': '6'
             },
             'badges': [
@@ -733,7 +759,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
             'id': '1',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'displayName': 'Jeffery Wagner',
+                'profile': {
+                    'displayName': 'Jeffery Wagner',
+                },
                 'id': '6'
             },
             'role': {
@@ -769,7 +797,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
     'result': [
         {
             'addedBy': {
-                'displayName': 'Anthony Gonzalez',
+                'profile': {
+                    'displayName': 'Anthony Gonzalez',
+                },
                 'id': '7'
             },
             'badges': [
@@ -779,7 +809,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
             'id': '2',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'displayName': 'Anthony Gonzalez',
+                'profile': {
+                    'displayName': 'Anthony Gonzalez',
+                },
                 'id': '7'
             },
             'role': {
@@ -790,7 +822,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
         None,
         {
             'addedBy': {
-                'displayName': 'Joshua Walker',
+                'profile': {
+                    'displayName': 'Joshua Walker',
+                },
                 'id': '2'
             },
             'badges': [
@@ -799,7 +833,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
             'id': '9',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'displayName': 'Debra Gardner',
+                'profile': {
+                    'displayName': 'Debra Gardner',
+                },
                 'id': '8'
             },
             'role': {
@@ -809,7 +845,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
         },
         {
             'addedBy': {
-                'displayName': 'Joshua Walker',
+                'profile': {
+                    'displayName': 'Joshua Walker',
+                },
                 'id': '2'
             },
             'badges': [
@@ -818,7 +856,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
             'id': '10',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'displayName': 'Jeffrey Lawrence',
+                'profile': {
+                    'displayName': 'Jeffrey Lawrence',
+                },
                 'id': '9'
             },
             'role': {
@@ -884,7 +924,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
     'result': [
         {
             'addedBy': {
-                'displayName': 'Anthony Gonzalez',
+                'profile': {
+                    'displayName': 'Anthony Gonzalez',
+                },
                 'id': '7'
             },
             'badges': [
@@ -894,7 +936,9 @@ snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_
             'id': '2',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'displayName': 'Anthony Gonzalez',
+                'profile': {
+                    'displayName': 'Anthony Gonzalez',
+                },
                 'id': '7'
             },
             'role': {

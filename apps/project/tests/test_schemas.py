@@ -42,15 +42,16 @@ class TestProjectSchema(GraphQLTestCase):
                     type
                     typeDisplay
                     createdBy {
-                        displayName
-                        displayPictureUrl
-                        emailDisplay
-                        firstName
                         id
                         isActive
-                        language
-                        lastName
-                        organization
+                        emailDisplay
+                        profile {
+                            displayName
+                            displayPictureUrl
+                            firstName
+                            lastName
+                            organization
+                        }
                     }
                     project {
                         id
@@ -1067,7 +1068,9 @@ class TestProjectMembersFilterSchema(GraphQLTestCase):
                   results {
                     member {
                       id
-                      displayName
+                      profile {
+                        displayName
+                      }
                     }
                     role {
                       id
