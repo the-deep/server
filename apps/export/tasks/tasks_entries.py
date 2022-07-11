@@ -62,6 +62,7 @@ def export_entries(export):
         decoupled = extra_options.get('excel_decoupled', False)
         columns = extra_options.get('excel_columns')
         export_data = ExcelExporter(
+            export,
             entries_qs,
             columns=columns,
             decoupled=decoupled,
