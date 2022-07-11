@@ -219,8 +219,8 @@ class ReportExporter:
         self.assessment_data_cache = {}
         self.entry_widget_data_cache = {}
 
-    def load_exportables(self, exportables, regions):
-        exportables = exportables.filter(
+    def load_exportables(self, exportables_qs, regions):
+        exportables = exportables_qs.filter(
             data__report__levels__isnull=False,
         )
 

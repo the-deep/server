@@ -168,11 +168,11 @@ class ExcelExporter:
                 self.col_types[index] = col_type
         return exportable_titles
 
-    def load_exportables(self, exportables, regions=None):
+    def load_exportables(self, exportables_qs, regions=None):
         # Take all exportables that contains excel info
         widget_exportables = {
             exportable.widget_key: exportable
-            for exportable in exportables.filter(
+            for exportable in exportables_qs.filter(
                 data__excel__isnull=False,
             )
         }
