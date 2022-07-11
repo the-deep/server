@@ -169,7 +169,7 @@ class ProjectDelete(DeleteMutation):
             role__type=ProjectRole.Type.PROJECT_OWNER,
         )
         if not membership_qs.exists():
-            return ProjectJoinRequestDelete(errors=[
+            return ProjectDelete(errors=[
                 dict(
                     field='nonFieldErrors',
                     messages=gettext(
