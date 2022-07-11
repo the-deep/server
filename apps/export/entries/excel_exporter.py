@@ -45,7 +45,8 @@ class ExcelExporter:
             ] if self.modified_excerpt_exists else ['Excerpt'],
         }
 
-    def __init__(self, entries, columns=None, decoupled=True, project_id=None, is_preview=False):
+    def __init__(self, export_object, entries, columns=None, decoupled=True, project_id=None, is_preview=False):
+        self.export_object = export_object
         self.is_preview = is_preview
         self.wb = WorkBook()
         # XXX: Limit memory usage? (Or use redis?)
@@ -125,6 +126,9 @@ class ExcelExporter:
         # mapping of original name vs truncated name
         self._sheets = {}
 
+    def log_error(self, message, **kwargs):
+        logger.error(f'[EXPORT:{self.export_object.id}] {message}', **kwargs)
+
     def load_exportable_titles(self, data, regions):
         export_type = data.get('type')
         col_type = data.get('col_type')
@@ -172,16 +176,24 @@ class ExcelExporter:
                 data__excel__isnull=False,
             )
         }
+        exportables = []
         if self.columns is not None:
-            self.exportables = [
-                widget_exportables[column['widget_key']] if column['is_widget'] else column['static_column']
-                for column in self.columns
-            ]
+            for column in self.columns:
+                if not column['is_widget']:
+                    exportables.append(column['static_column'])
+                    continue
+                widget_key = column['widget_key']
+                exportable = widget_exportables.get(widget_key)
+                if exportable:
+                    exportables.append(exportable)
+                else:
+                    self.log_error(f'Non-existing widget key is passed <{widget_key}>')
         else:
-            self.exportables = [
+            exportables = [
                 *self.ColumnsData.TITLES.keys(),
                 *widget_exportables.values(),
             ]
+        self.exportables = exportables
 
         column_titles = []
 
@@ -448,7 +460,7 @@ class ExcelExporter:
             try:
                 return self.get_data_series(entry)
             except Exception:
-                logger.error(
+                self.log_error(
                     'Data Series EXCEL Export Failed for entry',
                     exc_info=1,
                     extra={'data': {'entry_id': entry.pk}},
