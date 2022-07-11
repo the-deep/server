@@ -12,8 +12,8 @@ class JsonExporter:
         self.is_preview = is_preview
         self.data = {}
 
-    def load_exportables(self, exportables_qs):
-        self.exportables = exportables_qs
+    def load_exportables(self, exportables):
+        self.exportables = exportables
         self.widget_ids = []
 
         self.data['widgets'] = []

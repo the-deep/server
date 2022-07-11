@@ -168,32 +168,32 @@ class ExcelExporter:
                 self.col_types[index] = col_type
         return exportable_titles
 
-    def load_exportables(self, exportables_qs, regions=None):
+    def load_exportables(self, exportables, regions=None):
         # Take all exportables that contains excel info
         widget_exportables = {
             exportable.widget_key: exportable
-            for exportable in exportables_qs.filter(
+            for exportable in exportables.filter(
                 data__excel__isnull=False,
             )
         }
-        exportables = []
         if self.columns is not None:
+            _exportables = []
             for column in self.columns:
                 if not column['is_widget']:
-                    exportables.append(column['static_column'])
+                    _exportables.append(column['static_column'])
                     continue
                 widget_key = column['widget_key']
                 exportable = widget_exportables.get(widget_key)
                 if exportable:
-                    exportables.append(exportable)
+                    _exportables.append(exportable)
                 else:
                     self.log_error(f'Non-existing widget key is passed <{widget_key}>')
         else:
-            exportables = [
+            _exportables = [
                 *self.ColumnsData.TITLES.keys(),
                 *widget_exportables.values(),
             ]
-        self.exportables = exportables
+        self.exportables = _exportables
 
         column_titles = []
 
