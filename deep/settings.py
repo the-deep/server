@@ -483,6 +483,11 @@ CELERY_BEAT_SCHEDULE = {
         # Every 6 hours
         'schedule': crontab(hour="*/6"),
     },
+    'schedule_trigger_remaining_lead_extract': {
+        'task': 'lead.tasks.remaining_lead_extract',
+        # Every 6 hours
+        'schedule': crontab(hour="*/6"),
+    },
 }
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
