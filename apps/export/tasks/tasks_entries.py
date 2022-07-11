@@ -52,7 +52,7 @@ def export_entries(export):
         'lead__authors__parent__organization_type',
     )
 
-    exportables_qs = Exportable.objects.filter(
+    exportables = Exportable.objects.filter(
         analysis_framework__project=project,
     ).distinct()
     regions = Region.objects.filter(project=project).distinct()
@@ -68,7 +68,7 @@ def export_entries(export):
             project_id=project.id,
             is_preview=is_preview,
         )\
-            .load_exportables(exportables_qs, regions)\
+            .load_exportables(exportables, regions)\
             .add_entries(entries_qs)\
             .export()
 
@@ -90,7 +90,7 @@ def export_entries(export):
                 exporting_widgets=exporting_widgets,
                 is_preview=is_preview,
                 **report_show_attributes,
-            ).load_exportables(exportables_qs, regions)
+            ).load_exportables(exportables, regions)
             .load_levels(report_levels)
             .load_structure(report_structure)
             .load_group_lables(entries_qs, show_groups)
@@ -101,7 +101,7 @@ def export_entries(export):
 
     elif export_type == Export.ExportType.JSON:
         export_data = JsonExporter(is_preview=is_preview)\
-            .load_exportables(exportables_qs)\
+            .load_exportables(exportables)\
             .add_entries(entries_qs)\
             .export()
 
