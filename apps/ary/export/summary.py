@@ -4,6 +4,7 @@ from geo.models import GeoArea
 from ary.models import (
     MethodologyGroup,
     MethodologyOption,
+    MethodologyProtectionInfo,
     MetadataField,
     Focus,
     Sector,
@@ -63,6 +64,9 @@ def get_assessment_export_summary(assessment, planned_assessment=False):
     sectors = [x.title for x in Sector.objects.filter(template=template)]
     selected_sectors = set(methodology.get('Sectors') or [])
 
+    methodology_protection_informations = [label for _, label in MethodologyProtectionInfo.choices]
+    selected_methodology_protection_informations = set(methodology.get('Protection Info') or [])
+
     root_affected_group = AffectedGroup.objects.filter(template=template, parent=None).first()
     all_affected_groups = root_affected_group.get_children_list() if root_affected_group else []
 
@@ -98,6 +102,10 @@ def get_assessment_export_summary(assessment, planned_assessment=False):
         'sectors': {
             x: 1 if x in selected_sectors else 0
             for x in sectors
+        },
+        'protection_information_management': {
+            x: 1 if x in selected_methodology_protection_informations else 0
+            for x in methodology_protection_informations
         },
         'affected_groups': {
             x['title']: 1 if x['id'] in selected_affected_groups_ids else 0

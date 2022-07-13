@@ -20,8 +20,9 @@ from lead.views import BaseCopyView, LeadCopyView
 from .filters import AssessmentFilterSet, PlannedAssessmentFilterSet
 from .models import (
     Assessment,
-    PlannedAssessment,
     AssessmentTemplate,
+    MethodologyProtectionInfo,
+    PlannedAssessment,
 )
 from .serializers import (
     AssessmentSerializer,
@@ -185,6 +186,15 @@ class AssessmentOptionsView(views.APIView):
                     'key': project.id,
                     'value': project.title,
                 } for project in projects.distinct()
+            ]
+
+        if (fields is None or 'methodology_protection_info' in fields):
+            options['methodology_protection_info'] = [
+                {
+                    'key': value,
+                    'value': label,
+                }
+                for value, label in MethodologyProtectionInfo.choices
             ]
 
         return response.Response(options)

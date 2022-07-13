@@ -12,6 +12,7 @@ from .utils import (
     get_title_or_none,
     get_location_title,
     get_model_attrs_or_empty_dict,
+    get_methodology_protection_info_title,
 )
 
 from utils.common import identity, underscore_to_title
@@ -106,6 +107,17 @@ class MetadataOption(FieldOption):
 
 class MethodologyGroup(BasicTemplateEntity):
     pass
+
+
+class MethodologyProtectionInfo(models.IntegerChoices):
+    PROTECTION_MONITORING = 1, 'Protection Monitoring'
+    PROTECTION_NEEDS_ASSESSMENT = 2, 'Protection Needs Assessment'
+    CASE_MANAGEMENT = 3, 'Case Management'
+    POPULATION_DATA = 4, 'Population Data'
+    PROTECTION_RESPONSE = 5, 'Protection Response'
+    COMMUNICATING_WITH_OR_IN_AFFECTED_COMMUNITIES = 6, 'Communicating with(in) Affected Communities'
+    SECURITY_AND_SITUATIONAL_AWARENESS = 7, 'Security & Situational Awareness'
+    SECTORAL_SYSTEMS_OR_OTHER = 8, 'Sectoral Systems/Other'
 
 
 class MethodologyField(Field):
@@ -467,7 +479,8 @@ class Assessment(UserResource, ProjectEntityMixin):
             'objectives': identity,
             'sampling': identity,
             'limitations': identity,
-            'data_collection_techniques': identity
+            'data_collection_techniques': identity,
+            'protection_info': get_methodology_protection_info_title,
         }
 
         return {
