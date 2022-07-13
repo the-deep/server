@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 from deep.caches import CacheKey
+from deep.celery import app as celery_app
 from project.models import Project
 from export.mime_types import (
     DOCX_MIME_TYPE,
@@ -117,16 +118,24 @@ class Export(models.Model):
         time_str = timezone.now().strftime('%Y%m%d')
         return f'{time_str} DEEP {file_label}'
 
-    def save(self, *args, **kwargs):
-        self.title = self.title or self.generate_title(self.type, self.export_type, self.format)
-        return super().save(*args, **kwargs)
-
     def get_task_id(self, clear=False):
         cache_key = CacheKey.EXPORT_TASK_CACHE_KEY_FORMAT.format(self.pk)
         value = cache.get(cache_key)
         if clear:
             cache.delete(cache_key)
         return value
+
+    def cancle(self, commit=True):
+        if self.status not in [Export.Status.PENDING, Export.Status.STARTED]:
+            return
+        celery_app.control.revoke(self.get_task_id(clear=True), terminate=True)
+        self.status = Export.Status.CANCELED
+        if commit:
+            self.save(update_fields=('status',))
+
+    def save(self, *args, **kwargs):
+        self.title = self.title or self.generate_title(self.type, self.export_type, self.format)
+        return super().save(*args, **kwargs)
 
     def set_task_id(self, async_id):
         # Defined timeout is arbitrary now.
