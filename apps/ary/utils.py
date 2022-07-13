@@ -2,7 +2,6 @@ from geo.models import Region, GeoArea
 from organization.models import Organization
 
 from utils.common import parse_number
-from .models import MethodologyProtectionInfo
 
 
 def get_title_or_none(Model):
@@ -21,10 +20,12 @@ def get_location_title(val):
     return instance and instance.title
 
 
-def get_methodology_protection_info_title(val):
-    _val = int(val)
-    if _val in MethodologyProtectionInfo:
-        return MethodologyProtectionInfo(_val).label
+def get_integer_enum_title(IntegerEnum):
+    def _get_title(val):
+        _val = int(val)
+        if _val in IntegerEnum:
+            return IntegerEnum(_val).label
+    return _get_title
 
 
 def get_model_attr_or_none(Model, attr):
