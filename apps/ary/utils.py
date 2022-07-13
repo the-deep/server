@@ -20,6 +20,14 @@ def get_location_title(val):
     return instance and instance.title
 
 
+def get_integer_enum_title(IntegerEnum):
+    def _get_title(val):
+        _val = int(val)
+        if _val in IntegerEnum:
+            return IntegerEnum(_val).label
+    return _get_title
+
+
 def get_model_attr_or_none(Model, attr):
     def _get_attr(val):
         instance = Model.objects.filter(id=val).first()

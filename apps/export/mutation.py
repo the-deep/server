@@ -5,7 +5,6 @@ from utils.graphene.mutation import (
     PsGrapheneMutation,
 )
 from deep.permissions import ProjectPermissions as PP
-from deep.celery import app as celery_app
 
 from .models import Export
 from .schema import UserExportType, get_export_qs
@@ -45,10 +44,7 @@ class CancelUserExport(UserExportMutationMixin, PsGrapheneMutation):
         export, errors = cls.get_object(info, **kwargs)
         if export is None or errors:
             return cls(result=export, errors=errors, ok=True)
-        if export.status in [Export.Status.PENDING, Export.Status.STARTED]:
-            celery_app.control.revoke(export.get_task_id(clear=True), terminate=True)
-            export.status = Export.Status.CANCELED
-            export.save(update_fields=('status',))
+        export.cancle()
         return cls(result=export, errors=None, ok=True)
 
 
@@ -64,8 +60,9 @@ class DeleteUserExport(UserExportMutationMixin, PsGrapheneMutation):
         export, errors = cls.get_object(info, **kwargs)
         if export is None or errors:
             return cls(result=export, errors=errors, ok=True)
+        export.cancle(commit=False)
         export.is_deleted = True  # Soft delete
-        export.save(update_fields=('is_deleted',))
+        export.save(update_fields=('status', 'is_deleted',))
         return cls(result=export, errors=None, ok=True)
 
 
