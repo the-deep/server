@@ -12,7 +12,7 @@ from .utils import (
     get_title_or_none,
     get_location_title,
     get_model_attrs_or_empty_dict,
-    get_methodology_protection_info_title,
+    get_integer_enum_title,
 )
 
 from utils.common import identity, underscore_to_title
@@ -480,7 +480,7 @@ class Assessment(UserResource, ProjectEntityMixin):
             'sampling': identity,
             'limitations': identity,
             'data_collection_techniques': identity,
-            'protection_info': get_methodology_protection_info_title,
+            'protection_info': get_integer_enum_title(MethodologyProtectionInfo),
         }
 
         return {
