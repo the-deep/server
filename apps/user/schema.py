@@ -8,13 +8,18 @@ from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from django.utils import timezone
 from django.conf import settings
+from django.db import models
 
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from jwt_auth.token import AccessToken
 from deep.serializers import URLCachedFileField
 
-from project.models import Project
+from project.models import (
+    Project,
+    ProjectMembership,
+    ProjectRole,
+)
 
 from .models import User, Feature
 from .enums import UserEmailConditionOptOutEnum
@@ -27,6 +32,31 @@ def only_me(func):
         if root == info.context.user:
             return func(root, info, *args, **kwargs)
     return wrapper
+
+
+def user_member_project_ids(current_user, owner=False):
+    # Member in Projects
+    project_ids = ProjectMembership.objects.filter(member=current_user).values('project')
+    if owner:
+        project_ids = project_ids.filter(role__type=ProjectRole.Type.PROJECT_OWNER)
+        project_members = ProjectMembership.objects.filter(
+            member__profile__deleted_at__isnull=True,  # Exclude already deleted users
+            project__in=project_ids,
+        ).order_by().values('project').annotate(
+            member_count=models.Count('member', distinct=True),
+        ).filter(member_count=1).values_list('project', 'project__title')
+    else:
+        project_members = ProjectMembership.objects.filter(
+            ~models.Q(role__type=ProjectRole.Type.PROJECT_OWNER),
+            member__profile__deleted_at__isnull=True,  # Exclude already deleted users
+            project__in=project_ids,
+        ).order_by().values('project').values_list('project', 'project__title')
+    return [
+        {
+            'id': project_id,
+            'title': project_title,
+        } for project_id, project_title in project_members
+    ]
 
 
 class JwtTokenType(graphene.ObjectType):
@@ -99,6 +129,11 @@ class UserType(DjangoObjectType):
         return info.context.dl.user.profile.load(root.id)
 
 
+class UserMeProjectType(graphene.ObjectType):
+    id = graphene.String()
+    title = graphene.String()
+
+
 class UserMeType(DjangoObjectType):
     class Meta:
         model = User
@@ -120,6 +155,9 @@ class UserMeType(DjangoObjectType):
     last_active_project = graphene.Field('project.schema.ProjectDetailType')
     accessible_features = graphene.List(graphene.NonNull(UserFeatureAccessType), required=True)
     deleted_at = graphene.Date()
+    sole_projects = graphene.List(UserMeProjectType)
+    only_member_projects = graphene.List(UserMeProjectType)
+
 
     @staticmethod
     @only_me
@@ -184,6 +222,16 @@ class UserMeType(DjangoObjectType):
     @only_me
     def resolve_deleted_at(root, info, **kwargs) -> Union[datetime.datetime.date, None]:
         return root.profile.deleted_at
+
+    @staticmethod
+    @only_me
+    def resolve_sole_projects(root, info, **kwargs) -> Union[UserMeProjectType, None]:
+        return user_member_project_ids(info.context.user, owner=True)
+
+    @staticmethod
+    @only_me
+    def resolve_only_member_projects(root, info, **kwargs) -> Union[UserMeProjectType, None]:
+        return user_member_project_ids(info.context.user)
 
 
 class UserListType(CustomDjangoListObjectType):

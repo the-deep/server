@@ -25,32 +25,7 @@ def permanently_delete_users():
     )
     logger.info(f'[User Delete] Found {user_qs.count()} users to delete.')
     for user in user_qs:
-        logger.info(f'[User Delete] anonymizing user {user.id}')
-        user.first_name = settings.DELETED_USER_FIRST_NAME
-        user.last_name = settings.DELETED_USER_LAST_NAME
-        user.email = user.username = f'user-{user.id}@deleted.thedeep.io'
-        user.is_active = False
-        # Profile
-        profile = user.profile
-        profile.invalid_email = True
-        profile.organization = settings.DELETED_USER_ORGANIZATION
-        profile.hid = None
-        if profile.display_picture:
-            profile.display_picture.delete()
-        profile.anonymized_at = timezone.now()
-        # Save
-        user.save(update_fields=[
-            'first_name',
-            'last_name',
-            'email',
-            'username',
-            'is_active',
-        ])
-        profile.save(update_fields=[
-            'invalid_email',
-            'organization',
-            'hid',
-            'display_picture',
-            'anonymized_at',
-        ])
-        logger.info(f'[User Delete] Sucessfully anonymized user {user.id}')
+        logger.info(f'[User Delete] Cleaning up user original data {user.id}')
+        user.profile.original_data = None
+        user.profile.save(update_fields=('original_data',))
+        logger.info(f'[User Delete] Successfully deleted all user data from the system {user.id}')

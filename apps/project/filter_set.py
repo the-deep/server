@@ -159,7 +159,11 @@ class ProjectMembershipGqlFilterSet(UserResourceGqlFilterSet):
             return qs.annotate(
                 full_name=Lower(
                     Concat(
-                        'member__first_name', models.Value(' '), 'member__last_name', models.Value(' '), 'member__email',
+                        'member__first_name',
+                        models.Value(' '),
+                        'member__last_name',
+                        models.Value(' '),
+                        'member__email',
                         output_field=models.CharField(),
                     )
                 ),

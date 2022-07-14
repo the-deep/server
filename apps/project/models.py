@@ -142,7 +142,7 @@ class Project(UserResource):
         self.is_deleted = True
         self.deleted_at = deleted_at or timezone.now()
         if commit:
-            self.save(update_fields=('is_deleted', 'deleted_at'))
+            self.save(update_fields=('is_deleted', 'deleted_at',))
 
     def get_all_members(self):
         return User.objects.filter(
