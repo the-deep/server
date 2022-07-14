@@ -8,7 +8,7 @@ from .models import Profile
 
 class UserProfileLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        profile_qs = Profile.objects.filter(user__in=keys).select_related()
+        profile_qs = Profile.objects.filter(user__in=keys).select_related('user')
         _map = {
             profile.user_id: profile
             for profile in profile_qs

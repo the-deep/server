@@ -442,6 +442,7 @@ class TestUserSchema(GraphQLTestCase):
                 isActive
                 id
                 profile {
+                    id
                     firstName
                     lastName
                     displayPictureUrl
@@ -454,6 +455,7 @@ class TestUserSchema(GraphQLTestCase):
                     isActive
                     id
                     profile {
+                        id
                         firstName
                         lastName
                         displayPictureUrl
@@ -525,6 +527,7 @@ class TestUserSchema(GraphQLTestCase):
                     isActive
                     id
                     profile {
+                        id
                         firstName
                         lastName
                         organization
@@ -581,6 +584,7 @@ class TestUserSchema(GraphQLTestCase):
                     emailDisplay
                     isActive
                     profile {
+                        id
                         firstName
                         lastName
                         displayName
@@ -600,6 +604,7 @@ class TestUserSchema(GraphQLTestCase):
                     emailDisplay
                     isActive
                     profile {
+                        id
                         firstName
                         lastName
                         displayName
@@ -738,6 +743,7 @@ class TestUserSchema(GraphQLTestCase):
               user(id: $id) {
                 id
                 profile {
+                    id
                     lastName
                     firstName
                     displayName
@@ -754,6 +760,7 @@ class TestUserSchema(GraphQLTestCase):
         self.force_login(another_user)
         user_data = self.query_check(users_query, variables={'id': deleted_user.id})['data']['user']
         self.assertEqual(user_data['profile'], dict(
+            id=str(deleted_user.profile.id),
             displayName=f'{settings.DELETED_USER_FIRST_NAME} {settings.DELETED_USER_LAST_NAME}',
             firstName=settings.DELETED_USER_FIRST_NAME,
             lastName=settings.DELETED_USER_LAST_NAME,
