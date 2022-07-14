@@ -56,6 +56,13 @@ class URLCachedFileField(serializers.FileField):
     def get_cache_key(cls, filename):
         return CacheKey.URL_CACHED_FILE_FIELD_KEY_FORMAT.format(hash(filename))
 
+    @staticmethod
+    def generate_url(name, parameters=None):
+        if StorageClass == FileSystemStorage:
+            return StorageClass().url(str(name))
+        # OR s3 storage
+        return StorageClass().url(str(name), parameters=parameters)
+
     @classmethod
     def name_to_representation(cls, name):
         """

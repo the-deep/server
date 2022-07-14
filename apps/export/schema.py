@@ -6,6 +6,7 @@ from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
+from deep.serializers import URLCachedFileField
 from utils.graphene.types import CustomDjangoListObjectType, FileFieldType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 
@@ -43,6 +44,7 @@ class UserExportType(DjangoObjectType):
     status = graphene.Field(graphene.NonNull(ExportStatusEnum))
     export_type = graphene.Field(graphene.NonNull(ExportExportTypeEnum))
     file = graphene.Field(FileFieldType)
+    file_download_url = graphene.String()
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -52,6 +54,17 @@ class UserExportType(DjangoObjectType):
     def resolve_filters(root, info, **kwargs):
         # XXX: Better way?
         return json.loads(CamelCaseJSONRenderer().render(root.filters))
+
+    @staticmethod
+    def resolve_file_download_url(root, info, **kwargs):
+        return info.context.request.build_absolute_uri(
+            URLCachedFileField.generate_url(
+                root.file.name,
+                parameters={
+                    'ResponseContentDisposition': f'filename = "{root.title}.{root.format}"'
+                }
+            )
+        )
 
 
 class UserExportListType(CustomDjangoListObjectType):
