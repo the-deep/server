@@ -57,13 +57,14 @@ def get_exportable(widget, properties):
             )
         return max(depths)
 
+    options = (properties and properties.get('options')) or {}
     return {
         'excel': {
             'type': 'multiple',
             'titles': [
                 f'{widget.title} - Level {level}'
                 for level in range(
-                    _get_depth(properties)
+                    _get_depth(options)
                 )
             ],
         },
