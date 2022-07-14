@@ -56,5 +56,5 @@ class UserGqlFilterSet(django_filters.FilterSet):
 
     @property
     def qs(self):
-        # Filter out anonymized users
-        return super().qs.filter(profile__anonymized_at__isnull=True)
+        # Filter out deleted users
+        return super().qs.filter(profile__deleted_at__isnull=True)

@@ -78,7 +78,7 @@ class Profile(models.Model):
 
     # this is used in user deletion
     deleted_at = models.DateTimeField(null=True, blank=True)
-    anonymized_at = models.DateTimeField(null=True, blank=True)
+    original_data = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return str(self.user)
@@ -131,9 +131,56 @@ class Profile(models.Model):
         # return settings.LANGUAGE_CODE
 
     def soft_delete(self, deleted_at=None, commit=True):
-        self.deleted_at = deleted_at or timezone.now()
+        # Snaphost stored for 30 days. (settings.USER_AND_PROJECT_DELETE_IN_DAYS)
+        user = self.user
+        original_data = dict(
+            first_name=user.first_name,
+            last_name=user.last_name,
+            email=user.email,
+            username=user.username,
+            is_active=user.is_active,
+            profile=dict(
+                organization=self.organization,
+                hid=self.hid,
+                display_picture=self.display_picture_id,
+                invalid_email=self.invalid_email,
+            ),
+        )
+        # User Data
+        user.deleted_at = deleted_at or timezone.now()
+        user.is_active = False
+        user.first_name = settings.DELETED_USER_FIRST_NAME
+        user.last_name = settings.DELETED_USER_LAST_NAME
+        user.email = self.username = f'user-{self.id}@deleted.thedeep.io'
+        # Profile Data
+        self.original_data = original_data
+        self.invalid_email = False
+        self.organization = settings.DELETED_USER_ORGANIZATION
+        self.hid = None
+        self.display_picture = None
         if commit:
-            self.save(update_fields=('deleted_at',))
+            user.save(
+                update_fields=(
+                    # User Data
+                    'first_name',
+                    'last_name',
+                    'email',
+                    'username',
+                    'is_active',
+                )
+            )
+            self.save(
+                update_fields=(
+                    # Deleted metadata
+                    'deleted_at',
+                    'original_data',
+                    # Profile Data
+                    'invalid_email',
+                    'organization',
+                    'hid',
+                    'display_picture',
+                )
+            )
 
     @staticmethod
     def soft_delete_user(user, **kwargs):

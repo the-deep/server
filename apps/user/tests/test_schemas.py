@@ -799,7 +799,7 @@ class TestUserSchema(GraphQLTestCase):
                 },
             }
 
-        user1, user2, user3, user4 = all_users = UserFactory.create_batch(4)
+        user1, user2, user3, user4, user5 = all_users = UserFactory.create_batch(5)
         users_data = {
             user.id: _get_user_data(user)
             for user in all_users
@@ -815,26 +815,38 @@ class TestUserSchema(GraphQLTestCase):
         user4.soft_delete(deleted_at=self.now_datetime - timedelta(days=30))
 
         all_users_qs = User.objects.filter(id__in=[user.id for user in all_users])
-        anonymized_qs = User.objects.filter(profile__anonymized_at__isnull=False)
-        inactive_qs = User.objects.filter(is_active=False)
+        tagged_deleted_users_qs = User.objects.filter(
+            deleted_at__isnull=False,
+            profile__original_data__isnull=False,
+        )
+        deleted_users_qs = User.objects.filter(
+            deleted_at__isnull=False,
+            profile__original_data__isnull=True,
+        )
 
-        self.assertEqual(all_users_qs.count(), 4)
-        self.assertEqual(anonymized_qs.count(), 0)
-        self.assertEqual(inactive_qs.count(), 0)
+        self.assertEqual(all_users_qs.count(), 5)
+        self.assertEqual(tagged_deleted_users_qs.count(), 4)
+        self.assertEqual(deleted_users_qs.count(), 0)
 
-        for user in [user1, user3]:
+        for user in all_users:
             user.refresh_from_db()
-            self.assertEqual(users_data[user.pk], _get_user_data(user))
-            self.assertNotEqual(anonymized_users_data[user.pk], _get_user_data(user))
+            if user == user5:
+                self.assertEqual(users_data[user.pk], _get_user_data(user))
+            else:
+                self.assertEqual(anonymized_users_data[user.pk], _get_user_data(user))
+                self.assertEqual(users_data[user.pk], user.profile.original_data)
 
         # call the celery method
         permanently_delete_users()
 
-        self.assertEqual(all_users_qs.count(), 4)
-        self.assertEqual(anonymized_qs.count(), 2)
-        self.assertEqual(inactive_qs.count(), 2)
+        self.assertEqual(all_users_qs.count(), 5)
+        self.assertEqual(tagged_deleted_users_qs.count(), 2)
+        self.assertEqual(deleted_users_qs.count(), 2)
 
-        for user in [user1, user3]:
+        for user in all_users:
             user.refresh_from_db()
-            self.assertNotEqual(users_data[user.pk], _get_user_data(user))
-            self.assertEqual(anonymized_users_data[user.pk], _get_user_data(user))
+            if user == user5:
+                self.assertEqual(users_data[user.pk], _get_user_data(user))
+            else:
+                self.assertEqual(anonymized_users_data[user.pk], _get_user_data(user))
+                self.assertEqual(None, user.profile.original_data)
