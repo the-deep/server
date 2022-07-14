@@ -199,34 +199,16 @@ class ExportReportStructureWidgetSerializer(serializers.Serializer):
 # ---- [End] ExportReportStructure Serialisers
 
 
-class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.ModelSerializer):
+class UserExportBaseGqlMixin(ProjectPropertySerializerMixin):
     title = serializers.CharField(required=False)
 
     class Meta:
         model = Export
-        fields = (
-            'title',
-            'type',  # Data type (entries, assessments, ..)
-            'format',  # xlsx, docx, pdf, ...
-            'export_type',  # excel, report, json, ...
-            'is_preview',
-            'filters',
-            'analysis',
-            # Specific arguments for exports additional configuration
-            'excel_decoupled',
-            'report_show_groups',
-            'report_show_lead_entry_id',
-            'report_show_assessment_data',
-            'report_show_entry_widget_data',
-            'report_text_widget_ids',
-            'report_exporting_widgets',
-            'report_levels',
-            'report_structure',
-        )
+        fields = []
 
     # Excel
     excel_decoupled = serializers.BooleanField(
-        help_text='Don\'t group entries tags. Slower export generation.', required=False)
+        help_text="Don't group entries tags. Slower export generation.", required=False)
 
     # Report
     report_show_groups = serializers.BooleanField(required=False)
@@ -256,6 +238,18 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
     @property
     def exportable_qs(self):
         return Exportable.objects.filter(analysis_framework=self.project.analysis_framework_id)
+
+    def validate_title(self, title):
+        existing_exports = Export.objects.filter(
+            title=title,
+            project=self.project,
+            exported_by=self.context['request'].user,
+        )
+        if self.instance:
+            existing_exports = existing_exports.exlude(id=self.instance.id)
+        if existing_exports.exists():
+            raise serializers.ValidationError('Title {title} already exists.')
+        return title
 
     def validate_filters(self, filters):
         filter_set = LeadGQFilterSet(data=filters, request=self.context['request'])
@@ -289,12 +283,36 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
     def validate_analysis(self, analysis):
         if analysis and analysis.project != self.project:
             raise serializers.ValidationError(
-                f'Analysis project {analysis.project_id} doesn\'t match current project {self.project.id}'
+                f"Analysis project {analysis.project_id} doesn't match current project {self.project.id}"
             )
         return analysis
 
+
+class UserExportCreateGqlSerializer(UserExportBaseGqlMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Export
+        fields = (
+            'title',
+            'type',  # Data type (entries, assessments, ..)
+            'format',  # xlsx, docx, pdf, ...
+            'export_type',  # excel, report, json, ...
+            'is_preview',
+            'filters',
+            'analysis',
+            # Specific arguments for exports additional configuration
+            'excel_decoupled',
+            'report_show_groups',
+            'report_show_lead_entry_id',
+            'report_show_assessment_data',
+            'report_show_entry_widget_data',
+            'report_text_widget_ids',
+            'report_exporting_widgets',
+            'report_levels',
+            'report_structure',
+        )
+
     def validate(self, data):
-        # NOTE: We only need to check with create logic (as update is not allowed)
+        # NOTE: We only need to check with create logic (as update only have title for now)
         # Validate type, export_type and format
         data_type = data['type']
         export_type = data['export_type']
@@ -302,9 +320,6 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
         if (data_type, export_type, _format) not in Export.DEFAULT_TITLE_LABEL:
             raise serializers.ValidationError(f'Unsupported Export request: {(data_type, export_type, _format)}')
         return data
-
-    def update(self, _):
-        raise serializers.ValidationError('Update isn\'t allowed for Export')
 
     def create(self, data):
         data['title'] = data.get('title') or Export.generate_title(data['type'], data['export_type'], data['format'])
@@ -330,3 +345,17 @@ class ExportCreateGqlSerializer(ProjectPropertySerializerMixin, serializers.Mode
             lambda: export.set_task_id(export_task.delay(export.id).id)
         )
         return export
+
+    def update(self, _):
+        raise serializers.ValidationError('Not allowed using this serializer.')
+
+
+class UserExportUpdateGqlSerializer(UserExportBaseGqlMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Export
+        fields = (
+            'title',
+        )
+
+    def create(self, _):
+        raise serializers.ValidationError('Not allowed using this serializer.')

@@ -8,12 +8,19 @@ from deep.permissions import ProjectPermissions as PP
 
 from .models import Export
 from .schema import UserExportType, get_export_qs
-from .serializers import ExportCreateGqlSerializer as ExportCreateSerializer
+from .serializers import UserExportCreateGqlSerializer, UserExportUpdateGqlSerializer
 
 
 ExportCreateInputType = generate_input_type_for_serializer(
     'ExportCreateInputType',
-    serializer_class=ExportCreateSerializer,
+    serializer_class=UserExportCreateGqlSerializer,
+)
+
+
+ExportUpdateInputType = generate_input_type_for_serializer(
+    'ExportUpdateInputType',
+    serializer_class=UserExportUpdateGqlSerializer,
+    partial=True,
 )
 
 
@@ -27,7 +34,16 @@ class CreateUserExport(PsGrapheneMutation):
     class Arguments:
         data = ExportCreateInputType(required=True)
     model = Export
-    serializer_class = ExportCreateSerializer
+    serializer_class = UserExportCreateGqlSerializer
+    result = graphene.Field(UserExportType)
+    permissions = [PP.Permission.CREATE_EXPORT]
+
+
+class UpdateUserExport(UserExportMutationMixin, PsGrapheneMutation):
+    class Arguments:
+        data = ExportUpdateInputType(required=True)
+    model = Export
+    serializer_class = UserExportUpdateGqlSerializer
     result = graphene.Field(UserExportType)
     permissions = [PP.Permission.CREATE_EXPORT]
 
@@ -68,5 +84,6 @@ class DeleteUserExport(UserExportMutationMixin, PsGrapheneMutation):
 
 class Mutation():
     export_create = CreateUserExport.Field()
+    export_update = UpdateUserExport.Field()
     export_cancel = CancelUserExport.Field()
     export_delete = DeleteUserExport.Field()
