@@ -41,6 +41,7 @@ class UserFeatureAccessType(DjangoObjectType):
 
 
 class UserProfileType(graphene.ObjectType):
+    id = graphene.ID(required=True)
     display_name = graphene.String()
     first_name = graphene.String()
     last_name = graphene.String()
@@ -51,6 +52,7 @@ class UserProfileType(graphene.ObjectType):
     def resolve_display_name(root, info, **kwargs) -> Union[str, None]:
         if root.deleted_at:
             return f'{settings.DELETED_USER_FIRST_NAME} {settings.DELETED_USER_LAST_NAME}'
+        # root.user.first_name + root.user.last_name
         return root.get_display_name()
 
     @staticmethod
