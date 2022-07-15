@@ -228,9 +228,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
             'id': '1',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'profile': {
-                    'displayName': 'Clayton Hall',
-                },
+                'displayName': 'Clayton Hall',
                 'id': '5'
             },
             'role': {
@@ -260,9 +258,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
             'id': '2',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'profile': {
-                    'displayName': 'Carolyn Hoffman',
-                },
+                'displayName': 'Carolyn Hoffman',
                 'id': '6'
             },
             'role': {
@@ -273,18 +269,14 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
         None,
         {
             'addedBy': {
-                'profile': {
-                    'displayName': 'Donald Garcia',
-                },
+                'displayName': 'Donald Garcia',
                 'id': '2'
             },
             'clientId': 'member-user-3',
             'id': '7',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'profile': {
-                    'displayName': 'Jennifer Miles',
-                },
+                'displayName': 'Jennifer Miles',
                 'id': '7'
             },
             'role': {
@@ -294,18 +286,14 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
         },
         {
             'addedBy': {
-                'profile': {
-                    'displayName': 'Donald Garcia',
-                },
+                'displayName': 'Donald Garcia',
                 'id': '2'
             },
             'clientId': 'member-user-4',
             'id': '8',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'profile': {
-                    'displayName': 'Robert Cole',
-                },
+                'displayName': 'Robert Cole',
                 'id': '8'
             },
             'role': {
@@ -347,9 +335,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
             'id': '2',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'profile': {
-                    'displayName': 'Carolyn Hoffman',
-                },
+                'displayName': 'Carolyn Hoffman',
                 'id': '6'
             },
             'role': {

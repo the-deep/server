@@ -45,11 +45,11 @@ class TestProjectSchema(GraphQLTestCase):
                         id
                         isActive
                         emailDisplay
+                        displayName
+                        firstName
+                        lastName
                         profile {
-                            displayName
                             displayPictureUrl
-                            firstName
-                            lastName
                             organization
                         }
                     }
@@ -1068,9 +1068,7 @@ class TestProjectMembersFilterSchema(GraphQLTestCase):
                   results {
                     member {
                       id
-                      profile {
-                        displayName
-                      }
+                      displayName
                     }
                     role {
                       id

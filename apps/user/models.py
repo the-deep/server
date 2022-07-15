@@ -147,14 +147,14 @@ class Profile(models.Model):
             ),
         )
         # User Data
-        user.deleted_at = deleted_at or timezone.now()
         user.is_active = False
         user.first_name = settings.DELETED_USER_FIRST_NAME
         user.last_name = settings.DELETED_USER_LAST_NAME
-        user.email = self.username = f'user-{self.id}@deleted.thedeep.io'
+        user.email = user.username = f'user-{user.id}@{settings.DELETED_USER_EMAIL_DOMAIN}'
         # Profile Data
+        self.deleted_at = deleted_at or timezone.now()
         self.original_data = original_data
-        self.invalid_email = False
+        self.invalid_email = True
         self.organization = settings.DELETED_USER_ORGANIZATION
         self.hid = None
         self.display_picture = None

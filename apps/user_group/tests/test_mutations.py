@@ -28,16 +28,12 @@ class TestUserGroupMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                 joinedAt
                 addedBy {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
                 role
                 member {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
               }
               deletedResult {
@@ -46,16 +42,12 @@ class TestUserGroupMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                 joinedAt
                 member {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
                 role
                 addedBy {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
               }
             }

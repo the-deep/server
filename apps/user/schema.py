@@ -7,7 +7,6 @@ import graphene
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from django.utils import timezone
-from django.conf import settings
 from django.db import models
 
 from utils.graphene.types import CustomDjangoListObjectType
@@ -21,7 +20,7 @@ from project.models import (
     ProjectRole,
 )
 
-from .models import User, Feature
+from .models import User, Profile, Feature
 from .enums import UserEmailConditionOptOutEnum
 from .filters import UserGqlFilterSet
 from .utils import generate_hidden_email
@@ -72,42 +71,14 @@ class UserFeatureAccessType(DjangoObjectType):
 
 class UserProfileType(graphene.ObjectType):
     id = graphene.ID(required=True)
-    display_name = graphene.String()
-    first_name = graphene.String()
-    last_name = graphene.String()
     display_picture_url = graphene.String()
     organization = graphene.String()
-
-    @staticmethod
-    def resolve_display_name(root, info, **kwargs) -> Union[str, None]:
-        if root.deleted_at:
-            return f'{settings.DELETED_USER_FIRST_NAME} {settings.DELETED_USER_LAST_NAME}'
-        # root.user.first_name + root.user.last_name
-        return root.get_display_name()
-
-    @staticmethod
-    def resolve_first_name(root, info, **kwargs) -> Union[str, None]:
-        if root.deleted_at:
-            return settings.DELETED_USER_FIRST_NAME
-        return root.user.first_name
-
-    @staticmethod
-    def resolve_last_name(root, info, **kwargs) -> Union[str, None]:
-        if root.deleted_at:
-            return settings.DELETED_USER_LAST_NAME
-        return root.user.last_name
 
     @staticmethod
     def resolve_display_picture_url(root, info, **kwargs) -> Union[str, None]:
         return info.context.request.build_absolute_uri(
             URLCachedFileField().to_representation(root.display_picture)
         )
-
-    @staticmethod
-    def resolve_organization(root, info, **kwargs) -> Union[str, None]:
-        if root.deleted_at:
-            return settings.DELETED_USER_ORGANIZATION
-        return root.organization
 
 
 class UserType(DjangoObjectType):
@@ -117,16 +88,23 @@ class UserType(DjangoObjectType):
             'id', 'is_active',
         )
 
+    display_name = graphene.String()
+    first_name = graphene.String()
+    last_name = graphene.String()
     email_display = graphene.String(required=True)
     profile = graphene.NonNull(UserProfileType)
 
     @staticmethod
-    def resolve_email_display(root, info, **kwargs) -> Union[str, None]:
-        return generate_hidden_email(root.email)
-
-    @staticmethod
     def resolve_profile(root, info, **kwargs) -> Union[str, None]:
         return info.context.dl.user.profile.load(root.id)
+
+    @staticmethod
+    def resolve_display_name(root, info, **kwargs) -> Union[str, None]:
+        return Profile.get_display_name_for_user(root)
+
+    @staticmethod
+    def resolve_email_display(root, info, **kwargs) -> Union[str, None]:
+        return generate_hidden_email(root.email)
 
 
 class UserMeProjectType(graphene.ObjectType):
@@ -157,7 +135,6 @@ class UserMeType(DjangoObjectType):
     deleted_at = graphene.Date()
     sole_projects = graphene.List(UserMeProjectType)
     only_member_projects = graphene.List(UserMeProjectType)
-
 
     @staticmethod
     @only_me

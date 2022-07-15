@@ -441,12 +441,12 @@ class TestUserSchema(GraphQLTestCase):
               user(id: $id) {
                 isActive
                 id
+                firstName
+                lastName
+                displayName
                 profile {
                     id
-                    firstName
-                    lastName
                     displayPictureUrl
-                    displayName
                     organization
                 }
               }
@@ -454,12 +454,12 @@ class TestUserSchema(GraphQLTestCase):
                 results {
                     isActive
                     id
+                    firstName
+                    lastName
+                    displayName
                     profile {
                         id
-                        firstName
-                        lastName
                         displayPictureUrl
-                        displayName
                         organization
                     }
                 }
@@ -526,13 +526,13 @@ class TestUserSchema(GraphQLTestCase):
                 results {
                     isActive
                     id
+                    firstName
+                    lastName
+                    displayName
                     profile {
                         id
-                        firstName
-                        lastName
                         organization
                         displayPictureUrl
-                        displayName
                     }
                 }
                 page
@@ -581,13 +581,13 @@ class TestUserSchema(GraphQLTestCase):
             query MyQuery($id: ID!) {
                 user(id: $id) {
                     id
-                    emailDisplay
                     isActive
+                    firstName
+                    lastName
+                    displayName
+                    emailDisplay
                     profile {
                         id
-                        firstName
-                        lastName
-                        displayName
                         organization
                         displayPictureUrl
                     }
@@ -601,13 +601,13 @@ class TestUserSchema(GraphQLTestCase):
                 users {
                     results {
                     id
-                    emailDisplay
                     isActive
+                    firstName
+                    lastName
+                    displayName
+                    emailDisplay
                     profile {
                         id
-                        firstName
-                        lastName
-                        displayName
                         displayPictureUrl
                         organization
                     }
@@ -637,6 +637,7 @@ class TestUserSchema(GraphQLTestCase):
         self.assertTrue(set(['t***r@deep.com', 't***2@deep.com']).issubset(set(email_display_list)))
 
     def test_generate_hidden_email(self):
+        deleted_email = f'test123@{settings.DELETED_USER_EMAIL_DOMAIN}'
         for original, expected in [
             ('testuser1@deep.com', 't***1@deep.com'),
             ('testuser2@deep.com', 't***2@deep.com'),
@@ -644,6 +645,7 @@ class TestUserSchema(GraphQLTestCase):
             ('abc@deep.com', 'a***c@deep.com'),
             ('xy@deep.com', 'x***y@deep.com'),
             ('a@deep.com', 'a***a@deep.com'),
+            (deleted_email, deleted_email),
         ]:
             self.assertEqual(expected, generate_hidden_email(original))
 
@@ -742,11 +744,11 @@ class TestUserSchema(GraphQLTestCase):
             query Query($id: ID!) {
               user(id: $id) {
                 id
+                firstName
+                lastName
+                displayName
                 profile {
                     id
-                    lastName
-                    firstName
-                    displayName
                     organization
                 }
               }
@@ -759,12 +761,15 @@ class TestUserSchema(GraphQLTestCase):
         # now try to get users data from another user
         self.force_login(another_user)
         user_data = self.query_check(users_query, variables={'id': deleted_user.id})['data']['user']
-        self.assertEqual(user_data['profile'], dict(
-            id=str(deleted_user.profile.id),
+        self.assertEqual(user_data, dict(
+            id=str(deleted_user.id),
             displayName=f'{settings.DELETED_USER_FIRST_NAME} {settings.DELETED_USER_LAST_NAME}',
             firstName=settings.DELETED_USER_FIRST_NAME,
             lastName=settings.DELETED_USER_LAST_NAME,
-            organization=settings.DELETED_USER_ORGANIZATION,
+            profile=dict(
+                id=str(deleted_user.profile.id),
+                organization=settings.DELETED_USER_ORGANIZATION,
+            )
         ))
 
     def test_user_deletion_celery_method(self):
@@ -815,12 +820,12 @@ class TestUserSchema(GraphQLTestCase):
         user4.soft_delete(deleted_at=self.now_datetime - timedelta(days=30))
 
         all_users_qs = User.objects.filter(id__in=[user.id for user in all_users])
-        tagged_deleted_users_qs = User.objects.filter(
-            deleted_at__isnull=False,
+        tagged_deleted_users_qs = all_users_qs.filter(
+            profile__deleted_at__isnull=False,
             profile__original_data__isnull=False,
         )
-        deleted_users_qs = User.objects.filter(
-            deleted_at__isnull=False,
+        deleted_users_qs = all_users_qs.filter(
+            profile__deleted_at__isnull=False,
             profile__original_data__isnull=True,
         )
 
@@ -847,6 +852,46 @@ class TestUserSchema(GraphQLTestCase):
             user.refresh_from_db()
             if user == user5:
                 self.assertEqual(users_data[user.pk], _get_user_data(user))
-            else:
+            elif user in [user1, user3]:
                 self.assertEqual(anonymized_users_data[user.pk], _get_user_data(user))
                 self.assertEqual(None, user.profile.original_data)
+            elif user in [user2, user4]:
+                self.assertEqual(anonymized_users_data[user.pk], _get_user_data(user))
+                self.assertEqual(users_data[user.pk], user.profile.original_data)
+
+    def test_user_query_db_queries(self):
+        QUERY_ALL_USERS = '''
+            query MyQuery {
+                users {
+                    results {
+                    id
+                    isActive
+                    firstName
+                    lastName
+                    displayName
+                    emailDisplay
+                    profile {
+                        id
+                        displayPictureUrl
+                        organization
+                    }
+                    }
+                    totalCount
+                }
+            }
+
+        '''
+        user = UserFactory.create(email='testuser@deep.com')
+        UserFactory.create(email='testuser2@deep.com')
+        UserFactory.create(email='testuser3@deep.com')
+
+        self.force_login(user)
+        """
+        QUERIES:
+            - COUNT
+            - TODO: COUNT (Repeat) Need to fix this
+            - User Fetch
+            - Profile Fetch
+        """
+        with self.assertExtraNumQueries(4):
+            self.query_check(QUERY_ALL_USERS)

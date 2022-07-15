@@ -8,7 +8,14 @@ from .models import Profile
 
 class UserProfileLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        profile_qs = Profile.objects.filter(user__in=keys).select_related('user')
+        profile_qs = Profile.objects\
+            .filter(user__in=keys)\
+            .select_related('display_picture')\
+            .only(
+                'user_id',
+                'organization',
+                'display_picture__file',
+            )
         _map = {
             profile.user_id: profile
             for profile in profile_qs

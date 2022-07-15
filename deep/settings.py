@@ -885,7 +885,8 @@ if DEEP_ENVIRONMENT in ['production']:
 UNHCR_PORTAL_API_KEY = env('UNHCR_PORTAL_API_KEY')
 
 # Used for project and user deletion
-DELETED_USER_FIRST_NAME = 'Deep'
+DELETED_USER_FIRST_NAME = 'The Deep'
 DELETED_USER_LAST_NAME = 'User'
 USER_AND_PROJECT_DELETE_IN_DAYS = 30
-DELETED_USER_ORGANIZATION = 'Deep Organization'
+DELETED_USER_ORGANIZATION = 'The Deep Organization'
+DELETED_USER_EMAIL_DOMAIN = 'deleted.thedeep.io'
