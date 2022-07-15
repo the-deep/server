@@ -807,9 +807,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 joinedAt
                 addedBy {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
                 role {
                   id
@@ -817,9 +815,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 }
                 member {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
                 badges
               }
@@ -829,9 +825,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 joinedAt
                 member {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
                 role {
                   id
@@ -840,9 +834,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 }
                 addedBy {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
                 badges
               }
@@ -986,9 +978,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 joinedAt
                 addedBy {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
                 role {
                   id
@@ -1015,9 +1005,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 }
                 addedBy {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
                 badges
               }

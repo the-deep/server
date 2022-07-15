@@ -32,15 +32,11 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
                 text
                 createdBy {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
                 mentionedUsers {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
                 textHistory {
                   id
@@ -66,15 +62,11 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
                 text
                 createdBy {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
                 mentionedUsers {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
                 textHistory {
                   id
@@ -100,15 +92,11 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
                 text
                 createdBy {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
                 mentionedUsers {
                   id
-                  profile {
-                      displayName
-                  }
+                  displayName
                 }
                 textHistory {
                   id

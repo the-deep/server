@@ -2536,6 +2536,11 @@ input UserMeInputType {
   lastActiveProject: ID
 }
 
+type UserMeProjectType {
+  id: String
+  title: String
+}
+
 type UserMeType {
   id: ID!
   isActive: Boolean!
@@ -2553,13 +2558,12 @@ type UserMeType {
   lastActiveProject: ProjectDetailType
   accessibleFeatures: [UserFeatureAccessType!]!
   deletedAt: Date
+  soleProjects: [UserMeProjectType]
+  onlyMemberProjects: [UserMeProjectType]
 }
 
 type UserProfileType {
   id: ID!
-  displayName: String
-  firstName: String
-  lastName: String
   displayPictureUrl: String
   organization: String
 }
@@ -2567,6 +2571,9 @@ type UserProfileType {
 type UserType {
   id: ID!
   isActive: Boolean!
+  displayName: String
+  firstName: String
+  lastName: String
   emailDisplay: String!
   profile: UserProfileType!
 }

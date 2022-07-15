@@ -11,18 +11,14 @@ snapshots['TestUserGroupMutationSnapShotTestCase::test_usergroup_membership_bulk
     'deletedResult': [
         {
             'addedBy': {
-                'profile': {
-                    'displayName': 'Robert Johnson',
-                },
+                'displayName': 'Robert Johnson',
                 'id': '5'
             },
             'clientId': '1',
             'id': '1',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'profile': {
-                    'displayName': 'Robert Johnson',
-                },
+                'displayName': 'Robert Johnson',
                 'id': '5'
             },
             'role': 'NORMAL'
@@ -45,18 +41,14 @@ snapshots['TestUserGroupMutationSnapShotTestCase::test_usergroup_membership_bulk
     'result': [
         {
             'addedBy': {
-                'profile': {
-                    'displayName': 'Jeffery Wagner',
-                },
+                'displayName': 'Jeffery Wagner',
                 'id': '6'
             },
             'clientId': 'member-user-2',
             'id': '2',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'profile': {
-                    'displayName': 'Jeffery Wagner',
-                },
+                'displayName': 'Jeffery Wagner',
                 'id': '6'
             },
             'role': 'ADMIN'
@@ -64,36 +56,28 @@ snapshots['TestUserGroupMutationSnapShotTestCase::test_usergroup_membership_bulk
         None,
         {
             'addedBy': {
-                'profile': {
-                    'displayName': 'Joshua Walker',
-                },
+                'displayName': 'Joshua Walker',
                 'id': '2'
             },
             'clientId': 'member-user-3',
             'id': '7',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'profile': {
-                    'displayName': 'Anthony Gonzalez',
-                },
+                'displayName': 'Anthony Gonzalez',
                 'id': '7'
             },
             'role': 'NORMAL'
         },
         {
             'addedBy': {
-                'profile': {
-                    'displayName': 'Joshua Walker',
-                },
+                'displayName': 'Joshua Walker',
                 'id': '2'
             },
             'clientId': 'member-user-4',
             'id': '8',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'profile': {
-                    'displayName': 'Debra Gardner',
-                },
+                'displayName': 'Debra Gardner',
                 'id': '8'
             },
             'role': 'NORMAL'
@@ -128,18 +112,14 @@ snapshots['TestUserGroupMutationSnapShotTestCase::test_usergroup_membership_bulk
     'result': [
         {
             'addedBy': {
-                'profile': {
-                    'displayName': 'Jeffery Wagner',
-                },
+                'displayName': 'Jeffery Wagner',
                 'id': '6'
             },
             'clientId': 'member-user-2',
             'id': '2',
             'joinedAt': '2021-01-01T00:00:00.123456+00:00',
             'member': {
-                'profile': {
-                    'displayName': 'Jeffery Wagner',
-                },
+                'displayName': 'Jeffery Wagner',
                 'id': '6'
             },
             'role': 'ADMIN'

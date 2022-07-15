@@ -22,16 +22,12 @@ class TestReviewCommentQuery(GraphQLTestCase):
                         id
                         verifiedBy {
                             id
-                            profile {
-                                displayName
-                            }
+                            displayName
                         }
                         controlled
                         controlledChangedBy {
                             id
-                            profile {
-                                displayName
-                            }
+                            displayName
                         }
                         reviewCommentsCount
                     }
@@ -44,9 +40,7 @@ class TestReviewCommentQuery(GraphQLTestCase):
                             createdAt
                             mentionedUsers {
                                 id
-                                profile {
-                                    displayName
-                                }
+                                displayName
                             }
                         }
                     }
@@ -132,14 +126,12 @@ class TestReviewCommentQuery(GraphQLTestCase):
                         createdAt
                         createdBy {
                             id
-                            profile {
-                                firstName
-                            }
+                            firstName
                         }
                         id
                         mentionedUsers {
+                            displayName
                             profile {
-                                displayName
                                 displayPictureUrl
                             }
                         }

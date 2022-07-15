@@ -19,7 +19,7 @@ def permanently_delete_users():
         timezone.now() - timedelta(days=settings.USER_AND_PROJECT_DELETE_IN_DAYS)
     )
     user_qs = User.objects.filter(
-        profile__anonymized_at__isnull=True,
+        profile__original_data__isnull=False,
         profile__deleted_at__isnull=False,
         profile__deleted_at__lt=threshold,
     )
