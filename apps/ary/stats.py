@@ -271,7 +271,7 @@ def get_project_ary_entry_stats(project):
         ary_data = {
             'pk': ary.pk,
             'created_at': ary.created_at,
-            'date': ary.lead.created_at,
+            'date': ary.lead.published_on,
             'lead': {
                 **lead_data,
                 **lead_source_data,
