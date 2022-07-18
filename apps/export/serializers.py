@@ -246,9 +246,9 @@ class UserExportBaseGqlMixin(ProjectPropertySerializerMixin):
             exported_by=self.context['request'].user,
         )
         if self.instance:
-            existing_exports = existing_exports.exlude(id=self.instance.id)
+            existing_exports = existing_exports.exclude(id=self.instance.id)
         if existing_exports.exists():
-            raise serializers.ValidationError('Title {title} already exists.')
+            raise serializers.ValidationError(f'Title {title} already exists.')
         return title
 
     def validate_filters(self, filters):
