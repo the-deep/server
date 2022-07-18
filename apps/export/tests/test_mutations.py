@@ -55,9 +55,9 @@ class TestExportMutationSchema(GraphQLTestCase):
     '''
 
     UPDATE_EXPORT_QUERY = '''
-        mutation MyMutation ($projectId: ID!, $input: ExportUpdateInputType!) {
+        mutation MyMutation ($projectId: ID!, $exportId: ID!, $input: ExportUpdateInputType!) {
           project(id: $projectId) {
-            exportUpdate(data: $input) {
+            exportUpdate(id: $exportId, data: $input) {
               ok
               errors
               result {
@@ -306,20 +306,25 @@ class TestExportMutationSchema(GraphQLTestCase):
         """
         This test makes sure only valid users can update export
         """
-        def _query_check(minput, **kwargs):
-            return self.query_check(
-                self.UPDATE_EXPORT_QUERY,
-                minput=minput,
-                variables={'projectId': self.project.id},
-                **kwargs
-            )
-
         export = ExportFactory.create(exported_by=self.member_user, **self.common_export_attrs)
         export_2 = ExportFactory.create(
             title='Export 2',
             exported_by=self.member_user,
             **self.common_export_attrs,
         )
+
+        def _query_check(minput, **kwargs):
+            return self.query_check(
+                self.UPDATE_EXPORT_QUERY,
+                minput=minput,
+                mnested=['project'],
+                variables={
+                    'projectId': self.project.id,
+                    'exportId': export.id,
+                },
+                **kwargs
+            )
+
         # Snapshot
         export_data = UserExportCreateGqlSerializer(instance=export).data
 
@@ -333,20 +338,17 @@ class TestExportMutationSchema(GraphQLTestCase):
 
         # --- member user
         self.force_login(self.member_user)
-        # ----- (Simple validation)
-        response = _query_check(minput, okay=False)['data']
-        self.assertEqual(response['project']['exportCreate']['result'], None, response)
-
         # -----
         minput['title'] = 'Export 1 (Updated)'
-        response = _query_check(minput)['data']
-        response_export = response['project']['exportCreate']['result']
+        response = _query_check(minput, okay=True)['data']
+        response_export = response['project']['exportUpdate']['result']
         self.assertNotEqual(response_export, None, response)
-        export = Export.objects.get(pk=response_export['id'])
+        export.refresh_from_db()
+        updated_export_data = UserExportCreateGqlSerializer(export).data
         # Make sure the filters are stored in db properly
-        self.assertNotEqual(export.filters, export_data, response)
+        self.assertNotEqual(updated_export_data, export_data, response)
         export_data['title'] = minput['title']
-        self.assertEqual(export.filters, export_data, response)
+        self.assertEqual(updated_export_data, export_data, response)
 
     def test_analysis_export(self):
         # create analysis

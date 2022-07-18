@@ -41,6 +41,7 @@ class CreateUserExport(PsGrapheneMutation):
 
 class UpdateUserExport(UserExportMutationMixin, PsGrapheneMutation):
     class Arguments:
+        id = graphene.ID(required=True)
         data = ExportUpdateInputType(required=True)
     model = Export
     serializer_class = UserExportUpdateGqlSerializer

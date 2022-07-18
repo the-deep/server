@@ -1800,7 +1800,7 @@ type ProjectMutationType {
   id: ID!
   title: String!
   exportCreate(data: ExportCreateInputType!): CreateUserExport
-  exportUpdate(data: ExportUpdateInputType!): UpdateUserExport
+  exportUpdate(data: ExportUpdateInputType!, id: ID!): UpdateUserExport
   exportCancel(id: ID!): CancelUserExport
   exportDelete(id: ID!): DeleteUserExport
   assessmentDelete(id: ID!): DeleteAssessment
