@@ -1148,6 +1148,16 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         project.add_member(owner_user, role=self.project_role_owner)
         project.add_member(reader_user, role=self.project_role_reader)
 
+        def _assert_project_soft_delete_status(is_deleted):
+            self.assertTrue(Project.objects.filter(pk=project.id).exists())
+            project.refresh_from_db()
+            if is_deleted:
+                self.assertTrue(project.is_deleted)
+                self.assertIsNotNone(project.deleted_at)
+            else:
+                self.assertFalse(project.is_deleted)
+                self.assertIsNone(project.deleted_at)
+
         def _query_check(**kwargs):
             return self.query_check(
                 query,
@@ -1157,26 +1167,32 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
             )
         # without login
         _query_check(assert_for_error=True)
+        _assert_project_soft_delete_status(False)
 
         # ------login and normal user
         self.force_login(normal_user)
         _query_check(assert_for_error=True)
+        _assert_project_soft_delete_status(False)
 
         # ---------- With login and member_user in project
         self.force_login(member_user)
         _query_check(okay=False)
+        _assert_project_soft_delete_status(False)
 
         # ---------- Login with reader user
         self.force_login(reader_user)
         _query_check(okay=False)
+        _assert_project_soft_delete_status(False)
 
         # ------ Login with admin_user
         self.force_login(admin_user)
         _query_check(okay=False)
+        _assert_project_soft_delete_status(False)
 
         # ------ Login with owner_user
         self.force_login(owner_user)
         _query_check(okay=True)
+        _assert_project_soft_delete_status(True)
 
     def test_project_deletion_celery_task(self):
         def _get_project_ids():
