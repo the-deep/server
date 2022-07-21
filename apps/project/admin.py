@@ -89,13 +89,16 @@ class ProjectAdmin(VersionAdmin):
         linkify('analysis_framework', 'Assessment Framework'),
         linkify('assessment_template', 'Assessment Template'),
         'associated_regions',
-        'entries_count', 'assessment_count', 'members_count',
+        'entries_count',
+        'assessment_count',
+        'members_count',
+        'deleted_at',
     ]
     autocomplete_fields = (
         'analysis_framework', 'assessment_template', 'category_editor',
         'created_by', 'modified_by', 'regions',
     )
-    list_filter = ('assessment_template', 'is_private',)
+    list_filter = ('assessment_template', 'is_private', 'is_deleted')
     actions = [trigger_project_stat_cache_calc()]
     inlines = [ProjectMembershipInline,
                ProjectUserGroupMembershipInline,
