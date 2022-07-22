@@ -6,11 +6,13 @@ import requests
 import json
 import logging
 from urllib.parse import urlparse
+from datetime import timedelta
 
 from celery import shared_task
 from django.db.models import Q
 from django.conf import settings
 from django.urls import reverse
+from django.utils import timezone
 
 from django.utils.encoding import DjangoUnicodeDecodeError
 
@@ -144,7 +146,8 @@ class LeadExtraction:
                 lead.update_extraction_status(Lead.ExtractionStatus.STARTED)
                 return True
         lead.update_extraction_status(Lead.ExtractionStatus.RETRYING)
-        task_instance and task_instance.retry(countdown=cls.RETRY_COUNTDOWN)
+        if task_instance:
+            task_instance.retry(countdown=cls.RETRY_COUNTDOWN)
         return False
 
     @staticmethod
@@ -236,3 +239,30 @@ def generate_previews(lead_ids=None):
 
     for lead_id in lead_ids:
         extract_from_lead.apply_async((lead_id,), countdown=1)
+
+
+@redis_lock('remaining_lead_extract', 60 * 60 * 0.5)
+def remaining_lead_extract():
+    """
+    This task looks for pending, failed, retrying leads which are dangling.
+    Then triggers their extraction.
+    """
+    THRESHOLD_DAYS = 1
+    PROCCESS_LEADS_PER_STATUS = 50
+
+    threshold = timezone.now() - timedelta(days=-THRESHOLD_DAYS)
+    for status in [
+        Lead.ExtractionStatus.PENDING,
+        Lead.ExtractionStatus.STARTED,
+        Lead.ExtractionStatus.RETRYING,
+    ]:
+        queryset = Lead.objects.filter(
+            extraction_status=status,
+            modified_at__lt=threshold,
+        )
+        count = queryset.count()
+        if count == 0:
+            continue
+        logger.info(f'[Lead Extraction] {status.label}: {count}')
+        for lead_id in queryset.values_list('id', flat=True)[:PROCCESS_LEADS_PER_STATUS]:
+            extract_from_lead(lead_id)
