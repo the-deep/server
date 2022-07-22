@@ -119,6 +119,10 @@ class LeadExtraction:
 
     @classmethod
     def trigger_lead_extract(cls, lead, task_instance=None):
+        # No need to process for TEXT source type.
+        if lead.source_type == Lead.SourceType.TEXT:
+            lead.update_extraction_status(Lead.ExtractionStatus.SUCCESS)
+            return True
         # Get the lead to be extracted
         url_to_extract = None
         if lead.attachment:

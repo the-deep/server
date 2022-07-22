@@ -12,6 +12,7 @@ from analysis.factories import AnalysisFactory
 from lead.models import Lead
 from export.models import Export
 from export.tasks import get_export_filename
+from export.serializers import UserExportCreateGqlSerializer
 
 
 class TestExportMutationSchema(GraphQLTestCase):
@@ -19,6 +20,44 @@ class TestExportMutationSchema(GraphQLTestCase):
         mutation MyMutation ($projectId: ID!, $input: ExportCreateInputType!) {
           project(id: $projectId) {
             exportCreate(data: $input) {
+              ok
+              errors
+              result {
+                id
+                title
+                type
+                status
+                pending
+                mimeType
+                isPreview
+                isArchived
+                format
+                filters
+                file {
+                  name
+                  url
+                }
+                exportedAt
+                exportType
+                project
+                exportedBy {
+                  id
+                  displayName
+                }
+                analysis {
+                    id
+                    title
+                }
+              }
+            }
+          }
+        }
+    '''
+
+    UPDATE_EXPORT_QUERY = '''
+        mutation MyMutation ($projectId: ID!, $exportId: ID!, $input: ExportUpdateInputType!) {
+          project(id: $projectId) {
+            exportUpdate(id: $exportId, data: $input) {
               ok
               errors
               result {
@@ -262,6 +301,54 @@ class TestExportMutationSchema(GraphQLTestCase):
         }
         # Make sure the filters are stored in db properly
         self.assertEqual(export.filters, excepted_filters, response)
+
+    def test_export_update(self):
+        """
+        This test makes sure only valid users can update export
+        """
+        export = ExportFactory.create(exported_by=self.member_user, **self.common_export_attrs)
+        export_2 = ExportFactory.create(
+            title='Export 2',
+            exported_by=self.member_user,
+            **self.common_export_attrs,
+        )
+
+        def _query_check(minput, **kwargs):
+            return self.query_check(
+                self.UPDATE_EXPORT_QUERY,
+                minput=minput,
+                mnested=['project'],
+                variables={
+                    'projectId': self.project.id,
+                    'exportId': export.id,
+                },
+                **kwargs
+            )
+
+        # Snapshot
+        export_data = UserExportCreateGqlSerializer(instance=export).data
+
+        minput = dict(title=export_2.title)
+        # -- Without login
+        _query_check(minput, assert_for_error=True)
+
+        # -- With login (non-member)
+        self.force_login(self.non_member_user)
+        _query_check(minput, assert_for_error=True)
+
+        # --- member user
+        self.force_login(self.member_user)
+        # -----
+        minput['title'] = 'Export 1 (Updated)'
+        response = _query_check(minput, okay=True)['data']
+        response_export = response['project']['exportUpdate']['result']
+        self.assertNotEqual(response_export, None, response)
+        export.refresh_from_db()
+        updated_export_data = UserExportCreateGqlSerializer(export).data
+        # Make sure the filters are stored in db properly
+        self.assertNotEqual(updated_export_data, export_data, response)
+        export_data['title'] = minput['title']
+        self.assertEqual(updated_export_data, export_data, response)
 
     def test_analysis_export(self):
         # create analysis
