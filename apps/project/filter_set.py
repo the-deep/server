@@ -213,10 +213,19 @@ class ProjectByRegionGqlFilterSet(django_filters.FilterSet):
         if project_filter:
             project_qs = ProjectGqlFilterSet(data=project_filter, queryset=project_qs, request=self.request).qs
         return super().qs.annotate(
-            projects_id=ArrayAgg('project', distinct=True, ordering='project', filter=models.Q(project__in=project_qs)),
+            projects_id=ArrayAgg(
+                'project',
+                distinct=True,
+                ordering='project',
+                filter=models.Q(project__in=project_qs),
+            ),
         ).filter(projects_id__isnull=False).only('id', 'centroid')
 
 
 class PublicProjectByRegionGqlFileterSet(ProjectByRegionGqlFilterSet):
     def get_project_queryset(self):
-        return Project.objects.filter(is_private=False, is_test=False)
+        return Project.objects.filter(
+            is_private=False,
+            is_test=False,
+            is_deleted=False,
+        )
