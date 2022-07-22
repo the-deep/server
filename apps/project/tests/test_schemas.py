@@ -409,11 +409,11 @@ class TestProjectSchema(GraphQLTestCase):
             }
         '''
         # Lets create some analysis_framework(private + publice)
-        public_analysis_framework = AnalysisFrameworkFactory.create(
+        public_af = AnalysisFrameworkFactory.create(
             is_private=False,
             title='Public Analysis Framework Title'
         )
-        private_analysis_framework = AnalysisFrameworkFactory.create(
+        private_af = AnalysisFrameworkFactory.create(
             title='Private Analysis Framework Title',
             is_private=True
         )
@@ -421,10 +421,12 @@ class TestProjectSchema(GraphQLTestCase):
         # lets create some regions(private + public)
         public_region = RegionFactory.create(public=True, title='Public Region')
         private_region = RegionFactory.create(public=False, title='Private Region')
-        public_project1 = ProjectFactory.create(analysis_framework=public_analysis_framework, regions=[public_region])
-        public_project2 = ProjectFactory.create(analysis_framework=public_analysis_framework, regions=[private_region])
-        public_project3 = ProjectFactory.create(analysis_framework=private_analysis_framework, regions=[public_region])
-        public_project4 = ProjectFactory.create(analysis_framework=private_analysis_framework, regions=[public_region])
+        # deleted_project
+        ProjectFactory.create(analysis_framework=public_af, regions=[public_region], is_deleted=True)
+        public_project1 = ProjectFactory.create(analysis_framework=public_af, regions=[public_region])
+        public_project2 = ProjectFactory.create(analysis_framework=public_af, regions=[private_region])
+        public_project3 = ProjectFactory.create(analysis_framework=private_af, regions=[public_region])
+        public_project4 = ProjectFactory.create(analysis_framework=private_af, regions=[public_region])
         private_project = ProjectFactory.create(is_private=True)
         content = self.query_check(query)
         self.assertEqual(content['data']['publicProjects']['totalCount'], 4, content)
@@ -733,6 +735,8 @@ class TestProjectSchema(GraphQLTestCase):
         region3 = RegionFactory.create(centroid=fake_centroid)
         region4 = RegionFactory.create(public=False, centroid=fake_centroid)
         RegionFactory.create()  # No Centroid ( This will not show)
+        # Deleted project
+        ProjectFactory.create(is_private=False, is_deleted=True, regions=[region1, region2], title='Test Nepal')
         project1 = ProjectFactory.create(is_private=False, regions=[region1, region2], title='Test Nepal')
         ProjectFactory.create(is_private=False, regions=[region3], title='Test Canada')
         project2 = ProjectFactory.create(is_private=True, regions=[region4], title='Test Brazil')
