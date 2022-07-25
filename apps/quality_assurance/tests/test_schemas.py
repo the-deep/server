@@ -21,8 +21,8 @@ class TestReviewCommentQuery(GraphQLTestCase):
                     entry (id: $entryId) {
                         id
                         verifiedBy {
-                            displayName
                             id
+                            displayName
                         }
                         controlled
                         controlledChangedBy {
@@ -39,8 +39,8 @@ class TestReviewCommentQuery(GraphQLTestCase):
                             commentType
                             createdAt
                             mentionedUsers {
-                                displayName
                                 id
+                                displayName
                             }
                         }
                     }
@@ -131,7 +131,9 @@ class TestReviewCommentQuery(GraphQLTestCase):
                         id
                         mentionedUsers {
                             displayName
-                            displayPictureUrl
+                            profile {
+                                displayPictureUrl
+                            }
                         }
                         textHistory {
                             createdAt

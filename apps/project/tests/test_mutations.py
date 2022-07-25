@@ -1,5 +1,5 @@
 from unittest import mock
-
+from datetime import timedelta
 from factory import fuzzy
 
 from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
@@ -25,7 +25,7 @@ from project.factories import ProjectFactory, ProjectJoinRequestFactory
 from organization.factories import OrganizationFactory
 from geo.factories import RegionFactory
 
-from project.tasks import _generate_project_viz_stats
+from project.tasks import _generate_project_viz_stats, permanently_delete_projects
 
 from project.models import Project, ProjectOrganization
 from . import entry_stats_data
@@ -787,6 +787,7 @@ class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
 
 
 class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
+    ENABLE_NOW_PATCHER = True
 
     def _user_membership_bulk(self, user_role):
         query = '''
@@ -1116,3 +1117,149 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
 
     def test_user_group_membership_admin_bulk(self):
         self._user_group_membership_bulk(self.project_role_admin)
+
+    def test_project_deletion(self):
+        query = '''
+            mutation MyMutation($projectId: ID!) {
+              __typename
+              project(id: $projectId) {
+                  projectDelete {
+                    ok
+                    errors
+                    result {
+                      id
+                      title
+                    }
+                  }
+              }
+            }
+        '''
+        normal_user = UserFactory.create()
+        admin_user = UserFactory.create()
+        member_user = UserFactory.create()
+        owner_user = UserFactory.create()
+        reader_user = UserFactory.create()
+
+        af = AnalysisFrameworkFactory.create()
+        project = ProjectFactory.create(analysis_framework=af)
+
+        project.add_member(admin_user, role=self.project_role_admin)
+        project.add_member(member_user, role=self.project_role_member)
+        project.add_member(owner_user, role=self.project_role_owner)
+        project.add_member(reader_user, role=self.project_role_reader)
+
+        def _assert_project_soft_delete_status(is_deleted):
+            self.assertTrue(Project.objects.filter(pk=project.id).exists())
+            project.refresh_from_db()
+            if is_deleted:
+                self.assertTrue(project.is_deleted)
+                self.assertIsNotNone(project.deleted_at)
+            else:
+                self.assertFalse(project.is_deleted)
+                self.assertIsNone(project.deleted_at)
+
+        def _query_check(**kwargs):
+            return self.query_check(
+                query,
+                mnested=['project'],
+                variables={'projectId': project.id},
+                **kwargs,
+            )
+        # without login
+        _query_check(assert_for_error=True)
+        _assert_project_soft_delete_status(False)
+
+        # ------login and normal user
+        self.force_login(normal_user)
+        _query_check(assert_for_error=True)
+        _assert_project_soft_delete_status(False)
+
+        # ---------- With login and member_user in project
+        self.force_login(member_user)
+        _query_check(okay=False)
+        _assert_project_soft_delete_status(False)
+
+        # ---------- Login with reader user
+        self.force_login(reader_user)
+        _query_check(okay=False)
+        _assert_project_soft_delete_status(False)
+
+        # ------ Login with admin_user
+        self.force_login(admin_user)
+        _query_check(okay=False)
+        _assert_project_soft_delete_status(False)
+
+        # ------ Login with owner_user
+        self.force_login(owner_user)
+        _query_check(okay=True)
+        _assert_project_soft_delete_status(True)
+
+    def test_project_deletion_celery_task(self):
+        def _get_project_ids():
+            return list(
+                Project.objects.values_list('id', flat=True)
+            )
+
+        # Check with single project
+        project = ProjectFactory.create()
+        # now delete the project
+        project.soft_delete(deleted_at=self.now_datetime - timedelta(days=31))
+        self.assertEqual(_get_project_ids(), [project.id])
+        # call the deletion method
+        permanently_delete_projects()
+        self.assertEqual(_get_project_ids(), [])
+
+        # Check with multiple projects
+        project1 = ProjectFactory.create(
+            title='Test Project 1',
+            is_deleted=True,
+            deleted_at=self.now_datetime - timedelta(days=32)
+        )
+        project2 = ProjectFactory.create(title='Test Project 2')
+        project2_1 = ProjectFactory.create(
+            title="Test Project 2 [Don't Delete']",
+            deleted_at=self.now_datetime - timedelta(days=32),
+        )
+        project3 = ProjectFactory.create(
+            title='Test Project 3',
+            is_deleted=True,
+            deleted_at=self.now_datetime - timedelta(days=42),
+        )
+        project4 = ProjectFactory.create(
+            title='Test Project 4',
+            is_deleted=True,
+            deleted_at=self.now_datetime - timedelta(days=20),
+        )
+        project5 = ProjectFactory.create(
+            title='Test Project 5',
+            is_deleted=True,
+            deleted_at=self.now_datetime - timedelta(days=30),
+        )
+        project6 = ProjectFactory.create(
+            title='Test Project 6',
+            is_deleted=True,
+            deleted_at=self.now_datetime - timedelta(days=29),
+        )
+
+        permanently_delete_projects()
+
+        # Check active projects ids
+        project_ids = _get_project_ids()
+        # Deleted projects.
+        self.assertNotEqual(
+            project_ids,
+            [
+                project1.id,
+                project3.id,
+            ]
+        )
+        self.assertEqual(
+            project_ids,
+            [
+                project2.id,
+                project2_1.id,
+                project4.id,
+                project5.id,
+                project6.id,
+            ]
+        )

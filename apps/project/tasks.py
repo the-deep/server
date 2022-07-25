@@ -1,6 +1,7 @@
 import json
 import logging
 from collections import defaultdict
+from datetime import timedelta
 
 from celery import shared_task
 from django.core.files.base import ContentFile
@@ -9,6 +10,7 @@ from django.utils import timezone
 from django.db import models
 from redis_store import redis
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
+from django.conf import settings
 
 from ary.stats import get_project_ary_entry_stats
 from lead.models import Lead
@@ -251,3 +253,24 @@ def generate_project_geo_region_cache(project):
     )
     project.geo_cache_hash = hash(tuple(region_qs.order_by('id').values_list('cache_index', flat=True)))
     project.save(update_fields=('geo_cache_hash', 'geo_cache_file'))
+
+
+@shared_task
+def permanently_delete_projects():
+    # check every project if there `is_deleted` is set True
+    # if greater than settings.USER_AND_PROJECT_DELETE_IN_DAYS days delete those projects
+    logger.info('[Project Delete] Checking project to delete.')
+    threshold = (
+        timezone.now() - timedelta(days=settings.USER_AND_PROJECT_DELETE_IN_DAYS)
+    )
+    project_qs = Project.objects.filter(
+        is_deleted=True,
+        deleted_at__isnull=False,
+        deleted_at__lt=threshold,
+    )
+    logger.info(f'[Project Delete] Found {project_qs.count()} projects to delete.')
+    for project in project_qs:
+        _meta = f'{project.id}::{project.title}'
+        logger.info(f'[Project Delete] Deleting {_meta}')
+        project_delete_response = project.delete()
+        logger.info(f'[Project Delete] Deleted {_meta}:: {project_delete_response}')

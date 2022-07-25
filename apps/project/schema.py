@@ -499,6 +499,7 @@ class ProjectDetailType(
 
 class ProjectByRegion(graphene.ObjectType):
     id = graphene.ID(required=True, description='Region\'s ID')
+    # NOTE: Annotated by ProjectByRegionGqlFilterSet/PublicProjectByRegionGqlFileterSet
     projects_id = graphene.List(graphene.NonNull(graphene.ID))
     centroid = PointScalar()
 
@@ -523,6 +524,7 @@ class RegionWithProject(DjangoObjectType):
         only_fields = (
             'id', 'centroid',
         )
+    # NOTE: Annotated by ProjectByRegionGqlFilterSet/PublicProjectByRegionGqlFileterSet
     projects_id = graphene.List(graphene.NonNull(graphene.ID))
 
 

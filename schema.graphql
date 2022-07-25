@@ -1499,6 +1499,7 @@ type Mutation {
   resetPassword(data: ResetPasswordInputType!): ResetPassword
   changePassword(data: PasswordChangeInputType!): ChangeUserPassword
   updateMe(data: UserMeInputType!): UpdateMe
+  deleteUser: UserDelete
   analysisFrameworkCreate(data: AnalysisFrameworkInputType!): CreateAnalysisFramework
   analysisFramework(id: ID!): AnalysisFrameworkMutationType
 }
@@ -1649,6 +1650,12 @@ input ProjectCreateInputType {
   hasPubliclyViewableRestrictedLeads: Boolean
   hasPubliclyViewableConfidentialLeads: Boolean
   organizations: [ProjectOrganizationGqInputType!]
+}
+
+type ProjectDelete {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectDetailType
 }
 
 type ProjectDetailType {
@@ -1818,6 +1825,7 @@ type ProjectMutationType {
   leadGroupDelete(id: ID!): DeleteLeadGroup
   leadCopy(data: LeadCopyInputType!): LeadCopy
   projectUpdate(data: ProjectUpdateInputType!): UpdateProject
+  projectDelete: ProjectDelete
   acceptRejectProject(data: ProjectAcceptRejectInputType!, id: ID!): ProjectAcceptReject
   projectUserMembershipBulk(deleteIds: [ID!], items: [BulkProjectMembershipInputType!]): BulkUpdateProjectMembership
   projectUserGroupMembershipBulk(deleteIds: [ID!], items: [BulkProjectUserGroupMembershipInputType!]): BulkUpdateProjectUserGroupMembership
@@ -2410,6 +2418,12 @@ type UpdateUserGroup {
 
 scalar Upload
 
+type UserDelete {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserMeType
+}
+
 enum UserEmailConditionOptOutEnum {
   JOIN_REQUESTS
   NEWS_AND_UPDATES
@@ -2522,12 +2536,17 @@ input UserMeInputType {
   lastActiveProject: ID
 }
 
+type UserMeProjectType {
+  id: String
+  title: String
+}
+
 type UserMeType {
   id: ID!
-  firstName: String!
-  lastName: String!
   isActive: Boolean!
   lastLogin: DateTime
+  firstName: String!
+  lastName: String!
   email: String
   displayName: String
   displayPicture: ID
@@ -2538,18 +2557,25 @@ type UserMeType {
   jwtToken: JwtTokenType
   lastActiveProject: ProjectDetailType
   accessibleFeatures: [UserFeatureAccessType!]!
+  deletedAt: Date
+  soleProjects: [UserMeProjectType]
+  onlyMemberProjects: [UserMeProjectType]
+}
+
+type UserProfileType {
+  id: ID!
+  displayPictureUrl: String
+  organization: String
 }
 
 type UserType {
   id: ID!
-  firstName: String!
-  lastName: String!
   isActive: Boolean!
   displayName: String
-  displayPictureUrl: String
-  organization: String
-  language: String
+  firstName: String
+  lastName: String
   emailDisplay: String!
+  profile: UserProfileType!
 }
 
 input WidgetConditionalGqlInputType {
