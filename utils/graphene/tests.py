@@ -342,6 +342,18 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
     def assert_200(self, response):
         self.assert_http_code(response, status.HTTP_200_OK)
 
+    def assertExtraNumQueries(self, count):
+        """
+        Append prefix + postfix queries counts
+        Captured queries were:
+        1. SAVEPOINT QUERY
+        2. django-session QUERY
+        3. Request User QUERY
+        N. View based QUERY
+        Final. RELEASE SAVEPOINT QUERY
+        """
+        return self.assertNumQueries(4 + count)
+
 
 class GraphQLSnapShotTestCase(GraphQLTestCase, SnapShotTextCase):
     """

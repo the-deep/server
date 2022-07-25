@@ -105,6 +105,10 @@ class Project(UserResource):
     geo_cache_hash = models.CharField(max_length=256, null=True, blank=True)
     geo_cache_file = models.FileField(null=True, blank=True)
 
+    # this is used for project deletion
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateField(null=True, blank=True)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.analysis_framework_id: int
@@ -134,6 +138,12 @@ class Project(UserResource):
             af.properties.get('stats_config') is not None
         )
 
+    def soft_delete(self, deleted_at=None, commit=True):
+        self.is_deleted = True
+        self.deleted_at = deleted_at or timezone.now()
+        if commit:
+            self.save(update_fields=('is_deleted', 'deleted_at',))
+
     def get_all_members(self):
         return User.objects.filter(
             projectmembership__project=self
@@ -145,8 +155,12 @@ class Project(UserResource):
         )
 
     @staticmethod
-    def get_annotated():
-        return Project.objects.annotate(
+    def base_queryset():
+        return Project.objects.exclude(is_deleted=True)
+
+    @classmethod
+    def get_annotated(cls):
+        return cls.base_queryset().annotate(
             **{
                 key: Cast(KeyTextTransform(key, 'stats_cache'), models.IntegerField())
                 for key in [
@@ -166,10 +180,8 @@ class Project(UserResource):
     def get_for(user, annotated=False):
         # Note: `.exclude(Q(is_private=True) & ~Q(members=user)).all()`
         # excludes the the private projects that the user is not member of
-
-        if annotated:
-            return Project.get_annotated().exclude(Q(is_private=True) & ~Q(members=user))
-        return Project.objects.exclude(Q(is_private=True) & ~Q(members=user))
+        qs = Project.get_annotated() if annotated else Project.base_queryset()
+        return qs.exclude(Q(is_private=True) & ~Q(members=user))
 
     @classmethod
     def get_for_gq(cls, user, only_member=False):
@@ -194,7 +206,8 @@ class Project(UserResource):
                 output_field=ArrayField(models.CharField()),
             ),
         )
-        visible_projects = cls.objects\
+        visible_projects = cls.base_queryset()
+        visible_projects = visible_projects\
             .annotate(
                 # For using within query filters
                 current_user_role=current_user_role_subquery,
@@ -202,7 +215,10 @@ class Project(UserResource):
                 # NOTE: This is used by permission module
                 current_user_membership_data=current_user_membership_data_subquery,
                 # NOTE: Exclude if project is private + user is not a member
-            ).exclude(is_private=True, current_user_role__isnull=True)
+            ).exclude(
+                is_private=True,
+                current_user_role__isnull=True,
+            )
         if only_member:
             return visible_projects.filter(current_user_role__isnull=False)
         return visible_projects
@@ -391,11 +407,11 @@ class Project(UserResource):
     def get_for_member(user, annotated=False, exclude=False):
         # FIXME: get viewable projects
         # Also, pick only required fields instead of annotating everytime.
-        project = Project.get_annotated() if annotated else Project.objects
+        project_qs = Project.get_annotated() if annotated else Project.base_queryset()
         filter_query = Project.get_query_for_member(user)
         if exclude:
-            return project.exclude(filter_query).distinct()
-        return project.filter(filter_query).distinct()
+            return project_qs.exclude(filter_query).distinct()
+        return project_qs.filter(filter_query).distinct()
 
     @staticmethod
     def get_query_for_member(user):

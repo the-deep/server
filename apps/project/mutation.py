@@ -11,6 +11,7 @@ from utils.graphene.mutation import (
     GrapheneMutation,
     PsGrapheneMutation,
     PsBulkGrapheneMutation,
+    DeleteMutation,
 )
 from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
 
@@ -32,6 +33,7 @@ from .models import (
     ProjectJoinRequest,
     ProjectMembership,
     ProjectUserGroupMembership,
+    ProjectRole,
 )
 from .serializers import (
     ProjectGqSerializer,
@@ -153,6 +155,31 @@ class ProjectJoinRequestDelete(graphene.Mutation):
         instance.delete()
         instance.id = id
         return ProjectJoinRequestDelete(result=instance, errors=None, ok=True)
+
+
+class ProjectDelete(DeleteMutation):
+    errors = graphene.List(graphene.NonNull(CustomErrorType))
+    result = graphene.Field(ProjectDetailType)
+
+    @staticmethod
+    def mutate(root, info, **kwargs):
+        membership_qs = ProjectMembership.objects.filter(
+            project=info.context.active_project.id,
+            member=info.context.user,
+            role__type=ProjectRole.Type.PROJECT_OWNER,
+        )
+        if not membership_qs.exists():
+            return ProjectDelete(errors=[
+                dict(
+                    field='nonFieldErrors',
+                    messages=gettext(
+                        'You should be Project Owner to delete this project(id:%s)'
+                        % info.context.active_project.id
+                    ),
+                )
+            ], ok=False)
+        root.soft_delete()
+        return ProjectDelete(result=root, errors=None, ok=True)
 
 
 class CreateProjectJoin(graphene.Mutation):
@@ -304,6 +331,7 @@ class ProjectMutationType(
         fields = ('id', 'title')
 
     project_update = UpdateProject.Field()
+    project_delete = ProjectDelete.Field()
     accept_reject_project = ProjectAcceptReject.Field()
     project_user_membership_bulk = BulkUpdateProjectMembership.Field()
     project_user_group_membership_bulk = BulkUpdateProjectUserGroupMembership.Field()

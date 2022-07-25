@@ -200,11 +200,9 @@ def send_password_changed_notification(user_id, client_ip, device_type):
 
 
 def generate_hidden_email(email):
-    email_first_text = email.split('@')[0]
-    email_last_text = email.split('@')[1]
-
-    email_prefix = email_first_text[:1]
-    email_suffix = email_first_text[-1:]
-
-    email_display = email_prefix + '***' + email_suffix + '@' + email_last_text
-    return email_display
+    email_name, email_domain = email.split('@')
+    # For deleted emails no need to hide.
+    if email_domain == settings.DELETED_USER_EMAIL_DOMAIN:
+        return email
+    email_name_first_char, email_name_last_char = email_name[:1], email_name[-1:]
+    return f'{email_name_first_char}***{email_name_last_char}@{email_domain}'

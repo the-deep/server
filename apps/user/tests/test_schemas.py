@@ -1,4 +1,6 @@
 from unittest import mock
+from datetime import timedelta
+
 from django.conf import settings
 from django.utils import timezone
 
@@ -19,9 +21,12 @@ from utils.hid.tests.test_hid import (
     HIDIntegrationTest,
     HID_EMAIL
 )
+from user.tasks import permanently_delete_users
 
 
 class TestUserSchema(GraphQLTestCase):
+    ENABLE_NOW_PATCHER = True
+
     def setUp(self):
         # This is used in 2 test
         self.login_mutation = '''
@@ -434,25 +439,29 @@ class TestUserSchema(GraphQLTestCase):
                 }
               }
               user(id: $id) {
-                organization
-                lastName
-                language
                 isActive
                 id
                 firstName
-                displayPictureUrl
+                lastName
                 displayName
+                profile {
+                    id
+                    displayPictureUrl
+                    organization
+                }
               }
               users {
                 results {
-                    organization
-                    lastName
-                    language
                     isActive
                     id
                     firstName
-                    displayPictureUrl
+                    lastName
                     displayName
+                    profile {
+                        id
+                        displayPictureUrl
+                        organization
+                    }
                 }
                 page
                 pageSize
@@ -515,14 +524,16 @@ class TestUserSchema(GraphQLTestCase):
                   search: $search
               ) {
                 results {
-                    organization
-                    lastName
-                    language
                     isActive
                     id
                     firstName
-                    displayPictureUrl
+                    lastName
                     displayName
+                    profile {
+                        id
+                        organization
+                        displayPictureUrl
+                    }
                 }
                 page
                 pageSize
@@ -570,14 +581,16 @@ class TestUserSchema(GraphQLTestCase):
             query MyQuery($id: ID!) {
                 user(id: $id) {
                     id
-                    emailDisplay
+                    isActive
                     firstName
                     lastName
-                    isActive
-                    displayPictureUrl
-                    language
-                    organization
                     displayName
+                    emailDisplay
+                    profile {
+                        id
+                        organization
+                        displayPictureUrl
+                    }
                 }
             }
 
@@ -588,14 +601,16 @@ class TestUserSchema(GraphQLTestCase):
                 users {
                     results {
                     id
-                    emailDisplay
-                    firstName
                     isActive
-                    language
+                    firstName
                     lastName
                     displayName
-                    displayPictureUrl
-                    organization
+                    emailDisplay
+                    profile {
+                        id
+                        displayPictureUrl
+                        organization
+                    }
                     }
                     totalCount
                 }
@@ -622,6 +637,7 @@ class TestUserSchema(GraphQLTestCase):
         self.assertTrue(set(['t***r@deep.com', 't***2@deep.com']).issubset(set(email_display_list)))
 
     def test_generate_hidden_email(self):
+        deleted_email = f'test123@{settings.DELETED_USER_EMAIL_DOMAIN}'
         for original, expected in [
             ('testuser1@deep.com', 't***1@deep.com'),
             ('testuser2@deep.com', 't***2@deep.com'),
@@ -629,5 +645,253 @@ class TestUserSchema(GraphQLTestCase):
             ('abc@deep.com', 'a***c@deep.com'),
             ('xy@deep.com', 'x***y@deep.com'),
             ('a@deep.com', 'a***a@deep.com'),
+            (deleted_email, deleted_email),
         ]:
             self.assertEqual(expected, generate_hidden_email(original))
+
+    def test_user_deletion_project_check(self):
+        (
+            admin_user,  # 0
+            member_user,  # 1
+            owner_user,  # 2
+            another_owner_user,  # 3
+            another_member_user,  # 4
+            another_deleted_owner_user,  # 5
+        ) = all_users = UserFactory.create_batch(6)
+        active_users_qs = User.objects.filter(
+            profile__deleted_at__isnull=True,
+            id__in=[user.id for user in all_users],
+        )
+
+        another_deleted_owner_user.soft_delete()
+
+        af = AnalysisFrameworkFactory.create()
+        project1 = ProjectFactory.create(analysis_framework=af, title='Project 1')
+        project2 = ProjectFactory.create(analysis_framework=af, title='Project 2')
+        project3 = ProjectFactory.create(analysis_framework=af, title='Project 3')
+
+        project1.add_member(admin_user, role=self.project_role_admin)
+        project1.add_member(member_user, role=self.project_role_member)
+        project1.add_member(owner_user, role=self.project_role_owner)
+
+        project2.add_member(member_user, role=self.project_role_member)
+
+        project3.add_member(owner_user, role=self.project_role_owner)
+
+        delete_mutation = '''
+            mutation Mutation {
+              deleteUser {
+                ok
+                errors
+                result {
+                    id
+                    displayName
+                }
+              }
+            }
+        '''
+
+        def _query_check(**kwargs):
+            return self.query_check(delete_mutation, **kwargs)
+
+        # without login
+        _query_check(assert_for_error=True)
+
+        # login with admin user
+        self.force_login(admin_user)  # <---- Login by admin_user
+        _query_check(okay=True)  # <--- admin_user is deleted
+
+        # login with user that is member in any of projects
+        self.force_login(member_user)  # <---- Login by member_user
+        _query_check(okay=False)
+
+        # add another admin user in the project
+        project2.add_member(admin_user, role=self.project_role_admin)
+        _query_check(okay=False)  # Doesn't work since admin_user is already deleted
+        project2.add_member(another_member_user, role=self.project_role_member)
+        _query_check(okay=True)  # <--- member_user is deleted
+
+        self.assertEqual(active_users_qs.count(), 3)  # owner + another owner
+
+        # login with owner user
+        self.force_login(owner_user)  # <---- Login by owner_user
+        _query_check(okay=False)
+
+        # Let add already deleted user to the project as owner.
+        project1.add_member(another_deleted_owner_user, role=self.project_role_owner)
+        _query_check(okay=False)
+        project3.add_member(another_deleted_owner_user, role=self.project_role_owner)
+        _query_check(okay=False)
+        project3.add_member(admin_user, role=self.project_role_admin)
+        _query_check(okay=False)
+        project3.add_member(member_user, role=self.project_role_member)
+        _query_check(okay=False)
+
+        # Let add another user to the project as owner.
+        project1.add_member(another_member_user, role=self.project_role_member)
+        _query_check(okay=False)
+        project3.add_member(another_member_user, role=self.project_role_member)
+        _query_check(okay=False)
+        project3.add_member(another_owner_user, role=self.project_role_owner)
+        _query_check(okay=False)
+        project1.add_member(another_owner_user, role=self.project_role_owner)
+        _query_check(okay=True)
+
+        self.assertEqual(active_users_qs.count(), 2)  # another owner only
+
+    def test_user_deletion(self):
+        users_query = '''
+            query Query($id: ID!) {
+              user(id: $id) {
+                id
+                firstName
+                lastName
+                displayName
+                profile {
+                    id
+                    organization
+                }
+              }
+            }
+        '''
+        deleted_user = UserFactory.create()
+        deleted_user.soft_delete()
+        another_user = UserFactory.create()
+
+        # now try to get users data from another user
+        self.force_login(another_user)
+        user_data = self.query_check(users_query, variables={'id': deleted_user.id})['data']['user']
+        self.assertEqual(user_data, dict(
+            id=str(deleted_user.id),
+            displayName=f'{settings.DELETED_USER_FIRST_NAME} {settings.DELETED_USER_LAST_NAME}',
+            firstName=settings.DELETED_USER_FIRST_NAME,
+            lastName=settings.DELETED_USER_LAST_NAME,
+            profile=dict(
+                id=str(deleted_user.profile.id),
+                organization=settings.DELETED_USER_ORGANIZATION,
+            )
+        ))
+
+    def test_user_deletion_celery_method(self):
+        def _get_user_data(user):
+            profile = user.profile
+            return {
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'email': user.email,
+                'username': user.username,
+                'is_active': user.is_active,
+                'profile': {
+                    'invalid_email': profile.invalid_email,
+                    'organization': profile.organization,
+                    'hid': profile.hid,
+                    'display_picture': profile.display_picture,
+                },
+            }
+
+        def _get_anonymized_user_data(user):
+            return {
+                'first_name': settings.DELETED_USER_FIRST_NAME,
+                'last_name': settings.DELETED_USER_LAST_NAME,
+                'email': f'user-{user.id}@deleted.thedeep.io',
+                'username': f'user-{user.id}@deleted.thedeep.io',
+                'is_active': False,
+                'profile': {
+                    'invalid_email': True,
+                    'organization': settings.DELETED_USER_ORGANIZATION,
+                    'hid': None,
+                    'display_picture': None,
+                },
+            }
+
+        user1, user2, user3, user4, user5 = all_users = UserFactory.create_batch(5)
+        users_data = {
+            user.id: _get_user_data(user)
+            for user in all_users
+        }
+        anonymized_users_data = {
+            user.id: _get_anonymized_user_data(user)
+            for user in all_users
+        }
+
+        user1.soft_delete(deleted_at=self.now_datetime - timedelta(days=32))
+        user2.soft_delete(deleted_at=self.now_datetime - timedelta(days=10))
+        user3.soft_delete(deleted_at=self.now_datetime - timedelta(days=40))
+        user4.soft_delete(deleted_at=self.now_datetime - timedelta(days=30))
+
+        all_users_qs = User.objects.filter(id__in=[user.id for user in all_users])
+        tagged_deleted_users_qs = all_users_qs.filter(
+            profile__deleted_at__isnull=False,
+            profile__original_data__isnull=False,
+        )
+        deleted_users_qs = all_users_qs.filter(
+            profile__deleted_at__isnull=False,
+            profile__original_data__isnull=True,
+        )
+
+        self.assertEqual(all_users_qs.count(), 5)
+        self.assertEqual(tagged_deleted_users_qs.count(), 4)
+        self.assertEqual(deleted_users_qs.count(), 0)
+
+        for user in all_users:
+            user.refresh_from_db()
+            if user == user5:
+                self.assertEqual(users_data[user.pk], _get_user_data(user))
+            else:
+                self.assertEqual(anonymized_users_data[user.pk], _get_user_data(user))
+                self.assertEqual(users_data[user.pk], user.profile.original_data)
+
+        # call the celery method
+        permanently_delete_users()
+
+        self.assertEqual(all_users_qs.count(), 5)
+        self.assertEqual(tagged_deleted_users_qs.count(), 2)
+        self.assertEqual(deleted_users_qs.count(), 2)
+
+        for user in all_users:
+            user.refresh_from_db()
+            if user == user5:
+                self.assertEqual(users_data[user.pk], _get_user_data(user))
+            elif user in [user1, user3]:
+                self.assertEqual(anonymized_users_data[user.pk], _get_user_data(user))
+                self.assertEqual(None, user.profile.original_data)
+            elif user in [user2, user4]:
+                self.assertEqual(anonymized_users_data[user.pk], _get_user_data(user))
+                self.assertEqual(users_data[user.pk], user.profile.original_data)
+
+    def test_user_query_db_queries(self):
+        QUERY_ALL_USERS = '''
+            query MyQuery {
+                users {
+                    results {
+                    id
+                    isActive
+                    firstName
+                    lastName
+                    displayName
+                    emailDisplay
+                    profile {
+                        id
+                        displayPictureUrl
+                        organization
+                    }
+                    }
+                    totalCount
+                }
+            }
+
+        '''
+        user = UserFactory.create(email='testuser@deep.com')
+        UserFactory.create(email='testuser2@deep.com')
+        UserFactory.create(email='testuser3@deep.com')
+
+        self.force_login(user)
+        """
+        QUERIES:
+            - COUNT
+            - TODO: COUNT (Repeat) Need to fix this
+            - User Fetch
+            - Profile Fetch
+        """
+        with self.assertExtraNumQueries(4):
+            self.query_check(QUERY_ALL_USERS)
