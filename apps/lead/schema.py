@@ -91,7 +91,9 @@ def get_lead_filter_data(filters, context):
         ]
 
     def _id_to_int(ids):
-        return [int(_id) for _id in ids]
+        return [
+            int(_id) for _id in ids
+        ]
 
     if filters is None or type(filters) != dict:
         return {}
@@ -101,6 +103,7 @@ def get_lead_filter_data(filters, context):
         analysis_framework=context.active_project.analysis_framework_id,
         widget_key__in=Widget.objects.filter(
             analysis_framework=context.active_project.analysis_framework_id,
+            widget_id=Widget.WidgetType.GEO,
         ).values_list('key', flat=True)
     ).values_list('key', flat=True)
 
