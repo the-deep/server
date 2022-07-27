@@ -116,12 +116,18 @@ class ConnectorSourceStatsType(graphene.ObjectType):
         return datetime.datetime.strptime(root['date'], '%Y-%m-%d')
 
 
+class ConnectorSourceLeadCountType(graphene.ObjectType):
+    total = graphene.Int(required=True)
+    blocked = graphene.Int(required=True)
+    already_added = graphene.Int(required=True)
+
+
 class ConnectorSourceType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     source = graphene.Field(ConnectorSourceSourceEnum, required=True)
     source_display = EnumDescription(source='get_source_display', required=True)
     unified_connector = graphene.ID(required=True, source='unified_connector_id')
     stats = graphene.List(ConnectorSourceStatsType)
-    leads_count = graphene.Int(required=True)
+    leads_count = graphene.NonNull(ConnectorSourceLeadCountType)
     status = graphene.Field(ConnectorSourceStatusEnum, required=True)
     status_display = EnumDescription(source='get_status_display', required=True)
 
@@ -157,7 +163,7 @@ class ConnectorSourceListType(CustomDjangoListObjectType):
 class UnifiedConnectorType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     project = graphene.ID(required=True, source='project_id')
     sources = graphene.List(graphene.NonNull(ConnectorSourceType))
-    leads_count = graphene.Int(required=True)
+    leads_count = graphene.NonNull(ConnectorSourceLeadCountType)
 
     class Meta:
         model = UnifiedConnector

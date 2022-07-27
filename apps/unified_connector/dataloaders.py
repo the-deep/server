@@ -14,19 +14,29 @@ from .models import (
     ConnectorSource,
 )
 
+DEFAULT_SOURCE_LEAD_COUNT = {'total': 0, 'already_added': 0, 'blocked': 0}
+
 
 class UnifiedConnectorLeadsCount(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         connector_leads_qs = ConnectorSourceLead.objects\
             .filter(source__unified_connector__in=keys)\
             .order_by().values('source__unified_connector')\
-            .annotate(count=models.Count('connector_lead', distinct=True))\
-            .values_list('source__unified_connector', 'count')
+            .annotate(
+                count=models.Count('connector_lead', distinct=True),
+                already_count=models.Count('connector_lead', distinct=True, filter=models.Q(already_added=True)),
+                blocked_count=models.Count('connector_lead', distinct=True, filter=models.Q(blocked=True)),
+            )\
+            .values_list('source__unified_connector', 'count', 'already_count', 'blocked_count')
         _map = {
-            uc: leads_count
-            for uc, leads_count in connector_leads_qs
+            uc: dict(
+                total=count or 0,
+                already_added=already_count or 0,
+                blocked=blocked_count or 0,
+            )
+            for uc, count, already_count, blocked_count in connector_leads_qs
         }
-        return Promise.resolve([_map.get(key, 0) for key in keys])
+        return Promise.resolve([_map.get(key, DEFAULT_SOURCE_LEAD_COUNT) for key in keys])
 
 
 class UnifiedConnectorSources(DataLoaderWithContext):
@@ -45,13 +55,21 @@ class ConnectorSourceLeadsCount(DataLoaderWithContext):
         connector_leads_qs = ConnectorSourceLead.objects\
             .filter(source__in=keys)\
             .order_by().values('source')\
-            .annotate(count=models.Count('connector_lead', distinct=True))\
-            .values_list('source', 'count')
+            .annotate(
+                count=models.Count('connector_lead', distinct=True),
+                already_count=models.Count('connector_lead', distinct=True, filter=models.Q(already_added=True)),
+                blocked_count=models.Count('connector_lead', distinct=True, filter=models.Q(blocked=True)),
+            )\
+            .values_list('source', 'count', 'already_count', 'blocked_count')
         _map = {
-            uc: leads_count
-            for uc, leads_count in connector_leads_qs
+            uc: dict(
+                total=count or 0,
+                already_added=already_count or 0,
+                blocked=blocked_count or 0,
+            )
+            for uc, count, already_count, blocked_count in connector_leads_qs
         }
-        return Promise.resolve([_map.get(key, 0) for key in keys])
+        return Promise.resolve([_map.get(key, DEFAULT_SOURCE_LEAD_COUNT) for key in keys])
 
 
 class ConnectorSourceLeadLead(DataLoaderWithContext):

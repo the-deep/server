@@ -201,12 +201,16 @@ def unsubscribe_email(
     try:
         uid = force_text(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
+<<<<<<< HEAD
     except (
         TypeError,
         ValueError,
         OverflowError,
         User.DoesNotExist,
     ):
+=======
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+>>>>>>> Add count for ignored and added sourcelead
         user = None
 
     context = {
