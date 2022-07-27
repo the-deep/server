@@ -476,6 +476,12 @@ input ConnectorSourceGqInputType {
   clientId: String
 }
 
+type ConnectorSourceLeadCountType {
+  total: Int!
+  blocked: Int!
+  alreadyAdded: Int!
+}
+
 input ConnectorSourceLeadInputType {
   blocked: Boolean
 }
@@ -557,7 +563,7 @@ type ConnectorSourceType {
   source: ConnectorSourceSourceEnum!
   sourceDisplay: EnumDescription!
   stats: [ConnectorSourceStatsType]
-  leadsCount: Int!
+  leadsCount: ConnectorSourceLeadCountType!
   status: ConnectorSourceStatusEnum!
   statusDisplay: EnumDescription!
 }
@@ -2508,7 +2514,7 @@ type UnifiedConnectorType {
   modifiedBy: UserType
   project: ID!
   sources: [ConnectorSourceType!]
-  leadsCount: Int!
+  leadsCount: ConnectorSourceLeadCountType!
 }
 
 input UnifiedConnectorWithSourceInputType {
