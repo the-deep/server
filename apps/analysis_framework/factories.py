@@ -6,6 +6,7 @@ from .models import (
     AnalysisFramework,
     Section,
     Widget,
+    Filter,
 )
 
 
@@ -19,7 +20,6 @@ class AnalysisFrameworkFactory(DjangoModelFactory):
 
 class SectionFactory(DjangoModelFactory):
     title = factory.Sequence(lambda n: f'Section-{n}')
-    analysis_framework = factory.SubFactory(AnalysisFrameworkFactory)
 
     class Meta:
         model = Section
@@ -27,7 +27,6 @@ class SectionFactory(DjangoModelFactory):
 
 class WidgetFactory(DjangoModelFactory):
     title = factory.Sequence(lambda n: f'Widget-{n}')
-    analysis_framework = factory.SubFactory(AnalysisFrameworkFactory)
     key = factory.Sequence(lambda n: f'widget-key-{n}')
     widget_id = fuzzy.FuzzyChoice(Widget.WidgetType.choices, getter=lambda c: c[0])
     properties = {}
@@ -35,3 +34,12 @@ class WidgetFactory(DjangoModelFactory):
 
     class Meta:
         model = Widget
+
+
+class AfFilterFactory(DjangoModelFactory):
+    title = factory.Sequence(lambda n: f'Widget-filter-{n}')
+    key = factory.Sequence(lambda n: f'widget-filter-key-{n}')
+    properties = {}
+
+    class Meta:
+        model = Filter

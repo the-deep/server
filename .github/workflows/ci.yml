@@ -50,8 +50,7 @@ jobs:
         env:
           DOCKER_IMAGE_SERVER: ${{ steps.prep.outputs.tagged_image }}
         run: |
-          docker-compose -f gh-docker-compose.yml run --rm server wait-for-it db:5432 &&
-          docker-compose -f gh-docker-compose.yml run --rm server ./manage.py graphql_schema --out /ci-share/schema-latest.graphql &&
+          docker-compose -f ./gh-docker-compose.yml run --rm server bash -c 'wait-for-it db:5432 && ./manage.py graphql_schema --out /ci-share/schema-latest.graphql' &&
           cmp --silent schema.graphql ./ci-share/schema-latest.graphql || {
             echo 'The schema.graphql is not up to date with the latest changes. Please update and push latest';
             diff schema.graphql schema-latest.graphql;
@@ -62,7 +61,7 @@ jobs:
         env:
           DOCKER_IMAGE_SERVER: ${{ steps.prep.outputs.tagged_image }}
         run: |
-          docker-compose -f gh-docker-compose.yml run --rm server python3 manage.py makemigrations --check --dry-run || {
+          docker-compose -f ./gh-docker-compose.yml run --rm server bash -c 'wait-for-it db:5432 && ./manage.py makemigrations --check --dry-run' || {
             echo 'There are some changes to be reflected in the migration. Make sure to run makemigrations';
             exit 1;
           }

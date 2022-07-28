@@ -32,7 +32,81 @@ class TestExportMutationSchema(GraphQLTestCase):
                 isPreview
                 isArchived
                 format
-                filters
+                filters {
+                    assignees
+                    authorOrganizations
+                    authoringOrganizationTypes
+                    confidentiality
+                    createdAt
+                    createdAtGte
+                    createdAtLte
+                    createdBy
+                    emmEntities
+                    emmKeywords
+                    emmRiskFactors
+                    entriesFilterData {
+                      controlled
+                      createdAt
+                      createdAtGte
+                      createdAtLte
+                      createdBy
+                      entriesId
+                      entryTypes
+                      excerpt
+                      filterableData {
+                        filterKey
+                        includeSubRegions
+                        useAndOperator
+                        useExclude
+                        value
+                        valueGte
+                        valueList
+                        valueLte
+                      }
+                      geoCustomShape
+                      id
+                      leadAssignees
+                      leadAuthorOrganizations
+                      leadAuthoringOrganizationTypes
+                      leadConfidentialities
+                      leadCreatedBy
+                      leadGroupLabel
+                      leadPriorities
+                      leadPublishedOn
+                      leadPublishedOnGte
+                      leadPublishedOnLte
+                      leadSourceOrganizations
+                      leadStatuses
+                      leadTitle
+                      leads
+                      search
+                      projectEntryLabels
+                      modifiedBy
+                      modifiedAtLte
+                      modifiedAtGte
+                      modifiedAt
+                    }
+                    url
+                    text
+                    statuses
+                    sourceTypes
+                    sourceOrganizations
+                    search
+                    publishedOnLte
+                    publishedOnGte
+                    publishedOn
+                    priorities
+                    ordering
+                    modifiedBy
+                    modifiedAtLte
+                    modifiedAtGte
+                    modifiedAt
+                    ids
+                    hasEntries
+                    hasAssessment
+                    extractionStatus
+                    excludeProvidedLeadsId
+                }
                 file {
                   name
                   url
@@ -70,7 +144,81 @@ class TestExportMutationSchema(GraphQLTestCase):
                 isPreview
                 isArchived
                 format
-                filters
+                filters {
+                    assignees
+                    authorOrganizations
+                    authoringOrganizationTypes
+                    confidentiality
+                    createdAt
+                    createdAtGte
+                    createdAtLte
+                    createdBy
+                    emmEntities
+                    emmKeywords
+                    emmRiskFactors
+                    entriesFilterData {
+                      controlled
+                      createdAt
+                      createdAtGte
+                      createdAtLte
+                      createdBy
+                      entriesId
+                      entryTypes
+                      excerpt
+                      filterableData {
+                        filterKey
+                        includeSubRegions
+                        useAndOperator
+                        useExclude
+                        value
+                        valueGte
+                        valueList
+                        valueLte
+                      }
+                      geoCustomShape
+                      id
+                      leadAssignees
+                      leadAuthorOrganizations
+                      leadAuthoringOrganizationTypes
+                      leadConfidentialities
+                      leadCreatedBy
+                      leadGroupLabel
+                      leadPriorities
+                      leadPublishedOn
+                      leadPublishedOnGte
+                      leadPublishedOnLte
+                      leadSourceOrganizations
+                      leadStatuses
+                      leadTitle
+                      leads
+                      search
+                      projectEntryLabels
+                      modifiedBy
+                      modifiedAtLte
+                      modifiedAtGte
+                      modifiedAt
+                    }
+                    url
+                    text
+                    statuses
+                    sourceTypes
+                    sourceOrganizations
+                    search
+                    publishedOnLte
+                    publishedOnGte
+                    publishedOn
+                    priorities
+                    ordering
+                    modifiedBy
+                    modifiedAtLte
+                    modifiedAtGte
+                    modifiedAt
+                    ids
+                    hasEntries
+                    hasAssessment
+                    extractionStatus
+                    excludeProvidedLeadsId
+                }
                 file {
                   name
                   url
@@ -108,7 +256,81 @@ class TestExportMutationSchema(GraphQLTestCase):
                 isPreview
                 isArchived
                 format
-                filters
+                filters {
+                    assignees
+                    authorOrganizations
+                    authoringOrganizationTypes
+                    confidentiality
+                    createdAt
+                    createdAtGte
+                    createdAtLte
+                    createdBy
+                    emmEntities
+                    emmKeywords
+                    emmRiskFactors
+                    entriesFilterData {
+                      controlled
+                      createdAt
+                      createdAtGte
+                      createdAtLte
+                      createdBy
+                      entriesId
+                      entryTypes
+                      excerpt
+                      filterableData {
+                        filterKey
+                        includeSubRegions
+                        useAndOperator
+                        useExclude
+                        value
+                        valueGte
+                        valueList
+                        valueLte
+                      }
+                      geoCustomShape
+                      id
+                      leadAssignees
+                      leadAuthorOrganizations
+                      leadAuthoringOrganizationTypes
+                      leadConfidentialities
+                      leadCreatedBy
+                      leadGroupLabel
+                      leadPriorities
+                      leadPublishedOn
+                      leadPublishedOnGte
+                      leadPublishedOnLte
+                      leadSourceOrganizations
+                      leadStatuses
+                      leadTitle
+                      leads
+                      search
+                      projectEntryLabels
+                      modifiedBy
+                      modifiedAtLte
+                      modifiedAtGte
+                      modifiedAt
+                    }
+                    url
+                    text
+                    statuses
+                    sourceTypes
+                    sourceOrganizations
+                    search
+                    publishedOnLte
+                    publishedOnGte
+                    publishedOn
+                    priorities
+                    ordering
+                    modifiedBy
+                    modifiedAtLte
+                    modifiedAtGte
+                    modifiedAt
+                    ids
+                    hasEntries
+                    hasAssessment
+                    extractionStatus
+                    excludeProvidedLeadsId
+                }
                 file {
                   name
                   url
@@ -142,7 +364,81 @@ class TestExportMutationSchema(GraphQLTestCase):
                 isPreview
                 isArchived
                 format
-                filters
+                filters {
+                    assignees
+                    authorOrganizations
+                    authoringOrganizationTypes
+                    confidentiality
+                    createdAt
+                    createdAtGte
+                    createdAtLte
+                    createdBy
+                    emmEntities
+                    emmKeywords
+                    emmRiskFactors
+                    entriesFilterData {
+                      controlled
+                      createdAt
+                      createdAtGte
+                      createdAtLte
+                      createdBy
+                      entriesId
+                      entryTypes
+                      excerpt
+                      filterableData {
+                        filterKey
+                        includeSubRegions
+                        useAndOperator
+                        useExclude
+                        value
+                        valueGte
+                        valueList
+                        valueLte
+                      }
+                      geoCustomShape
+                      id
+                      leadAssignees
+                      leadAuthorOrganizations
+                      leadAuthoringOrganizationTypes
+                      leadConfidentialities
+                      leadCreatedBy
+                      leadGroupLabel
+                      leadPriorities
+                      leadPublishedOn
+                      leadPublishedOnGte
+                      leadPublishedOnLte
+                      leadSourceOrganizations
+                      leadStatuses
+                      leadTitle
+                      leads
+                      search
+                      projectEntryLabels
+                      modifiedBy
+                      modifiedAtLte
+                      modifiedAtGte
+                      modifiedAt
+                    }
+                    url
+                    text
+                    statuses
+                    sourceTypes
+                    sourceOrganizations
+                    search
+                    publishedOnLte
+                    publishedOnGte
+                    publishedOn
+                    priorities
+                    ordering
+                    modifiedBy
+                    modifiedAtLte
+                    modifiedAtGte
+                    modifiedAt
+                    ids
+                    hasEntries
+                    hasAssessment
+                    extractionStatus
+                    excludeProvidedLeadsId
+                }
                 file {
                   name
                   url
@@ -207,8 +503,8 @@ class TestExportMutationSchema(GraphQLTestCase):
                 ],
                 'assignees': None,
                 'priorities': None,
-                'createdAtGte': '2021-11-01T00:00:00.123456+00:00',
-                'createdAtLte': '2021-01-01T00:00:00.123456+00:00',
+                'createdAtGte': '2021-11-01T00:00:00Z',
+                'createdAtLte': '2021-01-01T00:00:00Z',
                 'confidentiality': None,
                 'publishedOnGte': None,
                 'publishedOnLte': None,
@@ -268,8 +564,8 @@ class TestExportMutationSchema(GraphQLTestCase):
             ],
             'assignees': None,
             'priorities': None,
-            'created_at_gte': '2021-11-01T00:00:00.123Z',
-            'created_at_lte': '2021-01-01T00:00:00.123Z',
+            'created_at_gte': '2021-11-01T00:00:00Z',
+            'created_at_lte': '2021-01-01T00:00:00Z',
             'confidentiality': None,
             'published_on_gte': None,
             'published_on_lte': None,

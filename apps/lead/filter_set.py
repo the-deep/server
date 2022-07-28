@@ -1,11 +1,15 @@
-import django_filters
 import graphene
+import django_filters
 from django.db import models
 from django.db.models.functions import Coalesce
 from graphene_django.filter.utils import get_filtering_args_from_filterset
 
 from deep.filter_set import DjangoFilterCSVWidget
 from user_resource.filters import UserResourceFilterSet
+from utils.graphene.fields import (
+    generate_object_field_from_input_type,
+    compare_input_output_type_fields,
+)
 from utils.graphene.filters import (
     NumberInFilter,
     MultipleInputFilter,
@@ -19,7 +23,7 @@ from project.models import Project
 from organization.models import OrganizationType
 from user.models import User
 from entry.models import Entry
-from entry.filter_set import EntryGQFilterSet
+from entry.filter_set import EntryGQFilterSet, EntriesFilterDataInputType, EntriesFilterDataType
 from user_resource.filters import UserResourceGqlFilterSet
 
 from .models import Lead, LeadGroup
@@ -309,14 +313,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
     # Filter-only enum filter
     has_entries = django_filters.BooleanFilter(method='filter_has_entries', help_text='Lead has entries.')
     has_assessment = django_filters.BooleanFilter(method='filter_has_assessment', help_text='Lead has assessment.')
-    entries_filter_data = SimpleInputFilter(
-        type(
-            'LeadEntriesFilterData',
-            (graphene.InputObjectType,),
-            get_filtering_args_from_filterset(EntryGQFilterSet, 'entry.schema.EntryListType')
-        ),
-        method='filtered_entries_filter_data',
-    )
+    entries_filter_data = SimpleInputFilter(EntriesFilterDataInputType, method='filtered_entries_filter_data')
 
     search = django_filters.CharFilter(method='search_filter')
 
@@ -546,3 +543,19 @@ class LeadGroupGQFilterSet(UserResourceGqlFilterSet):
         if not value:
             return qs
         return qs.filter(title__icontains=value).distinct()
+
+
+def get_lead_filter_object_type(input_type):
+    new_fields_map = generate_object_field_from_input_type(input_type, skip_fields=['entries_filter_data'])
+    new_fields_map['entries_filter_data'] = graphene.Field(EntriesFilterDataType)
+    new_type = type('LeadsFilterDataType', (graphene.ObjectType,), new_fields_map)
+    compare_input_output_type_fields(input_type, new_type)
+    return new_type
+
+
+LeadsFilterDataInputType = type(
+    'LeadsFilterDataInputType',
+    (graphene.InputObjectType,),
+    get_filtering_args_from_filterset(LeadGQFilterSet, 'lead.schema.LeadListType')
+)
+LeadsFilterDataType = get_lead_filter_object_type(LeadsFilterDataInputType)

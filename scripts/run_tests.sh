@@ -4,6 +4,8 @@ export PYTHONUNBUFFERED=1
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR=$(dirname "$BASE_DIR")
 
+wait-for-it $DATABASE_HOST:$DATABASE_PORT
+
 if [ "$CI" == "true" ]; then
     pip3 install coverage pytest-xdist
 
