@@ -123,8 +123,8 @@ def get_project_ary_entry_stats(project):
     methodology_attributes_fields = {
         'sampling_size_field_pk': 3,
         # Both are key of methodology field(unit_of_analysis)'s options
-        'households': 11,
-        'individuals': 12,
+        'households': 4,
+        'individuals': 5,
     }
 
     dynamic_meta = {
@@ -308,7 +308,7 @@ def get_project_ary_entry_stats(project):
                     attribute.get(str(methodology_attributes_fields['sampling_size_field_pk'])) or 0
                     for attribute in methodology_attributes
                     if int(
-                        attribute.get(str(dynamic_fields['type_of_unit_of_analysis']['pk'])) or -1
+                        attribute.get(str(dynamic_fields['data_collection_technique']['pk'])) or -1
                     ) == int(methodology_attributes_fields[unit_of_analysis_type])
                 ) for unit_of_analysis_type in ['households', 'individuals']
             },
