@@ -310,28 +310,6 @@ class UserExportBaseGqlMixin(ProjectPropertySerializerMixin, serializers.ModelSe
 
 
 class UserExportCreateGqlSerializer(UserExportBaseGqlMixin, serializers.ModelSerializer):
-    class Meta:
-        model = Export
-        fields = (
-            'title',
-            'type',  # Data type (entries, assessments, ..)
-            'format',  # xlsx, docx, pdf, ...
-            'export_type',  # excel, report, json, ...
-            'is_preview',
-            'filters',
-            'analysis',
-            # Specific arguments for exports additional configuration
-            'excel_decoupled',
-            'report_show_groups',
-            'report_show_lead_entry_id',
-            'report_show_assessment_data',
-            'report_show_entry_widget_data',
-            'report_text_widget_ids',
-            'report_exporting_widgets',
-            'report_levels',
-            'report_structure',
-        )
-
     def validate(self, data):
         # NOTE: We only need to check with create logic (as update only have title for now)
         # Validate type, export_type and format
