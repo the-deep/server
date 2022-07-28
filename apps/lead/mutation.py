@@ -12,11 +12,12 @@ from utils.graphene.error_types import (
 )
 from deep.permissions import ProjectPermissions as PP
 
-from .models import Lead, LeadGroup
-from .schema import LeadType, LeadGroupType
+from .models import Lead, LeadGroup, UserSavedLeadFilter
+from .schema import LeadType, LeadGroupType, UserSavedLeadFilterType
 from .serializers import (
     LeadGqSerializer as LeadSerializer,
     LeadCopyGqSerializer,
+    UserSavedLeadFilterSerializer,
 )
 
 
@@ -29,6 +30,11 @@ LeadInputType = generate_input_type_for_serializer(
 LeadCopyInputType = generate_input_type_for_serializer(
     'LeadCopyInputType',
     serializer_class=LeadCopyGqSerializer,
+)
+
+UserSavedLeadFilterInputType = generate_input_type_for_serializer(
+    'UserSavedLeadFilterInputType',
+    serializer_class=UserSavedLeadFilterSerializer,
 )
 
 
@@ -112,6 +118,27 @@ class LeadCopy(graphene.Mutation):
         return LeadCopy(result=new_leads, errors=None, ok=True)
 
 
+class SaveUserSavedLeadFilter(PsGrapheneMutation):
+    class Arguments:
+        data = UserSavedLeadFilterInputType(required=True)
+    model = Lead
+    serializer_class = UserSavedLeadFilterSerializer
+    result = graphene.Field(UserSavedLeadFilterType)
+    permissions = [PP.Permission.BASE_ACCESS]
+
+    @staticmethod
+    def mutate(root, info, data):
+        instance, _ = UserSavedLeadFilter.objects.get_or_create(
+            user=info.context.user,
+            project=info.context.active_project,
+        )
+        serializer = UserSavedLeadFilterSerializer(instance=instance, data=data, context={'request': info.context.request})
+        if errors := mutation_is_not_valid(serializer):
+            return SaveUserSavedLeadFilter(errors=errors, ok=False)
+        updated_instance = serializer.save()
+        return SaveUserSavedLeadFilter(result=updated_instance, errors=None, ok=True)
+
+
 class Mutation():
     lead_create = CreateLead.Field()
     lead_update = UpdateLead.Field()
@@ -119,3 +146,4 @@ class Mutation():
     lead_bulk = BulkLead.Field()
     lead_group_delete = DeleteLeadGroup.Field()
     lead_copy = LeadCopy.Field()
+    lead_filter_save = SaveUserSavedLeadFilter.Field()

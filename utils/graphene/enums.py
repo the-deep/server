@@ -40,27 +40,50 @@ def get_enum_name_from_django_field(
     ],
     field_name=None,
     model_name=None,
+    serializer_name=None,
 ):
+    def _have_model(_field):
+        if hasattr(_field, 'model') or hasattr(getattr(_field, 'Meta', None), 'model'):
+            return True
+
+    def _get_serializer_name(_field):
+        if hasattr(_field, 'parent'):
+            return type(_field.parent).__name__
+
     if field_name is None and model_name is None:
         if type(field) == serializers.ChoiceField:
             if type(field.parent) == serializers.ListField:
-                model_name = field.parent.parent.Meta.model.__name__
+                if _have_model(field.parent.parent):
+                    model_name = field.parent.parent.Meta.model.__name__
+                serializer_name = _get_serializer_name(field.parent)
                 field_name = field.parent.field_name
             else:
-                model_name = field.parent.Meta.model.__name__
+                if _have_model(field.parent):
+                    model_name = field.parent.Meta.model.__name__
+                serializer_name = _get_serializer_name(field)
                 field_name = field.field_name
         elif type(field) == ArrayField:
-            model_name = field.model.__name__
+            if _have_model(field):
+                model_name = field.model.__name__
+            serializer_name = _get_serializer_name(field)
             field_name = field.base_field.name
         elif type(field) in [models.CharField, models.SmallIntegerField, models.IntegerField]:
-            model_name = field.model.__name__
+            if _have_model(field):
+                model_name = field.model.__name__
+            serializer_name = _get_serializer_name(field)
             field_name = field.name
         elif type(field) == models.query_utils.DeferredAttribute:
-            model_name = field.field.model.__name__
+            if _have_model(field.field):
+                model_name = field.field.model.__name__
+            serializer_name = _get_serializer_name(field.field)
             field_name = field.field.name
-    if model_name is None or field_name is None:
-        raise Exception(f'{field=} | {type(field)=}: Both {model_name=} and {field_name=} should have a value')
-    return f'{model_name}{to_camelcase(field_name.title())}'
+    if field_name is None:
+        raise Exception(f'{field=} should have a name')
+    if model_name:
+        return f'{model_name}{to_camelcase(field_name.title())}'
+    if serializer_name:
+        return f'{serializer_name}{to_camelcase(field_name.title())}'
+    raise Exception(f'{serializer_name=} should have a value')
 
 
 class EnumDescription(graphene.Scalar):

@@ -78,10 +78,14 @@ def serializer_error_to_error_types(errors: dict, initial_data: dict = None) -> 
                         # array item might not have error
                         continue
                     # fetch array.item.client_id from the initial data
-                    client_id = initial_data[field][pos].get('client_id', f'NOT_FOUND_{pos}')
+                    try:
+                        initial_data_field_pos = initial_data[field][pos] or {}
+                    except (KeyError, IndexError):
+                        initial_data_field_pos = {}
+                    client_id = initial_data_field_pos.get('client_id', f'NOT_FOUND_{pos}')
                     array_errors.append(ArrayNestedErrorType(
                         client_id=client_id,
-                        object_errors=serializer_error_to_error_types(array_item, initial_data[field][pos])
+                        object_errors=serializer_error_to_error_types(array_item, initial_data_field_pos)
                     ))
                 error_types.append(_CustomErrorType(
                     client_id=node_client_id,

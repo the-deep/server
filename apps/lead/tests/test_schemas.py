@@ -1,3 +1,6 @@
+import json
+
+from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from utils.graphene.tests import GraphQLTestCase
 
 from organization.factories import OrganizationTypeFactory, OrganizationFactory
@@ -5,14 +8,26 @@ from user.factories import UserFactory
 from project.factories import ProjectFactory
 
 from lead.models import Lead
+from analysis_framework.models import Widget
+
 from entry.factories import EntryFactory
 from ary.factories import AssessmentFactory
-from analysis_framework.factories import AnalysisFrameworkFactory
+from geo.factories import (
+    RegionFactory,
+    GeoAreaFactory,
+    AdminLevelFactory,
+)
+from analysis_framework.factories import (
+    AnalysisFrameworkFactory,
+    WidgetFactory,
+    AfFilterFactory,
+)
 from lead.factories import (
     LeadEMMTriggerFactory,
     LeadFactory,
     EmmEntityFactory,
-    LeadGroupFactory
+    LeadGroupFactory,
+    UserSavedLeadFilterFactory,
 )
 
 from lead.enums import LeadOrderingEnum
@@ -36,7 +51,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
             $emmEntities: String
             $emmKeywords: String
             $emmRiskFactors: String
-            $entriesFilterData: LeadEntriesFilterData
+            $entriesFilterData: EntriesFilterDataInputType
             $priorities: [LeadPriorityEnum!]
             $publishedOn: Date
             $publishedOnGte: Date
@@ -1116,3 +1131,232 @@ class TestLeadQuerySchema(GraphQLTestCase):
                         self.assertEqual(content['project']['id'], str(used_lead.project_id))
                     else:
                         self.assertIsNone(content['project'], check_meta)
+
+
+class TestUserSavedLeadFilters(GraphQLTestCase):
+    LEAD_FILTER_SAVE_QUERY = '''
+        query MyQuery ($id: ID!) {
+          project(id: $id) {
+            userSavedLeadFilter {
+              id
+              title
+              filters {
+                assignees
+                authorOrganizations
+                authoringOrganizationTypes
+                createdBy
+                modifiedBy
+                sourceOrganizations
+                entriesFilterData {
+                    createdBy
+                    leadAssignees
+                    leadAuthorOrganizations
+                    leadAuthoringOrganizationTypes
+                    leadCreatedBy
+                    leadSourceOrganizations
+                    modifiedBy
+                }
+              }
+              filtersData {
+                assigneeOptions { id }
+                authorOrganizationOptions { id }
+                authorOrganizationTypeOptions { id }
+                createdByOptions { id }
+                modifiedByOptions { id }
+                entryFilterCreatedByOptions { id }
+                entryFilterGeoAreaOptions { id }
+                entryFilterLeadAssigneeOptions { id }
+                entryFilterLeadAuthorOrganizationOptions { id }
+                entryFilterLeadAuthoringOrganizationTypeOptions { id }
+                entryFilterLeadCreatedByOptions { id }
+                entryFilterLeadSourceOrganizationOptions { id }
+                entryFilterModifiedByOptions { id }
+                sourceOrganizationOptions { id }
+              }
+            }
+          }
+        }
+    '''
+
+    LEAD_FILTER_SAVE_MUTATION = '''
+        mutation MyMutation ($id: ID!, $input: UserSavedLeadFilterInputType!) {
+          project(id: $id) {
+            leadFilterSave(data: $input) {
+              ok
+              errors
+              result {
+                id
+                title
+                filters {
+                    ids
+                }
+                filtersData {
+                  assigneeOptions { id }
+                  authorOrganizationOptions { id }
+                  authorOrganizationTypeOptions { id }
+                  createdByOptions { id }
+                  modifiedByOptions { id }
+                  entryFilterCreatedByOptions { id }
+                  entryFilterGeoAreaOptions { id }
+                  entryFilterLeadAssigneeOptions { id }
+                  entryFilterLeadAuthorOrganizationOptions { id }
+                  entryFilterLeadAuthoringOrganizationTypeOptions { id }
+                  entryFilterLeadCreatedByOptions { id }
+                  entryFilterLeadSourceOrganizationOptions { id }
+                  entryFilterModifiedByOptions { id }
+                  sourceOrganizationOptions { id }
+                }
+              }
+            }
+          }
+        }
+    '''
+
+    def setUp(self):
+        super().setUp()
+        self.af = AnalysisFrameworkFactory.create()
+        self.region1, self.region2 = RegionFactory.create_batch(2)
+        self.project = ProjectFactory.create(analysis_framework=self.af)
+        self.project.regions.add(self.region1)
+        self.non_member_user = UserFactory.create(email='non-member@x.y')
+        self.member_user = UserFactory.create(email='member@x.y')
+        self.project.add_member(self.member_user)
+
+        # Create entities used for entryFilterdData
+        # -- Geo Data
+        geo_widget = WidgetFactory.create(analysis_framework=self.af, widget_id=Widget.WidgetType.GEO)
+        geo_widget_filter = AfFilterFactory.create(analysis_framework=self.af, widget_key=geo_widget.key)
+        # -- -- Access access here
+        admin_level1_1, admin_level1_2 = AdminLevelFactory.create_batch(2, region=self.region1)
+        geoarea1_1_1, _ = GeoAreaFactory.create_batch(2, admin_level=admin_level1_1)
+        geoarea1_2_1, geoarea1_2_1 = GeoAreaFactory.create_batch(2, admin_level=admin_level1_2)
+        # -- -- No access here
+        admin_level2 = AdminLevelFactory.create(region=self.region2)
+        _, geoarea2_2 = GeoAreaFactory.create_batch(2, admin_level=admin_level2)
+
+        # -- Organizations/ Organization Types
+        org_type1, org_type2, org_type3 = OrganizationTypeFactory.create_batch(3)
+        org1, org2, org3 = OrganizationFactory.create_batch(3, organization_type=org_type1)
+        # -- Users (Members)
+        m_user1, m_user2, m_user3, user4 = UserFactory.create_batch(4)
+        [self.project.add_member(user) for user in [m_user1, m_user2, m_user3]]
+
+        def _str_list(int_list):
+            return [str(_int) for _int in int_list]
+
+        def get_id_obj(objs):
+            return [
+                dict(id=str(obj.pk)) for obj in objs
+            ]
+
+        self.custom_filters = dict(
+            assignees=_str_list([m_user1.pk, m_user2.pk]),
+            author_organizations=_str_list([org1.pk, org2.pk]),
+            authoring_organization_types=_str_list([org_type1.pk, org_type2.pk]),
+            created_by=_str_list([m_user1.pk, m_user3.pk]),
+            modified_by=_str_list([m_user2.pk, m_user3.pk]),
+            source_organizations=_str_list([org2.pk, org3.pk]),
+            entries_filter_data=dict(
+                created_by=_str_list([m_user2.pk, m_user3.pk, user4.pk]),
+                lead_assignees=_str_list([m_user1.pk, m_user3.pk]),
+                lead_author_organizations=_str_list([org1.pk, org3.pk]),
+                lead_authoring_organization_types=_str_list([org_type2.pk, org_type3.pk]),
+                lead_created_by=_str_list([m_user2.pk, m_user3.pk]),
+                lead_source_organizations=_str_list([org2.pk, org3.pk]),
+                modified_by=_str_list([m_user1.pk, m_user3.pk]),
+                filterable_data=[dict(
+                    filter_key=geo_widget_filter.key,
+                    value_list=_str_list([geoarea1_1_1.pk, geoarea1_2_1.pk, geoarea2_2.pk]),
+                )],
+            )
+        )
+        self.custom_filters_camel_case = json.loads(CamelCaseJSONRenderer().render(self.custom_filters))
+
+        self.expected_filter_data_options = dict(
+            assigneeOptions=get_id_obj([m_user1, m_user2]),
+            authorOrganizationOptions=get_id_obj([org1, org2]),
+            authorOrganizationTypeOptions=get_id_obj([org_type1, org_type2]),
+            createdByOptions=get_id_obj([m_user1, m_user3]),
+            modifiedByOptions=get_id_obj([m_user2, m_user3]),
+            sourceOrganizationOptions=get_id_obj([org2, org3]),
+            entryFilterCreatedByOptions=get_id_obj([m_user2, m_user3]),
+            entryFilterLeadAssigneeOptions=get_id_obj([m_user1, m_user3]),
+            entryFilterLeadAuthorOrganizationOptions=get_id_obj([org1, org3]),
+            entryFilterLeadAuthoringOrganizationTypeOptions=get_id_obj([org_type2, org_type3]),
+            entryFilterLeadCreatedByOptions=get_id_obj([m_user2, m_user3]),
+            entryFilterLeadSourceOrganizationOptions=get_id_obj([org2, org3]),
+            entryFilterModifiedByOptions=get_id_obj([m_user1, m_user3]),
+            entryFilterGeoAreaOptions=get_id_obj([geoarea1_2_1, geoarea1_1_1]),
+        )
+
+    def test_user_saved_lead_filter_query(self):
+        def _query_check(**kwargs):
+            return self.query_check(self.LEAD_FILTER_SAVE_QUERY, variables={'id': str(self.project.id)}, **kwargs)
+
+        # Without login
+        _query_check(assert_for_error=True)
+
+        # login with non-member-user
+        self.force_login(self.non_member_user)
+        content = _query_check()
+        self.assertIsNone(content['data']['project']['userSavedLeadFilter'], content)
+        UserSavedLeadFilterFactory.create(user=self.non_member_user, project=self.project)
+
+        # Same here as well even with saved filter in backend
+        content = _query_check()
+        self.assertIsNone(content['data']['project']['userSavedLeadFilter'], content)
+
+        # login with member-user
+        self.force_login(self.member_user)
+        content = _query_check()
+        self.assertIsNone(content['data']['project']['userSavedLeadFilter'], content)
+
+        UserSavedLeadFilterFactory.create(
+            user=self.member_user,
+            project=self.project,
+            filters=self.custom_filters,
+        )
+        content = _query_check()
+        self.assertIsNotNone(content['data']['project']['userSavedLeadFilter'], content)
+        self.maxDiff = None
+        self.assertEqual(
+            content['data']['project']['userSavedLeadFilter']['filtersData'],
+            self.expected_filter_data_options,
+            content,
+        )
+
+    def test_user_saved_lead_filter_mutation(self):
+        minput = {
+            'title': 'First Filter',
+            'filters': {},
+        }
+
+        def _query_check(**kwargs):
+            return self.query_check(
+                self.LEAD_FILTER_SAVE_MUTATION,
+                minput=minput,
+                mnested=['project'],
+                variables={'id': str(self.project.id)},
+                **kwargs,
+            )
+
+        # Without login
+        _query_check(assert_for_error=True)
+
+        # login with non-member-user
+        self.force_login(self.non_member_user)
+        _query_check(assert_for_error=True)
+
+        # login with member-user
+        self.force_login(self.member_user)
+        content = _query_check(okay=True)
+        self.assertIsNotNone(content['data']['project']['leadFilterSave']['result'], content)
+
+        # With some valid data
+        minput['filters'] = self.custom_filters_camel_case
+        content = _query_check(okay=True)
+        self.assertEqual(
+            content['data']['project']['leadFilterSave']['result']['filtersData'],
+            self.expected_filter_data_options,
+            content,
+        )

@@ -1,10 +1,7 @@
-import graphene
-
 from django.db import transaction
 
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
-from graphene_django.filter.utils import get_filtering_args_from_filterset
 
 from utils.graphene.fields import generate_serializer_field_class
 from deep.serializers import (
@@ -13,7 +10,7 @@ from deep.serializers import (
     StringIDField,
     GraphqlSupportDrfSerializerJSONField,
 )
-from lead.filter_set import LeadGQFilterSet
+from lead.filter_set import LeadGQFilterSet, LeadsFilterDataInputType
 from analysis_framework.models import Widget, Exportable
 from .tasks import export_task
 from .models import Export
@@ -199,37 +196,61 @@ class ExportReportStructureWidgetSerializer(serializers.Serializer):
 # ---- [End] ExportReportStructure Serialisers
 
 
-class UserExportBaseGqlMixin(ProjectPropertySerializerMixin):
-    title = serializers.CharField(required=False)
+class ExportExcelSelectedColumnSerializer(serializers.Serializer):
+    is_widget = serializers.BooleanField(required=True)
+    widget_key = serializers.CharField(required=False)
+    static_column = serializers.ChoiceField(choices=Export.StaticColumn.choices, required=False)
 
-    class Meta:
-        model = Export
-        fields = []
+    def validate(self, data):
+        if data['is_widget']:
+            if data.get('widget_key') is None:
+                raise serializers.ValidationError('widget_key key is required when is widget is True')
+        elif data.get('static_column') is None:
+            raise serializers.ValidationError('static_column is required when is widget is False')
+        return data
 
+
+class ExportExtraOptionsSerializer(ProjectPropertySerializerMixin, serializers.Serializer):
     # Excel
     excel_decoupled = serializers.BooleanField(
         help_text="Don't group entries tags. Slower export generation.", required=False)
+    excel_columns = ExportExcelSelectedColumnSerializer(
+        required=False,
+        many=True,
+        help_text=ExportExcelSelectedColumnSerializer.__doc__,
+    )
 
     # Report
     report_show_groups = serializers.BooleanField(required=False)
     report_show_lead_entry_id = serializers.BooleanField(required=False)
     report_show_assessment_data = serializers.BooleanField(required=False)
     report_show_entry_widget_data = serializers.BooleanField(required=False)
-    report_text_widget_ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=True, required=False)
-    report_exporting_widgets = serializers.ListField(child=serializers.IntegerField(), allow_empty=True, required=False)
+    report_text_widget_ids = serializers.ListField(child=StringIDField(), allow_empty=True, required=False)
+    report_exporting_widgets = serializers.ListField(child=StringIDField(), allow_empty=True, required=False)
     report_levels = ExportReportLevelWidgetSerializer(
         required=False, many=True, help_text=ExportReportLevelWidgetSerializer.__doc__)
     report_structure = ExportReportStructureWidgetSerializer(
         required=False, many=True, help_text=ExportReportStructureWidgetSerializer.__doc__)
 
-    filters = generate_serializer_field_class(
-        type(
-            'ExportLeadsEntriesFilterData',
-            (graphene.InputObjectType,),
-            get_filtering_args_from_filterset(LeadGQFilterSet, 'lead.schema.LeadListType')
-        ),
-        GraphqlSupportDrfSerializerJSONField,
-    )()
+
+class UserExportBaseGqlMixin(ProjectPropertySerializerMixin, serializers.ModelSerializer):
+    title = serializers.CharField(required=False)
+
+    class Meta:
+        model = Export
+        fields = (
+            'title',
+            'type',  # Data type (entries, assessments, ..)
+            'format',  # xlsx, docx, pdf, ...
+            'export_type',  # excel, report, json, ...
+            'is_preview',
+            'filters',
+            'extra_options',
+            'analysis',
+        )
+
+    filters = generate_serializer_field_class(LeadsFilterDataInputType, GraphqlSupportDrfSerializerJSONField)()
+    extra_options = ExportExtraOptionsSerializer(required=False)
 
     @property
     def widget_qs(self):
@@ -289,28 +310,6 @@ class UserExportBaseGqlMixin(ProjectPropertySerializerMixin):
 
 
 class UserExportCreateGqlSerializer(UserExportBaseGqlMixin, serializers.ModelSerializer):
-    class Meta:
-        model = Export
-        fields = (
-            'title',
-            'type',  # Data type (entries, assessments, ..)
-            'format',  # xlsx, docx, pdf, ...
-            'export_type',  # excel, report, json, ...
-            'is_preview',
-            'filters',
-            'analysis',
-            # Specific arguments for exports additional configuration
-            'excel_decoupled',
-            'report_show_groups',
-            'report_show_lead_entry_id',
-            'report_show_assessment_data',
-            'report_show_entry_widget_data',
-            'report_text_widget_ids',
-            'report_exporting_widgets',
-            'report_levels',
-            'report_structure',
-        )
-
     def validate(self, data):
         # NOTE: We only need to check with create logic (as update only have title for now)
         # Validate type, export_type and format
@@ -325,21 +324,6 @@ class UserExportCreateGqlSerializer(UserExportBaseGqlMixin, serializers.ModelSer
         data['title'] = data.get('title') or Export.generate_title(data['type'], data['export_type'], data['format'])
         data['exported_by'] = self.context['request'].user
         data['project'] = self.project
-        data['extra_options'] = {
-            key: data.pop(key)
-            for key in (
-                'excel_decoupled',
-                # Report
-                'report_show_groups',
-                'report_show_lead_entry_id',
-                'report_show_assessment_data',
-                'report_show_entry_widget_data',
-                'report_text_widget_ids',
-                'report_exporting_widgets',
-                'report_levels',
-                'report_structure',
-            ) if key in data
-        }
         export = super().create(data)
         transaction.on_commit(
             lambda: export.set_task_id(export_task.delay(export.id).id)

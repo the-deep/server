@@ -7,6 +7,7 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers
 from django.utils import timezone
 
+from utils.graphene.fields import generate_serializer_field_class
 from deep.permissions import ProjectPermissions as PP
 from deep.serializers import (
     RemoveNullFieldsMixin,
@@ -17,6 +18,7 @@ from deep.serializers import (
     StringListField,
     WriteOnlyOnCreateSerializerMixin,
     ProjectPropertySerializerMixin,
+    GraphqlSupportDrfSerializerJSONField,
 )
 from organization.serializers import SimpleOrganizationSerializer
 from user.serializers import SimpleUserSerializer
@@ -26,14 +28,16 @@ from gallery.serializers import SimpleFileSerializer, File
 from user.models import User
 from project.models import ProjectMembership
 from unified_connector.models import ConnectorSourceLead
+from lead.filter_set import LeadsFilterDataInputType
 
 from .tasks import LeadExtraction
 from .models import (
-    LeadGroup,
-    Lead,
-    LeadPreviewImage,
-    LeadEMMTrigger,
     EMMEntity,
+    Lead,
+    LeadEMMTrigger,
+    LeadGroup,
+    LeadPreviewImage,
+    UserSavedLeadFilter,
 )
 
 
@@ -692,3 +696,24 @@ class ExtractCallbackSerializer(serializers.Serializer):
             )
         lead.update_extraction_status(Lead.ExtractionStatus.FAILED)
         return lead
+
+
+class UserSavedLeadFilterSerializer(ProjectPropertySerializerMixin, serializers.ModelSerializer):
+    filters = generate_serializer_field_class(LeadsFilterDataInputType, GraphqlSupportDrfSerializerJSONField)()
+
+    class Meta:
+        model = UserSavedLeadFilter
+        fields = (
+            'title',
+            'filters',
+        )
+
+    def validate(self, data):
+        existing_qs = UserSavedLeadFilter.objects\
+            .filter(user=self.current_user, project=self.project)\
+            .exclude(id=self.instance and self.instance.pk)
+        if existing_qs.exists():
+            raise serializers.ValidationError('Only one filter save is allowed for now.')
+        data['project'] = self.project
+        data['user'] = self.current_user
+        return data
