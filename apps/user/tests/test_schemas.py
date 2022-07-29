@@ -198,6 +198,20 @@ class TestUserSchema(GraphQLTestCase):
         self.assertEqual(user.username, user.email)
         self.assertEqual(user.email, minput['email'].lower())
 
+        # Try again with same data
+        self.query_check(query, minput=minput, okay=False)
+        # Let's soft delete user
+        user.soft_delete()
+        # Try again with same data (Still shouldn't work)
+        self.query_check(query, minput=minput, okay=False)
+
+        # Now permanently delete user data
+        user.profile.original_data = None
+        user.profile.save(update_fields=('original_data',))
+
+        # Should work now
+        self.query_check(query, minput=minput, okay=True)
+
     def test_logout(self):
         query = '''
             query Query {
