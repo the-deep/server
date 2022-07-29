@@ -22,6 +22,7 @@ from ary.models import (
 
     ScoreMatrixPillar,
     ScoreMatrixScale,
+    MethodologyProtectionInfo,
 )
 
 
@@ -139,6 +140,13 @@ def get_project_ary_entry_stats(project):
 
     static_meta = {
         'focus_array': list(Focus.objects.values('id', name=F('title'))),
+        'protection_info_management_array': [
+            {
+                'id': _id,
+                'title': title,
+            }
+            for _id, title in MethodologyProtectionInfo.choices
+        ],
         'sector_array': list(Sector.objects.values('id', name=F('title'))),
         'affected_groups_array': list(AffectedGroup.objects.values('id', name=F('title'))),
         'organization_type': list(
@@ -277,11 +285,12 @@ def get_project_ary_entry_stats(project):
                 **lead_source_data,
             },
 
-            'focus': _get_integer_array(methodology_raw.get('focuses')),
-            'sector': _get_integer_array(methodology_raw.get('sectors')),
-            'scores': scores,
+            'focus': _get_integer_array(methodology_raw.get('focuses') or []),
+            'protection_info_management': _get_integer_array(methodology_raw.get('protection_info') or []),
+            'sector': _get_integer_array(methodology_raw.get('sectors') or []),
+            'scores': scores or [],
             'geo': get_valid_geo_ids(methodology_raw.get('locations') or []),
-            'affected_groups': _get_integer_array(methodology_raw.get('affected_groups')),
+            'affected_groups': _get_integer_array(methodology_raw.get('affected_groups') or []),
 
             'organization_and_stakeholder_type': [
                 # Organization Type ID, Organization ID
