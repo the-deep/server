@@ -1286,7 +1286,7 @@ class TestUserSavedLeadFilters(GraphQLTestCase):
             entryFilterLeadCreatedByOptions=get_id_obj([m_user2, m_user3]),
             entryFilterLeadSourceOrganizationOptions=get_id_obj([org2, org3]),
             entryFilterModifiedByOptions=get_id_obj([m_user1, m_user3]),
-            entryFilterGeoAreaOptions=get_id_obj([geoarea1_2_1, geoarea1_1_1]),
+            entryFilterGeoAreaOptions=get_id_obj([geoarea1_1_1, geoarea1_2_1]),
         )
 
     def test_user_saved_lead_filter_query(self):
