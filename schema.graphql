@@ -1890,6 +1890,8 @@ type ProjectExploreStatType {
   calculatedAt: DateTime
   totalProjects: Int
   totalUsers: Int
+  totalLeads: Int
+  totalEntries: Int
   leadsAddedWeekly: Int
   dailyAverageLeadsTaggedPerProject: Float
   generatedExportsMonthly: Int
