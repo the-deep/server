@@ -35,7 +35,7 @@ class TestUnifiedConnectorResponse(GraphQLTestCase):
         mock_data = ConnectorSourceResponseMock(source_type)
         response_mock.side_effect = mock_data.get_content_side_effect
         source = ConnectorSourceFactory.create(unified_connector=self.uc, source=source_type, params=mock_data.params)
-        leads_result, count = source.source_fetcher().get_leads(source.params)
+        leads_result, count = source.source_fetcher().get_leads(source.params, None)
         self.assertEqual(len(leads_result), len(mock_data.expected_data))
         self.assertEqual(len(leads_result), count)
         self._assert_lead_equal_to_expected_data(leads_result, mock_data.expected_data)

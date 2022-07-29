@@ -97,7 +97,7 @@ class UnifiedConnectorTask():
     def _process_unified_source(cls, source):
         params = copy.deepcopy(source.params)
         source_fetcher = source.source_fetcher()
-        leads, _ = source_fetcher.get_leads(params)
+        leads, _ = source_fetcher.get_leads(params, source.created_by)
 
         current_source_leads_id = set(source.source_leads.values_list('connector_lead_id', flat=True))
         for connector_lead in leads:
