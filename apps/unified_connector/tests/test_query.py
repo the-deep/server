@@ -30,7 +30,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                   title
                   leadsCount {
                     alreadyAdded
-                    ignored
+                    blocked
                     total
                     }
                   sources {
@@ -41,7 +41,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                       unifiedConnector
                       leadsCount {
                         alreadyAdded
-                        ignored
+                        blocked
                         total
                     }
                       stats {
@@ -67,7 +67,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 title
                 leadsCount {
                     alreadyAdded
-                    ignored
+                    blocked
                     total
                 }
                 sources {
@@ -78,7 +78,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                     unifiedConnector
                     leadsCount {
                         alreadyAdded
-                        ignored
+                        blocked
                         total
                     }
                     stats {
@@ -106,7 +106,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                   unifiedConnector
                   leadsCount {
                       alreadyAdded
-                      ignored
+                      blocked
                       total
                   }
                   stats {
@@ -132,7 +132,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 unifiedConnector
                 leadsCount {
                     alreadyAdded
-                    ignored
+                    blocked
                     total
                 }
                 stats {
@@ -242,7 +242,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 isActive=False,
                 project=str(self.project.pk),
                 title=self.uc1.title,
-                leadsCount=dict(alreadyAdded=0, ignored=0, total=0),
+                leadsCount=dict(alreadyAdded=0, blocked=0, total=0),
                 sources=[],
             ),
             dict(
@@ -250,7 +250,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 isActive=False,
                 project=str(self.project.pk),
                 title=self.uc2.title,
-                leadsCount=dict(alreadyAdded=0, ignored=0, total=0),
+                leadsCount=dict(alreadyAdded=0, blocked=0, total=0),
                 sources=[],
             ),
         ])
@@ -264,7 +264,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 isActive=False,
                 project=str(self.project.pk),
                 title=self.uc1.title,
-                leadsCount=dict(alreadyAdded=0, ignored=0, total=0),
+                leadsCount=dict(alreadyAdded=0, blocked=0, total=0),
                 sources=[],
             ),
         )
@@ -300,7 +300,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             title=source1_1.title,
             unifiedConnector=str(self.uc1.pk),
             params={},
-            leadsCount=dict(alreadyAdded=0, ignored=0, total=2),
+            leadsCount=dict(alreadyAdded=0, blocked=0, total=2),
             stats=[{'count': 2, 'date': self.now_datetime.strftime('%Y-%m-%d')}],
         )
         ec_source1_2 = dict(
@@ -309,7 +309,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             title=source1_2.title,
             unifiedConnector=str(self.uc1.pk),
             params={},
-            leadsCount=dict(alreadyAdded=0, ignored=0, total=0),
+            leadsCount=dict(alreadyAdded=0, blocked=0, total=0),
             stats=[],
         )
         ec_source2_1 = dict(
@@ -318,7 +318,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             title=source2_1.title,
             unifiedConnector=str(self.uc2.pk),
             params={},
-            leadsCount=dict(alreadyAdded=0, ignored=0, total=1),
+            leadsCount=dict(alreadyAdded=0, blocked=0, total=1),
             stats=[{'count': 1, 'date': self.now_datetime.strftime('%Y-%m-%d')}],
         )
         ec_source2_2 = dict(
@@ -327,7 +327,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             title=source2_2.title,
             unifiedConnector=str(self.uc2.pk),
             params={},
-            leadsCount=dict(alreadyAdded=0, ignored=0, total=0),
+            leadsCount=dict(alreadyAdded=0, blocked=0, total=0),
             stats=[],
         )
 
@@ -358,7 +358,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 project=str(self.project.pk),
                 title=self.uc1.title,
                 sources=[ec_source1_1, ec_source1_2],
-                leadsCount=dict(alreadyAdded=0, ignored=0, total=2),
+                leadsCount=dict(alreadyAdded=0, blocked=0, total=2),
             ),
             dict(
                 id=str(self.uc2.pk),
@@ -366,7 +366,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 project=str(self.project.pk),
                 title=self.uc2.title,
                 sources=[ec_source2_1, ec_source2_2],
-                leadsCount=dict(alreadyAdded=0, ignored=0, total=1),
+                leadsCount=dict(alreadyAdded=0, blocked=0, total=1),
             ),
         ])
         # Single
@@ -380,7 +380,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 project=str(self.project.pk),
                 title=self.uc1.title,
                 sources=[ec_source1_1, ec_source1_2],
-                leadsCount=dict(alreadyAdded=0, ignored=0, total=2),
+                leadsCount=dict(alreadyAdded=0, blocked=0, total=2),
             ),
         )
 
