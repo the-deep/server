@@ -5,7 +5,6 @@ from datetime import datetime
 from subprocess import call
 
 from django.conf import settings
-from django.core.files.base import ContentFile, File
 from django.db.models import (
     Case,
     When,
@@ -794,7 +793,7 @@ class ReportExporter:
 
         return self
 
-    def export(self, pdf=False):
+    def export(self, filename, pdf=False):
         """
         Export and return export data
         """
@@ -837,21 +836,27 @@ class ReportExporter:
         # self.doc.add_page_break()
 
         if pdf:
-            temp_doc = tempfile.NamedTemporaryFile(dir=settings.TEMP_DIR)
-            self.doc.save_to_file(temp_doc)
+            with tempfile.NamedTemporaryFile(dir=settings.EXPORT_TEMP_SAVE_DIRECTORY) as temp_doc:
+                self.doc.save_to_file(temp_doc)
 
-            filename = temp_doc.name.split('/')[-1]
-            temp_pdf = os.path.join(settings.TEMP_DIR, '{}.pdf'.format(filename))
+                # Guess the converted output filename
+                temp_pdf = os.path.join(
+                    settings.EXPORT_TEMP_SAVE_DIRECTORY,
+                    '{}.pdf'.format(
+                        temp_doc.name.split('/')[-1]
+                    ),
+                )
 
-            call(['libreoffice', '--headless', '--convert-to', 'pdf', temp_doc.name, '--outdir', settings.TEMP_DIR])
-            file = File(open(temp_pdf, 'rb'))
-
-            # Cleanup
-            os.unlink(temp_pdf)
-            temp_doc.close()
-
+                # Start conversion
+                call([
+                    'libreoffice',
+                    '--headless',
+                    '--convert-to', 'pdf',
+                    temp_doc.name,
+                    '--outdir',
+                    settings.TEMP_DIR,
+                ])
+                # Move newly created file to expected path
+                os.rename(temp_pdf, filename)
         else:
-            buffer = self.doc.save()
-            file = ContentFile(buffer)
-
-        return file
+            self.doc.save(filename)

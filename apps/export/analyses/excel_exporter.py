@@ -1,5 +1,3 @@
-from django.core.files.base import ContentFile
-
 from export.formats.xlsx import WorkBook
 
 import logging
@@ -55,6 +53,5 @@ class ExcelExporter:
             ]])
         return self
 
-    def export(self):
-        buffer = self.wb.save()
-        return ContentFile(buffer)
+    def export(self, filename):
+        self.wb.save(filename)

@@ -295,7 +295,6 @@ class Document:
     def save_to_file(self, fp):
         self.doc.save(fp)
 
-    def save(self):
-        buffer = io.BytesIO()
-        self.doc.save(buffer)
-        return buffer.getvalue()
+    def save(self, filename):
+        with open(filename, 'wb') as fp:
+            self.doc.save(fp)

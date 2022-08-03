@@ -1,4 +1,3 @@
-from django.core.files.base import ContentFile
 from django.core.serializers.json import DjangoJSONEncoder
 
 from analysis_framework.models import Widget
@@ -65,12 +64,14 @@ class JsonExporter:
             self.data['entries'].append(data)
         return self
 
-    def export(self):
+    def export(self, filename):
         """
         Export and return export data
         """
-        json_data = json.dumps(
-            self.data, sort_keys=True, indent=2,
-            cls=DjangoJSONEncoder,
-        ).encode('utf-8')
-        return ContentFile(json_data)
+        with open(filename, 'w') as fp:
+            json.dump(
+                self.data,
+                fp,
+                sort_keys=True,
+                cls=DjangoJSONEncoder,
+            )

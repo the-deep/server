@@ -13,7 +13,12 @@ from export.exporters import JsonExporter
 from export.assessments import NewExcelExporter
 
 
-def _export_assessments(export, AssessmentModel, excel_sheet_data_generator):
+def _export_assessments(
+    export,
+    filename,
+    AssessmentModel,
+    excel_sheet_data_generator,
+):
     user = export.exported_by
     project = export.project
     export_type = export.export_type
@@ -38,22 +43,32 @@ def _export_assessments(export, AssessmentModel, excel_sheet_data_generator):
             ary.project.title: ary.to_exportable_json()
             for ary in iterable_arys
         }
-        export_data = exporter.export()
+        exporter.export(filename)
+
     elif export_type == Export.ExportType.EXCEL:
         sheets_data = excel_sheet_data_generator(iterable_arys)
-        export_data = NewExcelExporter(sheets_data)\
-            .export()
+        NewExcelExporter(sheets_data)\
+            .export(filename)
+
     else:
         raise Exception(
-            f'(Assessments Export) Unkown Export Type Provided: {export_type} for Export: {export.id}'
+            f'(Assessments Export) Unkown Export Type Provided: {export_type} for Export: {export.id} to {filename}'
         )
 
-    return export_data
+
+def export_assessments(export, filename):
+    return _export_assessments(
+        export,
+        filename,
+        Assessment,
+        get_export_data_for_assessments,
+    )
 
 
-def export_assessments(export):
-    return _export_assessments(export, Assessment, get_export_data_for_assessments)
-
-
-def export_planned_assessments(export):
-    return _export_assessments(export, PlannedAssessment, get_export_data_for_planned_assessments)
+def export_planned_assessments(export, filename):
+    return _export_assessments(
+        export,
+        filename,
+        PlannedAssessment,
+        get_export_data_for_planned_assessments,
+    )

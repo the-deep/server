@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
-from openpyxl.writer.excel import save_virtual_workbook
+from openpyxl.writer.excel import save_workbook
 
 from utils.common import (
     get_valid_xml_string,
@@ -32,8 +32,11 @@ class WorkBook:
     def create_sheet(self, title):
         return WorkSheet(self.wb.create_sheet(title))
 
-    def save(self):
-        return save_virtual_workbook(self.wb)
+    def save(self, filename):
+        return save_workbook(
+            self.wb,
+            filename,
+        )
 
 
 COL_TYPES = {

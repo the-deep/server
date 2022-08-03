@@ -1,10 +1,15 @@
 import logging
+import os
+
 from django.utils import timezone
 from django.utils.crypto import get_random_string
+from django.core.files.base import File
+from django.conf import settings
 
 from celery import shared_task
 
 from deep.celery import CeleryQueue
+from utils.common import makedirs
 from export.models import Export
 from .tasks_entries import export_entries
 from .tasks_assessment import export_assessments, export_planned_assessments
@@ -45,10 +50,26 @@ def export_task(export_id, force=False):
         export.started_at = timezone.now()
         export.save(update_fields=('status', 'started_at',))
 
-        file = EXPORTER_TYPE[export.type](export)
+        makedirs(settings.EXPORT_TEMP_SAVE_DIRECTORY)
+        export_filename = os.path.join(
+            settings.EXPORT_TEMP_SAVE_DIRECTORY,
+            f'export-{export.id}.{export.format}',
+        )
+        # Make directory if not exists
+        EXPORTER_TYPE[export.type](export, export_filename)
 
-        export.mime_type = Export.MIME_TYPE_MAP.get(export.format, Export.DEFAULT_MIME_TYPE)
-        export.file.save(get_export_filename(export), file)
+        with open(export_filename, 'rb') as file:
+            export.mime_type = Export.MIME_TYPE_MAP.get(
+                export.format,
+                Export.DEFAULT_MIME_TYPE,
+            )
+            export.file.save(
+                get_export_filename(export),
+                File(file),
+            )
+
+        # Delete temp file.
+        os.unlink(export_filename)
 
         # Update status to SUCCESS
         export.status = Export.Status.SUCCESS

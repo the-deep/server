@@ -1,5 +1,4 @@
 import logging
-from django.core.files.base import ContentFile
 
 from deep.permalinks import Permalink
 from utils.common import (
@@ -547,7 +546,7 @@ class ExcelExporter:
                 [[author, source, published, get_hyperlink(url, title) if url else title]]
             )
 
-    def export(self):
+    def export(self, filename):
         """
         Export and return export data
         """
@@ -558,5 +557,4 @@ class ExcelExporter:
         # Add bibliography
         self.add_bibliography_sheet()
 
-        buffer = self.wb.save()
-        return ContentFile(buffer)
+        self.wb.save(filename)

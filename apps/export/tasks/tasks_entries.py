@@ -13,7 +13,7 @@ from lead.filter_set import LeadGQFilterSet
 from entry.filter_set import EntryGQFilterSet
 
 
-def export_entries(export):
+def export_entries(export, filename):
     user = export.exported_by
     project = export.project
     export_type = export.export_type
@@ -60,7 +60,7 @@ def export_entries(export):
     if export_type == Export.ExportType.EXCEL:
         decoupled = extra_options.get('excel_decoupled', False)
         columns = extra_options.get('excel_columns')
-        export_data = ExcelExporter(
+        ExcelExporter(
             export,
             entries_qs,
             columns=columns,
@@ -70,7 +70,7 @@ def export_entries(export):
         )\
             .load_exportables(exportables, regions)\
             .add_entries(entries_qs)\
-            .export()
+            .export(filename)
 
     elif export_type == Export.ExportType.REPORT:
         # which widget data needs to be exported along with
@@ -85,29 +85,27 @@ def export_entries(export):
         report_levels = extra_options.get('report_levels')
         text_widget_ids = extra_options.get('report_text_widget_ids') or []
         show_groups = extra_options.get('report_show_groups')
-        export_data = (
-            ReportExporter(
-                exporting_widgets=exporting_widgets,
-                is_preview=is_preview,
-                **report_show_attributes,
-            ).load_exportables(exportables, regions)
-            .load_levels(report_levels)
-            .load_structure(report_structure)
-            .load_group_lables(entries_qs, show_groups)
-            .load_text_from_text_widgets(entries_qs, text_widget_ids)
-            .add_entries(entries_qs)
-            .export(pdf=export.format == Export.Format.PDF)
-        )
+        is_pdf = export.format == Export.Format.PDF
+        ReportExporter(
+            exporting_widgets=exporting_widgets,
+            is_preview=is_preview,
+            **report_show_attributes,
+        )\
+            .load_exportables(exportables, regions)\
+            .load_levels(report_levels)\
+            .load_structure(report_structure)\
+            .load_group_lables(entries_qs, show_groups)\
+            .load_text_from_text_widgets(entries_qs, text_widget_ids)\
+            .add_entries(entries_qs)\
+            .export(filename, pdf=is_pdf)
 
     elif export_type == Export.ExportType.JSON:
-        export_data = JsonExporter(is_preview=is_preview)\
+        JsonExporter(is_preview=is_preview)\
             .load_exportables(exportables)\
             .add_entries(entries_qs)\
-            .export()
+            .export(filename)
 
     else:
         raise Exception(
-            '(Entries Export) Unkown Export Type Provided: {export_type} for Export: {export.id}'
+            f'(Entries Export) Unkown Export Type Provided: {export_type} for Export: {export.id} to {filename}'
         )
-
-    return export_data

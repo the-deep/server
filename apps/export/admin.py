@@ -44,8 +44,11 @@ class HaveExecutionTimeFilter(admin.SimpleListFilter):
         return self.Parameter.choices
 
     def queryset(self, _, queryset):
+        _value = self.value()
+        if _value is None:
+            return queryset
         _filter = models.Q(started_at__isnull=False, ended_at__isnull=False)
-        if self.value() == self.Parameter.TRUE:
+        if _value == self.Parameter.TRUE:
             return queryset.filter(_filter)
         return queryset.exclude(_filter)
 

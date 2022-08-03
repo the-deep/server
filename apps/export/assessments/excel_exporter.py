@@ -1,7 +1,5 @@
 from collections import OrderedDict
 
-from django.core.files.base import ContentFile
-
 from export.formats.xlsx import WorkBook, RowsBuilder
 from openpyxl.styles import Alignment, Font
 from utils.common import format_date, underscore_to_title
@@ -154,7 +152,7 @@ class ExcelExporter:
 
             self._excel_rows.append(rows)
 
-    def export(self):
+    def export(self, filename):
         # Generate rows
         self.assessments_to_rows()
 
@@ -188,8 +186,7 @@ class ExcelExporter:
         if self.split:
             self.split.set_col_types(self.col_types)
 
-        buffer = self.wb.save()
-        return ContentFile(buffer)
+        self.wb.save(filename)
 
 
 class NewExcelExporter:
@@ -279,7 +276,7 @@ class NewExcelExporter:
                     row.extend(rowdata)
                 self.wb_sheets[sheet].append([row])
 
-    def export(self):
+    def export(self, filename):
         # Write cols header first
         self.add_headers()
 
@@ -290,5 +287,4 @@ class NewExcelExporter:
         if self.wb_sheets:
             self.wb.wb.remove(self.wb.wb.get_sheet_by_name('Sheet'))
 
-        buffer = self.wb.save()
-        return ContentFile(buffer)
+        self.wb.save(filename)
