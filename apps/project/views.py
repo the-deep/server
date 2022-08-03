@@ -876,9 +876,12 @@ def accept_project_confirm(
         pid = force_text(urlsafe_base64_decode(pidb64))
         user = User.objects.get(pk=uid)
         join_request = ProjectJoinRequest.objects.get(pk=pid)
-    except(
-        TypeError, ValueError, OverflowError,
-        ProjectJoinRequest.DoesNotExist, User.DoesNotExist,
+    except (
+        TypeError,
+        ValueError,
+        OverflowError,
+        ProjectJoinRequest.DoesNotExist,
+        User.DoesNotExist,
     ):
         user = None
         join_request = None

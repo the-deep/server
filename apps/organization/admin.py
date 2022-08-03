@@ -85,18 +85,30 @@ class OrganizationModelForm(forms.ModelForm):
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
     search_fields = ('title', 'short_name', 'long_name')
-    list_display = ('title', 'short_name', linkify('organization_type'), 'get_relief_web_id', 'verified', 'modified_at')
+    list_display = (
+        'title',
+        'short_name',
+        linkify('organization_type'),
+        'source',
+        'get_relief_web_id',
+        'verified',
+        'modified_at',
+    )
     readonly_fields = (
         document_preview('logo', label='Logo Preview', max_height='400px', max_width='300px'),
         'relief_web_id'
     )
-    list_filter = ('organization_type', 'verified', IsFromReliefWeb,)
+    list_filter = ('organization_type', 'verified', IsFromReliefWeb, 'source',)
     actions = (merge_organizations,)
     exclude = ('parent',)
     inlines = [OrganizationInline]
     autocomplete_fields = (
-        'created_by', 'modified_by', 'logo',
-        'organization_type', 'regions', 'parent',
+        'created_by',
+        'modified_by',
+        'logo',
+        'organization_type',
+        'regions',
+        'parent',
     )
     change_list_template = 'admin/organization_change_list.html'
     form = OrganizationModelForm

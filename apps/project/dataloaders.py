@@ -174,6 +174,8 @@ class ProjectExploreStatsLoader(WithContextMixin):
             calculated_at=now,
             total_projects=project_count,
             total_users=User.objects.filter(is_active=True).count(),
+            total_leads=Lead.objects.count(),
+            total_entries=Entry.objects.count(),
             leads_added_weekly=leads_count and (
                 leads_count / (
                     (

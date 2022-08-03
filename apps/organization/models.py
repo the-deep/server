@@ -14,6 +14,11 @@ class OrganizationType(models.Model):
 
 
 class Organization(UserResource):
+    class SourceType(models.IntegerChoices):
+        WEB_INFO_EXTRACT_VIEW = 0, 'Web info extract VIEW'
+        WEB_INFO_DATA_VIEW = 1, 'Web Info Data VIEW'
+        CONNECTOR = 2, 'Connector'
+
     parent = models.ForeignKey(
         # TODO: should we do this ? on_delete=models.CASCADE
         'Organization', on_delete=models.CASCADE,
@@ -22,6 +27,7 @@ class Organization(UserResource):
         related_name='related_childs',
     )
 
+    source = models.PositiveSmallIntegerField(choices=SourceType.choices, null=True, blank=True)
     title = models.CharField(max_length=255)
     short_name = models.CharField(max_length=255, blank=True)
     long_name = models.CharField(max_length=512, blank=True)

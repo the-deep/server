@@ -133,7 +133,7 @@ class ConnectorViewSet(viewsets.ModelViewSet):
         }
 
         source = source_store[connector.source.key]()
-        data, count = source.get_leads(params)
+        data, count = source.get_leads(params, request.user)
 
         # Paginate manually
         # FIXME: Make this better: probably cache, and also optimize

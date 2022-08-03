@@ -123,6 +123,8 @@ class ProjectExploreStatType(graphene.ObjectType):
     calculated_at = graphene.DateTime()
     total_projects = graphene.Int()
     total_users = graphene.Int()
+    total_leads = graphene.Int()
+    total_entries = graphene.Int()
     leads_added_weekly = graphene.Int()
     daily_average_leads_tagged_per_project = graphene.Float()
     generated_exports_monthly = graphene.Int()

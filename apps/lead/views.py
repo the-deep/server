@@ -555,10 +555,7 @@ class LeadWebsiteFetch(views.APIView):
         })
 
 
-class WebInfoExtractView(views.APIView):
-    """
-    Extract information from a website for new lead
-    """
+class WebInfoViewMixin():
     permission_classes = [permissions.IsAuthenticated]
     # FIXME: This is also used by chrome-extension, use csrf properly
     authentication_classes = [CSRFExemptSessionAuthentication]
@@ -568,16 +565,15 @@ class WebInfoExtractView(views.APIView):
         if org:
             return SimpleOrganizationSerializer(org).data
 
-    def post(self, request, version=None):
-        url = request.data.get('url')
-
-        extractor = get_web_info_extractor(url)
-        date = extractor.get_date()
-        country = extractor.get_country()
-        source_raw = extractor.get_source()
-        author_raw = extractor.get_author()
-        title = extractor.get_title()
-
+    def _process_data(
+        self,
+        request,
+        organization_source_type,
+        url,
+        source_raw,
+        author_raw,
+        country,
+    ):
         project = None
         if country:
             project = Project.get_for_member(request.user).filter(
@@ -585,7 +581,11 @@ class WebInfoExtractView(views.APIView):
             ).first()
 
         project = project or request.user.profile.last_active_project
-        organization_search = OrganizationSearch([source_raw, author_raw])
+        organization_search = OrganizationSearch(
+            [source_raw, author_raw],
+            organization_source_type,
+            request.user,
+        )
 
         organization_context = {
             'source': self.get_organization(source_raw, organization_search),
@@ -597,29 +597,49 @@ class WebInfoExtractView(views.APIView):
         context = {
             **organization_context,
             'project': project and project.id,
+            'existing': check_if_url_exists(url, request.user, project),
+        }
+        return context
+
+
+# XXX: This is not used by client. Serverless (aws labmda) is used instead.
+class WebInfoExtractView(WebInfoViewMixin, views.APIView):
+    """
+    Extract information from a website for new lead
+    """
+    def post(self, request, version=None):
+        url = request.data.get('url')
+
+        extractor = get_web_info_extractor(url)
+        date = extractor.get_date()
+        country = extractor.get_country()
+        source_raw = extractor.get_source()
+        author_raw = extractor.get_author()
+        title = extractor.get_title()
+
+        context = self._process_data(
+            request,
+            Organization.SourceType.WEB_INFO_EXTRACT_VIEW,
+            url=url,
+            source_raw=source_raw,
+            author_raw=author_raw,
+            country=country,
+        )
+
+        return response.Response({
+            **context,
             'title': title,
             'date': date,
             'country': country,
             'url': url,
-            'existing': check_if_url_exists(url, request.user, project),
-        }
-
-        return response.Response(context)
+        })
 
 
-class WebInfoDataView(views.APIView):
+class WebInfoDataView(WebInfoViewMixin, views.APIView):
     """
     API for Web info Extra data after country, source and author extraction from
     the web info extraction service
     """
-    permission_classes = [permissions.IsAuthenticated]
-    # FIXME: This is also used by chrome-extension, use csrf properly
-    authentication_classes = [CSRFExemptSessionAuthentication]
-
-    def get_organization(self, title, search):
-        org = search.get(title)
-        if org:
-            return SimpleOrganizationSerializer(org).data
 
     def post(self, request, version=None):
         source_raw = request.data.get('source_raw')
@@ -627,26 +647,15 @@ class WebInfoDataView(views.APIView):
         url = request.data.get('url')
         country = request.data.get('country')
 
-        project = None
-        if country:
-            project = Project.get_for_member(request.user).filter(
-                regions__title__icontains=country
-            ).first()
-
-        project = project or request.user.profile.last_active_project
-        organization_search = OrganizationSearch([source_raw, author_raw])
-
-        organization_context = {
-            'source': self.get_organization(source_raw, organization_search),
-            'author': self.get_organization(author_raw, organization_search),
-            'source_raw': source_raw,
-            'author_raw': author_raw,
-        }
-        return response.Response({
-            **organization_context,
-            'project': project and project.id,
-            'existing': check_if_url_exists(url, request.user, project),
-        })
+        context = self._process_data(
+            request,
+            Organization.SourceType.WEB_INFO_DATA_VIEW,
+            url=url,
+            source_raw=source_raw,
+            author_raw=author_raw,
+            country=country,
+        )
+        return response.Response(context)
 
 
 class BaseCopyView(views.APIView):
