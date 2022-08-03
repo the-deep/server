@@ -1145,6 +1145,8 @@ class TestProjectExploreStats(GraphQLSnapShotTestCase):
               projectExploreStats {
                 totalProjects
                 totalUsers
+                totalLeads
+                totalEntries
                 leadsAddedWeekly
                 dailyAverageLeadsTaggedPerProject
                 generatedExportsMonthly

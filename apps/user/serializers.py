@@ -386,7 +386,14 @@ class RegisterSerializer(CaptchaSerializerMixin, serializers.ModelSerializer):
 
     def validate_email(self, email):
         email = email.lower()
-        if User.objects.filter(models.Q(email=email) | models.Q(username=email)).exists():
+        existing_users_qs = User.objects.filter(
+            models.Q(email=email) |
+            models.Q(username=email) |
+            # Partially deleted users
+            models.Q(profile__original_data__email=email) |
+            models.Q(profile__original_data__username=email)
+        )
+        if existing_users_qs.exists():
             raise serializers.ValidationError('User with that email already exists!!')
         return email
 

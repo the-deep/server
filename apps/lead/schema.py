@@ -148,7 +148,7 @@ def get_lead_filter_data(filters, context):
                 *ef_lead_created_by_ids,
                 *ef_modified_by_ids,
             ])
-        )
+        ).order_by('id')
     )
 
     organizations = list(
@@ -159,7 +159,7 @@ def get_lead_filter_data(filters, context):
                 *ef_lead_author_organization_ids,
                 *ef_lead_source_organization_ids,
             ])
-        )
+        ).order_by('id')
     )
 
     organization_types = list(
@@ -168,14 +168,14 @@ def get_lead_filter_data(filters, context):
                 *author_organization_type_ids,
                 *ef_lead_authoring_organizationtype_ids,
             ])
-        )
+        ).order_by('id')
     )
 
     geoareas = list(
         GeoArea.objects.filter(
             admin_level__region__project=context.active_project,
             id__in=ef_geo_area_ids
-        )
+        ).order_by('id')
     )
 
     return dict(

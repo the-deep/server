@@ -14,7 +14,9 @@ from lead.models import Lead
 
 
 class OrganizationSearch():
-    def __init__(self, texts):
+    def __init__(self, texts, source_type, creator):
+        self.source_type = source_type
+        self.creator = creator
         self.fetch(texts)
 
     def create_organization(self, text):
@@ -22,6 +24,8 @@ class OrganizationSearch():
             title=text,
             short_name=text,
             long_name=text,
+            source=self.source_type,
+            created_by=self.creator,
         )
 
     def fetch(self, texts):
@@ -82,7 +86,7 @@ class Source(ABC):
     def fetch(self, params):
         return [], 0
 
-    def get_leads(self, params) -> Tuple[List[Lead], int]:
+    def get_leads(self, params, request_user) -> Tuple[List[Lead], int]:
         def _parse_date(date_raw) -> Union[None, datetime.date]:
             if type(date_raw) == datetime.date:
                 return date_raw
@@ -97,11 +101,15 @@ class Source(ABC):
         if not leads_data:
             return [], total_count
 
-        organization_search = OrganizationSearch([
-            label
-            for d in leads_data
-            for label in [d['source'], d['author']]
-        ])
+        organization_search = OrganizationSearch(
+            [
+                label
+                for d in leads_data
+                for label in [d['source'], d['author']]
+            ],
+            Organization.SourceType.CONNECTOR,
+            request_user,
+        )
 
         leads = []
         for ldata in leads_data:
@@ -132,12 +140,3 @@ class Source(ABC):
             leads.append(lead)
 
         return leads, total_count
-
-    def query_leads(self, params):
-        from connector.serializers import SourceDataSerializer
-
-        data, total_count = self.get_leads(params)
-        return SourceDataSerializer(
-            data,
-            many=True,
-        ).data

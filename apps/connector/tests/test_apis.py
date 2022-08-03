@@ -373,7 +373,6 @@ class ConnectorSourcesApiTest(TestCase):
         data = response.data['results']
 
         for each in data:
-            print(each)
             assert 'status' in each
             if each['source'] == 'acaps-briefing-notes':
                 assert each['status'] == ConnectorSource.STATUS_BROKEN
@@ -389,9 +388,15 @@ class ConnectorSourcesApiTest(TestCase):
         Organization.objects.filter(title__in=organization_titles).all().delete()
         assert Organization.objects.filter(title__in=organization_titles).count() == 0
 
-        organization_search = OrganizationSearch(organization_titles)
-        organization_search.get('Deep')
-        organization_search.get('New Deep')
-        organization_search.get('Old Deep')
+        organization_search = OrganizationSearch(
+            organization_titles,
+            Organization.SourceType.WEB_INFO_EXTRACT_VIEW,
+            self.user,
+        )
 
         assert Organization.objects.filter(title__in=organization_titles).count() == 3
+        for title in organization_titles:
+            org = Organization.objects.get(title=title)
+            assert organization_search.get(title) == org
+            assert org.source == Organization.SourceType.WEB_INFO_EXTRACT_VIEW
+            assert org.created_by == self.user
