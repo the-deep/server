@@ -119,7 +119,6 @@ class LeadFilterSet(django_filters.FilterSet):
         label='Exists Choice',
         choices=Exists.choices, method='exists_filter',
     )
-
     emm_entities = django_filters.CharFilter(
         method='emm_entities_filter',
     )
@@ -313,6 +312,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
     # Filter-only enum filter
     has_entries = django_filters.BooleanFilter(method='filter_has_entries', help_text='Lead has entries.')
     has_assessment = django_filters.BooleanFilter(method='filter_has_assessment', help_text='Lead has assessment.')
+    is_assessment = django_filters.BooleanFilter(field_name='is_assessment_lead')
     entries_filter_data = SimpleInputFilter(EntriesFilterDataInputType, method='filtered_entries_filter_data')
 
     search = django_filters.CharFilter(method='search_filter')
