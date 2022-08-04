@@ -50,6 +50,7 @@ class TestUnifiedConnectorResponse(GraphQLTestCase):
         [ConnectorSource.Source.PDNA, 'unified_connector.sources.pdna.PDNA.get_content'],
         [ConnectorSource.Source.HUMANITARIAN_RESP,
             'unified_connector.sources.humanitarian_response.HumanitarianResponse.get_content'],
+        [ConnectorSource.Source.EMM, 'unified_connector.sources.emm.EMM.get_content'],
     ])
     def test_connector_source_(self, source_type, response_mock_path):
         response_mock_patch = patch(response_mock_path)
