@@ -535,6 +535,7 @@ enum ConnectorSourceSourceEnum {
   UNHCR
   HUMANITARIAN_RESP
   PDNA
+  EMM
 }
 
 type ConnectorSourceStatsType {
