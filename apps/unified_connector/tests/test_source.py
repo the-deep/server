@@ -75,7 +75,7 @@ class TestUnifiedConnectorResponse(GraphQLTestCase):
         # Fetch/Create using raw_text_labels
         qs = _get_orgs(raw_text_labels)
         self.assertNotEqual(qs.count(), len(raw_text_labels))
-        search_organizaton = OrganizationSearch(raw_text_labels)
+        search_organizaton = OrganizationSearch(raw_text_labels, None, None)
         # Check if all organizations are created
         qs = _get_orgs(raw_text_labels)
         self.assertEqual(qs.count(), len(raw_text_labels))
@@ -88,7 +88,7 @@ class TestUnifiedConnectorResponse(GraphQLTestCase):
         qs.update(parent=parent_org)
 
         # Fetch/Create using raw_text_labels
-        search_organizaton = OrganizationSearch(raw_text_labels)
+        search_organizaton = OrganizationSearch(raw_text_labels, None, None)
         for title in child_titles:
             self.assertEqual(search_organizaton.get(title), parent_org)
 
@@ -101,7 +101,7 @@ class TestUnifiedConnectorResponse(GraphQLTestCase):
         # Fetch/Create using raw_text_labels
         qs = _get_orgs(raw_text_labels)
         self.assertNotEqual(qs.count(), len(set(raw_text_labels)))
-        search_organizaton = OrganizationSearch(raw_text_labels)
+        search_organizaton = OrganizationSearch(raw_text_labels, None, None)
         # Check if all organizations are created
         qs = _get_orgs(raw_text_labels)
         self.assertEqual(qs.count(), len(set(raw_text_labels)))
@@ -110,5 +110,5 @@ class TestUnifiedConnectorResponse(GraphQLTestCase):
         Organization.objects.filter(title='the relief web2').update(parent=parent_org)
 
         # Fetch latest
-        search_organizaton = OrganizationSearch(raw_text_labels)
+        search_organizaton = OrganizationSearch(raw_text_labels, None, None)
         self.assertEqual(search_organizaton.get('the relief web2'), parent_org)
