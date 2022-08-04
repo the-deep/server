@@ -62,6 +62,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
             $text: String
             $url: String
             $ordering: [LeadOrderingEnum!]
+            $isAssessment: Boolean
         ) {
           project(id: $projectId) {
             leads (
@@ -88,6 +89,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 text: $text
                 url: $url
                 entriesFilterData: $entriesFilterData
+                isAssessment: $isAssessment
                 ordering: $ordering
             ) {
               results {
@@ -204,6 +206,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
             source=org3,
             authors=[org1],
             priority=Lead.Priority.MEDIUM,
+            is_assessment_lead=True,
         )
         lead5 = LeadFactory.create(
             project=project,
@@ -211,6 +214,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
             status=Lead.Status.TAGGED,
             assignee=[member2],
             source=org3,
+            is_assessment_lead=True,
         )
 
         EntryFactory.create(project=project, analysis_framework=af, lead=lead4, controlled=False)
@@ -269,6 +273,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
             ),
             ({'hasAssessment': True}, [lead1, lead2]),
             ({'hasAssessment': False}, [lead3, lead4, lead5]),
+            ({'isAssessment': True}, [lead4, lead5]),
             # TODO:
             # ({'emmEntities': []}, []),
             # ({'emmKeywords': []}, []),
