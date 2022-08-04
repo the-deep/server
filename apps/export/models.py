@@ -47,21 +47,21 @@ class Export(models.Model):
 
     # Used by extra options
     class StaticColumn(models.TextChoices):
-        LEAD_PUBLISHED_ON = 'lead_published_on', 'Lead published on'
-        ENTRY_CREATED_BY = 'entry_created_by', 'Entry created by'
-        ENTRY_CREATED_AT = 'ENTRY_CREATED_AT', 'Entry created at'
-        ENTRY_CONTROL_STATUS = 'ENTRY_CONTROL_STATUS', 'Entry control status'
-        LEAD_ID = 'LEAD_ID', 'Lead id'
-        LEAD_TITLE = 'LEAD_TITLE', 'Lead title'
-        LEAD_URL = 'LEAD_URL', 'Lead url'
-        LEAD_ORGANIZATION_TYPE_AUTHOR = 'LEAD_ORGANIZATION_TYPE_AUTHOR', 'Lead organization type author'
-        LEAD_ORGANIZATION_AUTHOR = 'LEAD_ORGANIZATION_AUTHOR', 'Lead organization author'
-        LEAD_ORGANIZATION_SOURCE = 'LEAD_ORGANIZATION_SOURCE', 'Lead organization source'
-        LEAD_PRIORITY = 'LEAD_PRIORITY', 'Lead priority'
-        LEAD_ASSIGNEE = 'LEAD_ASSIGNEE', 'Lead assignee'
-        ENTRY_ID = 'ENTRY_ID', 'Entry id'
-        LEAD_ENTRY_ID = 'LEAD_ENTRY_ID', 'Lead entry id'
-        ENTRY_EXCERPT = 'ENTRY_EXCERPT', 'Entry excerpt'
+        LEAD_PUBLISHED_ON = 'lead_published_on', 'Date of Lead Publication'
+        ENTRY_CREATED_BY = 'entry_created_by', 'Imported By'
+        ENTRY_CREATED_AT = 'entry_created_at', 'Date Imported'
+        ENTRY_CONTROL_STATUS = 'entry_control_status', 'Verification Status'
+        LEAD_ID = 'lead_id', 'Lead Id'
+        LEAD_TITLE = 'lead_title', 'Lead Title'
+        LEAD_URL = 'lead_url', 'Lead URL'
+        LEAD_ORGANIZATION_TYPE_AUTHOR = 'lead_organization_type_author', 'Authoring Organizations Type'
+        LEAD_ORGANIZATION_AUTHOR = 'lead_organization_author', 'Author'
+        LEAD_ORGANIZATION_SOURCE = 'lead_organization_source', 'Soure'
+        LEAD_PRIORITY = 'lead_priority', 'Lead Priority'
+        LEAD_ASSIGNEE = 'lead_assignee', 'Assignee'
+        ENTRY_ID = 'entry_id', 'Entry Id'
+        LEAD_ENTRY_ID = 'lead_entry_id', 'Lead-Entry Id'
+        ENTRY_EXCERPT = 'entry_excerpt', 'Original Excerpt, Modified Excerpt'
 
     MIME_TYPE_MAP = {
         Format.XLSX: EXCEL_MIME_TYPE,
