@@ -26,20 +26,11 @@ def get_hyperlink(url, text):
 class ExcelExporter:
     class ColumnsData:
         TITLES = {
-            Export.StaticColumn.LEAD_PUBLISHED_ON: 'Date of Lead Publication',
-            Export.StaticColumn.ENTRY_CREATED_BY: 'Imported By',
-            Export.StaticColumn.ENTRY_CREATED_AT: 'Date Imported',
-            Export.StaticColumn.ENTRY_CONTROL_STATUS: 'Verification Status',
-            Export.StaticColumn.LEAD_ID: 'Lead Id',
-            Export.StaticColumn.LEAD_TITLE: 'Lead Title',
-            Export.StaticColumn.LEAD_URL: 'Lead URL',
-            Export.StaticColumn.LEAD_ORGANIZATION_TYPE_AUTHOR: 'Authoring Organizations Type',
-            Export.StaticColumn.LEAD_ORGANIZATION_AUTHOR: 'Author',
-            Export.StaticColumn.LEAD_ORGANIZATION_SOURCE: 'Source',
-            Export.StaticColumn.LEAD_PRIORITY: 'Lead Priority',
-            Export.StaticColumn.LEAD_ASSIGNEE: 'Assignee',
-            Export.StaticColumn.ENTRY_ID: 'Entry Id',
-            Export.StaticColumn.LEAD_ENTRY_ID: 'Lead-Entry Id',
+            **{
+                key: label
+                for key, label in Export.StaticColumn.choices
+            },
+            # Override labels here.
             Export.StaticColumn.ENTRY_EXCERPT: lambda self: [
                 'Modified Excerpt', 'Original Excerpt'
             ] if self.modified_excerpt_exists else ['Excerpt'],
