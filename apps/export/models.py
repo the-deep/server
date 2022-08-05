@@ -47,21 +47,21 @@ class Export(models.Model):
 
     # Used by extra options
     class StaticColumn(models.TextChoices):
-        LEAD_PUBLISHED_ON = 'lead_published_on', 'Date of Lead Publication'
+        LEAD_PUBLISHED_ON = 'lead_published_on', 'Date of Source Publication'
         ENTRY_CREATED_BY = 'entry_created_by', 'Imported By'
         ENTRY_CREATED_AT = 'entry_created_at', 'Date Imported'
         ENTRY_CONTROL_STATUS = 'entry_control_status', 'Verification Status'
-        LEAD_ID = 'lead_id', 'Lead Id'
-        LEAD_TITLE = 'lead_title', 'Lead Title'
-        LEAD_URL = 'lead_url', 'Lead URL'
+        LEAD_ID = 'lead_id', 'Source Id'
+        LEAD_TITLE = 'lead_title', 'Source Title'
+        LEAD_URL = 'lead_url', 'Source URL'
         LEAD_ORGANIZATION_TYPE_AUTHOR = 'lead_organization_type_author', 'Authoring Organizations Type'
         LEAD_ORGANIZATION_AUTHOR = 'lead_organization_author', 'Author'
-        LEAD_ORGANIZATION_SOURCE = 'lead_organization_source', 'Soure'
-        LEAD_PRIORITY = 'lead_priority', 'Lead Priority'
+        LEAD_ORGANIZATION_SOURCE = 'lead_organization_source', 'Publisher'
+        LEAD_PRIORITY = 'lead_priority', 'Source Priority'
         LEAD_ASSIGNEE = 'lead_assignee', 'Assignee'
         ENTRY_ID = 'entry_id', 'Entry Id'
-        LEAD_ENTRY_ID = 'lead_entry_id', 'Lead-Entry Id'
-        ENTRY_EXCERPT = 'entry_excerpt', 'Original Excerpt, Modified Excerpt'
+        LEAD_ENTRY_ID = 'lead_entry_id', 'Source-Entry Id'
+        ENTRY_EXCERPT = 'entry_excerpt', 'Modified Excerpt, Original Excerpt'
 
     MIME_TYPE_MAP = {
         Format.XLSX: EXCEL_MIME_TYPE,

@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='project',
             name='geo_cache_file',
-            field=models.FileField(blank=True, null=True, upload_to=''),
+            field=models.FileField(blank=True, null=True, upload_to='project-geo-cache/'),
         ),
         migrations.AddField(
             model_name='project',
