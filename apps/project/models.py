@@ -103,7 +103,7 @@ class Project(UserResource):
     stats_cache = models.JSONField(default=dict)
     # Stores the geo locations data as cache.
     geo_cache_hash = models.CharField(max_length=256, null=True, blank=True)
-    geo_cache_file = models.FileField(null=True, blank=True)
+    geo_cache_file = models.FileField(upload_to='project-geo-cache/', null=True, blank=True)
 
     # this is used for project deletion
     is_deleted = models.BooleanField(default=False)

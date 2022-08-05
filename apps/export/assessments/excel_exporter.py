@@ -32,10 +32,10 @@ class ExcelExporter:
         self.merge_cells = {}
         # Initial titles
         self.lead_titles = [
-            'Date of Lead Publication',
+            'Date of Source Publication',
             'Imported By',
-            'Lead Title',
-            'Source',
+            'Source Title',
+            'Publisher',
         ]
         self.titles = [*self.lead_titles]
         self.col_types = {
