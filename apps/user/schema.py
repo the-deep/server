@@ -76,9 +76,10 @@ class UserProfileType(graphene.ObjectType):
 
     @staticmethod
     def resolve_display_picture_url(root, info, **kwargs) -> Union[str, None]:
-        return info.context.request.build_absolute_uri(
-            URLCachedFileField().to_representation(root.display_picture)
-        )
+        if root.display_picture:
+            return info.context.request.build_absolute_uri(
+                URLCachedFileField().to_representation(root.display_picture.file)
+            )
 
 
 class UserType(DjangoObjectType):
@@ -144,9 +145,12 @@ class UserMeType(DjangoObjectType):
     @staticmethod
     @only_me
     def resolve_display_picture_url(root, info, **kwargs) -> Union[str, None]:
-        return info.context.request.build_absolute_uri(
-            URLCachedFileField().to_representation(root.profile.display_picture)
-        )
+        if root.profile.display_picture:
+            return info.context.request.build_absolute_uri(
+                URLCachedFileField().to_representation(
+                    root.profile.display_picture.file,
+                )
+            )
 
     @staticmethod
     @only_me
