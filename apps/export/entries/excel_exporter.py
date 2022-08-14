@@ -492,7 +492,7 @@ class ExcelExporter:
                         entry,
                         lead,
                         assignee,
-                    ) or []
+                    )
                     if type(values) in [list, tuple]:
                         rows.add_value_list(values)
                     else:
