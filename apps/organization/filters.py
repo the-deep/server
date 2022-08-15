@@ -5,7 +5,10 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models.functions import Length
 from django.db import models
 
-from utils.graphene.filters import MultipleInputFilter
+from utils.graphene.filters import MultipleInputFilter, IDFilter
+
+from lead.models import Lead
+from project.models import Project
 from .models import Organization
 from .enums import OrganizationOrderingEnum
 
@@ -38,6 +41,7 @@ class IsFromReliefWeb(admin.SimpleListFilter):
 
 class OrganizationFilterSet(django_filters.FilterSet):
     search = django_filters.CharFilter(method='search_filter')
+    used_in_project = IDFilter(method='filter_used_in_project')
     ordering = MultipleInputFilter(
         OrganizationOrderingEnum,
         method='ordering_filter',
@@ -45,7 +49,7 @@ class OrganizationFilterSet(django_filters.FilterSet):
 
     class Meta:
         model = Organization
-        fields = ['id']
+        fields = ['id', 'verified']
 
     def search_filter(self, qs, _, value):
         if value:
@@ -57,6 +61,26 @@ class OrganizationFilterSet(django_filters.FilterSet):
                 models.Q(related_childs__short_name__icontains=value) |
                 models.Q(related_childs__long_name__icontains=value)
             ).distinct()
+        return qs
+
+    def filter_used_in_project(self, qs, _, value):
+        if value:
+            user = getattr(self.request, 'user', None)
+            if user is None:
+                return qs
+            project = Project.get_for_gq(user, only_member=True).filter(id=value).first()
+            if project is None:
+                return qs
+            # Only using lead for now.
+            lead_organizations_queryset = Lead.objects.filter(project=project)
+            return qs.filter(
+                # Publishers
+                models.Q(id__in=lead_organizations_queryset.values('source')) |
+                # Authors
+                models.Q(id__in=lead_organizations_queryset.values('authors__id')) |
+                # Project stakeholders
+                models.Q(id__in=project.organizations.values('id'))
+            )
         return qs
 
     def ordering_filter(self, qs, _, value):
