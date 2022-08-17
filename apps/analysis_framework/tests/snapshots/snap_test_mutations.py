@@ -439,6 +439,28 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
             'title': 'multi-select-Widget-2',
             'version': 1,
             'widgetId': 'MULTISELECT'
+        },
+        {
+            'clientId': 'geo-widget-103-client-id',
+            'id': '7',
+            'key': 'geo-widget-103-key',
+            'order': 3,
+            'properties': {
+            },
+            'title': 'Geo',
+            'version': 1,
+            'widgetId': 'GEO'
+        },
+        {
+            'clientId': 'scale-widget-104-client-id',
+            'id': '8',
+            'key': 'scale-widget-104-key',
+            'order': 4,
+            'properties': {
+            },
+            'title': 'Scale',
+            'version': 1,
+            'widgetId': 'SCALE'
         }
     ],
     'title': 'AF (TEST)'
@@ -456,6 +478,64 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                         'field': 'title',
                         'messages': 'This field may not be blank.',
                         'objectErrors': None
+                    },
+                    {
+                        'arrayErrors': None,
+                        'clientId': None,
+                        'field': 'properties',
+                        'messages': None,
+                        'objectErrors': [
+                            {
+                                'arrayErrors': None,
+                                'clientId': None,
+                                'field': 'statsConfig',
+                                'messages': None,
+                                'objectErrors': [
+                                    {
+                                        'arrayErrors': None,
+                                        'clientId': None,
+                                        'field': 'geoWidget',
+                                        'messages': 'Different widget type was provided. Required: geoWidget Provided: multiselectWidget',
+                                        'objectErrors': None
+                                    },
+                                    {
+                                        'arrayErrors': None,
+                                        'clientId': None,
+                                        'field': 'severityWidget',
+                                        'messages': 'Different widget type was provided. Required: scaleWidget Provided: multiselectWidget',
+                                        'objectErrors': None
+                                    },
+                                    {
+                                        'arrayErrors': None,
+                                        'clientId': None,
+                                        'field': 'reliabilityWidget',
+                                        'messages': "Provided widget with ID: 10000001 doesn't exists",
+                                        'objectErrors': None
+                                    },
+                                    {
+                                        'arrayErrors': None,
+                                        'clientId': None,
+                                        'field': 'widget1d',
+                                        'messages': "Different widget type was provided. Required: matrix1dWidget Provided: ['multiselectWidget']",
+                                        'objectErrors': None
+                                    },
+                                    {
+                                        'arrayErrors': None,
+                                        'clientId': None,
+                                        'field': 'widget2d',
+                                        'messages': "Different widget type was provided. Required: matrix2dWidget Provided: ['multiselectWidget']",
+                                        'objectErrors': None
+                                    },
+                                    {
+                                        'arrayErrors': None,
+                                        'clientId': None,
+                                        'field': 'organigramWidgets',
+                                        'messages': "Different widget type was provided. Required: organigramWidget Provided: ['multiselectWidget']",
+                                        'objectErrors': None
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     {
                         'arrayErrors': [
@@ -509,7 +589,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 {
                                     'clientId': 'section-2-text-101-client-id',
                                     'conditional': None,
-                                    'id': '7',
+                                    'id': '9',
                                     'key': 'section-2-text-101',
                                     'order': 1,
                                     'properties': {
@@ -566,11 +646,32 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             ]
                         }
                     ],
+                    'properties': {
+                        'statsConfig': {
+                            'geoWidget': {
+                                'pk': '7'
+                            },
+                            'multiselectWidgets': [
+                                {
+                                    'pk': '6'
+                                }
+                            ],
+                            'organigramWidgets': None,
+                            'reliabilityWidget': {
+                                'pk': '8'
+                            },
+                            'severityWidget': {
+                                'pk': '8'
+                            },
+                            'widget1d': None,
+                            'widget2d': None
+                        }
+                    },
                     'secondaryTagging': [
                         {
                             'clientId': 'multi-select-widget-102-client-id',
                             'conditional': None,
-                            'id': '8',
+                            'id': '10',
                             'key': 'multi-select-widget-102-key',
                             'order': 2,
                             'properties': {
@@ -578,6 +679,30 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             'title': 'multi-select-Widget-2',
                             'version': 1,
                             'widgetId': 'MULTISELECT'
+                        },
+                        {
+                            'clientId': 'geo-widget-103-client-id',
+                            'conditional': None,
+                            'id': '7',
+                            'key': 'geo-widget-103-key',
+                            'order': 3,
+                            'properties': {
+                            },
+                            'title': 'Geo',
+                            'version': 1,
+                            'widgetId': 'GEO'
+                        },
+                        {
+                            'clientId': 'scale-widget-104-client-id',
+                            'conditional': None,
+                            'id': '8',
+                            'key': 'scale-widget-104-key',
+                            'order': 4,
+                            'properties': {
+                            },
+                            'title': 'Scale',
+                            'version': 1,
+                            'widgetId': 'SCALE'
                         }
                     ],
                     'title': 'Updated AF (TEST)'
@@ -610,7 +735,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 {
                                     'clientId': 'section-2-text-101-client-id',
                                     'conditional': None,
-                                    'id': '10',
+                                    'id': '12',
                                     'key': 'section-2-text-101',
                                     'order': 1,
                                     'properties': {
@@ -672,6 +797,24 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             ]
                         }
                     ],
+                    'properties': {
+                        'statsConfig': {
+                            'geoWidget': {
+                                'pk': '7'
+                            },
+                            'multiselectWidgets': [
+                            ],
+                            'organigramWidgets': None,
+                            'reliabilityWidget': {
+                                'pk': '8'
+                            },
+                            'severityWidget': {
+                                'pk': '8'
+                            },
+                            'widget1d': None,
+                            'widget2d': None
+                        }
+                    },
                     'secondaryTagging': [
                         {
                             'clientId': 'multi-select-widget-102-client-id',
@@ -681,7 +824,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 'parentWidget': '1',
                                 'parentWidgetType': 'TEXT'
                             },
-                            'id': '11',
+                            'id': '13',
                             'key': 'multi-select-widget-102-key',
                             'order': 2,
                             'properties': {
@@ -689,6 +832,30 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             'title': 'multi-select-Widget-2',
                             'version': 1,
                             'widgetId': 'MULTISELECT'
+                        },
+                        {
+                            'clientId': 'geo-widget-103-client-id',
+                            'conditional': None,
+                            'id': '7',
+                            'key': 'geo-widget-103-key',
+                            'order': 3,
+                            'properties': {
+                            },
+                            'title': 'Geo',
+                            'version': 1,
+                            'widgetId': 'GEO'
+                        },
+                        {
+                            'clientId': 'scale-widget-104-client-id',
+                            'conditional': None,
+                            'id': '8',
+                            'key': 'scale-widget-104-key',
+                            'order': 4,
+                            'properties': {
+                            },
+                            'title': 'Scale',
+                            'version': 1,
+                            'widgetId': 'SCALE'
                         }
                     ],
                     'title': 'Updated AF (TEST)'
@@ -721,7 +888,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 {
                                     'clientId': 'section-2-text-101-client-id',
                                     'conditional': None,
-                                    'id': '12',
+                                    'id': '14',
                                     'key': 'section-2-text-101',
                                     'order': 1,
                                     'properties': {
@@ -783,11 +950,29 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             ]
                         }
                     ],
+                    'properties': {
+                        'statsConfig': {
+                            'geoWidget': {
+                                'pk': '7'
+                            },
+                            'multiselectWidgets': [
+                            ],
+                            'organigramWidgets': None,
+                            'reliabilityWidget': {
+                                'pk': '8'
+                            },
+                            'severityWidget': {
+                                'pk': '8'
+                            },
+                            'widget1d': None,
+                            'widget2d': None
+                        }
+                    },
                     'secondaryTagging': [
                         {
                             'clientId': 'multi-select-widget-102-client-id',
                             'conditional': None,
-                            'id': '13',
+                            'id': '15',
                             'key': 'multi-select-widget-102-key',
                             'order': 2,
                             'properties': {
@@ -795,6 +980,30 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             'title': 'multi-select-Widget-2',
                             'version': 1,
                             'widgetId': 'MULTISELECT'
+                        },
+                        {
+                            'clientId': 'geo-widget-103-client-id',
+                            'conditional': None,
+                            'id': '7',
+                            'key': 'geo-widget-103-key',
+                            'order': 3,
+                            'properties': {
+                            },
+                            'title': 'Geo',
+                            'version': 1,
+                            'widgetId': 'GEO'
+                        },
+                        {
+                            'clientId': 'scale-widget-104-client-id',
+                            'conditional': None,
+                            'id': '8',
+                            'key': 'scale-widget-104-key',
+                            'order': 4,
+                            'properties': {
+                            },
+                            'title': 'Scale',
+                            'version': 1,
+                            'widgetId': 'SCALE'
                         }
                     ],
                     'title': 'Updated AF (TEST)'

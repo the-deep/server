@@ -231,6 +231,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
             description='Af description',
             isPrivate=False,
             organization=str(self.organization1.id),
+            properties=dict(),
             # previewImage='',
             primaryTagging=[
                 dict(
@@ -340,6 +341,31 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                       description
                       currentUserRole
                       title
+                      properties {
+                        statsConfig {
+                          geoWidget {
+                            pk
+                          }
+                          reliabilityWidget {
+                            pk
+                          }
+                          severityWidget {
+                            pk
+                          }
+                          widget1d {
+                            pk
+                          }
+                          widget2d {
+                            pk
+                          }
+                          multiselectWidgets {
+                            pk
+                          }
+                          organigramWidgets {
+                            pk
+                          }
+                        }
+                      }
                       primaryTagging {
                         id
                         order
@@ -394,12 +420,34 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                 **kwargs,
             )
         # ---------- Without login
-        _query_check(0, self.valid_minput, assert_for_error=True)
+        valid_minput = copy.deepcopy(self.valid_minput)
+        new_widgets = [
+            dict(
+                clientId='geo-widget-103-client-id',
+                title='Geo',
+                widgetId=self.genum(Widget.WidgetType.GEO),
+                version=1,
+                key='geo-widget-103-key',
+                order=3,
+                properties=dict(),
+            ),
+            dict(
+                clientId='scale-widget-104-client-id',
+                title='Scale',
+                widgetId=self.genum(Widget.WidgetType.SCALE),
+                version=1,
+                key='scale-widget-104-key',
+                order=4,
+                properties=dict(),
+            ),
+        ]
+        valid_minput['secondaryTagging'].extend(new_widgets)
+        _query_check(0, valid_minput, assert_for_error=True)
         # ---------- With login
         self.force_login(user)
         # ---------- Let's create a new AF (Using create test data)
         new_af_response = self.query_check(
-            self.create_query, minput=self.valid_minput)['data']['analysisFrameworkCreate']['result']
+            self.create_query, minput=valid_minput)['data']['analysisFrameworkCreate']['result']
         self.assertMatchSnapshot(copy.deepcopy(new_af_response), 'created')
 
         new_af_id = new_af_response['id']
@@ -410,6 +458,38 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         new_af_response['title'] = ''
         new_af_response['primaryTagging'][0]['title'] = ''
         # ----------------- Let's try to update
+        # ---- Add stats_config as well.
+
+        widget_qs = Widget.objects.filter(analysis_framework=new_af_id)
+
+        def _get_widget_ID(_type):
+            widget = widget_qs.filter(widget_id=_type).first()
+            if widget:
+                return dict(
+                    pk=str(widget.id)
+                )
+
+        def _get_multiple_widget_ID(_type):
+            return [
+                dict(
+                    pk=str(widget.id)
+                )
+                for widget in widget_qs.filter(widget_id=_type)
+            ]
+
+        new_af_response['properties'] = dict(
+            statsConfig=dict(
+                # Invalid IDS
+                geoWidget=_get_widget_ID(Widget.WidgetType.MULTISELECT),
+                severityWidget=_get_widget_ID(Widget.WidgetType.MULTISELECT),
+                reliabilityWidget=dict(pk='10000001'),
+                # widget1d=_get_multiple_widget_ID(Widget.WidgetType.MULTISELECT),
+                widget1d=_get_multiple_widget_ID(Widget.WidgetType.MULTISELECT),
+                widget2d=_get_multiple_widget_ID(Widget.WidgetType.MULTISELECT),
+                multiselectWidgets=_get_multiple_widget_ID(Widget.WidgetType.ORGANIGRAM),
+                organigramWidgets=_get_multiple_widget_ID(Widget.WidgetType.MULTISELECT),
+            ),
+        )
         response = _query_check(new_af_id, new_af_response, okay=False)
         self.assertMatchSnapshot(response, 'errors')
         # ---------- Let's change some attributes (for success change)
@@ -422,6 +502,18 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         new_af_response['secondaryTagging'].pop(0)  # Remove another widget
         new_af_response['secondaryTagging'][0].pop('id')  # Remove/Create another widget
         # ----------------- Let's try to update
+        new_af_response['properties'] = dict(
+            statsConfig=dict(
+                # Invalid IDS
+                geoWidget=_get_widget_ID(Widget.WidgetType.GEO),
+                severityWidget=_get_widget_ID(Widget.WidgetType.SCALE),
+                reliabilityWidget=_get_widget_ID(Widget.WidgetType.SCALE),
+                widget1d=_get_multiple_widget_ID(Widget.WidgetType.MATRIX1D),
+                widget2d=_get_multiple_widget_ID(Widget.WidgetType.MATRIX2D),
+                multiselectWidgets=_get_multiple_widget_ID(Widget.WidgetType.MULTISELECT),
+                organigramWidgets=_get_multiple_widget_ID(Widget.WidgetType.ORGANIGRAM),
+            ),
+        )
         response = _query_check(new_af_id, new_af_response, okay=True)
         self.assertMatchSnapshot(response, 'success')
 

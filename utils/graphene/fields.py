@@ -327,7 +327,7 @@ def convert_serializer_field(field, convert_choices_to_enum=True, force_optional
         field_model = field.Meta.model
         args = [global_registry.get_type_for_model(field_model)]
     elif isinstance(field, serializers.Serializer):
-        pass
+        args = [convert_serializer_to_type(field.__class__)]
     elif isinstance(field, serializers.ListSerializer):
         field = field.child
         if isinstance(field, serializers.ModelSerializer):
