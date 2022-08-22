@@ -11,6 +11,7 @@ from questionnaire.serializers import FrameworkQuestionSerializer
 from user.models import User, Feature
 from user.serializers import SimpleUserSerializer
 from project.models import Project
+from project.change_log import ProjectChangeManager
 from assisted_tagging.models import PredictionTagAnalysisFrameworkWidgetMapping
 from organization.serializers import SimpleOrganizationSerializer
 from assisted_tagging.serializers import PredictionTagAnalysisFrameworkMapSerializer
@@ -627,6 +628,7 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
         if instance.created_by_id and not instance.members.filter(id=instance.created_by_id).exists():
             owner_role = instance.get_or_create_owner_role()
             instance.add_member(instance.created_by, owner_role)
+        ProjectChangeManager.log_framework_update(instance.pk, self.context['request'].user)
         return instance
 
 

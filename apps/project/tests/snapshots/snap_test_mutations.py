@@ -17,9 +17,9 @@ snapshots['ProjectMutationSnapshotTest::test_project_create_mutation private-af-
         },
         'description': 'Project description 101',
         'endDate': '2021-01-01',
-        'hasPubliclyViewableUnprotectedLeads': False,
-        'hasPubliclyViewableRestrictedLeads': False,
         'hasPubliclyViewableConfidentialLeads': False,
+        'hasPubliclyViewableRestrictedLeads': False,
+        'hasPubliclyViewableUnprotectedLeads': False,
         'id': '1',
         'isPrivate': True,
         'isVisualizationEnabled': False,
@@ -50,9 +50,9 @@ snapshots['ProjectMutationSnapshotTest::test_project_create_mutation public-af-p
         },
         'description': 'Project description 101',
         'endDate': '2021-01-01',
-        'hasPubliclyViewableUnprotectedLeads': False,
-        'hasPubliclyViewableRestrictedLeads': False,
         'hasPubliclyViewableConfidentialLeads': False,
+        'hasPubliclyViewableRestrictedLeads': False,
+        'hasPubliclyViewableUnprotectedLeads': False,
         'id': '2',
         'isPrivate': True,
         'isVisualizationEnabled': False,
@@ -83,9 +83,9 @@ snapshots['ProjectMutationSnapshotTest::test_project_create_mutation public-af-p
         },
         'description': 'Project description 101',
         'endDate': '2021-01-01',
-        'hasPubliclyViewableUnprotectedLeads': False,
-        'hasPubliclyViewableRestrictedLeads': False,
         'hasPubliclyViewableConfidentialLeads': False,
+        'hasPubliclyViewableRestrictedLeads': False,
+        'hasPubliclyViewableUnprotectedLeads': False,
         'id': '3',
         'isPrivate': False,
         'isVisualizationEnabled': False,
@@ -103,6 +103,66 @@ snapshots['ProjectMutationSnapshotTest::test_project_create_mutation public-af-p
         'startDate': '2020-01-01',
         'status': 'ACTIVE',
         'title': 'Project 3'
+    }
+}
+
+snapshots['ProjectMutationSnapshotTest::test_project_region_action_mutation project-change-log'] = [
+    {
+        'action': 4,
+        'diff': {
+            'regions': {
+                'add': [
+                    2,
+                    4,
+                    5
+                ],
+                'remove': [
+                    1
+                ]
+            }
+        }
+    },
+    {
+        'action': 4,
+        'diff': {
+            'regions': {
+                'remove': [
+                    2,
+                    4,
+                    5
+                ]
+            }
+        }
+    }
+]
+
+snapshots['ProjectMutationSnapshotTest::test_project_update_mutation private-project-0:project-change:diff'] = {
+    'details': {
+        'description': {
+            'new': 'Added some description',
+            'old': ''
+        }
+    },
+    'organizations': {
+        'add': [
+            {
+                'organization': 1,
+                'organization_type': 'lead_organization'
+            }
+        ],
+        'remove': [
+            {
+                'organization': 2,
+                'organization_type': 'national_partner'
+            }
+        ]
+    }
+}
+
+snapshots['ProjectMutationSnapshotTest::test_project_update_mutation private-project-1:project-change:diff'] = {
+    'framework': {
+        'new': 4,
+        'old': 2
     }
 }
 
@@ -145,6 +205,36 @@ snapshots['ProjectMutationSnapshotTest::test_project_update_mutation private-pro
                 'result': None
             }
         }
+    }
+}
+
+snapshots['ProjectMutationSnapshotTest::test_project_update_mutation public-project-0:project-change:diff'] = {
+    'details': {
+        'description': {
+            'new': 'Added some description',
+            'old': ''
+        }
+    },
+    'organizations': {
+        'add': [
+            {
+                'organization': 1,
+                'organization_type': 'lead_organization'
+            }
+        ],
+        'remove': [
+            {
+                'organization': 2,
+                'organization_type': 'national_partner'
+            }
+        ]
+    }
+}
+
+snapshots['ProjectMutationSnapshotTest::test_project_update_mutation public-project-1:project-change:diff'] = {
+    'framework': {
+        'new': 4,
+        'old': 2
     }
 }
 
@@ -210,6 +300,144 @@ snapshots['ProjectMutationSnapshotTest::test_project_update_mutation public-proj
         }
     }
 }
+
+snapshots['ProjectMutationSnapshotTest::test_project_update_mutation public-project:project-change:diff'] = {
+    'details': {
+        'has_publicly_viewable_confidential_leads': {
+            'new': True,
+            'old': False
+        },
+        'has_publicly_viewable_restricted_leads': {
+            'new': True,
+            'old': False
+        },
+        'has_publicly_viewable_unprotected_leads': {
+            'new': True,
+            'old': False
+        },
+        'is_test': {
+            'new': True,
+            'old': False
+        },
+        'title': {
+            'new': 'Public Project 101 (Updated)',
+            'old': 'Public Project 101'
+        }
+    },
+    'organizations': {
+        'add': [
+            {
+                'organization': 1,
+                'organization_type': 'lead_organization'
+            }
+        ],
+        'remove': [
+            {
+                'organization': 1,
+                'organization_type': 'government'
+            },
+            {
+                'organization': 2,
+                'organization_type': 'donor'
+            }
+        ]
+    }
+}
+
+snapshots['TestProjectGeneralMutationSnapshotTest::test_projects_viz_configuration_update project-change-log'] = [
+    {
+        'action': 2,
+        'diff': {
+            'details': {
+                'project_viz_config': {
+                    'public_share': {
+                        'new': True,
+                        'old': False
+                    },
+                    'token_changed': True
+                }
+            }
+        }
+    },
+    {
+        'action': 2,
+        'diff': {
+            'details': {
+                'project_viz_config': {
+                    'public_share': {
+                        'new': False,
+                        'old': True
+                    }
+                }
+            }
+        }
+    },
+    {
+        'action': 2,
+        'diff': {
+            'details': {
+                'project_viz_config': {
+                    'public_share': {
+                        'new': True,
+                        'old': False
+                    },
+                    'token_changed': True
+                }
+            }
+        }
+    }
+]
+
+snapshots['TestProjectJoinAcceptRejectMutation::test_project_join_request_accept project-change-log'] = [
+    {
+        'action': 5,
+        'diff': {
+            'memberships': {
+                'users': {
+                    'add': [
+                        2
+                    ]
+                }
+            }
+        }
+    }
+]
+
+snapshots['TestProjectMembershipMutation::test_project_deletion project-change-log'] = [
+    {
+        'action': 2,
+        'diff': {
+            'details': {
+                'deleted_at': {
+                    'new': '2021-01-01'
+                },
+                'is_deleted': {
+                    'new': True,
+                    'old': False
+                }
+            }
+        }
+    }
+]
+
+snapshots['TestProjectMembershipMutation::test_user_group_membership_admin_bulk project-change-log'] = [
+    {
+        'action': 5,
+        'diff': {
+            'memberships': {
+                'user_groups': {
+                    'add': [
+                        5,
+                        6
+                    ],
+                    'remove': [
+                        3
+                    ]
+                }
+            }
+        }
+    }
+]
 
 snapshots['TestProjectMembershipMutation::test_user_group_membership_admin_bulk try 1'] = {
     'deletedResult': [
@@ -370,6 +598,25 @@ snapshots['TestProjectMembershipMutation::test_user_group_membership_admin_bulk 
         }
     ]
 }
+
+snapshots['TestProjectMembershipMutation::test_user_group_membership_using_clairvoyan_one_bulk project-change-log'] = [
+    {
+        'action': 5,
+        'diff': {
+            'memberships': {
+                'user_groups': {
+                    'add': [
+                        5,
+                        6
+                    ],
+                    'remove': [
+                        3
+                    ]
+                }
+            }
+        }
+    }
+]
 
 snapshots['TestProjectMembershipMutation::test_user_group_membership_using_clairvoyan_one_bulk try 1'] = {
     'deletedResult': [
@@ -532,6 +779,25 @@ snapshots['TestProjectMembershipMutation::test_user_group_membership_using_clair
         None
     ]
 }
+
+snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk project-change-log'] = [
+    {
+        'action': 5,
+        'diff': {
+            'memberships': {
+                'users': {
+                    'add': [
+                        8,
+                        9
+                    ],
+                    'remove': [
+                        6
+                    ]
+                }
+            }
+        }
+    }
+]
 
 snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 1'] = {
     'deletedResult': [
@@ -718,6 +984,25 @@ snapshots['TestProjectMembershipMutation::test_user_membership_admin_bulk try 2'
         }
     ]
 }
+
+snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_one_bulk project-change-log'] = [
+    {
+        'action': 5,
+        'diff': {
+            'memberships': {
+                'users': {
+                    'add': [
+                        8,
+                        9
+                    ],
+                    'remove': [
+                        6
+                    ]
+                }
+            }
+        }
+    }
+]
 
 snapshots['TestProjectMembershipMutation::test_user_membership_using_clairvoyan_one_bulk try 1'] = {
     'deletedResult': [

@@ -516,3 +516,14 @@ class UidBase64Helper():
     @staticmethod
     def decode(uidb64):
         return force_text(urlsafe_base64_decode(uidb64))
+
+
+def remove_empty_keys_from_dict(obj):
+    clean_obj = {}
+    for key, value in obj.items():
+        _value = value
+        if type(value) == dict:
+            _value = remove_empty_keys_from_dict(value)
+        if _value not in [None, [], (), {}]:
+            clean_obj[key] = _value
+    return clean_obj

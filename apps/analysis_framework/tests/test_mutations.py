@@ -9,6 +9,8 @@ from graphene_file_upload.django.testing import GraphQLFileUploadTestCase
 
 from analysis_framework.models import Widget
 
+from project.models import ProjectChangeLog
+from project.factories import ProjectFactory
 from organization.factories import OrganizationFactory
 from analysis_framework.factories import (
     AnalysisFrameworkFactory,
@@ -410,6 +412,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         '''
 
         user = UserFactory.create()
+        project1, project2, project3 = ProjectFactory.create_batch(3)
 
         def _query_check(id, minput, **kwargs):
             return self.query_check(
@@ -451,6 +454,10 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         self.assertMatchSnapshot(copy.deepcopy(new_af_response), 'created')
 
         new_af_id = new_af_response['id']
+        for project in [project1, project2]:
+            project.analysis_framework_id = new_af_id
+            project.save(update_fields=('analysis_framework_id',))
+
         # ---------------- Remove invalid attributes
         new_af_response.pop('currentUserRole')
         new_af_response.pop('id')
@@ -552,6 +559,18 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         another_user = UserFactory.create()
         self.force_login(another_user)
         _query_check(new_af_id, new_af_response, assert_for_error=True)
+
+        # Project Log Check
+        def _get_project_logs_qs(project):
+            return ProjectChangeLog.objects.filter(project=project).order_by('id')
+
+        assert _get_project_logs_qs(project3).count() == 0
+        for project in [project1, project2]:
+            project_log_qs = _get_project_logs_qs(project)
+            assert project_log_qs.count() == 3
+            assert list(project_log_qs.values_list('diff', flat=True)) == [
+                dict(framework=dict(updated=True)),
+            ] * 3
 
     def test_analysis_framework_membership_bulk(self):
         query = '''
