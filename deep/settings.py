@@ -868,6 +868,7 @@ GRAPHENE = {
         'utils.graphene.middleware.DisableIntrospectionSchemaMiddleware',
         'utils.sentry.SentryGrapheneMiddleware',
         'utils.graphene.middleware.WhiteListMiddleware',
+        'utils.graphene.middleware.ProjectLogMiddleware',
     ],
 }
 if DEBUG:

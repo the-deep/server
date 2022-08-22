@@ -28,6 +28,8 @@ from user.utils import send_project_join_request_emails
 from user_group.serializers import SimpleUserGroupSerializer
 from user_resource.serializers import UserResourceSerializer, DeprecatedUserResourceSerializer
 from ary.models import AssessmentTemplate
+
+from .change_log import ProjectChangeManager
 from .models import (
     Project,
     ProjectMembership,
@@ -872,4 +874,5 @@ class ProjectGqSerializer(DeprecatedUserResourceSerializer):
             member=self.current_user,
             role=ProjectRole.get_owner_role(),
         )
+        ProjectChangeManager.log_project_created(project, self.current_user)
         return project

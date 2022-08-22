@@ -494,14 +494,8 @@ def get_default_role_id():
 
 
 class ProjectOrganization(models.Model):
-    LEAD_ORGANIZATION = 'lead_organization'
-    INTERNATIONAL_PARTNER = 'international_partner'
-    NATIONAL_PARTNER = 'national_partner'
-    DONOR = 'donor'
-    GOVERNMENT = 'government'
-
     class Type(models.TextChoices):
-        LEAD_ORGANIZATION = 'lead_organization', 'Lead Organization'
+        LEAD_ORGANIZATION = 'lead_organization', 'Lead Organization'  # Project Owner
         INTERNATIONAL_PARTNER = 'international_partner', 'International Partner'
         NATIONAL_PARTNER = 'national_partner', 'National Partner'
         DONOR = 'donor', 'Donor'
@@ -812,3 +806,20 @@ class ProjectStats(models.Model):
         ):
             return True
         return False
+
+
+class ProjectChangeLog(models.Model):
+    class Action(models.IntegerChoices):
+        PROJECT_CREATE = 1, 'Project Create'
+        PROJECT_DETAILS = 2, 'Project Details'
+        ORGANIZATION = 3, 'Organization'
+        REGION = 4, 'Region'
+        MEMBERSHIP = 5, 'Membership'
+        FRAMEWORK = 6, 'Framework'
+        MULTIPLE = 7, 'Multiple fields'
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    action = models.SmallIntegerField(choices=Action.choices)
+    diff = models.JSONField(null=True, blank=True)

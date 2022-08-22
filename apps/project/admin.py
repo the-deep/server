@@ -1,10 +1,12 @@
+import json
+
 from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.contrib import messages
 from django.db import models
 from django.contrib.postgres.aggregates import StringAgg
-
 from reversion.admin import VersionAdmin
+from admin_auto_filters.filters import AutocompleteFilterFactory
 
 from deep.admin import linkify
 from lead.models import Lead
@@ -21,6 +23,7 @@ from .models import (
     ProjectStats,
     ProjectJoinRequest,
     ProjectOrganization,
+    ProjectChangeLog,
 )
 
 TRIGGER_LIMIT = 5
@@ -98,7 +101,11 @@ class ProjectAdmin(VersionAdmin):
         'analysis_framework', 'assessment_template', 'category_editor',
         'created_by', 'modified_by', 'regions',
     )
-    list_filter = ('assessment_template', 'is_private', 'is_deleted')
+    list_filter = (
+        'assessment_template',
+        'is_private',
+        'is_deleted',
+    )
     actions = [trigger_project_stat_cache_calc()]
     inlines = [ProjectMembershipInline,
                ProjectUserGroupMembershipInline,
@@ -179,3 +186,30 @@ class ProjectEntryStatsAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('project', 'project__analysis_framework')
+
+
+@admin.register(ProjectChangeLog)
+class ProjectChangeLogAdmin(admin.ModelAdmin):
+    search_fields = ('project__title',)
+    list_filter = (
+        AutocompleteFilterFactory('Project', 'project'),
+        AutocompleteFilterFactory('User', 'user'),
+        'action',
+        'created_at',
+    )
+    list_display = ('project', 'created_at', 'action', 'user',)
+    autocomplete_fields = ('project', 'user',)
+    readonly_fields = ('project', 'created_at', 'action', 'user', 'diff', 'diff_pretty')
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related(
+            'project',
+            'user',
+        )
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    @admin.display(description='Diff prettry JSON')
+    def diff_pretty(self, obj):
+        return mark_safe(f'<pre>{json.dumps(obj.diff, indent=2)}</pre>')
