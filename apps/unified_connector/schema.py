@@ -215,6 +215,14 @@ class UnifiedConnectorQueryType(graphene.ObjectType):
             page_size_query_param='pageSize',
         )
     )
+    total_source_count = graphene.Field(graphene.Int)
+
+    @staticmethod
+    def resolve_total_source_count(root, info, **kwargs):
+        qs = ConnectorSourceLead.objects.filter(source__unified_connector__project=info.context.active_project)
+        if PP.check_permission(info, PP.Permission.VIEW_UNIFIED_CONNECTOR):
+            return qs.count()
+        return
 
     @staticmethod
     def resolve_unified_connectors(root, info, **kwargs) -> QuerySet:

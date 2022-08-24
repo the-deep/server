@@ -2504,6 +2504,7 @@ type UnifiedConnectorQueryType {
   connectorSources(search: String, ordering: [ConnectorSourceOrderingEnum!], sources: [ConnectorSourceSourceEnum!], statuses: [ConnectorSourceStatusEnum!], unifiedConnectors: [ID!], page: Int = 1, pageSize: Int): ConnectorSourceListType
   connectorSourceLead(id: ID!): ConnectorSourceLeadType
   connectorSourceLeads(ordering: [ConnectorSourceLeadOrderingEnum!], sources: [ID!], blocked: Boolean, alreadyAdded: Boolean, extractionStatus: [ConnectorLeadExtractionStatusEnum!], search: String, authorOrganizations: [ID!], publishedOn: Date, publishedOnGte: Date, publishedOnLte: Date, page: Int = 1, pageSize: Int): ConnectorSourceLeadListType
+  totalSourceCount: Int
 }
 
 type UnifiedConnectorType {
