@@ -210,6 +210,6 @@ class ProjectChangeLogAdmin(admin.ModelAdmin):
     def has_add_permission(self, request, obj=None):
         return False
 
-    @admin.display(description='Diff prettry JSON')
+    @admin.display(description='Diff pretty JSON')
     def diff_pretty(self, obj):
         return mark_safe(f'<pre>{json.dumps(obj.diff, indent=2)}</pre>')

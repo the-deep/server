@@ -12,7 +12,7 @@ from .models import (
 )
 
 
-def get_flat_dict_diff(list1, list2, fields):
+def get_flat_dict_diff(list1: List[dict], list2: List[dict], fields: List[str]):
     def _dict_to_tuple_set(items: List[dict]) -> Set[tuple]:
         return set(
             tuple(
