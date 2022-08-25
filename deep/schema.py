@@ -37,7 +37,9 @@ class Query(
     graphene.ObjectType
 ):
     assisted_tagging = graphene.Field(assisted_tagging_schema.AssistedTaggingRootQueryType)
-    custom_enum = graphene.Field(CustomEnum, description='Used for registering not used ENUM. Do not use')
+    custom_enum = graphene.Field(
+        CustomEnum, description="Used for display in schema only. Don't use Otherwise"
+    )
 
     if settings.DEBUG:
         _debug = graphene.Field(DjangoDebug, name="_debug")
