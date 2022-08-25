@@ -114,7 +114,7 @@ class MethodologyProtectionInfo(models.IntegerChoices):
     PROTECTION_NEEDS_ASSESSMENT = 2, 'Protection Needs Assessment'
     CASE_MANAGEMENT = 3, 'Case Management'
     POPULATION_DATA = 4, 'Population Data'
-    PROTECTION_RESPONSE = 5, 'Protection Response'
+    PROTECTION_RESPONSE = 5, 'Protection Response and MEL'
     COMMUNICATING_WITH_OR_IN_AFFECTED_COMMUNITIES = 6, 'Communicating with(in) Affected Communities'
     SECURITY_AND_SITUATIONAL_AWARENESS = 7, 'Security & Situational Awareness'
     SECTORAL_SYSTEMS_OR_OTHER = 8, 'Sectoral Systems/Other'

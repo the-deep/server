@@ -21,6 +21,7 @@ from geo import schema as geo_schema
 from notification import schema as notification_schema, mutation as notification_mutation
 from assisted_tagging import schema as assisted_tagging_schema
 from unified_connector import schema as unified_connector_schema
+from deep.enums import CustomEnum
 
 
 class Query(
@@ -36,6 +37,7 @@ class Query(
     graphene.ObjectType
 ):
     assisted_tagging = graphene.Field(assisted_tagging_schema.AssistedTaggingRootQueryType)
+    custom_enum = graphene.Field(CustomEnum, description='Used for registering not used ENUM. Do not use')
 
     if settings.DEBUG:
         _debug = graphene.Field(DjangoDebug, name="_debug")
