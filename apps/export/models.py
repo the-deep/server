@@ -54,6 +54,7 @@ class Export(models.Model):
         LEAD_ID = 'lead_id', 'Source Id'
         LEAD_TITLE = 'lead_title', 'Source Title'
         LEAD_URL = 'lead_url', 'Source URL'
+        LEAD_PAGE_COUNT = 'lead_page_count', 'Page Count'
         LEAD_ORGANIZATION_TYPE_AUTHOR = 'lead_organization_type_author', 'Authoring Organizations Type'
         LEAD_ORGANIZATION_AUTHOR = 'lead_organization_author', 'Author'
         LEAD_ORGANIZATION_SOURCE = 'lead_organization_source', 'Publisher'

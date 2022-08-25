@@ -1,5 +1,7 @@
 import copy
 
+from django.db import models
+
 from deep.permissions import ProjectPermissions as PP
 from analysis_framework.models import Exportable
 from entry.models import Entry
@@ -45,11 +47,18 @@ def export_entries(export):
     # Prefetches
     entries_qs = entries_qs.prefetch_related(
         'entrygrouplabel_set',
-        'lead__authors',
-        'lead__authors__organization_type',
-        # Also organization parents
-        'lead__authors__parent',
-        'lead__authors__parent__organization_type',
+        models.Prefetch(
+            'lead',
+            queryset=Lead.objects.annotate(
+                page_count=models.F('leadpreview__page_count'),
+            ).prefetch_related(
+                'authors',
+                'authors__organization_type',
+                # Also organization parents
+                'authors__parent',
+                'authors__parent__organization_type',
+            ),
+        ),
     )
 
     exportables = Exportable.objects.filter(
