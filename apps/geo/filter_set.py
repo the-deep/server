@@ -2,7 +2,6 @@ from functools import reduce
 
 import django_filters
 from django.db import models
-from django.db.models.functions import Concat
 
 from deep.filter_set import OrderEnumMixin
 from utils.graphene.filters import (
@@ -82,7 +81,7 @@ class AdminLevelFilterSet(django_filters.rest_framework.FilterSet):
         filter_overrides = {
             models.CharField: {
                 'filter_class': django_filters.CharFilter,
-                'extra': lambda f: {
+                'extra': lambda _: {
                     'lookup_expr': 'icontains',
                 },
             },
@@ -106,22 +105,12 @@ class GeoAreaGqlFilterSet(OrderEnumMixin, django_filters.rest_framework.FilterSe
         model = GeoArea
         fields = ()
 
-    def geo_area_label(self, queryset, name, value):
+    def geo_area_label(self, queryset, _, value):
         if value:
-            return queryset.annotate(
-                # TODO: Improve this search
-                label=Concat(
-                    models.F('admin_level__region__title'),
-                    models.Value(' '),
-                    models.F('admin_level__title'),
-                    models.Value(' '),
-                    models.F('title'),
-                    output_field=models.fields.CharField()
-                ),
-            ).filter(label__icontains=value)
+            return queryset.filter(title__icontains=value)
         return queryset
 
-    def filter_titles(self, queryset, name, values):
+    def filter_titles(self, queryset, _, values):
         if values:
             # Let's only use 20 max.
             _values = values[:20]
