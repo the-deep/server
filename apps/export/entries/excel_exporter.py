@@ -239,6 +239,8 @@ class ExcelExporter:
             return lead.title
         elif exportable == Export.StaticColumn.LEAD_URL:
             return lead.url or Permalink.lead_share_view(lead.uuid)
+        elif exportable == Export.StaticColumn.LEAD_PAGE_COUNT:
+            return lead.page_count  # Annotated through Prefetch on entries_qs (export.tasks_entries)
         elif exportable == Export.StaticColumn.LEAD_ORGANIZATION_TYPE_AUTHOR:
             return lead.get_authoring_organizations_type_display()
         elif exportable == Export.StaticColumn.LEAD_ORGANIZATION_AUTHOR:
