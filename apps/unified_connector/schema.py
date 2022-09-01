@@ -1,6 +1,6 @@
 import graphene
 import datetime
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Q
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
 
@@ -215,6 +215,20 @@ class UnifiedConnectorQueryType(graphene.ObjectType):
             page_size_query_param='pageSize',
         )
     )
+    source_count_without_ingnored_and_added = graphene.Field(graphene.Int)
+
+    @staticmethod
+    def resolve_source_count_without_ingnored_and_added(root, info, **kwargs):
+        qs = ConnectorSourceLead.objects.filter(
+            source__unified_connector__project=info.context.active_project,
+            source__unified_connector__is_active=True,
+        ).exclude(
+            Q(blocked=True) |
+            Q(already_added=True)
+        )
+        if PP.check_permission(info, PP.Permission.VIEW_UNIFIED_CONNECTOR):
+            return qs.count()
+        return
 
     @staticmethod
     def resolve_unified_connectors(root, info, **kwargs) -> QuerySet:
