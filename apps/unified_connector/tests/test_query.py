@@ -1,3 +1,5 @@
+from unified_connector.models import ConnectorSourceLead
+from django.db.models import Q
 from utils.graphene.tests import GraphQLTestCase
 
 from unified_connector.models import ConnectorSource
@@ -195,6 +197,15 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
               }
             }
           }
+        }
+    '''
+    SOURCE_COUNT_EXCLUDING_ADDED_AND_IGNORED_QUERY = '''
+        query MyQuery ($id: ID!) {
+          project(id: $id) {
+            unifiedConnector {
+                sourceCountWithoutIngnoredAndAdded
+                }
+            }
         }
     '''
 
@@ -442,3 +453,23 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 source=str(lead.source_id),
             )
         )
+
+        # check for total sources count excluding already_added, blocked for enabled unified connector.
+        disabled_uc = UnifiedConnectorFactory(project=self.project, is_active=False)
+        lead = ConnectorLeadFactory.create()
+        source = ConnectorSourceFactory.create(unified_connector=disabled_uc, source=ConnectorSource.Source.RELIEF_WEB)
+        ConnectorSourceLeadFactory.create_batch(2, source=source, connector_lead=lead)
+        ConnectorSourceLeadFactory.create_batch(2, source=source, connector_lead=self.fake_lead, blocked=True)
+        ConnectorSourceLeadFactory.create_batch(2, source=source, connector_lead=self.fake_lead, already_added=True)
+        total_source_count = ConnectorSourceLead.objects.filter(
+            source__unified_connector__project=self.project,
+            source__unified_connector__is_active=True,
+        ).exclude(
+            Q(blocked=True) |
+            Q(already_added=True)
+        ).count()
+        content = self.query_check(
+            self.SOURCE_COUNT_EXCLUDING_ADDED_AND_IGNORED_QUERY, variables=dict(id=self.project.id)
+        )['data']['project']['unifiedConnector']['sourceCountWithoutIngnoredAndAdded']
+
+        self.assertEqual(content, total_source_count)
