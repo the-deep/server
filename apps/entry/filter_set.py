@@ -11,6 +11,7 @@ from graphene_django.filter.filterset import GrapheneFilterSetMixin
 from graphene_django.filter.utils import get_filtering_args_from_filterset
 
 from user_resource.filters import UserResourceGqlFilterSet
+from utils.common import is_valid_number
 from utils.graphene.fields import (
     generate_simple_object_type_from_input_type,
     generate_object_field_from_input_type,
@@ -674,11 +675,10 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
 
     def search_filter(self, qs, _, value):
         if value:
-            return qs.filter(
-                models.Q(id=value) |
-                models.Q(lead__title__icontains=value) |
-                models.Q(excerpt__icontains=value)
-            )
+            filters = models.Q(lead__title__icontains=value) | models.Q(excerpt__icontains=value)
+            if is_valid_number(value):
+                filters = models.Q(id=value) | filters
+            return qs.filter(filters)
         return qs
 
     @property
