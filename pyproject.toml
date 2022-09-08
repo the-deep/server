@@ -7,6 +7,7 @@ license = "GNU Affero General Public License v3.0"
 
 [tool.poetry.dependencies]
 python = "^3.8"
+# setuptools = "==57.5.0"
 beautifulsoup4 = "==4.9.3"
 boto3 = "==1.17.98"
 celery = { version = "==5.1.1", extras = ["redis"] }
@@ -34,7 +35,7 @@ django-utils-six = "2.0"  # Require by autofixture
 drf-dynamic-fields = "==0.3.1"
 drf-yasg = { version = "==1.20.0", extras = ["validation"] }
 feedparser = "==6.0.8"
-flower = { git = "https://github.com/mher/flower.git", branch = "7ee34cb5fc039bbeb208a54f113713edbb4809ce" }
+flower = { git = "https://github.com/mher/flower.git", rev = "7ee34cb5fc039bbeb208a54f113713edbb4809ce" }
 google-api-python-client = "==2.9.0"
 graphene-django = ">=2,<3"
 graphene-graphiql-explorer = "*"
@@ -42,14 +43,14 @@ graphene-django-extras = { git = "https://github.com/the-deep/graphene-django-ex
 lxml = "==4.6.3"
 mdmail = "==0.1.3"
 oauth2client = "==4.1.3"
-openpyxl = "==3.0.7"
+openpyxl = "==3.0.9"
 parameterized = "==0.8.1"
 "pdfminer.six" = "==20181108"
 psycopg2-binary = "==2.9.1"
 pyexcel-ods = "==0.6.0"
 python-dateutil = "==2.8.1"
 python-docx = "==0.8.11"
-pyxform = "==1.5.1"
+pyxform = "==1.10.1"
 readability-lxml = "==0.8.1"
 requests = "==2.25.1"
 rest-framework-generic-relations = "==2.0.0"
@@ -89,8 +90,8 @@ snapshottest = "*"
 django-debug-toolbar = "*"
 django-graphiql-debug-toolbar = "*"
 django-stubs = { version = "*", allow-prereleases = true }
-django-autofixture = { branch = "0472a494485dd597d598e20d9e1c6c47cf0eadb7", git = "https://github.com/volrath/django-autofixture.git" }
-django-fixture-magic = { branch = "466fa35c075009e4a1974f6e588471dd9e720e53", git = "https://github.com/davedash/django-fixture-magic.git" }
+django-autofixture = { branch = "master", git = "https://github.com/the-deep/django-autofixture" }
+django-fixture-magic = { rev = "466fa35c075009e4a1974f6e588471dd9e720e53", git = "https://github.com/davedash/django-fixture-magic.git" }
 # mypy = "*"
 # flake8 = "*"
 # pylint = "*"
