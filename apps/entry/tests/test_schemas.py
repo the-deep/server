@@ -413,6 +413,8 @@ class TestEntryQuery(GraphQLTestCase):
             ({'isVerified': True}, [entry1_1, entry2_1]),
             ({'isVerified': False}, [entry3_1, entry4_1]),
             ({'search': str(entry1_1.id)}, [entry1_1]),
+            ({'search': str('1.11')}, []),
+            ({'search': lead2.title}, [entry2_1]),
             # TODO: Common filters
             # ({'excerpt': []}, []),
             # ({'modifiedAt': []}, []),
