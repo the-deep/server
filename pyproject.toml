@@ -39,7 +39,7 @@ flower = { git = "https://github.com/mher/flower.git", rev = "7ee34cb5fc039bbeb2
 google-api-python-client = "==2.9.0"
 graphene-django = ">=2,<3"
 graphene-graphiql-explorer = "*"
-graphene-django-extras = { git = "https://github.com/the-deep/graphene-django-extras.git", branch = "v0.4.9-patch.1" }
+graphene-django-extras = { git = "https://github.com/the-deep/graphene-django-extras.git", branch = "v0.4.9-patch.2" }
 lxml = "==4.6.3"
 mdmail = "==0.1.3"
 oauth2client = "==4.1.3"
