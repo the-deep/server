@@ -30,7 +30,6 @@ type AnalysisFrameworkDetailType {
   isPrivate: Boolean!
   assistedTaggingEnabled: Boolean!
   organization: OrganizationType
-  properties: GenericScalar
   currentUserRole: AnalysisFrameworkRoleTypeEnum
   previewImage: FileFieldType
   allowedPermissions: [AnalysisFrameworkPermission!]!
@@ -41,6 +40,7 @@ type AnalysisFrameworkDetailType {
   exportables: [AnalysisFrameworkExportableType!]
   visibleProjects: [AnalysisFrameworkVisibleProjectType!]
   predictionTagsMapping: [AnalysisFrameworkPredictionMappingType!]
+  properties: AnalysisFrameworkPropertiesType!
 }
 
 type AnalysisFrameworkExportableType {
@@ -69,7 +69,7 @@ input AnalysisFrameworkInputType {
   title: String!
   description: String
   isPrivate: Boolean
-  properties: GenericScalar
+  properties: AnalysisFrameworkPropertiesGqlInputType
   organization: ID
   previewImage: Upload
   createdBy: ID
@@ -117,6 +117,42 @@ type AnalysisFrameworkPredictionMappingType {
   association: GenericScalar
   clientId: String!
   widgetType: WidgetWidgetTypeEnum!
+}
+
+input AnalysisFrameworkPropertiesGqlInputType {
+  statsConfig: AnalysisFrameworkPropertiesStatsConfigInputType
+}
+
+input AnalysisFrameworkPropertiesStatsConfigIdInputType {
+  pk: ID!
+}
+
+type AnalysisFrameworkPropertiesStatsConfigIdType {
+  pk: ID!
+}
+
+input AnalysisFrameworkPropertiesStatsConfigInputType {
+  geoWidget: AnalysisFrameworkPropertiesStatsConfigIdInputType!
+  severityWidget: AnalysisFrameworkPropertiesStatsConfigIdInputType!
+  reliabilityWidget: AnalysisFrameworkPropertiesStatsConfigIdInputType!
+  widget1d: [AnalysisFrameworkPropertiesStatsConfigIdInputType!]
+  widget2d: [AnalysisFrameworkPropertiesStatsConfigIdInputType!]
+  multiselectWidgets: [AnalysisFrameworkPropertiesStatsConfigIdInputType!]
+  organigramWidgets: [AnalysisFrameworkPropertiesStatsConfigIdInputType!]
+}
+
+type AnalysisFrameworkPropertiesStatsConfigType {
+  geoWidget: AnalysisFrameworkPropertiesStatsConfigIdType!
+  severityWidget: AnalysisFrameworkPropertiesStatsConfigIdType!
+  reliabilityWidget: AnalysisFrameworkPropertiesStatsConfigIdType!
+  widget1d: [AnalysisFrameworkPropertiesStatsConfigIdType!]
+  widget2d: [AnalysisFrameworkPropertiesStatsConfigIdType!]
+  multiselectWidgets: [AnalysisFrameworkPropertiesStatsConfigIdType!]
+  organigramWidgets: [AnalysisFrameworkPropertiesStatsConfigIdType!]
+}
+
+type AnalysisFrameworkPropertiesType {
+  statsConfig: AnalysisFrameworkPropertiesStatsConfigType
 }
 
 type AnalysisFrameworkRoleType {
