@@ -8,7 +8,7 @@ from django.db.models import QuerySet
 
 from utils.graphene.enums import EnumDescription
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin, FileFieldType
-from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.fields import DjangoPaginatedListObjectField, generate_type_for_serializer
 from deep.permissions import AnalysisFrameworkPermissions as AfP
 from project.schema import AnalysisFrameworkVisibleProjectType
 from project.models import ProjectMembership
@@ -28,8 +28,15 @@ from .enums import (
     WidgetFilterTypeEnum,
     AnalysisFrameworkRoleTypeEnum,
 )
+from .serializers import AnalysisFrameworkPropertiesGqlSerializer
 from .filter_set import AnalysisFrameworkGqFilterSet
 from .public_schema import PublicAnalysisFrameworkListType
+
+
+AnalysisFrameworkPropertiesType = generate_type_for_serializer(
+    'AnalysisFrameworkPropertiesType',
+    serializer_class=AnalysisFrameworkPropertiesGqlSerializer,
+)
 
 
 class WidgetConditionalType(graphene.ObjectType):
@@ -189,6 +196,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
             AnalysisFrameworkPredictionMappingType,
         ),
     )
+    properties = graphene.NonNull(AnalysisFrameworkPropertiesType)
 
     class Meta:
         model = AnalysisFramework
@@ -196,8 +204,11 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
         only_fields = (
             'id', 'title', 'description', 'is_private', 'assisted_tagging_enabled', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
-            'properties',
         )
+
+    @staticmethod
+    def resolve_properties(root, _):
+        return root.properties or {}
 
     @staticmethod
     def resolve_primary_tagging(root, info):

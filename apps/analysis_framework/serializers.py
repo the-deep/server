@@ -388,10 +388,82 @@ class SectionGqlSerializer(TempClientIdMixin, WritableNestedModelSerializer):
         return items
 
 
+class AnalysisFrameworkPropertiesStatsConfigIdSerializer(serializers.Serializer):
+    pk = IntegerIDField(required=True)
+
+
+class AnalysisFrameworkPropertiesStatsConfigSerializer(serializers.Serializer):
+    geo_widget = AnalysisFrameworkPropertiesStatsConfigIdSerializer(required=True)
+    severity_widget = AnalysisFrameworkPropertiesStatsConfigIdSerializer(required=True)
+    reliability_widget = AnalysisFrameworkPropertiesStatsConfigIdSerializer(required=True)
+    # Multiple
+    widget_1d = AnalysisFrameworkPropertiesStatsConfigIdSerializer(many=True, required=False)
+    widget_2d = AnalysisFrameworkPropertiesStatsConfigIdSerializer(many=True, required=False)
+    multiselect_widgets = AnalysisFrameworkPropertiesStatsConfigIdSerializer(many=True, required=False)
+    organigram_widgets = AnalysisFrameworkPropertiesStatsConfigIdSerializer(many=True, required=False)
+
+    @staticmethod
+    def _validate_widget_with_widget_type(data, widget_type, many=False):
+        if not data:
+            return
+        if many:
+            ids = [item['pk'] for item in data]
+            widgets = list(Widget.objects.filter(pk__in=ids))
+            widgets_type = list(set([widget.widget_id for widget in widgets]))
+            if widgets_type and widgets_type != [widget_type]:
+                raise serializers.ValidationError(
+                    f'Different widget type was provided. Required: {widget_type} Provided: {widgets_type}',
+                )
+            return [
+                # Only return available widgets. Make sure to follow AnalysisFrameworkPropertiesStatsConfigIdGqlSerializer
+                dict(pk=widget.id)
+                for widget in widgets
+            ]
+        # For single widget
+        pk = data['pk']
+        try:
+            widget = Widget.objects.get(pk=pk)
+        except Widget.DoesNotExist:
+            raise serializers.ValidationError(
+                f"Provided widget with ID: {pk} doesn't exists",
+            )
+        if widget.widget_id != widget_type:
+            raise serializers.ValidationError(
+                f'Different widget type was provided. Required: {widget_type} Provided: {widget.widget_id}',
+            )
+        return data
+
+    def validate_geo_widget(self, data):
+        return self._validate_widget_with_widget_type(data, Widget.WidgetType.GEO)
+
+    def validate_severity_widget(self, data):
+        return self._validate_widget_with_widget_type(data, Widget.WidgetType.SCALE)
+
+    def validate_reliability_widget(self, data):
+        return self._validate_widget_with_widget_type(data, Widget.WidgetType.SCALE)
+
+    def validate_widget_1d(self, data):
+        return self._validate_widget_with_widget_type(data, Widget.WidgetType.MATRIX1D, many=True)
+
+    def validate_widget_2d(self, data):
+        return self._validate_widget_with_widget_type(data, Widget.WidgetType.MATRIX2D, many=True)
+
+    def validate_multiselect_widgets(self, data):
+        return self._validate_widget_with_widget_type(data, Widget.WidgetType.MULTISELECT, many=True)
+
+    def validate_organigram_widgets(self, data):
+        return self._validate_widget_with_widget_type(data, Widget.WidgetType.ORGANIGRAM, many=True)
+
+
+class AnalysisFrameworkPropertiesGqlSerializer(serializers.Serializer):
+    stats_config = AnalysisFrameworkPropertiesStatsConfigSerializer(required=False)
+
+
 class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
     primary_tagging = SectionGqlSerializer(source='section_set', many=True, required=False)
     secondary_tagging = WidgetGqlSerializer(many=True, write_only=False, required=False)
     prediction_tags_mapping = PredictionTagAnalysisFrameworkMapSerializer(many=True, write_only=False, required=False)
+    properties = AnalysisFrameworkPropertiesGqlSerializer(required=False)
     client_id = None  # Inherited from UserResourceSerializer
 
     class Meta:

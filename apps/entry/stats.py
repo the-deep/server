@@ -169,20 +169,33 @@ def get_project_entries_stats(project, skip_geo_data=False):
         'reliability_widget': {
             'pk': 2683,
         },
-        'affected_groups_widget': {
+        'organigram_widgets': {
             'pk': 2682,
         },
-        'specific_needs_groups_widget': {
-            'pk': 2681,
-        },
-        'demographic_groups_widget': {
-            'pk': 8703,
-        },
+        'multiselect_widgets': [
+            {'pk': 2681},
+            {'pk': 8703},
+        ],
     }
     """
 
     af = project.analysis_framework
     config = af.properties.get('stats_config')
+
+    # TODO: REMOVE THIS
+    if 'multiselect_widgets' not in config:
+        config['multiselect_widgets'] = [
+            {'pk': config[key]['pk']}
+            for key in [
+                'specific_needs_groups_widget',
+                'demographic_groups_widget',
+            ]
+            if key in config
+        ]
+    if 'organigram_widgets' not in config and 'affected_groups_widget' in config:
+        config['organigram_widgets'] = [
+            config['affected_groups_widget']
+        ]
 
     widgets_pk = [
         info['pk']
@@ -195,6 +208,7 @@ def get_project_entries_stats(project, skip_geo_data=False):
         for w_config in (_w_config if isinstance(_w_config, list) else [_w_config])
         if w_config.get('is_conditional_widget')
     }
+
     widgets = {
         widget.pk: widget
         for widget in Widget.objects.filter(pk__in=widgets_pk, analysis_framework=af)
@@ -209,7 +223,7 @@ def get_project_entries_stats(project, skip_geo_data=False):
         if type(config[key]) is not list:
             config[key] = [config[key]]
 
-    w_reliability_default = w_severity_default = w_specific_needs_groups_default = w_demographic_groups_default = {
+    w_reliability_default = w_severity_default = w_multiselect_widget_default = w_organigram_widget_default = {
         'pk': None,
         'properties': {
             'options': [],
@@ -219,22 +233,48 @@ def get_project_entries_stats(project, skip_geo_data=False):
     w1ds = [_get_widget_info(_config, widgets) for _config in config['widget1d']]
     w2ds = [_get_widget_info(_config, widgets) for _config in config['widget2d']]
 
-    w_specific_needs_groups = _get_widget_info(
-        config.get('specific_needs_groups_widget'), widgets, default=w_specific_needs_groups_default
-    )
-    w_demographic_groups = _get_widget_info(
-        config.get('demographic_groups_widget'), widgets, default=w_demographic_groups_default
-    )
+    w_multiselect_widgets = [
+        _get_widget_info(
+            _config,
+            widgets,
+            default=w_multiselect_widget_default,
+        )
+        for _config in config.get('multiselect_widgets') or []
+    ]
+
+    w_organigram_widgets = [
+        _get_widget_info(
+            _config,
+            widgets,
+            default=w_organigram_widget_default,
+        )
+        for _config in config.get('organigram_widgets') or []
+    ]
+
     w_severity = _get_widget_info(config.get('severity_widget'), widgets, default=w_severity_default)
     w_reliability = _get_widget_info(config.get('reliability_widget'), widgets, default=w_reliability_default)
 
-    w_ag = _get_widget_info(config['affected_groups_widget'], widgets)
     w_geo = _get_widget_info(config['geo_widget'], widgets, skip_data=True)
 
     matrix_widgets = [
         {'id': w['pk'], 'type': w_type, 'title': w['_widget'].title}
         for widgets, w_type in [[w1ds, 'widget1d'], [w2ds, 'widget2d']]
         for w in widgets
+    ]
+
+    multiselect_widgets = [
+        {
+            'id': w['pk'],
+            'title': w['_widget'].title,
+        }
+        for w in w_multiselect_widgets
+    ]
+    organigram_widgets = [
+        {
+            'id': w['pk'],
+            'title': w['_widget'].title,
+        }
+        for w in w_organigram_widgets
     ]
 
     context_array = [
@@ -271,23 +311,24 @@ def get_project_entries_stats(project, skip_geo_data=False):
         for w2d in w2ds
         for sector in w2d['properties']['columns']
     ]
-    affected_groups_array = [
+
+    organigram_array = [
         {
             'id': option['key'],
             'name': option['label'],
-        } for option in w_ag['properties']['options']
+        }
+        for _widget in w_organigram_widgets
+        for option in _widget['properties']['options']
     ]
-    specific_needs_groups_array = [
+
+    multiselect_array = [
         {
             'id': option['key'],
+            'widget_id': _widget['pk'],
             'name': option['label'],
-        } for option in w_specific_needs_groups['properties']['options']
-    ]
-    w_demographic_groups_array = [
-        {
-            'id': option['key'],
-            'name': option['label'],
-        } for option in w_demographic_groups['properties']['options']
+        }
+        for _widget in w_multiselect_widgets
+        for option in _widget['properties']['options']
     ]
 
     severity_units = [
@@ -308,12 +349,13 @@ def get_project_entries_stats(project, skip_geo_data=False):
     meta = {
         'data_calculated': timezone.now(),
         'matrix_widgets': matrix_widgets,
+        'multiselect_widgets': multiselect_widgets,
+        'organigram_widgets': organigram_widgets,
         'context_array': context_array,
         'framework_groups_array': framework_groups_array,
         'sector_array': sector_array,
-        'affected_groups_array': affected_groups_array,
-        'specific_needs_groups_array': specific_needs_groups_array,
-        'demographic_groups_array': w_demographic_groups_array,
+        'multiselect_array': multiselect_array,
+        'organigram_array': organigram_array,
         'severity_units': severity_units,
         'reliability_units': reliability_units,
     }
@@ -343,9 +385,14 @@ def get_project_entries_stats(project, skip_geo_data=False):
             'severity': collector.get(w_severity['pk']),
             'reliability': collector.get(w_reliability['pk']),
             'geo': collector.get(w_geo['pk'], []),
-            'special_needs': collector.get(w_specific_needs_groups['pk'], []),
-            'demographic_groups': collector.get(w_demographic_groups['pk'], []),
-            'affected_groups': collector.get(w_ag['pk'], []),
+            'multiselect': {
+                _config['pk']: collector.get(_config['pk'], [])
+                for _config in w_multiselect_widgets
+            },
+            'organigram': {
+                _config['pk']: collector.get(_config['pk'], [])
+                for _config in w_organigram_widgets
+            },
             'context_sector': {
                 w['pk']: {
                     'context': collector.get(w['pk'], {}).get('context_keys', []),
