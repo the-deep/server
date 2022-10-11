@@ -463,7 +463,7 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
     primary_tagging = SectionGqlSerializer(source='section_set', many=True, required=False)
     secondary_tagging = WidgetGqlSerializer(many=True, write_only=False, required=False)
     prediction_tags_mapping = PredictionTagAnalysisFrameworkMapSerializer(many=True, write_only=False, required=False)
-    properties = AnalysisFrameworkPropertiesGqlSerializer(required=False)
+    properties = AnalysisFrameworkPropertiesGqlSerializer(required=False, allow_null=True)
     client_id = None  # Inherited from UserResourceSerializer
 
     class Meta:

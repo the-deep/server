@@ -40,7 +40,7 @@ type AnalysisFrameworkDetailType {
   exportables: [AnalysisFrameworkExportableType!]
   visibleProjects: [AnalysisFrameworkVisibleProjectType!]
   predictionTagsMapping: [AnalysisFrameworkPredictionMappingType!]
-  properties: AnalysisFrameworkPropertiesType!
+  properties: AnalysisFrameworkPropertiesType
 }
 
 type AnalysisFrameworkExportableType {

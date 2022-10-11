@@ -196,7 +196,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
             AnalysisFrameworkPredictionMappingType,
         ),
     )
-    properties = graphene.NonNull(AnalysisFrameworkPropertiesType)
+    properties = graphene.Field(AnalysisFrameworkPropertiesType)
 
     class Meta:
         model = AnalysisFramework
@@ -205,10 +205,6 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
             'id', 'title', 'description', 'is_private', 'assisted_tagging_enabled', 'organization',
             'created_by', 'created_at', 'modified_by', 'modified_at',
         )
-
-    @staticmethod
-    def resolve_properties(root, _):
-        return root.properties or {}
 
     @staticmethod
     def resolve_primary_tagging(root, info):
