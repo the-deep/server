@@ -17,24 +17,35 @@ SUPPORTED_WIDGETS = [
 
 
 def _get_lead_data(lead):
+    if lead:
+        return {
+            'id': lead.id,
+            'title': lead.title,
+            'source_type': lead.source_type,
+            'confidentiality': lead.confidentiality,
+            'source_raw': lead.source_raw,
+            'source': lead.source and {
+                'id': lead.source.id,
+                'title': lead.source.data.title,
+            },
+            'author_raw': lead.author_raw,
+            'authors': [
+                {
+                    'id': author.id,
+                    'title': author.data.title,
+                    # TODO: Legacy: Remove `or` logic after all the author are migrated to authors from author
+                } for author in lead.authors.all() or ([lead.author] if lead.author else [])
+            ],
+        }
     return {
-        'id': lead.id,
-        'title': lead.title,
-        'source_type': lead.source_type,
-        'confidentiality': lead.confidentiality,
-        'source_raw': lead.source_raw,
-        'source': lead.source and {
-            'id': lead.source.id,
-            'title': lead.source.data.title,
-        },
-        'author_raw': lead.author_raw,
-        'authors': [
-            {
-                'id': author.id,
-                'title': author.data.title,
-                # TODO: Legacy: Remove `or` logic after all the author are migrated to authors from author
-            } for author in lead.authors.all() or ([lead.author] if lead.author else [])
-        ],
+        'id': None,
+        'title': None,
+        'source_type': None,
+        'confidentiality': None,
+        'source_raw': None,
+        'source': None,
+        'author_raw': None,
+        'authors': [],
     }
 
 
