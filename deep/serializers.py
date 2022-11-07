@@ -3,7 +3,6 @@ import json
 from django.utils.functional import cached_property
 from django.core.files.storage import FileSystemStorage, get_storage_class
 from django.core.serializers.json import DjangoJSONEncoder
-from django.core.exceptions import FieldDoesNotExist
 from django.core.cache import cache
 from rest_framework import serializers
 
@@ -159,14 +158,8 @@ class TempClientIdMixin(serializers.ModelSerializer):
         )
 
     def _get_temp_client_id(self, validated_data):
-        try:
-            self.Meta.model._meta.get_field('client_id')
-            # We return None here if Model have a field `client_id`
-            return None
-        except FieldDoesNotExist:
-            # We remove `client_id` from validated_data and return temp client_id
-            # If we don't remove `client_id` from validated_data, then serializer will throw error on update/create
-            return validated_data.pop('client_id', None)
+        # For now, let's not save anything. Look at history if not.
+        return validated_data.pop('client_id', None)
 
     def create(self, validated_data):
         temp_client_id = self._get_temp_client_id(validated_data)

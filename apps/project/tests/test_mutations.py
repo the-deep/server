@@ -14,6 +14,7 @@ from project.models import (
     ProjectMembership,
     ProjectUserGroupMembership,
     ProjectStats,
+    ProjectChangeLog,
 )
 
 from user.factories import UserFactory, FeatureFactory
@@ -21,7 +22,7 @@ from lead.factories import LeadFactory
 from entry.factories import EntryFactory, EntryAttributeFactory
 from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
 from user_group.factories import UserGroupFactory
-from project.factories import ProjectFactory, ProjectJoinRequestFactory
+from project.factories import ProjectFactory, ProjectJoinRequestFactory, ProjectOrganizationFactory
 from organization.factories import OrganizationFactory
 from geo.factories import RegionFactory
 
@@ -31,7 +32,7 @@ from project.models import Project, ProjectOrganization
 from . import entry_stats_data
 
 
-class TestProjectGeneralMutation(GraphQLTestCase):
+class TestProjectGeneralMutationSnapshotTest(GraphQLSnapShotTestCase):
     ENABLE_NOW_PATCHER = True
 
     @staticmethod
@@ -161,6 +162,13 @@ class TestProjectGeneralMutation(GraphQLTestCase):
                         self.client.logout()
                         rest_response = self.client.get(f"{response['publicUrl']}?format=json")
                         self.assert_403(rest_response)
+        # Check Project change logs
+        self.assertMatchSnapshot(
+            list(
+                ProjectChangeLog.objects.filter(project=project).order_by('id').values('action', 'diff')
+            ),
+            'project-change-log',
+        )
 
 
 class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
@@ -239,11 +247,15 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
         )
 
         def _query_check(**kwargs):
-            return self.query_check(
+            response = self.query_check(
                 query,
                 minput=minput,
                 **kwargs,
             )
+            if kwargs.get('okay'):
+                project_log = ProjectChangeLog.objects.get(project=response['data']['projectCreate']['result']['id'])
+                assert project_log.action == ProjectChangeLog.Action.PROJECT_CREATE
+            return response
 
         # ---------- Without login
         _query_check(assert_for_error=True)
@@ -263,7 +275,6 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
         private_project_feature.users.add(user)
         response = _query_check(okay=True)['data']['projectCreate']
         self.assertMatchSnapshot(response, 'private-af-private-project-success')
-
         # Valid [public AF] + private project
         minput['title'] = "Project 2"
         minput['analysisFramework'] = str(af.pk)
@@ -324,22 +335,53 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
         normal_user = UserFactory.create()
         another_user = UserFactory.create()
         af = AnalysisFrameworkFactory.create()
+
+        org1, org2, org3 = OrganizationFactory.create_batch(3)
+
         private_af = AnalysisFrameworkFactory.create(is_private=True)
         private_af_2 = AnalysisFrameworkFactory.create(is_private=True)
+
         private_af_w_membership = AnalysisFrameworkFactory.create(is_private=True)
         private_af_w_membership.add_member(user)
-        public_project = ProjectFactory.create(title='Public Project 101', analysis_framework=af)
-        private_project = ProjectFactory.create(title='Private Project 101', analysis_framework=private_af, is_private=True)
+
+        public_project = ProjectFactory.create(
+            title='Public Project 101',
+            analysis_framework=af,
+        )
+        private_project = ProjectFactory.create(
+            title='Private Project 101',
+            analysis_framework=private_af,
+            is_private=True,
+        )
+
+        ProjectOrganizationFactory.create(
+            project=public_project,
+            organization=org2,
+            organization_type=ProjectOrganization.Type.DONOR,
+        )
+        ProjectOrganizationFactory.create(
+            project=public_project,
+            organization=org1,
+            organization_type=ProjectOrganization.Type.GOVERNMENT,
+        )
+        ProjectOrganizationFactory.create(
+            project=private_project,
+            organization=org2,
+            organization_type=ProjectOrganization.Type.NATIONAL_PARTNER,
+        )
+
         public_project.add_member(user, role=self.project_role_owner)
         private_project.add_member(user, role=self.project_role_owner)
         public_project.add_member(normal_user)
 
-        org1 = OrganizationFactory.create()
-
         public_minput = dict(
-            title=public_project.title,
+            title=f'{public_project.title} (Updated)',
             analysisFramework=str(public_project.analysis_framework.id),
+            isTest=True,
             isPrivate=False,
+            hasPubliclyViewableUnprotectedLeads=True,
+            hasPubliclyViewableRestrictedLeads=True,
+            hasPubliclyViewableConfidentialLeads=True,
             organizations=[
                 dict(
                     organization=str(org1.pk),
@@ -350,6 +392,7 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
 
         private_minput = dict(
             title=private_project.title,
+            description='Added some description',
             analysisFramework=str(private_project.analysis_framework.id),
             isPrivate=True,
             organizations=[
@@ -418,6 +461,15 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
         private_minput['analysisFramework'] = str(private_af_w_membership.id)
         _private_query_check(okay=True)
         private_minput['analysisFramework'] = str(private_project.analysis_framework_id)
+        # Check Project change logs
+        project_log = ProjectChangeLog.objects.get(project=public_project)
+        assert project_log.action == ProjectChangeLog.Action.MULTIPLE
+        self.assertMatchSnapshot(project_log.diff, 'public-project:project-change:diff')
+        project_logs = list(ProjectChangeLog.objects.filter(project=private_project).order_by('id'))
+        assert project_logs[0].action == ProjectChangeLog.Action.MULTIPLE
+        self.assertMatchSnapshot(project_logs[0].diff, 'private-project-0:project-change:diff')
+        assert project_logs[1].action == ProjectChangeLog.Action.FRAMEWORK
+        self.assertMatchSnapshot(project_logs[1].diff, 'private-project-1:project-change:diff')
 
     def test_project_region_action_mutation(self):
         query = '''
@@ -444,6 +496,7 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
         project = ProjectFactory.create(title='Project 101', analysis_framework=af)
         project.add_member(user, role=self.project_role_owner)
         project.add_member(normal_user)
+        region_public_zero = RegionFactory.create(title='public-region-zero')
         region_public = RegionFactory.create(title='public-region')
         region_private = RegionFactory.create(title='private-region', public=False)
         region_private_owner = RegionFactory.create(title='private-region-owner', public=False, created_by=user)
@@ -458,6 +511,8 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
         another_project_for_membership_admin = ProjectFactory.create()
         another_project_for_membership_admin.regions.add(region_private_with_membership_admin)
         another_project_for_membership_admin.add_member(user, role=self.project_role_admin)
+
+        project.regions.add(region_public_zero)
 
         def _query_check(add, remove, **kwargs):
             return self.query_check(
@@ -496,10 +551,14 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
                 str(region_private_owner.pk),
                 str(region_private_with_membership.pk),
             ],
-            [],
+            [
+                str(region_public_zero.pk),
+            ],
         )
         self.assertEqual(response['data']['project']['projectRegionBulk'], {
-            'deletedResult': [],
+            'deletedResult': [
+                dict(id=str(region_public_zero.pk), title=region_public_zero.title),
+            ],
             'result': [
                 dict(id=str(region_public.pk), title=region_public.title),
                 dict(id=str(region_private_owner.pk), title=region_private_owner.title),
@@ -534,6 +593,13 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
             'result': [],
         })
         self.assertEqual(list(project.regions.values_list('id', flat=True).order_by('id')), [])
+        # Check Project change logs
+        self.assertMatchSnapshot(
+            list(
+                ProjectChangeLog.objects.filter(project=project).order_by('id').values('action', 'diff')
+            ),
+            'project-change-log',
+        )
 
 
 class TestProjectJoinMutation(GraphQLTestCase):
@@ -683,7 +749,7 @@ class TestProjectJoinDeleteMutation(GraphQLTestCase):
         self.assertEqual(join_request_qs.count(), old_join_request_count - 1)
 
 
-class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
+class TestProjectJoinAcceptRejectMutation(GraphQLSnapShotTestCase):
     def setUp(self):
         self.projet_accept_reject_mutation = '''
             mutation MyMutation ($projectId: ID! $joinRequestId: ID! $input: ProjectAcceptRejectInputType!) {
@@ -756,6 +822,13 @@ class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
         # make sure memberships is created
         self.assertIn(user2.id, ProjectMembership.objects.filter(project=project).values_list('member', flat=True))
         assert notification_qs.count() > old_count
+        # Check Project change logs
+        self.assertMatchSnapshot(
+            list(
+                ProjectChangeLog.objects.filter(project=project).order_by('id').values('action', 'diff')
+            ),
+            'project-change-log',
+        )
 
     def test_project_join_request_reject(self):
         user = UserFactory.create()
@@ -784,6 +857,8 @@ class TestProjectJoinAcceptRejectMutation(GraphQLTestCase):
             self.genum(ProjectJoinRequest.Status.REJECTED),
             content
         )
+        # Check project change logs
+        assert ProjectChangeLog.objects.filter(project=project).count() == 0
 
 
 class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
@@ -953,6 +1028,13 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         ])
         response = _query_check()['data']['project']['projectUserMembershipBulk']
         self.assertMatchSnapshot(response, 'try 2')
+        # Check project change logs
+        self.assertMatchSnapshot(
+            list(
+                ProjectChangeLog.objects.filter(project=project).order_by('id').values('action', 'diff')
+            ),
+            'project-change-log',
+        )
 
     def test_user_membership_using_clairvoyan_one_bulk(self):
         self._user_membership_bulk(self.project_role_owner)
@@ -1111,6 +1193,13 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         ])
         response = _query_check()['data']['project']['projectUserGroupMembershipBulk']
         self.assertMatchSnapshot(response, 'try 2')
+        # Check project change logs
+        self.assertMatchSnapshot(
+            list(
+                ProjectChangeLog.objects.filter(project=project).order_by('id').values('action', 'diff')
+            ),
+            'project-change-log',
+        )
 
     def test_user_group_membership_using_clairvoyan_one_bulk(self):
         self._user_group_membership_bulk(self.project_role_owner)
@@ -1193,6 +1282,13 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         self.force_login(owner_user)
         _query_check(okay=True)
         _assert_project_soft_delete_status(True)
+        # Check project change logs
+        self.assertMatchSnapshot(
+            list(
+                ProjectChangeLog.objects.filter(project=project).order_by('id').values('action', 'diff')
+            ),
+            'project-change-log',
+        )
 
     def test_project_deletion_celery_task(self):
         def _get_project_ids():

@@ -1,7 +1,11 @@
 import factory
 from factory.django import DjangoModelFactory
 
-from .models import Project, ProjectJoinRequest
+from .models import (
+    Project,
+    ProjectJoinRequest,
+    ProjectOrganization,
+)
 
 
 class ProjectFactory(DjangoModelFactory):
@@ -22,3 +26,8 @@ class ProjectFactory(DjangoModelFactory):
 class ProjectJoinRequestFactory(DjangoModelFactory):
     class Meta:
         model = ProjectJoinRequest
+
+
+class ProjectOrganizationFactory(DjangoModelFactory):
+    class Meta:
+        model = ProjectOrganization
