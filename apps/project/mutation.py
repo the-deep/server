@@ -142,9 +142,11 @@ class ProjectJoinRequestDelete(graphene.Mutation):
     @staticmethod
     def mutate(root, info, project_id):
         try:
-            instance = ProjectJoinRequest.objects.get(requested_by=info.context.user,
-                                                      status=ProjectJoinRequest.Status.PENDING,
-                                                      project=project_id)
+            instance = ProjectJoinRequest.objects.get(
+                requested_by=info.context.user,
+                status=ProjectJoinRequest.Status.PENDING,
+                project=project_id,
+            )
         except ProjectJoinRequest.DoesNotExist:
             return ProjectJoinRequestDelete(errors=[
                 dict(

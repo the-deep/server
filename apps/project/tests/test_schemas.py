@@ -29,7 +29,7 @@ from quality_assurance.factories import EntryReviewCommentFactory
 from project.tasks import _generate_project_stats_cache
 from geo.enums import GeoAreaOrderingEnum
 
-from .test_mutations import TestProjectGeneralMutation
+from .test_mutations import TestProjectGeneralMutationSnapshotTest
 
 
 class TestProjectSchema(GraphQLTestCase):
@@ -935,7 +935,7 @@ class TestProjectViz(GraphQLTestCase):
         self.assertEqual(content['data']['project']['isVisualizationAvailable'], False, content)
 
         # Configure/Enable viz.
-        TestProjectGeneralMutation.set_project_viz_configuration(project)
+        TestProjectGeneralMutationSnapshotTest.set_project_viz_configuration(project)
 
         # --- non-member project
         self.force_login(non_member_user)
