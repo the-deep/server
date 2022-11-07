@@ -79,6 +79,8 @@ class AsssistedTaggingTask():
                     'entry': draft_entry.excerpt,
                 }
             ],
+            'lead': draft_entry.lead_id,
+            'project': draft_entry.project_id,
             'publishing_organization': source_organization and source_organization.data.title,
             'authoring_organization': author_organizations,
             'callback_url': cls.get_callback_url(),
