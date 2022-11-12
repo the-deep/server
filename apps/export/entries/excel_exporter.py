@@ -1,5 +1,6 @@
 import logging
 from django.core.files.base import ContentFile
+from django.db import models
 
 from deep.permalinks import Permalink
 from utils.common import (
@@ -36,7 +37,8 @@ class ExcelExporter:
             ] if self.modified_excerpt_exists else ['Excerpt'],
         }
 
-    def __init__(self, export_object, entries, columns=None, decoupled=True, project_id=None, is_preview=False):
+    def __init__(self, export_object, entries, project, columns=None, decoupled=True, is_preview=False):
+        self.project = project
         self.export_object = export_object
         self.is_preview = is_preview
         self.wb = WorkBook()
@@ -56,19 +58,18 @@ class ExcelExporter:
         self.decoupled = decoupled
         self.columns = columns
         self.bibliography_sheet = self.wb.create_sheet('Bibliography')
-        self.bibliography_data = {}
 
         self.modified_excerpt_exists = entries.filter(excerpt_modified=True).exists()
 
         project_entry_labels = ProjectEntryLabel.objects.filter(
-            project_id=project_id
+            project=self.project,
         ).order_by('order')
 
         self.label_id_title_map = {
             _id: title for _id, title in project_entry_labels.values_list('id', 'title')
         }
 
-        lead_groups = LeadEntryGroup.objects.filter(lead__project_id=project_id).order_by('order')
+        lead_groups = LeadEntryGroup.objects.filter(lead__project=self.project).order_by('order')
         self.group_id_title_map = {x.id: x.title for x in lead_groups}
         # Create matrix of labels and groups
 
@@ -82,7 +83,7 @@ class ExcelExporter:
         self.lead_id_titles_map = {
             _id: title
             for _id, title in Lead.objects.filter(
-                project_id=project_id,
+                project=self.project,
                 id__in=[_id for _id, _ in self.group_label_matrix.keys()]
             ).values_list('id', 'title')
         }
@@ -476,14 +477,7 @@ class ExcelExporter:
                 self.group_label_matrix[key][group_label.label_id] = get_hyperlink(link, entry.excerpt[:50])
 
             lead = entry.lead
-            assignee = entry.lead.get_assignee()
-            author = lead.get_authors_display()
-            source = lead.get_source_display()
-            published_on = (lead.published_on and lead.published_on.strftime(EXPORT_DATE_FORMAT)) or ''
-            url = lead.url
-
-            self.bibliography_data[lead.id] = (author, source, published_on, url, lead.title)
-
+            assignee = lead.get_assignee()
             rows = RowsBuilder(self.split, self.group, self.decoupled)
 
             for exportable in self.exportables:
@@ -511,7 +505,6 @@ class ExcelExporter:
                         data__excel__isnull=False,
                     ).first()
 
-                    # TODO: handle for conditional widget
                     if export_data and type(export_data.data.get('excel', {})) == list:
                         export_data = export_data.data.get('excel', [])
                     else:
@@ -533,14 +526,37 @@ class ExcelExporter:
             self.entry_groups_sheet.append([row_data])
         return self
 
-    def add_bibliography_sheet(self):
-        self.bibliography_sheet.append([['Author', 'Source', 'Published Date', 'Title']])
-        for author, source, published, url, title in self.bibliography_data.values():
+    def add_bibliography_sheet(self, leads_qs):
+        self.bibliography_sheet.append([['Author', 'Source', 'Published Date', 'Title', 'Entries Count']])
+        qs = leads_qs
+        # This is annotated from LeadGQFilterSet.filter_queryset if not use total entries count
+        if 'filtered_entry_count' not in qs.query.annotations:
+            qs = qs.annotate(
+                filtered_entry_count=models.functions.Coalesce(
+                    models.Subquery(
+                        Entry.objects.filter(
+                            project=self.project,
+                            analysis_framework=self.project.analysis_framework_id,
+                            lead=models.OuterRef('pk'),
+                        ).order_by().values('lead')
+                        .annotate(count=models.Count('id'))
+                        .values('count'),
+                        output_field=models.IntegerField(),
+                    ), 0,
+                )
+            )
+        for lead in qs:
             self.bibliography_sheet.append(
-                [[author, source, published, get_hyperlink(url, title) if url else title]]
+                [[
+                    lead.get_authors_display(),
+                    lead.get_source_display(),
+                    (lead.published_on and lead.published_on.strftime(EXPORT_DATE_FORMAT)) or '',
+                    get_hyperlink(lead.url, lead.title) if lead.url else lead.title,
+                    lead.filtered_entry_count,
+                ]]
             )
 
-    def export(self):
+    def export(self, leads_qs):
         """
         Export and return export data
         """
@@ -549,7 +565,7 @@ class ExcelExporter:
             self.split.set_col_types(self.col_types)
 
         # Add bibliography
-        self.add_bibliography_sheet()
+        self.add_bibliography_sheet(leads_qs)
 
         buffer = self.wb.save()
         return ContentFile(buffer)

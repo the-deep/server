@@ -1,4 +1,5 @@
 import shlex
+import os
 import subprocess
 
 from django.core.management.base import BaseCommand
@@ -6,10 +7,12 @@ from django.utils import autoreload
 from deep.celery import CeleryQueue
 
 
+WORKER_STATE_DIR = '/var/run/celery'
+
 CMD = (
     f"celery -A deep worker -Q {','.join(CeleryQueue.ALL_QUEUES)} -B --concurrency=2 -l info "
     '--scheduler django_celery_beat.schedulers:DatabaseScheduler '
-    '--statedb=/var/run/celery/worker.state'
+    f'--statedb={WORKER_STATE_DIR}/worker.state'
 )
 
 
@@ -23,4 +26,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write('Starting celery worker with autoreload...')
+        if not os.path.exists(WORKER_STATE_DIR):
+            os.makedirs(WORKER_STATE_DIR)
         autoreload.run_with_reloader(restart_celery, args=None, kwargs=None)
