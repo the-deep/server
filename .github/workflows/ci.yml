@@ -53,7 +53,7 @@ jobs:
           docker-compose -f ./gh-docker-compose.yml run --rm server bash -c 'wait-for-it db:5432 && ./manage.py graphql_schema --out /ci-share/schema-latest.graphql' &&
           cmp --silent schema.graphql ./ci-share/schema-latest.graphql || {
             echo 'The schema.graphql is not up to date with the latest changes. Please update and push latest';
-            diff schema.graphql schema-latest.graphql;
+            diff schema.graphql ./ci-share/schema-latest.graphql;
             exit 1;
           }
 
