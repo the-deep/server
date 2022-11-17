@@ -1398,7 +1398,6 @@ type LeadDetailType {
   assessmentId: ID
   entriesCount: EntriesCountType
   filteredEntriesCount: Int
-  website: String!
   entries: [EntryType!]
 }
 
@@ -1584,7 +1583,6 @@ type LeadType {
   assessmentId: ID
   entriesCount: EntriesCountType
   filteredEntriesCount: Int
-  website: String!
 }
 
 input LeadsFilterDataInputType {

@@ -33,7 +33,13 @@ def export_entries(export):
         leads_qs = leads_qs.filter(confidentiality=Lead.Confidentiality.UNPROTECTED)
     # Lead and Entry FilterSet needs request to work with active_project
     dummy_request = LeadGQFilterSet.get_dummy_request(project)
-    leads_qs = LeadGQFilterSet(data=filters, queryset=leads_qs, request=dummy_request).qs
+    leads_qs = LeadGQFilterSet(data=filters, queryset=leads_qs, request=dummy_request).qs.prefetch_related(
+        'authors',
+        'authors__organization_type',
+        # Also organization parents
+        'authors__parent',
+        'authors__parent__organization_type',
+    )
     entries_qs = EntryGQFilterSet(
         data=filters.get('entries_filter_data'),
         request=dummy_request,
@@ -72,14 +78,14 @@ def export_entries(export):
         export_data = ExcelExporter(
             export,
             entries_qs,
+            project,
             columns=columns,
             decoupled=decoupled,
-            project_id=project.id,
             is_preview=is_preview,
         )\
             .load_exportables(exportables, regions)\
             .add_entries(entries_qs)\
-            .export()
+            .export(leads_qs)
 
     elif export_type == Export.ExportType.REPORT:
         # which widget data needs to be exported along with
