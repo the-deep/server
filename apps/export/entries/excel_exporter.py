@@ -52,7 +52,6 @@ class ExcelExporter:
             self.split = None
             self.group = self.wb.get_active_sheet().set_title('Entries')
 
-        self.entry_groups_sheet = self.wb.create_sheet('Entry Groups')
         self.decoupled = decoupled
         self.columns = columns
         self.bibliography_sheet = self.wb.create_sheet('Bibliography')
@@ -86,13 +85,6 @@ class ExcelExporter:
                 id__in=[_id for _id, _ in self.group_label_matrix.keys()]
             ).values_list('id', 'title')
         }
-
-        self.entry_group_titles = [
-            'Lead',
-            'Group',
-            *self.label_id_title_map.values(),
-        ]
-        self.entry_groups_sheet.append([self.entry_group_titles])
 
         self.col_types = {
             0: 'date',
@@ -522,15 +514,6 @@ class ExcelExporter:
                     self.add_entries_from_excel_data(rows, data, export_data)
 
             rows.apply()
-
-        # Now add data to entry group sheet
-        for (leadid, gid), labeldata in self.group_label_matrix.items():
-            row_data = [
-                self.lead_id_titles_map.get(leadid),
-                self.group_id_title_map.get(gid),
-                *labeldata.values(),
-            ]
-            self.entry_groups_sheet.append([row_data])
         return self
 
     def add_bibliography_sheet(self):
