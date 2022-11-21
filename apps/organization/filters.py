@@ -103,7 +103,7 @@ class OrganizationFilterSet(django_filters.FilterSet):
             qs = self.ordering_filter(
                 qs,
                 None,
-                # As the length is same, using id as secondary.
-                [OrganizationOrderingEnum.ASC_TITLE_LENGTH.value, OrganizationOrderingEnum.ASC_ID.value],
+                # Use popularity as default sort
+                [OrganizationOrderingEnum.DESC_POPULARITY.value],
             )
         return qs
