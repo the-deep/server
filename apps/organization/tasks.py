@@ -13,3 +13,10 @@ logger = logging.getLogger(__name__)
 def sync_organization_with_relief_web():
     call_command('load_organizations')
     return True
+
+
+@shared_task
+@redis_lock('update_organization_popularity')
+def update_organization_popularity():
+    call_command('update_organization_popularity')
+    return True

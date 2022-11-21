@@ -51,6 +51,7 @@ class Organization(UserResource):
 
     verified = models.BooleanField(default=False)
     client_id = None
+    popularity = models.IntegerField(default=0)  # Holds total number of used within the deep
 
     class Meta:
         # Admin panel permissions
