@@ -491,13 +491,18 @@ CELERY_BEAT_SCHEDULE = {
     # Project Deletion
     'permanently_delete_projects': {
         'task': 'project.tasks.permanently_delete_projects',
-        'schedule': crontab(minute=0, hour=0),  # excute every day
+        'schedule': crontab(minute=0, hour=0),  # execute every day
     },
     # User Deletion
     'permanently_delete_users': {
         'task': 'project.tasks.permanently_delete_users',
         'schedule': crontab(minute=0, hour=0),
-    }
+    },
+    # Organization
+    'update_organization_popularity': {
+        'task': 'organization.tasks.update_organization_popularity',
+        'schedule': crontab(minute=0, hour=0),  # execute every day
+    },
 }
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
