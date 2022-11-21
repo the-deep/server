@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Coverage for apps/organization/filters.py: 76%</title>
+    <title>Coverage for apps/organization/filters.py: 73%</title>
     <link rel="icon" sizes="32x32" href="favicon_32.png">
     <link rel="stylesheet" href="style.css" type="text/css">
     <script type="text/javascript" src="coverage_html.js" defer></script>
@@ -12,7 +12,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>apps/organization/filters.py</b>:
-            <span class="pc_cov">76%</span>
+            <span class="pc_cov">73%</span>
         </h1>
         <aside id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -56,10 +56,10 @@
         </aside>
         <h2>
             <span class="text">57 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">47<span class="text"> run</span></button>
-            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">10<span class="text"> missing</span></button>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">46<span class="text"> run</span></button>
+            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">11<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
-            <button type="button" class="par run show_par button_toggle_par" value="par" data-shortcut="p" title="Toggle lines partially run">4<span class="text"> partial</span></button>
+            <button type="button" class="par run show_par button_toggle_par" value="par" data-shortcut="p" title="Toggle lines partially run">5<span class="text"> partial</span></button>
         </h2>
         <p class="text">
             <a id="prevFileLink" class="nav" href="d_f6a81641c403bad5_factories_py.html">&#xab; prev</a> &nbsp; &nbsp;
@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="d_f6a81641c403bad5_forms_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.5.0</a>,
-            created at 2022-11-17 06:45 +0000
+            created at 2022-11-21 11:14 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"/>
@@ -169,11 +169,11 @@
     <p class="pln"><span class="n"><a id="t85" href="#t85">85</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t86" href="#t86">86</a></span><span class="t">    <span class="key">def</span> <span class="nam">ordering_filter</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">qs</span><span class="op">,</span> <span class="nam">_</span><span class="op">,</span> <span class="nam">value</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="par run show_par"><span class="n"><a id="t87" href="#t87">87</a></span><span class="t">        <span class="key">if</span> <span class="nam">value</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">87&#x202F;&#x219B;&#x202F;96</span><span class="annotate long">line 87 didn't jump to line 96, because the condition on line 87 was never false</span></span></p>
-    <p class="run"><span class="n"><a id="t88" href="#t88">88</a></span><span class="t">            <span class="key">if</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="par run show_par"><span class="n"><a id="t88" href="#t88">88</a></span><span class="t">            <span class="key">if</span> <span class="op">(</span>&nbsp;</span><span class="r"><span class="annotate short">88&#x202F;&#x219B;&#x202F;92</span><span class="annotate long">line 88 didn't jump to line 92</span></span></p>
     <p class="pln"><span class="n"><a id="t89" href="#t89">89</a></span><span class="t">                <span class="nam">OrganizationOrderingEnum</span><span class="op">.</span><span class="nam">ASC_TITLE_LENGTH</span><span class="op">.</span><span class="nam">value</span> <span class="key">in</span> <span class="nam">value</span> <span class="key">or</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t90" href="#t90">90</a></span><span class="t">                <span class="nam">OrganizationOrderingEnum</span><span class="op">.</span><span class="nam">DESC_TITLE_LENGTH</span><span class="op">.</span><span class="nam">value</span> <span class="key">in</span> <span class="nam">value</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t91" href="#t91">91</a></span><span class="t">            <span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t92" href="#t92">92</a></span><span class="t">                <span class="nam">qs</span> <span class="op">=</span> <span class="nam">qs</span><span class="op">.</span><span class="nam">annotate</span><span class="op">(</span><span class="op">**</span><span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t92" href="#t92">92</a></span><span class="t">                <span class="nam">qs</span> <span class="op">=</span> <span class="nam">qs</span><span class="op">.</span><span class="nam">annotate</span><span class="op">(</span><span class="op">**</span><span class="op">{</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t93" href="#t93">93</a></span><span class="t">                    <span class="nam">OrganizationOrderingEnum</span><span class="op">.</span><span class="nam">ASC_TITLE_LENGTH</span><span class="op">.</span><span class="nam">value</span><span class="op">:</span> <span class="nam">Length</span><span class="op">(</span><span class="str">'title'</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t94" href="#t94">94</a></span><span class="t">                <span class="op">}</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t95" href="#t95">95</a></span><span class="t">            <span class="key">return</span> <span class="nam">qs</span><span class="op">.</span><span class="nam">order_by</span><span class="op">(</span><span class="op">*</span><span class="nam">value</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -187,8 +187,8 @@
     <p class="run"><span class="n"><a id="t103" href="#t103">103</a></span><span class="t">            <span class="nam">qs</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">ordering_filter</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t104" href="#t104">104</a></span><span class="t">                <span class="nam">qs</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t105" href="#t105">105</a></span><span class="t">                <span class="key">None</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t106" href="#t106">106</a></span><span class="t">                <span class="com"># As the length is same, using id as secondary.</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t107" href="#t107">107</a></span><span class="t">                <span class="op">[</span><span class="nam">OrganizationOrderingEnum</span><span class="op">.</span><span class="nam">ASC_TITLE_LENGTH</span><span class="op">.</span><span class="nam">value</span><span class="op">,</span> <span class="nam">OrganizationOrderingEnum</span><span class="op">.</span><span class="nam">ASC_ID</span><span class="op">.</span><span class="nam">value</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t106" href="#t106">106</a></span><span class="t">                <span class="com"># Use popularity as default sort</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t107" href="#t107">107</a></span><span class="t">                <span class="op">[</span><span class="nam">OrganizationOrderingEnum</span><span class="op">.</span><span class="nam">DESC_POPULARITY</span><span class="op">.</span><span class="nam">value</span><span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t108" href="#t108">108</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t109" href="#t109">109</a></span><span class="t">        <span class="key">return</span> <span class="nam">qs</span>&nbsp;</span><span class="r"></span></p>
 </main>
@@ -200,7 +200,7 @@
             <a id="nextFileLink" class="nav" href="d_f6a81641c403bad5_forms_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io">coverage.py v6.5.0</a>,
-            created at 2022-11-17 06:45 +0000
+            created at 2022-11-21 11:14 +0000
         </p>
     </div>
 </footer>
