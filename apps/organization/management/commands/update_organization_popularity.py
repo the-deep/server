@@ -15,7 +15,8 @@ class Command(BaseCommand):
     """
 
     def handle(self, *args, **kwargs):
-        lead_author_qs = Lead.objects.filter(authors__isnull=False).annotate(
+        lead_qs = Lead.objects.filter(project__is_test=False)
+        lead_author_qs = lead_qs.filter(authors__isnull=False).annotate(
             organization_id=models.functions.Coalesce(
                 models.F('authors__parent_id'),
                 models.F('authors__id'),
@@ -24,7 +25,7 @@ class Command(BaseCommand):
             count=models.Count('id')
         )
 
-        lead_source_qs = Lead.objects.filter(source__isnull=False).annotate(
+        lead_source_qs = lead_qs.filter(source__isnull=False).annotate(
             organization_id=models.functions.Coalesce(
                 models.F('source__parent_id'),
                 models.F('source__id'),
