@@ -4,6 +4,7 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers, exceptions
 from drf_writable_nested.serializers import WritableNestedModelSerializer
 from django.db import models
+from django.db import transaction
 
 from deep.serializers import RemoveNullFieldsMixin, TempClientIdMixin, IntegerIDField
 from user_resource.serializers import UserResourceSerializer
@@ -25,6 +26,7 @@ from .models import (
     Filter,
     Exportable,
 )
+from .tasks import export_af_to_csv_task
 
 
 class WidgetSerializer(RemoveNullFieldsMixin,
@@ -608,6 +610,11 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
             # Overwriting AF on save
             serializer.save()
 
+    def _post_save(self, instance):
+        transaction.on_commit(
+            lambda: export_af_to_csv_task.delay(instance.pk)
+        )
+
     def create(self, validated_data):
         validated_data.pop('secondary_tagging', None)
         validated_data.pop('prediction_tags_mapping', None)
@@ -623,6 +630,7 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
         instance.add_member(self.context['request'].user, owner_role)
         # NOTE: Set current_user_role value. (get_current_user_role)
         instance.current_user_role = owner_role.type
+        self._post_save(instance)
         return instance
 
     def update(self, instance, validated_data):
@@ -644,6 +652,7 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
             owner_role = instance.get_or_create_owner_role()
             instance.add_member(instance.created_by, owner_role)
         ProjectChangeManager.log_framework_update(instance.pk, self.context['request'].user)
+        self._post_save(instance)
         return instance
 
 
