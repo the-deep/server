@@ -32,6 +32,7 @@ type AnalysisFrameworkDetailType {
   organization: OrganizationType
   currentUserRole: AnalysisFrameworkRoleTypeEnum
   previewImage: FileFieldType
+  export: FileFieldType
   allowedPermissions: [AnalysisFrameworkPermission!]!
   primaryTagging: [SectionType!]
   secondaryTagging: [WidgetType!]
@@ -183,6 +184,7 @@ type AnalysisFrameworkType {
   organization: OrganizationType
   currentUserRole: AnalysisFrameworkRoleTypeEnum
   previewImage: FileFieldType
+  export: FileFieldType
   allowedPermissions: [AnalysisFrameworkPermission!]!
 }
 
