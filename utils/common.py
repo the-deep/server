@@ -61,10 +61,10 @@ def write_file(r, fp):
     return fp
 
 
-def get_temp_file(dir='/tmp/', suffix=None):
+def get_temp_file(dir='/tmp/', mode='w+b', suffix=None):
     if suffix:
-        return tempfile.NamedTemporaryFile(dir=dir, suffix=suffix)
-    return tempfile.NamedTemporaryFile(dir=dir)
+        return tempfile.NamedTemporaryFile(dir=dir, suffix=suffix, mode=mode)
+    return tempfile.NamedTemporaryFile(dir=dir, mode=mode)
 
 
 def get_file_from_url(url):

@@ -171,10 +171,44 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 'key': 'section-text-101',
                                 'order': 1,
                                 'properties': {
+                                    'rows': [
+                                        {
+                                            'cells': [
+                                                {
+                                                    'key': 'cell-key-1.1',
+                                                    'label': 'Cell Label 1.1'
+                                                },
+                                                {
+                                                    'key': 'cell-key-1.2',
+                                                    'label': 'Cell Label 1.2'
+                                                },
+                                                {
+                                                    'key': 'cell-key-1.3',
+                                                    'label': 'Cell Label 1.3'
+                                                }
+                                            ],
+                                            'key': 'row-key-1',
+                                            'label': 'Row Label 1'
+                                        },
+                                        {
+                                            'cells': [
+                                                {
+                                                    'key': 'cell-key-2.1',
+                                                    'label': 'Cell Label 2.1'
+                                                },
+                                                {
+                                                    'key': 'cell-key-2.2',
+                                                    'label': 'Cell Label 2.2'
+                                                }
+                                            ],
+                                            'key': 'row-key-2',
+                                            'label': 'Row Label 2'
+                                        }
+                                    ]
                                 },
                                 'title': 'Section-Text-101',
                                 'version': 1,
-                                'widgetId': 'TEXT'
+                                'widgetId': 'MATRIX1D'
                             },
                             {
                                 'clientId': 'section-text-102-client-id',
@@ -182,10 +216,78 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 'key': 'section-text-102',
                                 'order': 2,
                                 'properties': {
+                                    'columns': [
+                                        {
+                                            'key': 'column-key-1',
+                                            'label': 'Column Label 1',
+                                            'subColumns': [
+                                                {
+                                                    'key': 'sub-column-key-1.1',
+                                                    'label': 'SubColumn Label 1.1'
+                                                },
+                                                {
+                                                    'key': 'sub-column-key-1.2',
+                                                    'label': 'SubColumn Label 1.2'
+                                                },
+                                                {
+                                                    'key': 'sub-column-key-1.3',
+                                                    'label': 'SubColumn Label 1.3'
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            'key': 'column-key-2',
+                                            'label': 'Column Label 2',
+                                            'subColumns': [
+                                                {
+                                                    'key': 'sub-column-key-2.1',
+                                                    'label': 'SubColumn Label 2.1'
+                                                },
+                                                {
+                                                    'key': 'sub-column-key-2.2',
+                                                    'label': 'SubColumn Label 2.2'
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    'rows': [
+                                        {
+                                            'key': 'row-key-1',
+                                            'label': 'Row Label 1',
+                                            'subRows': [
+                                                {
+                                                    'key': 'sub-row-key-1.1',
+                                                    'label': 'SubRow Label 1.1'
+                                                },
+                                                {
+                                                    'key': 'sub-row-key-1.2',
+                                                    'label': 'SubRow Label 1.2'
+                                                },
+                                                {
+                                                    'key': 'sub-row-key-1.3',
+                                                    'label': 'SubRow Label 1.3'
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            'key': 'row-key-2',
+                                            'label': 'Row Label 2',
+                                            'subRows': [
+                                                {
+                                                    'key': 'sub-row-key-2.1',
+                                                    'label': 'SubRow Label 2.1'
+                                                },
+                                                {
+                                                    'key': 'sub-row-key-2.2',
+                                                    'label': 'SubRow Label 2.2'
+                                                }
+                                            ]
+                                        }
+                                    ]
                                 },
                                 'title': 'Section-Text-102',
                                 'version': 1,
-                                'widgetId': 'TEXT'
+                                'widgetId': 'MATRIX2D'
                             }
                         ]
                     }
@@ -219,6 +321,8 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
         }
     }
 }
+
+snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framework_create success-af-export'] = b'Title,Pillar,Sub pillar,2D column,2D sub column\nSection-Text-101,Row Label 1,Cell Label 1.1,,\nSection-Text-101,Row Label 1,Cell Label 1.2,,\nSection-Text-101,Row Label 1,Cell Label 1.3,,\nSection-Text-101,Row Label 2,Cell Label 2.1,,\nSection-Text-101,Row Label 2,Cell Label 2.2,,\nSection-Text-102,Row Label 1,SubRow Label 1.1,Column Label 1,SubColumn Label 1.1\nSection-Text-102,Row Label 1,SubRow Label 1.1,Column Label 1,SubColumn Label 1.2\nSection-Text-102,Row Label 1,SubRow Label 1.1,Column Label 1,SubColumn Label 1.3\nSection-Text-102,Row Label 1,SubRow Label 1.1,Column Label 2,SubColumn Label 2.1\nSection-Text-102,Row Label 1,SubRow Label 1.1,Column Label 2,SubColumn Label 2.2\nSection-Text-102,Row Label 1,SubRow Label 1.2,Column Label 1,SubColumn Label 1.1\nSection-Text-102,Row Label 1,SubRow Label 1.2,Column Label 1,SubColumn Label 1.2\nSection-Text-102,Row Label 1,SubRow Label 1.2,Column Label 1,SubColumn Label 1.3\nSection-Text-102,Row Label 1,SubRow Label 1.2,Column Label 2,SubColumn Label 2.1\nSection-Text-102,Row Label 1,SubRow Label 1.2,Column Label 2,SubColumn Label 2.2\nSection-Text-102,Row Label 1,SubRow Label 1.3,Column Label 1,SubColumn Label 1.1\nSection-Text-102,Row Label 1,SubRow Label 1.3,Column Label 1,SubColumn Label 1.2\nSection-Text-102,Row Label 1,SubRow Label 1.3,Column Label 1,SubColumn Label 1.3\nSection-Text-102,Row Label 1,SubRow Label 1.3,Column Label 2,SubColumn Label 2.1\nSection-Text-102,Row Label 1,SubRow Label 1.3,Column Label 2,SubColumn Label 2.2\nSection-Text-102,Row Label 2,SubRow Label 2.1,Column Label 1,SubColumn Label 1.1\nSection-Text-102,Row Label 2,SubRow Label 2.1,Column Label 1,SubColumn Label 1.2\nSection-Text-102,Row Label 2,SubRow Label 2.1,Column Label 1,SubColumn Label 1.3\nSection-Text-102,Row Label 2,SubRow Label 2.1,Column Label 2,SubColumn Label 2.1\nSection-Text-102,Row Label 2,SubRow Label 2.1,Column Label 2,SubColumn Label 2.2\nSection-Text-102,Row Label 2,SubRow Label 2.2,Column Label 1,SubColumn Label 1.1\nSection-Text-102,Row Label 2,SubRow Label 2.2,Column Label 1,SubColumn Label 1.2\nSection-Text-102,Row Label 2,SubRow Label 2.2,Column Label 1,SubColumn Label 1.3\nSection-Text-102,Row Label 2,SubRow Label 2.2,Column Label 2,SubColumn Label 2.1\nSection-Text-102,Row Label 2,SubRow Label 2.2,Column Label 2,SubColumn Label 2.2\n'
 
 snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framework_membership_bulk try 1'] = {
     'deletedResult': [
@@ -398,10 +502,44 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                     'key': 'section-text-101',
                     'order': 1,
                     'properties': {
+                        'rows': [
+                            {
+                                'cells': [
+                                    {
+                                        'key': 'cell-key-1.1',
+                                        'label': 'Cell Label 1.1'
+                                    },
+                                    {
+                                        'key': 'cell-key-1.2',
+                                        'label': 'Cell Label 1.2'
+                                    },
+                                    {
+                                        'key': 'cell-key-1.3',
+                                        'label': 'Cell Label 1.3'
+                                    }
+                                ],
+                                'key': 'row-key-1',
+                                'label': 'Row Label 1'
+                            },
+                            {
+                                'cells': [
+                                    {
+                                        'key': 'cell-key-2.1',
+                                        'label': 'Cell Label 2.1'
+                                    },
+                                    {
+                                        'key': 'cell-key-2.2',
+                                        'label': 'Cell Label 2.2'
+                                    }
+                                ],
+                                'key': 'row-key-2',
+                                'label': 'Row Label 2'
+                            }
+                        ]
                     },
                     'title': 'Section-Text-101',
                     'version': 1,
-                    'widgetId': 'TEXT'
+                    'widgetId': 'MATRIX1D'
                 },
                 {
                     'clientId': 'section-text-102-client-id',
@@ -409,10 +547,78 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                     'key': 'section-text-102',
                     'order': 2,
                     'properties': {
+                        'columns': [
+                            {
+                                'key': 'column-key-1',
+                                'label': 'Column Label 1',
+                                'subColumns': [
+                                    {
+                                        'key': 'sub-column-key-1.1',
+                                        'label': 'SubColumn Label 1.1'
+                                    },
+                                    {
+                                        'key': 'sub-column-key-1.2',
+                                        'label': 'SubColumn Label 1.2'
+                                    },
+                                    {
+                                        'key': 'sub-column-key-1.3',
+                                        'label': 'SubColumn Label 1.3'
+                                    }
+                                ]
+                            },
+                            {
+                                'key': 'column-key-2',
+                                'label': 'Column Label 2',
+                                'subColumns': [
+                                    {
+                                        'key': 'sub-column-key-2.1',
+                                        'label': 'SubColumn Label 2.1'
+                                    },
+                                    {
+                                        'key': 'sub-column-key-2.2',
+                                        'label': 'SubColumn Label 2.2'
+                                    }
+                                ]
+                            }
+                        ],
+                        'rows': [
+                            {
+                                'key': 'row-key-1',
+                                'label': 'Row Label 1',
+                                'subRows': [
+                                    {
+                                        'key': 'sub-row-key-1.1',
+                                        'label': 'SubRow Label 1.1'
+                                    },
+                                    {
+                                        'key': 'sub-row-key-1.2',
+                                        'label': 'SubRow Label 1.2'
+                                    },
+                                    {
+                                        'key': 'sub-row-key-1.3',
+                                        'label': 'SubRow Label 1.3'
+                                    }
+                                ]
+                            },
+                            {
+                                'key': 'row-key-2',
+                                'label': 'Row Label 2',
+                                'subRows': [
+                                    {
+                                        'key': 'sub-row-key-2.1',
+                                        'label': 'SubRow Label 2.1'
+                                    },
+                                    {
+                                        'key': 'sub-row-key-2.2',
+                                        'label': 'SubRow Label 2.2'
+                                    }
+                                ]
+                            }
+                        ]
                     },
                     'title': 'Section-Text-102',
                     'version': 1,
-                    'widgetId': 'TEXT'
+                    'widgetId': 'MATRIX2D'
                 }
             ]
         }
@@ -626,10 +832,44 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                     'key': 'section-text-101',
                                     'order': 1,
                                     'properties': {
+                                        'rows': [
+                                            {
+                                                'cells': [
+                                                    {
+                                                        'key': 'cell-key-1.1',
+                                                        'label': 'Cell Label 1.1'
+                                                    },
+                                                    {
+                                                        'key': 'cell-key-1.2',
+                                                        'label': 'Cell Label 1.2'
+                                                    },
+                                                    {
+                                                        'key': 'cell-key-1.3',
+                                                        'label': 'Cell Label 1.3'
+                                                    }
+                                                ],
+                                                'key': 'row-key-1',
+                                                'label': 'Row Label 1'
+                                            },
+                                            {
+                                                'cells': [
+                                                    {
+                                                        'key': 'cell-key-2.1',
+                                                        'label': 'Cell Label 2.1'
+                                                    },
+                                                    {
+                                                        'key': 'cell-key-2.2',
+                                                        'label': 'Cell Label 2.2'
+                                                    }
+                                                ],
+                                                'key': 'row-key-2',
+                                                'label': 'Row Label 2'
+                                            }
+                                        ]
                                     },
                                     'title': 'Section-Text-101',
                                     'version': 1,
-                                    'widgetId': 'TEXT'
+                                    'widgetId': 'MATRIX1D'
                                 },
                                 {
                                     'clientId': 'section-text-102-client-id',
@@ -638,10 +878,78 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                     'key': 'section-text-102',
                                     'order': 2,
                                     'properties': {
+                                        'columns': [
+                                            {
+                                                'key': 'column-key-1',
+                                                'label': 'Column Label 1',
+                                                'subColumns': [
+                                                    {
+                                                        'key': 'sub-column-key-1.1',
+                                                        'label': 'SubColumn Label 1.1'
+                                                    },
+                                                    {
+                                                        'key': 'sub-column-key-1.2',
+                                                        'label': 'SubColumn Label 1.2'
+                                                    },
+                                                    {
+                                                        'key': 'sub-column-key-1.3',
+                                                        'label': 'SubColumn Label 1.3'
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                'key': 'column-key-2',
+                                                'label': 'Column Label 2',
+                                                'subColumns': [
+                                                    {
+                                                        'key': 'sub-column-key-2.1',
+                                                        'label': 'SubColumn Label 2.1'
+                                                    },
+                                                    {
+                                                        'key': 'sub-column-key-2.2',
+                                                        'label': 'SubColumn Label 2.2'
+                                                    }
+                                                ]
+                                            }
+                                        ],
+                                        'rows': [
+                                            {
+                                                'key': 'row-key-1',
+                                                'label': 'Row Label 1',
+                                                'subRows': [
+                                                    {
+                                                        'key': 'sub-row-key-1.1',
+                                                        'label': 'SubRow Label 1.1'
+                                                    },
+                                                    {
+                                                        'key': 'sub-row-key-1.2',
+                                                        'label': 'SubRow Label 1.2'
+                                                    },
+                                                    {
+                                                        'key': 'sub-row-key-1.3',
+                                                        'label': 'SubRow Label 1.3'
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                'key': 'row-key-2',
+                                                'label': 'Row Label 2',
+                                                'subRows': [
+                                                    {
+                                                        'key': 'sub-row-key-2.1',
+                                                        'label': 'SubRow Label 2.1'
+                                                    },
+                                                    {
+                                                        'key': 'sub-row-key-2.2',
+                                                        'label': 'SubRow Label 2.2'
+                                                    }
+                                                ]
+                                            }
+                                        ]
                                     },
                                     'title': 'Section-Text-102',
                                     'version': 1,
-                                    'widgetId': 'TEXT'
+                                    'widgetId': 'MATRIX2D'
                                 }
                             ]
                         }
@@ -663,8 +971,16 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             'severityWidget': {
                                 'pk': '8'
                             },
-                            'widget1d': None,
-                            'widget2d': None
+                            'widget1d': [
+                                {
+                                    'pk': '1'
+                                }
+                            ],
+                            'widget2d': [
+                                {
+                                    'pk': '2'
+                                }
+                            ]
                         }
                     },
                     'secondaryTagging': [
@@ -712,6 +1028,8 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
     }
 }
 
+snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framework_update success-af-export'] = b'Title,Pillar,Sub pillar,2D column,2D sub column\nSection-Text-101,Row Label 1,Cell Label 1.1,,\nSection-Text-101,Row Label 1,Cell Label 1.2,,\nSection-Text-101,Row Label 1,Cell Label 1.3,,\nSection-Text-101,Row Label 2,Cell Label 2.1,,\nSection-Text-101,Row Label 2,Cell Label 2.2,,\nSection-Text-102,Row Label 1,SubRow Label 1.1,Column Label 1,SubColumn Label 1.1\nSection-Text-102,Row Label 1,SubRow Label 1.1,Column Label 1,SubColumn Label 1.2\nSection-Text-102,Row Label 1,SubRow Label 1.1,Column Label 1,SubColumn Label 1.3\nSection-Text-102,Row Label 1,SubRow Label 1.1,Column Label 2,SubColumn Label 2.1\nSection-Text-102,Row Label 1,SubRow Label 1.1,Column Label 2,SubColumn Label 2.2\nSection-Text-102,Row Label 1,SubRow Label 1.2,Column Label 1,SubColumn Label 1.1\nSection-Text-102,Row Label 1,SubRow Label 1.2,Column Label 1,SubColumn Label 1.2\nSection-Text-102,Row Label 1,SubRow Label 1.2,Column Label 1,SubColumn Label 1.3\nSection-Text-102,Row Label 1,SubRow Label 1.2,Column Label 2,SubColumn Label 2.1\nSection-Text-102,Row Label 1,SubRow Label 1.2,Column Label 2,SubColumn Label 2.2\nSection-Text-102,Row Label 1,SubRow Label 1.3,Column Label 1,SubColumn Label 1.1\nSection-Text-102,Row Label 1,SubRow Label 1.3,Column Label 1,SubColumn Label 1.2\nSection-Text-102,Row Label 1,SubRow Label 1.3,Column Label 1,SubColumn Label 1.3\nSection-Text-102,Row Label 1,SubRow Label 1.3,Column Label 2,SubColumn Label 2.1\nSection-Text-102,Row Label 1,SubRow Label 1.3,Column Label 2,SubColumn Label 2.2\nSection-Text-102,Row Label 2,SubRow Label 2.1,Column Label 1,SubColumn Label 1.1\nSection-Text-102,Row Label 2,SubRow Label 2.1,Column Label 1,SubColumn Label 1.2\nSection-Text-102,Row Label 2,SubRow Label 2.1,Column Label 1,SubColumn Label 1.3\nSection-Text-102,Row Label 2,SubRow Label 2.1,Column Label 2,SubColumn Label 2.1\nSection-Text-102,Row Label 2,SubRow Label 2.1,Column Label 2,SubColumn Label 2.2\nSection-Text-102,Row Label 2,SubRow Label 2.2,Column Label 1,SubColumn Label 1.1\nSection-Text-102,Row Label 2,SubRow Label 2.2,Column Label 1,SubColumn Label 1.2\nSection-Text-102,Row Label 2,SubRow Label 2.2,Column Label 1,SubColumn Label 1.3\nSection-Text-102,Row Label 2,SubRow Label 2.2,Column Label 2,SubColumn Label 2.1\nSection-Text-102,Row Label 2,SubRow Label 2.2,Column Label 2,SubColumn Label 2.2\n'
+
 snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framework_update with-conditionals-add'] = {
     'data': {
         '__typename': 'Mutation',
@@ -750,7 +1068,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                         'conditions': [
                                         ],
                                         'parentWidget': '1',
-                                        'parentWidgetType': 'TEXT'
+                                        'parentWidgetType': 'MATRIX1D'
                                     },
                                     'id': '4',
                                     'key': 'section-2-text-102',
@@ -777,10 +1095,44 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                     'key': 'section-text-101',
                                     'order': 1,
                                     'properties': {
+                                        'rows': [
+                                            {
+                                                'cells': [
+                                                    {
+                                                        'key': 'cell-key-1.1',
+                                                        'label': 'Cell Label 1.1'
+                                                    },
+                                                    {
+                                                        'key': 'cell-key-1.2',
+                                                        'label': 'Cell Label 1.2'
+                                                    },
+                                                    {
+                                                        'key': 'cell-key-1.3',
+                                                        'label': 'Cell Label 1.3'
+                                                    }
+                                                ],
+                                                'key': 'row-key-1',
+                                                'label': 'Row Label 1'
+                                            },
+                                            {
+                                                'cells': [
+                                                    {
+                                                        'key': 'cell-key-2.1',
+                                                        'label': 'Cell Label 2.1'
+                                                    },
+                                                    {
+                                                        'key': 'cell-key-2.2',
+                                                        'label': 'Cell Label 2.2'
+                                                    }
+                                                ],
+                                                'key': 'row-key-2',
+                                                'label': 'Row Label 2'
+                                            }
+                                        ]
                                     },
                                     'title': 'Section-Text-101',
                                     'version': 1,
-                                    'widgetId': 'TEXT'
+                                    'widgetId': 'MATRIX1D'
                                 },
                                 {
                                     'clientId': 'section-text-102-client-id',
@@ -789,10 +1141,78 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                     'key': 'section-text-102',
                                     'order': 2,
                                     'properties': {
+                                        'columns': [
+                                            {
+                                                'key': 'column-key-1',
+                                                'label': 'Column Label 1',
+                                                'subColumns': [
+                                                    {
+                                                        'key': 'sub-column-key-1.1',
+                                                        'label': 'SubColumn Label 1.1'
+                                                    },
+                                                    {
+                                                        'key': 'sub-column-key-1.2',
+                                                        'label': 'SubColumn Label 1.2'
+                                                    },
+                                                    {
+                                                        'key': 'sub-column-key-1.3',
+                                                        'label': 'SubColumn Label 1.3'
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                'key': 'column-key-2',
+                                                'label': 'Column Label 2',
+                                                'subColumns': [
+                                                    {
+                                                        'key': 'sub-column-key-2.1',
+                                                        'label': 'SubColumn Label 2.1'
+                                                    },
+                                                    {
+                                                        'key': 'sub-column-key-2.2',
+                                                        'label': 'SubColumn Label 2.2'
+                                                    }
+                                                ]
+                                            }
+                                        ],
+                                        'rows': [
+                                            {
+                                                'key': 'row-key-1',
+                                                'label': 'Row Label 1',
+                                                'subRows': [
+                                                    {
+                                                        'key': 'sub-row-key-1.1',
+                                                        'label': 'SubRow Label 1.1'
+                                                    },
+                                                    {
+                                                        'key': 'sub-row-key-1.2',
+                                                        'label': 'SubRow Label 1.2'
+                                                    },
+                                                    {
+                                                        'key': 'sub-row-key-1.3',
+                                                        'label': 'SubRow Label 1.3'
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                'key': 'row-key-2',
+                                                'label': 'Row Label 2',
+                                                'subRows': [
+                                                    {
+                                                        'key': 'sub-row-key-2.1',
+                                                        'label': 'SubRow Label 2.1'
+                                                    },
+                                                    {
+                                                        'key': 'sub-row-key-2.2',
+                                                        'label': 'SubRow Label 2.2'
+                                                    }
+                                                ]
+                                            }
+                                        ]
                                     },
                                     'title': 'Section-Text-102',
                                     'version': 1,
-                                    'widgetId': 'TEXT'
+                                    'widgetId': 'MATRIX2D'
                                 }
                             ]
                         }
@@ -811,8 +1231,16 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             'severityWidget': {
                                 'pk': '8'
                             },
-                            'widget1d': None,
-                            'widget2d': None
+                            'widget1d': [
+                                {
+                                    'pk': '1'
+                                }
+                            ],
+                            'widget2d': [
+                                {
+                                    'pk': '2'
+                                }
+                            ]
                         }
                     },
                     'secondaryTagging': [
@@ -822,7 +1250,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 'conditions': [
                                 ],
                                 'parentWidget': '1',
-                                'parentWidgetType': 'TEXT'
+                                'parentWidgetType': 'MATRIX1D'
                             },
                             'id': '13',
                             'key': 'multi-select-widget-102-key',
@@ -903,7 +1331,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                         'conditions': [
                                         ],
                                         'parentWidget': '1',
-                                        'parentWidgetType': 'TEXT'
+                                        'parentWidgetType': 'MATRIX1D'
                                     },
                                     'id': '4',
                                     'key': 'section-2-text-102',
@@ -930,10 +1358,44 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                     'key': 'section-text-101',
                                     'order': 1,
                                     'properties': {
+                                        'rows': [
+                                            {
+                                                'cells': [
+                                                    {
+                                                        'key': 'cell-key-1.1',
+                                                        'label': 'Cell Label 1.1'
+                                                    },
+                                                    {
+                                                        'key': 'cell-key-1.2',
+                                                        'label': 'Cell Label 1.2'
+                                                    },
+                                                    {
+                                                        'key': 'cell-key-1.3',
+                                                        'label': 'Cell Label 1.3'
+                                                    }
+                                                ],
+                                                'key': 'row-key-1',
+                                                'label': 'Row Label 1'
+                                            },
+                                            {
+                                                'cells': [
+                                                    {
+                                                        'key': 'cell-key-2.1',
+                                                        'label': 'Cell Label 2.1'
+                                                    },
+                                                    {
+                                                        'key': 'cell-key-2.2',
+                                                        'label': 'Cell Label 2.2'
+                                                    }
+                                                ],
+                                                'key': 'row-key-2',
+                                                'label': 'Row Label 2'
+                                            }
+                                        ]
                                     },
                                     'title': 'Section-Text-101',
                                     'version': 1,
-                                    'widgetId': 'TEXT'
+                                    'widgetId': 'MATRIX1D'
                                 },
                                 {
                                     'clientId': 'section-text-102-client-id',
@@ -942,10 +1404,78 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                     'key': 'section-text-102',
                                     'order': 2,
                                     'properties': {
+                                        'columns': [
+                                            {
+                                                'key': 'column-key-1',
+                                                'label': 'Column Label 1',
+                                                'subColumns': [
+                                                    {
+                                                        'key': 'sub-column-key-1.1',
+                                                        'label': 'SubColumn Label 1.1'
+                                                    },
+                                                    {
+                                                        'key': 'sub-column-key-1.2',
+                                                        'label': 'SubColumn Label 1.2'
+                                                    },
+                                                    {
+                                                        'key': 'sub-column-key-1.3',
+                                                        'label': 'SubColumn Label 1.3'
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                'key': 'column-key-2',
+                                                'label': 'Column Label 2',
+                                                'subColumns': [
+                                                    {
+                                                        'key': 'sub-column-key-2.1',
+                                                        'label': 'SubColumn Label 2.1'
+                                                    },
+                                                    {
+                                                        'key': 'sub-column-key-2.2',
+                                                        'label': 'SubColumn Label 2.2'
+                                                    }
+                                                ]
+                                            }
+                                        ],
+                                        'rows': [
+                                            {
+                                                'key': 'row-key-1',
+                                                'label': 'Row Label 1',
+                                                'subRows': [
+                                                    {
+                                                        'key': 'sub-row-key-1.1',
+                                                        'label': 'SubRow Label 1.1'
+                                                    },
+                                                    {
+                                                        'key': 'sub-row-key-1.2',
+                                                        'label': 'SubRow Label 1.2'
+                                                    },
+                                                    {
+                                                        'key': 'sub-row-key-1.3',
+                                                        'label': 'SubRow Label 1.3'
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                'key': 'row-key-2',
+                                                'label': 'Row Label 2',
+                                                'subRows': [
+                                                    {
+                                                        'key': 'sub-row-key-2.1',
+                                                        'label': 'SubRow Label 2.1'
+                                                    },
+                                                    {
+                                                        'key': 'sub-row-key-2.2',
+                                                        'label': 'SubRow Label 2.2'
+                                                    }
+                                                ]
+                                            }
+                                        ]
                                     },
                                     'title': 'Section-Text-102',
                                     'version': 1,
-                                    'widgetId': 'TEXT'
+                                    'widgetId': 'MATRIX2D'
                                 }
                             ]
                         }
@@ -964,8 +1494,16 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             'severityWidget': {
                                 'pk': '8'
                             },
-                            'widget1d': None,
-                            'widget2d': None
+                            'widget1d': [
+                                {
+                                    'pk': '1'
+                                }
+                            ],
+                            'widget2d': [
+                                {
+                                    'pk': '2'
+                                }
+                            ]
                         }
                     },
                     'secondaryTagging': [

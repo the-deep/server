@@ -12,6 +12,7 @@ from analysis_framework.models import Widget
 from project.models import ProjectChangeLog
 from project.factories import ProjectFactory
 from organization.factories import OrganizationFactory
+from analysis_framework.models import AnalysisFramework
 from analysis_framework.factories import (
     AnalysisFrameworkFactory,
     SectionFactory,
@@ -245,20 +246,80 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                         dict(
                             clientId='section-text-101-client-id',
                             title='Section-Text-101',
-                            widgetId=self.genum(Widget.WidgetType.TEXT),
+                            widgetId=self.genum(Widget.WidgetType.MATRIX1D),
                             version=1,
                             key='section-text-101',
                             order=1,
-                            properties=dict(),
+                            properties=dict(
+                                rows=[
+                                    dict(
+                                        key='row-key-1',
+                                        label='Row Label 1',
+                                        cells=[
+                                            dict(key='cell-key-1.1', label='Cell Label 1.1'),
+                                            dict(key='cell-key-1.2', label='Cell Label 1.2'),
+                                            dict(key='cell-key-1.3', label='Cell Label 1.3'),
+                                        ],
+                                    ),
+                                    dict(
+                                        key='row-key-2',
+                                        label='Row Label 2',
+                                        cells=[
+                                            dict(key='cell-key-2.1', label='Cell Label 2.1'),
+                                            dict(key='cell-key-2.2', label='Cell Label 2.2'),
+                                        ],
+                                    ),
+
+                                ],
+                            ),
                         ),
                         dict(
                             clientId='section-text-102-client-id',
                             title='Section-Text-102',
-                            widgetId=self.genum(Widget.WidgetType.TEXT),
+                            widgetId=self.genum(Widget.WidgetType.MATRIX2D),
                             version=1,
                             key='section-text-102',
                             order=2,
-                            properties=dict(),
+                            properties=dict(
+                                rows=[
+                                    dict(
+                                        key='row-key-1',
+                                        label='Row Label 1',
+                                        subRows=[
+                                            dict(key='sub-row-key-1.1', label='SubRow Label 1.1'),
+                                            dict(key='sub-row-key-1.2', label='SubRow Label 1.2'),
+                                            dict(key='sub-row-key-1.3', label='SubRow Label 1.3'),
+                                        ],
+                                    ),
+                                    dict(
+                                        key='row-key-2',
+                                        label='Row Label 2',
+                                        subRows=[
+                                            dict(key='sub-row-key-2.1', label='SubRow Label 2.1'),
+                                            dict(key='sub-row-key-2.2', label='SubRow Label 2.2'),
+                                        ],
+                                    ),
+                                ],
+                                columns=[
+                                    dict(
+                                        key='column-key-1',
+                                        label='Column Label 1',
+                                        subColumns=[
+                                            dict(key='sub-column-key-1.1', label='SubColumn Label 1.1'),
+                                            dict(key='sub-column-key-1.2', label='SubColumn Label 1.2'),
+                                            dict(key='sub-column-key-1.3', label='SubColumn Label 1.3'),
+                                        ],
+                                    ),
+                                    dict(
+                                        key='column-key-2',
+                                        label='Column Label 2',
+                                        subColumns=[
+                                            dict(key='sub-column-key-2.1', label='SubColumn Label 2.1'),
+                                            dict(key='sub-column-key-2.2', label='SubColumn Label 2.2'),
+                                        ],
+                                    ),
+                                ],
+                            ),
                         ),
                     ],
                 ),
@@ -326,8 +387,12 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         response = _query_check(self.invalid_minput, okay=False)
         self.assertMatchSnapshot(response, 'errors')
 
-        response = _query_check(self.valid_minput, okay=True)
+        with self.captureOnCommitCallbacks(execute=True):
+            response = _query_check(self.valid_minput, okay=True)
         self.assertMatchSnapshot(response, 'success')
+        # Export test
+        new_af = AnalysisFramework.objects.get(pk=response['data']['analysisFrameworkCreate']['result']['id'])
+        self.assertMatchSnapshot(new_af.export.file.read(), 'success-af-export')
 
     def test_analysis_framework_update(self):
         query = '''
@@ -521,9 +586,11 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                 organigramWidgets=_get_multiple_widget_ID(Widget.WidgetType.ORGANIGRAM),
             ),
         )
-        response = _query_check(new_af_id, new_af_response, okay=True)
+        with self.captureOnCommitCallbacks(execute=True):
+            response = _query_check(new_af_id, new_af_response, okay=True)
         self.assertMatchSnapshot(response, 'success')
-
+        new_af = AnalysisFramework.objects.get(pk=new_af_id)
+        self.assertMatchSnapshot(new_af.export.file.read(), 'success-af-export')
         # Check with conditionals
         other_af_widget = WidgetFactory.create(analysis_framework=AnalysisFrameworkFactory.create())
         af_widget = Widget.objects.filter(analysis_framework_id=new_af_id).first()
