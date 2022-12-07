@@ -28,6 +28,7 @@ from quality_assurance.factories import EntryReviewCommentFactory
 
 from project.tasks import _generate_project_stats_cache
 from geo.enums import GeoAreaOrderingEnum
+from organization.factories import OrganizationFactory
 
 from .test_mutations import TestProjectGeneralMutationSnapshotTest
 
@@ -1234,3 +1235,122 @@ class TestProjectExploreStats(GraphQLSnapShotTestCase):
         _cache_clear()
         previous_content = content = self.query_check(query)  # Pull latest data
         self.assertMatchSnapshot(content, 'with-data')
+
+    def test_explore_deep_dashboard(self):
+        query = """
+            query MyQuery($options: ExploreDeepFilter) {
+                deepExploreStats(options: $options) {
+                    topTenAuthorsList {
+                        id
+                        sourceCount
+                        projectCount
+                    }
+                    topTenFrameworksList {
+                        analysisFrameworkId
+                        analysisFrameworkTitle
+                        entryCount
+                        projectCount
+                    }
+                    topTenProjectEntriesList {
+                        entryCount
+                        projectId
+                        projectTitle
+                        sourceCount
+                    }
+                    topTenProjectUsersList {
+                        projectId
+                        projectTitle
+                        userCount
+                    }
+                    topTenSourcesList {
+                        id
+                        sourceCount
+                        projectCount
+                    }
+                    totalActiveUsers
+                    totalAuthors
+                    totalEntries
+                    totalLeads
+                    totalProjects
+                    totalPublishers
+                    totalRegisteredUsers
+                }
+            }
+        """
+
+        user = UserFactory.create()
+        user2, _ = UserFactory.create_batch(2)
+        organization1, organization2, _ = OrganizationFactory.create_batch(3)
+        analysis_framework, analysis_framework2 = AnalysisFrameworkFactory.create_batch(2)
+
+        project_1 = self.update_obj(ProjectFactory.create(analysis_framework=analysis_framework), created_at="2020-10-11")
+        project_2 = self.update_obj(ProjectFactory.create(analysis_framework=analysis_framework), created_at="2022-10-11")
+        project_3 = self.update_obj(ProjectFactory.create(analysis_framework=analysis_framework2), created_at="2021-10-11")
+        project_4 = self.update_obj(ProjectFactory.create(analysis_framework=analysis_framework), created_at="2024-10-11")
+        project_5 = self.update_obj(ProjectFactory.create(analysis_framework=analysis_framework), created_at="2021-10-11")
+        project_6 = self.update_obj(ProjectFactory.create(analysis_framework=analysis_framework2), created_at="2023-10-11")
+        project_7 = self.update_obj(ProjectFactory.create(analysis_framework=analysis_framework2), created_at="2020-11-11")
+        project_8 = self.update_obj(ProjectFactory.create(analysis_framework=analysis_framework2), created_at="2020-09-11")
+
+        # Some leads
+        lead_1 = self.update_obj(LeadFactory.create(
+            project=project_1, source=organization1,
+            created_by=user,
+        ), created_at="2020-10-11")
+        lead_1.authors.add(organization1)
+        lead_2 = self.update_obj(
+            LeadFactory.create(project=project_2, source=organization2, created_by=user), created_at="2020-10-11"
+        )
+        lead_2.authors.add(organization2)
+        self.update_obj(LeadFactory.create(project=project_3), created_at="2021-10-11")
+        self.update_obj(
+            LeadFactory.create(project=project_4, source=organization2, created_by=user2), created_at="2024-10-11"
+        )
+        lead_5 = self.update_obj(LeadFactory.create(project=project_5), created_at="2021-10-11")
+        lead_5.authors.add(organization1)
+        self.update_obj(LeadFactory.create(project=project_6, created_by=user), created_at="2023-10-11")
+        lead_7 = self.update_obj(
+            LeadFactory.create(project=project_7, source=organization1, created_by=user2), created_at="2020-11-11"
+        )
+        lead_7.authors.add(organization2)
+        self.update_obj(
+            LeadFactory.create(project=project_8, source=organization1, created_by=user2), created_at="2020-09-11"
+        )
+
+        # Some entry
+        self.update_obj(EntryFactory.create(project=project_1, created_by=user, lead=lead_1), created_at="2020-10-11")
+        self.update_obj(EntryFactory.create(project=project_2, lead=lead_1), created_at="2022-10-11")
+        self.update_obj(EntryFactory.create(project=project_3, created_by=user2, lead=lead_2), created_at="2021-10-11")
+        self.update_obj(EntryFactory.create(project=project_4, created_by=user, lead=lead_5), created_at="2024-10-11")
+        self.update_obj(EntryFactory.create(project=project_5, lead=lead_1), created_at="2021-10-11")
+        self.update_obj(EntryFactory.create(project=project_6, lead=lead_2), created_at="2023-10-11")
+        self.update_obj(EntryFactory.create(project=project_7, created_by=user2, lead=lead_5), created_at="2020-11-11")
+        self.update_obj(EntryFactory.create(project=project_8, created_by=user, lead=lead_7), created_at="2020-09-11")
+
+        def _query_check(options=None, **kwargs):
+            return self.query_check(
+                query,
+                variables={
+                    'options': options,
+                },
+                **kwargs
+            )
+
+        # Without login
+        _query_check(assert_for_error=True)
+
+        # With login - non-member zero count
+        options = {
+            "dateFrom": "2020-10-01",
+            "dateTo": "2021-11-11"
+        }
+        self.force_login(user)
+        content = _query_check(options)['data']['deepExploreStats']
+        self.assertIsNotNone(content, content)
+        self.assertEqual(content['totalActiveUsers'], 3)
+        self.assertEqual(content['totalAuthors'], 3)
+        self.assertEqual(content['totalEntries'], 4)
+        self.assertEqual(content['totalLeads'], 5)
+        self.assertEqual(content['totalProjects'], 4)
+        self.assertEqual(content['totalPublishers'], 3)
+        self.assertEqual(content['totalRegisteredUsers'], 3)
