@@ -1061,6 +1061,51 @@ type EntryType {
 
 scalar EnumDescription
 
+type ExploreDashboardStatType {
+  totalProjects: Int
+  totalRegisteredUsers: Int
+  totalLeads: Int
+  totalEntries: Int
+  totalActiveUsers: Int
+  totalAuthors: Int
+  totalPublishers: Int
+  topTenAuthorsList: [ExploreStastOrganizationType!]
+  topTenSourcesList: [ExploreStastOrganizationType!]
+  topTenFrameworksList: [ExploreDeepStatTopActiveFrameworksType!]
+  topTenProjectUsersList: [ExploreDeepStatTopProjectType!]
+  topTenProjectEntriesList: [ExploreDeepStatTopProjectEntryType!]
+}
+
+input ExploreDeepFilter {
+  dateFrom: Date!
+  dateTo: Date!
+  createdAt: Date
+  isTestProject: Boolean
+  search: String
+  organization: ID
+  projectEntry: Boolean
+}
+
+type ExploreDeepStatTopActiveFrameworksType {
+  analysisFrameworkId: ID!
+  analysisFrameworkTitle: String
+  projectCount: Int!
+  entryCount: Int!
+}
+
+type ExploreDeepStatTopProjectEntryType {
+  projectId: ID!
+  projectTitle: String
+  sourceCount: Int!
+  entryCount: Int!
+}
+
+type ExploreDeepStatTopProjectType {
+  projectId: ID!
+  projectTitle: String
+  userCount: Int!
+}
+
 type ExploreProjectStatTopActiveFrameworksType {
   analysisFrameworkId: ID!
   analysisFrameworkTitle: String
@@ -1073,6 +1118,21 @@ type ExploreProjectStatTopActiveProjectsType {
   projectTitle: String
   analysisFrameworkId: ID
   analysisFrameworkTitle: String
+}
+
+type ExploreStastOrganizationType {
+  id: ID!
+  title: String!
+  shortName: String!
+  longName: String!
+  url: String!
+  logo: GalleryFileType
+  verified: Boolean!
+  regions: [RegionWithProject!]!
+  organizationType: OrganizationTypeType
+  mergedAs: MergedAsOrganizationType
+  sourceCount: Int
+  projectCount: Int
 }
 
 input ExportCreateInputType {
@@ -2382,6 +2442,7 @@ type Query {
   projectsByRegion(projectFilter: RegionProjectFilterData, ordering: String): ProjectByRegionListType
   publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, ordering: [PublicProjectOrderingEnum!], isTest: Boolean, page: Int = 1, pageSize: Int): PublicProjectListType
   publicProjectsByRegion(projectFilter: RegionProjectFilterData, page: Int = 1, ordering: String, pageSize: Int): PublicProjectByRegionListType
+  deepExploreStats(options: ExploreDeepFilter): ExploreDashboardStatType
   assistedTagging: AssistedTaggingRootQueryType
   customEnum: CustomEnum
   _debug: DjangoDebug
