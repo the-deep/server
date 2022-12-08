@@ -703,11 +703,20 @@ class Query:
                 created_at__gte=date_from,
                 created_at__lte=date_to,
             )
-            if search or is_test_project or project_entry:
+            if search:
                 project_qs = project_qs.filter(
                     title__icontains=search,
+                )
+            if is_test_project:
+                project_qs = project_qs.filter(
                     is_test=False,
                 )
+            if project_entry:
+                project_qs = project_qs.filter(
+                    entry__isnull=False
+                ).values('entry').annotate(
+                    entry_count=models.Count('entry')
+                ).filter(entry_count__lte=100)
             total_projects = project_qs.count()
             total_registered_users = User.objects.filter(
                 is_active=True,
