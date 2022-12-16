@@ -337,6 +337,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
 
         # --- non-member user (zero leads)
         content = _query_check()
+
         self.assertEqual(content['data']['project']['leads']['totalCount'], 0, content)
         self.assertEqual(len(content['data']['project']['leads']['results']), 0, content)
 
@@ -351,6 +352,46 @@ class TestLeadQuerySchema(GraphQLTestCase):
         content = _query_check()
         self.assertEqual(content['data']['project']['leads']['totalCount'], 11, content)
         self.assertListIds(content['data']['project']['leads']['results'], confidential_leads + normal_leads, content)
+
+    def test_lead_query_with_duplicates(self):
+        query = '''
+            query MyQuery ($projectId: ID! $leadId: ID!) {
+              project(id: $projectId) {
+                lead (id: $leadId) {
+                  id
+                  title
+                  text
+                  duplicateLeads {
+                    id
+                    title
+                    entriesCount {
+                        total
+                        controlled
+                    }
+                  }
+                }
+              }
+            }
+        '''
+        project = ProjectFactory.create()
+        member_user = UserFactory.create()
+        project.add_member(member_user, role=self.project_role_reader_non_confidential)
+        duplicate_leads = LeadFactory.create_batch(5, project=project)
+        normal_lead = LeadFactory.create(project=project)
+        normal_lead.duplicate_leads.set(duplicate_leads)
+
+        def _query_check(lead, **kwargs):
+            return self.query_check(query, variables={'projectId': project.id, 'leadId': lead.id}, **kwargs)
+
+        self.force_login(member_user)
+        content = _query_check(normal_lead)
+        lead_data = content['data']['project']['lead']
+        duplicate_leads_resp = lead_data['duplicateLeads']
+        self.assertEqual(len(duplicate_leads_resp), len(duplicate_leads), 'Duplicate counts')
+
+        duplicate_list_ids_resp = set([x["id"] for x in duplicate_leads_resp])
+        expected_ids = set([str(x.pk) for x in duplicate_leads])
+        self.assertEqual(duplicate_list_ids_resp, expected_ids, "")
 
     def test_leads_fields_query(self):
         """

@@ -268,7 +268,7 @@ enum AssessmentMethodologyProtectionInfoEnum {
 
 type AssessmentType {
   id: ID!
-  lead: LeadType
+  lead: LeadTypeWithDuplicates
   project: ProjectType!
   leadGroup: LeadGroupType
   metadata: GenericScalar
@@ -1034,7 +1034,7 @@ enum EntryTagTypeEnum {
 type EntryType {
   id: ID!
   clientId: String!
-  lead: LeadType!
+  lead: LeadTypeWithDuplicates!
   project: ProjectType!
   order: Int!
   analysisFramework: AnalysisFrameworkType!
@@ -1398,6 +1398,7 @@ type LeadDetailType {
   assessmentId: ID
   entriesCount: EntriesCountType
   filteredEntriesCount: Int
+  duplicateLeads: [LeadType!]
   entries: [EntryType!]
 }
 
@@ -1488,7 +1489,7 @@ input LeadInputType {
 }
 
 type LeadListType {
-  results: [LeadType!]
+  results: [LeadTypeWithDuplicates!]
   totalCount: Int
   page: Int
   pageSize: Int
@@ -1583,6 +1584,42 @@ type LeadType {
   assessmentId: ID
   entriesCount: EntriesCountType
   filteredEntriesCount: Int
+}
+
+type LeadTypeWithDuplicates {
+  id: ID!
+  clientId: String!
+  leadGroup: LeadGroupType
+  title: String!
+  assignee: UserType
+  publishedOn: Date
+  text: String!
+  url: String!
+  attachment: GalleryFileType
+  isAssessmentLead: Boolean!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  project: ID!
+  sourceType: LeadSourceTypeEnum!
+  sourceTypeDisplay: EnumDescription!
+  priority: LeadPriorityEnum!
+  priorityDisplay: EnumDescription!
+  confidentiality: LeadConfidentialityEnum!
+  confidentialityDisplay: EnumDescription!
+  status: LeadStatusEnum!
+  statusDisplay: EnumDescription!
+  extractionStatus: LeadExtractionStatusEnum
+  leadPreview: LeadPreviewType
+  source: OrganizationType
+  authors: [OrganizationType!]
+  emmEntities: [EmmEntityType!]
+  emmTriggers: [LeadEmmTriggerType!]
+  assessmentId: ID
+  entriesCount: EntriesCountType
+  filteredEntriesCount: Int
+  duplicateLeads: [LeadType!]
 }
 
 input LeadsFilterDataInputType {
