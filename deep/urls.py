@@ -89,6 +89,8 @@ from lead.views import (
 
     WebInfoExtractView,
     WebInfoDataView,
+
+    LeadDeduplicationCallbackView,
 )
 from entry.views import (
     EntryViewSet,
@@ -558,6 +560,12 @@ urlpatterns = [
         get_api_path(r'callback/assisted-tagging-draft-entry-prediction/$'),
         AssistedTaggingDraftEntryPredictionCallbackView.as_view(),
         name='assisted_tagging_draft_entry_prediction_callback',
+    ),
+
+    re_path(
+        get_api_path(r'callback/lead-deduplication/$'),
+        LeadDeduplicationCallbackView.as_view(),
+        name='lead_deduplication_callback',
     ),
 
     # Combined API View

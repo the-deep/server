@@ -4,6 +4,7 @@ import requests
 import uuid as python_uuid
 
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.postgres.search import TrigramSimilarity
@@ -61,6 +62,7 @@ from .serializers import (
     LeadOptionsBodySerializer,
     LegacyLeadOptionsSerializer,
     ExtractCallbackSerializer,
+    DeduplicationCallbackSerializer,
 )
 
 
@@ -828,6 +830,16 @@ class LeadExtractCallbackView(views.APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = ExtractCallbackSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return response.Response("Request successfully completed", status=status.HTTP_200_OK)
+
+
+class LeadDeduplicationCallbackView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, **kwargs):
+        serializer = DeduplicationCallbackSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return response.Response("Request successfully completed", status=status.HTTP_200_OK)
