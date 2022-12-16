@@ -101,9 +101,9 @@ class TestCase(test.APITestCase):
             logger = logging.getLogger(__name__)
             logger.warning('', exc_info=True)
 
-    def assert_http_code(self, response, status_code):
+    def assert_http_code(self, response, status_code, msg=None):
         error_resp = getattr(response, 'data', None)
-        mesg = error_resp
+        mesg = msg or error_resp
         if type(error_resp) is dict and 'errors' in error_resp:
             mesg = error_resp['errors']
         return self.assertEqual(response.status_code, status_code, mesg)

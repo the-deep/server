@@ -140,6 +140,7 @@ class Lead(UserResource, ProjectEntityMixin):
         'unified_connector.ConnectorLead',
         on_delete=models.SET_NULL, related_name='+', blank=True, null=True
     )
+    duplicate_leads = models.ManyToManyField("Lead", blank=True)
 
     def __str__(self):
         return '{}'.format(self.title)
