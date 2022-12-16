@@ -47,7 +47,7 @@ from .filter_set import (
 
 
 def get_lead_qs(info):
-    lead_qs = Lead.objects.filter(project=info.context.active_project)
+    lead_qs = Lead.objects.filter(project=info.context.active_project).prefetch_related('duplicate_leads')
     # Generate queryset according to permission
     if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
         return lead_qs
@@ -395,7 +395,20 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
         return getattr(root, 'filtered_entry_count', None)
 
 
-class LeadDetailType(LeadType):
+class LeadTypeWithDuplicates(LeadType):
+    """Same as lead type but with duplicate_leads which is a recursive field"""
+    duplicate_leads = DjangoListField(LeadType)
+
+    class Meta:
+        model = Lead
+        only_fields = (
+            'id', 'title', 'is_assessment_lead', 'lead_group', 'assignee', 'published_on',
+            'text', 'url', 'attachment',
+            'client_id',
+        )
+
+
+class LeadDetailType(LeadTypeWithDuplicates):
     class Meta:
         model = Lead
         skip_registry = True

@@ -4,7 +4,6 @@ import requests
 import uuid as python_uuid
 
 from django.utils import timezone
-from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.postgres.search import TrigramSimilarity
