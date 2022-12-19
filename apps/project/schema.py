@@ -150,9 +150,9 @@ class ExploreDashboardStatType(graphene.ObjectType):
     total_authors = graphene.Int()
     total_publishers = graphene.Int()
 
-    top_ten_authors_list = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
-    top_ten_sources_list = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
-    top_ten_frameworks_list = graphene.List(
+    top_ten_authors = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
+    top_ten_sources = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
+    top_ten_frameworks = graphene.List(
         graphene.NonNull(
             type('ExploreDeepStatTopActiveFrameworksType', (graphene.ObjectType,), {
                 'analysis_framework_id': graphene.Field(graphene.NonNull(graphene.ID)),
@@ -162,7 +162,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
             })
         )
     )
-    top_ten_project_users_list = graphene.List(
+    top_ten_project_users = graphene.List(
         graphene.NonNull(
             type('ExploreDeepStatTopProjectType', (graphene.ObjectType,), {
                 'project_id': graphene.Field(graphene.NonNull(graphene.ID)),
@@ -171,7 +171,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
             })
         )
     )
-    top_ten_project_entries_list = graphene.List(
+    top_ten_project_entries = graphene.List(
         graphene.NonNull(
             type('ExploreDeepStatTopProjectEntryType', (graphene.ObjectType,), {
                 'project_id': graphene.Field(graphene.NonNull(graphene.ID)),
@@ -609,14 +609,18 @@ class PublicProjectByRegionListType(CustomDjangoListObjectType):
         filterset_class = PublicProjectByRegionGqlFileterSet
 
 
-class ExploreDeepFilter(graphene.InputObjectType):
-    date_from = graphene.Date(required=True)
-    date_to = graphene.Date(required=True)
+class ExploreDeepProjectFilter(graphene.InputObjectType):
     created_at = graphene.Date()
     is_test_project = graphene.Boolean()
     search = graphene.String()
     organization = graphene.ID()
-    project_entry = graphene.Boolean()
+    is_entry_less_than = graphene.Boolean()
+
+
+class ExploreDeepFilter(graphene.InputObjectType):
+    date_from = graphene.Date(required=True)
+    date_to = graphene.Date(required=True)
+    project = ExploreDeepProjectFilter()
 
 
 class Query:
@@ -651,7 +655,7 @@ class Query:
     # Explore Deep Dashboard
     deep_explore_stats = graphene.Field(
         ExploreDashboardStatType,
-        options=ExploreDeepFilter()
+        filter=ExploreDeepFilter(required=True)
     )
 
     # NOTE: This is a custom feature, see https://github.com/the-deep/graphene-django-extras
@@ -691,32 +695,36 @@ class Query:
         return Query.resolve_projects_by_region(*args, **kwargs)
 
     @staticmethod
-    def resolve_deep_explore_stats(self, info, options):
-        if options:
-            date_from = options.get('date_from')
-            date_to = options.get('date_to')
-            search = options.get('search')
-            is_test_project = options.get('is_test_project')
-            project_entry = options.get('project_entry')
+    def resolve_deep_explore_stats(self, info, filter):
+        if filter:
+            date_from = filter.get('date_from')
+            date_to = filter.get('date_to')
 
+            # project specific filter
             project_qs = Project.objects.filter(
                 created_at__gte=date_from,
                 created_at__lte=date_to,
             )
-            if search:
-                project_qs = project_qs.filter(
-                    title__icontains=search,
-                )
-            if is_test_project:
-                project_qs = project_qs.filter(
-                    is_test=False,
-                )
-            if project_entry:
-                project_qs = project_qs.filter(
-                    entry__isnull=False
-                ).values('entry').annotate(
-                    entry_count=models.Count('entry')
-                ).filter(entry_count__lte=100)
+            project_filter = filter.get('project')
+            if project_filter:
+                search = project_filter.get('search')
+                if search:
+                    project_qs = project_qs.filter(
+                        title__icontains=search,
+                    )
+                is_test_project = project_filter.get('is_test_project')
+                if is_test_project:
+                    project_qs = project_qs.filter(
+                        is_test=True,
+                    )
+                is_entry_less_than = project_filter.get('is_entry_less_than')
+                if is_entry_less_than:
+                    project_qs = project_qs.filter(
+                        entry__isnull=False
+                    ).values('entry').annotate(
+                        entry_count=models.Count('entry')
+                    ).filter(entry_count__lte=100)
+
             total_projects = project_qs.count()
             total_registered_users = User.objects.filter(
                 is_active=True,
@@ -726,16 +734,12 @@ class Query:
                 created_at__gte=date_from,
                 created_at__lte=date_to,
             )
-            if search:
-                lead_qs = lead_qs.filter(project__title__icontains=search)
             total_leads = lead_qs.distinct().count()
 
             entry_qs = Entry.objects.filter(
                 created_at__gte=date_from,
                 created_at__lte=date_to,
             )
-            if search:
-                entry_qs = entry_qs.filter(project__title__icontains=search)
             total_entries = entry_qs.distinct().count()
             total_authors = lead_qs.values('authors').distinct().count()
             total_publishers = lead_qs.values('source').distinct().count()
@@ -746,7 +750,7 @@ class Query:
                 created_at__gte=date_from,
                 created_at__lte=date_to
             )
-            top_ten_authors_list = organization_qs.annotate(
+            top_ten_authors = organization_qs.annotate(
                 source_count=models.functions.Coalesce(models.Subquery(
                     Lead.objects.filter(
                         authors=models.OuterRef('pk')
@@ -763,7 +767,7 @@ class Query:
                 ), 0),
             ).order_by('-source_count', '-project_count')[:10]
 
-            top_ten_sources_list = organization_qs.annotate(
+            top_ten_sources = organization_qs.annotate(
                 source_count=models.functions.Coalesce(models.Subquery(
                     Lead.objects.filter(
                         source=models.OuterRef('pk')
@@ -784,11 +788,7 @@ class Query:
                 created_at__gte=date_from,
                 created_at__lte=date_to,
             )
-            if search:
-                analysis_framework_qs = analysis_framework_qs.filter(
-                    project__title__icontains=search
-                )
-            top_ten_frameworks_list = analysis_framework_qs.annotate(
+            top_ten_frameworks = analysis_framework_qs.annotate(
                 project_count=models.functions.Coalesce(
                     models.Subquery(
                         Project.objects.filter(
@@ -814,7 +814,7 @@ class Query:
                 entry_count=models.F('entry_count'),
             )[:10]
 
-            top_ten_project_users_list = project_qs.annotate(
+            top_ten_project_users = project_qs.annotate(
                 user_count=models.functions.Coalesce(
                     models.Subquery(
                         ProjectMembership.objects.filter(
@@ -830,7 +830,7 @@ class Query:
                 user_count=models.F('user_count'),
             )
 
-            top_ten_project_entries_list = project_qs.annotate(
+            top_ten_project_entries = project_qs.annotate(
                 source_count=models.functions.Coalesce(
                     models.Subquery(
                         Lead.objects.filter(
@@ -864,9 +864,9 @@ class Query:
                 total_authors=total_authors,
                 total_publishers=total_publishers,
                 total_active_users=total_active_users,
-                top_ten_authors_list=top_ten_authors_list,
-                top_ten_sources_list=top_ten_sources_list,
-                top_ten_frameworks_list=top_ten_frameworks_list,
-                top_ten_project_users_list=top_ten_project_users_list,
-                top_ten_project_entries_list=top_ten_project_entries_list
+                top_ten_authors=top_ten_authors,
+                top_ten_sources=top_ten_sources,
+                top_ten_frameworks=top_ten_frameworks,
+                top_ten_project_users=top_ten_project_users,
+                top_ten_project_entries=top_ten_project_entries,
             )
