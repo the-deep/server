@@ -3,6 +3,8 @@ from typing import List
 import graphene
 from django.db import transaction, models
 from django.db.models import QuerySet
+from django.db.models.functions import TruncMonth
+from django.contrib.postgres.aggregates.general import ArrayAgg
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene.types import generic
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
@@ -120,67 +122,6 @@ def get_top_entity_contributor(project, Entity):
             'count': contributor.entity_count,
         } for contributor in contributors
     ]
-
-
-class ExploreStastOrganizationType(OrganizationType):
-    class Meta:
-        model = Organization
-        skip_registry = True
-        fields = (
-            'id',
-            'title',
-            'short_name',
-            'long_name',
-            'url',
-            'logo',
-            'regions',
-            'organization_type',
-            'verified',
-        )
-    source_count = graphene.Int()
-    project_count = graphene.Int()
-
-
-class ExploreDashboardStatType(graphene.ObjectType):
-    total_projects = graphene.Int()
-    total_registered_users = graphene.Int()
-    total_leads = graphene.Int()
-    total_entries = graphene.Int()
-    total_active_users = graphene.Int()
-    total_authors = graphene.Int()
-    total_publishers = graphene.Int()
-
-    top_ten_authors = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
-    top_ten_sources = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
-    top_ten_frameworks = graphene.List(
-        graphene.NonNull(
-            type('ExploreDeepStatTopActiveFrameworksType', (graphene.ObjectType,), {
-                'analysis_framework_id': graphene.Field(graphene.NonNull(graphene.ID)),
-                'analysis_framework_title': graphene.String(),
-                'project_count': graphene.NonNull(graphene.Int),
-                'entry_count': graphene.NonNull(graphene.Int)
-            })
-        )
-    )
-    top_ten_project_users = graphene.List(
-        graphene.NonNull(
-            type('ExploreDeepStatTopProjectType', (graphene.ObjectType,), {
-                'project_id': graphene.Field(graphene.NonNull(graphene.ID)),
-                'project_title': graphene.String(),
-                'user_count': graphene.NonNull(graphene.Int),
-            })
-        )
-    )
-    top_ten_project_entries = graphene.List(
-        graphene.NonNull(
-            type('ExploreDeepStatTopProjectEntryType', (graphene.ObjectType,), {
-                'project_id': graphene.Field(graphene.NonNull(graphene.ID)),
-                'project_title': graphene.String(),
-                'source_count': graphene.NonNull(graphene.Int),
-                'entry_count': graphene.NonNull(graphene.Int),
-            })
-        )
-    )
 
 
 class ProjectExploreStatType(graphene.ObjectType):
@@ -623,6 +564,76 @@ class ExploreDeepFilter(graphene.InputObjectType):
     project = ExploreDeepProjectFilter()
 
 
+class ExploreStastOrganizationType(OrganizationType):
+    class Meta:
+        model = Organization
+        skip_registry = True
+        fields = (
+            'id',
+            'title',
+            'short_name',
+            'long_name',
+            'url',
+            'logo',
+            'regions',
+            'organization_type',
+            'verified',
+        )
+    source_count = graphene.Int()
+    project_count = graphene.Int()
+
+
+class ExploreDashboardStatType(graphene.ObjectType):
+    total_projects = graphene.Int()
+    total_registered_users = graphene.Int()
+    total_leads = graphene.Int()
+    total_entries = graphene.Int()
+    total_active_users = graphene.Int()
+    total_authors = graphene.Int()
+    total_publishers = graphene.Int()
+
+    top_ten_authors = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
+    top_ten_sources = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
+    top_ten_frameworks = graphene.List(
+        graphene.NonNull(
+            type('ExploreDeepStatTopActiveFrameworksType', (graphene.ObjectType,), {
+                'analysis_framework_id': graphene.Field(graphene.NonNull(graphene.ID)),
+                'analysis_framework_title': graphene.String(),
+                'project_count': graphene.NonNull(graphene.Int),
+                'entry_count': graphene.NonNull(graphene.Int)
+            })
+        )
+    )
+    top_ten_project_users = graphene.List(
+        graphene.NonNull(
+            type('ExploreDeepStatTopProjectType', (graphene.ObjectType,), {
+                'project_id': graphene.Field(graphene.NonNull(graphene.ID)),
+                'project_title': graphene.String(),
+                'user_count': graphene.NonNull(graphene.Int),
+            })
+        )
+    )
+    top_ten_project_entries = graphene.List(
+        graphene.NonNull(
+            type('ExploreDeepStatTopProjectEntryType', (graphene.ObjectType,), {
+                'project_id': graphene.Field(graphene.NonNull(graphene.ID)),
+                'project_title': graphene.String(),
+                'source_count': graphene.NonNull(graphene.Int),
+                'entry_count': graphene.NonNull(graphene.Int),
+            })
+        )
+    )
+    project_by_region = graphene.List(RegionWithProject)
+    project_aggregration_monthly = graphene.List(
+        graphene.NonNull(
+            type('ExploreDeepStatProjetAggregrationMonthly', (graphene.ObjectType,), {
+                'date': graphene.Date(),
+                'project_count': graphene.String(),
+            })
+        )
+    )
+
+
 class Query:
     project = DjangoObjectField(ProjectDetailType)
     projects = DjangoPaginatedListObjectField(
@@ -856,6 +867,21 @@ class Query:
                 entry_count=models.F('entry_count')
             )[:10]
 
+            project_by_region = Region.objects.annotate(
+                projects_id=ArrayAgg(
+                    'project',
+                    distinct=True,
+                    ordering='project',
+                    filter=models.Q(project__in=project_qs),
+                ),
+            ).filter(projects_id__isnull=False).only('id', 'centroid')
+
+            project_aggregration_monthly = project_qs.values(
+                date=TruncMonth('created_at')
+            ).annotate(
+                project_count=models.Count('id')
+            ).order_by('date')
+
             return dict(
                 total_projects=total_projects,
                 total_registered_users=total_registered_users,
@@ -869,4 +895,6 @@ class Query:
                 top_ten_frameworks=top_ten_frameworks,
                 top_ten_project_users=top_ten_project_users,
                 top_ten_project_entries=top_ten_project_entries,
+                project_by_region=project_by_region,
+                project_aggregration_monthly=project_aggregration_monthly,
             )
