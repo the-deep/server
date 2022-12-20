@@ -1,10 +1,15 @@
+from unittest.mock import patch, Mock
 from parameterized import parameterized
 from django.conf import settings
+from django.urls import reverse
+
 from deep.tests import TestCase
 
+from lead.factories import LeadPreviewFactory, LeadFactory
 from lead.tasks import (
     extract_from_lead,
     _preprocess,
+    send_deduplication_request_to_nlp_server,
 )
 from lead.models import Lead
 
@@ -67,3 +72,30 @@ class ExtractFromLeadTaskTest(TestCase):
         except Exception:
             logger.warning('LEAD EXTRACTION ERROR:', exc_info=True)
             return
+
+    @patch('lead.tasks.requests.post')
+    def test_send_dedup_request_to_nlp_server(self, post_func):
+        text_extract = 'This is a text extract'
+        post_func.return_value = Mock(status_code=200)
+        lead = LeadFactory.create()
+        LeadPreviewFactory.create(text_extract=text_extract, lead=lead)
+
+        task_result = send_deduplication_request_to_nlp_server(lead.id)
+
+        callback_url_for_nlp = (
+            settings.DEEPL_SERVICE_CALLBACK_DOMAIN +
+            reverse('lead_deduplication_callback', kwargs={'version': 'v1'})
+        )
+        data = dict(
+            lead_id=lead.id,
+            project_id=lead.project_id,
+            text_extract=text_extract,
+            callback_url=callback_url_for_nlp,
+        )
+        url = f'{settings.DEEPL_SERVICE_DOMAIN}/api/deduplication/'
+        post_func.assert_called_with(
+            url,
+            data,
+        )
+
+        assert task_result is True
