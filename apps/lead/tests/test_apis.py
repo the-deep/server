@@ -1753,6 +1753,22 @@ class WebInfoExtractionTests(TestCase):
         self.assertEqualWithWarning(expected, response.data)
 
 
+class WebInfoDataTestCase(TestCase):
+    def test_relief_web(self):
+        self.create(Organization, title='Organization 1')
+        self.create(Organization, title='Organization 2')
+
+        url = '/api/v1/web-info-data/'
+        data = {
+            'url': SAMPLE_WEB_INFO_URL,
+            'authors_raw': ['Organization1', 'Organization2'],
+            'source_raw': 'Organization1'
+        }
+        self.authenticate()
+        response = self.client.post(url, data)
+        self.assert_200(response)
+
+
 class TestExtractorCallback(TestCase):
     def setUp(self):
         super().setUp()

@@ -571,7 +571,7 @@ class WebInfoViewMixin():
         organization_source_type,
         url,
         source_raw,
-        author_raw,
+        authors_raw,
         country,
     ):
         project = None
@@ -579,21 +579,21 @@ class WebInfoViewMixin():
             project = Project.get_for_member(request.user).filter(
                 regions__title__icontains=country
             ).first()
-
         project = project or request.user.profile.last_active_project
         organization_search = OrganizationSearch(
-            [source_raw, author_raw],
+            [source_raw, *authors_raw],
             organization_source_type,
             request.user,
         )
-
         organization_context = {
             'source': self.get_organization(source_raw, organization_search),
-            'author': self.get_organization(author_raw, organization_search),
+            'authors': [
+                self.get_organization(author, organization_search)
+                for author in authors_raw
+            ],
             'source_raw': source_raw,
-            'author_raw': author_raw,
+            'authors_raw': authors_raw,
         }
-
         context = {
             **organization_context,
             'project': project and project.id,
@@ -614,7 +614,7 @@ class WebInfoExtractView(WebInfoViewMixin, views.APIView):
         date = extractor.get_date()
         country = extractor.get_country()
         source_raw = extractor.get_source()
-        author_raw = extractor.get_author()
+        authors_raw = extractor.get_author()
         title = extractor.get_title()
 
         context = self._process_data(
@@ -622,7 +622,7 @@ class WebInfoExtractView(WebInfoViewMixin, views.APIView):
             Organization.SourceType.WEB_INFO_EXTRACT_VIEW,
             url=url,
             source_raw=source_raw,
-            author_raw=author_raw,
+            authors_raw=authors_raw,
             country=country,
         )
 
@@ -643,7 +643,7 @@ class WebInfoDataView(WebInfoViewMixin, views.APIView):
 
     def post(self, request, version=None):
         source_raw = request.data.get('source_raw')
-        author_raw = request.data.get('author_raw')
+        authors_raw = request.data.get('authors_raw')
         url = request.data.get('url')
         country = request.data.get('country')
 
@@ -652,7 +652,7 @@ class WebInfoDataView(WebInfoViewMixin, views.APIView):
             Organization.SourceType.WEB_INFO_DATA_VIEW,
             url=url,
             source_raw=source_raw,
-            author_raw=author_raw,
+            authors_raw=authors_raw,
             country=country,
         )
         return response.Response(context)
