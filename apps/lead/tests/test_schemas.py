@@ -353,20 +353,51 @@ class TestLeadQuerySchema(GraphQLTestCase):
         self.assertEqual(content['data']['project']['leads']['totalCount'], 11, content)
         self.assertListIds(content['data']['project']['leads']['results'], confidential_leads + normal_leads, content)
 
+    def test_lead_query_with_duplicates_count_filter(self):
+        query = '''
+            query MyQuery ($projectId: ID!) {
+              project(id: $projectId) {
+                leads (duplicateLeadsCount_Gte: 1) {
+                    results {
+                      id
+                      title
+                      text
+                      duplicateLeadsCount
+                    }
+                }
+              }
+            }
+        '''
+        project = ProjectFactory.create()
+        member_user = UserFactory.create()
+        project.add_member(member_user, role=self.project_role_reader_non_confidential)
+        duplicate_leads = LeadFactory.create_batch(5, project=project)
+        lead = LeadFactory.create(project=project)
+        lead.duplicate_leads.set(duplicate_leads)
+        another_lead = LeadFactory.create(project=project)  # noqa
+
+        def _query_check(lead, **kwargs):
+            return self.query_check(query, variables={'projectId': project.id}, **kwargs)
+
+        self.force_login(member_user)
+        content = _query_check(lead)
+        leads = content['data']['project']['leads']['results']
+        self.assertEqual(len(leads), 1)
+        lead = leads[0]
+        self.assertEqual(lead["id"], str(lead.id))
+        self.assertEqual(lead["duplicateLeadsCount"], 5)
+
     def test_lead_query_with_duplicates(self):
         query = '''
-            query MyQuery ($projectId: ID! $leadId: ID!) {
+            query MyQuery ($projectId: ID! $duplicatesOf: ID!) {
               project(id: $projectId) {
-                lead (id: $leadId) {
-                  id
-                  title
-                  text
-                  duplicateLeads {
+                leads (duplicatesOf: $duplicatesOf) {
+                  results {
                     id
                     title
                     entriesCount {
-                        total
-                        controlled
+                      total
+                      controlled
                     }
                   }
                 }
@@ -377,21 +408,56 @@ class TestLeadQuerySchema(GraphQLTestCase):
         member_user = UserFactory.create()
         project.add_member(member_user, role=self.project_role_reader_non_confidential)
         duplicate_leads = LeadFactory.create_batch(5, project=project)
-        normal_lead = LeadFactory.create(project=project)
-        normal_lead.duplicate_leads.set(duplicate_leads)
+        lead = LeadFactory.create(project=project)
+        lead.duplicate_leads.set(duplicate_leads)
 
         def _query_check(lead, **kwargs):
-            return self.query_check(query, variables={'projectId': project.id, 'leadId': lead.id}, **kwargs)
+            return self.query_check(query, variables={'projectId': project.id, 'duplicatesOf': lead.id}, **kwargs)
 
         self.force_login(member_user)
-        content = _query_check(normal_lead)
-        lead_data = content['data']['project']['lead']
-        duplicate_leads_resp = lead_data['duplicateLeads']
-        self.assertEqual(len(duplicate_leads_resp), len(duplicate_leads), 'Duplicate counts')
+        content = _query_check(lead)
+        duplicate_leads_resp = content["data"]["project"]["leads"]["results"]
+        self.assertEqual(len(duplicate_leads_resp), len(duplicate_leads))
 
-        duplicate_list_ids_resp = set([x["id"] for x in duplicate_leads_resp])
-        expected_ids = set([str(x.pk) for x in duplicate_leads])
-        self.assertEqual(duplicate_list_ids_resp, expected_ids, "")
+    def test_lead_query_with_duplicates_reverse(self):
+        """
+        This tests the following:
+        If lead A has duplicate_leads = [B, C, D] then
+        querying duplicate leads of either B, C or D should return A.
+        """
+        query = '''
+            query MyQuery ($projectId: ID! $duplicatesOf: ID!) {
+              project(id: $projectId) {
+                leads (duplicatesOf: $duplicatesOf) {
+                  results {
+                    id
+                    title
+                    entriesCount {
+                      total
+                      controlled
+                    }
+                  }
+                }
+              }
+            }
+        '''
+        project = ProjectFactory.create()
+        member_user = UserFactory.create()
+        project.add_member(member_user, role=self.project_role_reader_non_confidential)
+        duplicate_leads = LeadFactory.create_batch(5, project=project)
+        lead = LeadFactory.create(project=project)
+        lead.duplicate_leads.set(duplicate_leads)
+
+        def _query_check(lead, **kwargs):
+            return self.query_check(query, variables={'projectId': project.id, 'duplicatesOf': lead.id}, **kwargs)
+
+        self.force_login(member_user)
+        for d_lead in duplicate_leads:
+            content = _query_check(d_lead)
+            duplicate_leads_resp = content["data"]["project"]["leads"]["results"]
+            self.assertEqual(len(duplicate_leads_resp), 1)
+            dup = duplicate_leads_resp[0]
+            self.assertEqual(dup["id"], str(lead.id))
 
     def test_leads_fields_query(self):
         """
