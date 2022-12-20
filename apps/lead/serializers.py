@@ -30,7 +30,7 @@ from project.models import ProjectMembership
 from unified_connector.models import ConnectorSourceLead
 from lead.filter_set import LeadsFilterDataInputType
 
-from .tasks import LeadExtraction
+from .tasks import LeadExtraction, send_deduplication_request_to_nlp_server
 from .models import (
     EMMEntity,
     Lead,
@@ -687,13 +687,16 @@ class ExtractCallbackSerializer(serializers.Serializer):
         success = data['extraction_status'] == 1
         lead = data['lead']   # Added from validate
         if success:
-            return LeadExtraction.save_lead_data(
+            lead = LeadExtraction.save_lead_data(
                 lead,
                 data['text_path'],
                 data.get('images_path', [])[:10],   # TODO: Support for more images, to much image will error.
                 data.get('total_words_count'),
                 data.get('total_pages'),
             )
+            # Request to deep nlp for deduplication
+            send_deduplication_request_to_nlp_server.delay(lead.id)
+            return lead
         lead.update_extraction_status(Lead.ExtractionStatus.FAILED)
         return lead
 
@@ -751,7 +754,7 @@ class DeduplicationCallbackSerializer(serializers.Serializer):
             raise serializers.ValidationError("Leads belong to different project")
         return data
 
-    def create(self, validated_data):
+    def create(self, _):
         if self.lead is None or self.duplicate_leads is None:
             raise serializers.ValidationError("Invalid data. Provide lead_id and duplicate_lead_ids")
         self.lead.duplicate_leads.set(self.duplicate_leads)

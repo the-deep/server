@@ -381,11 +381,11 @@ class TestLeadQuerySchema(GraphQLTestCase):
 
         self.force_login(member_user)
         content = _query_check(lead)
-        leads = content['data']['project']['leads']['results']
-        self.assertEqual(len(leads), 1)
-        lead = leads[0]
-        self.assertEqual(lead["id"], str(lead.id))
-        self.assertEqual(lead["duplicateLeadsCount"], 5)
+        leads_resp = content['data']['project']['leads']['results']
+        self.assertEqual(len(leads_resp), 1)
+        lead_resp = leads_resp[0]
+        self.assertEqual(lead_resp["id"], str(lead.id))
+        self.assertEqual(lead_resp["duplicateLeadsCount"], 5)
 
     def test_lead_query_with_duplicates(self):
         query = '''

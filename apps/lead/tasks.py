@@ -266,3 +266,36 @@ def remaining_lead_extract():
         logger.info(f'[Lead Extraction] {status.label}: {count}')
         for lead_id in queryset.values_list('id', flat=True)[:PROCCESS_LEADS_PER_STATUS]:
             extract_from_lead(lead_id)
+
+
+@shared_task
+def send_deduplication_request_to_nlp_server(lead_id: int):
+    lead = Lead.objects.filter(id=lead_id).first()
+    if lead is None:
+        return
+
+    callback_url_for_nlp = (
+        settings.DEEPL_SERVICE_CALLBACK_DOMAIN +
+        reverse('lead_deduplication_callback', kwargs={'version': 'v1'})
+    )
+    dedup_data = dict(
+        lead_id=lead.id,
+        project_id=lead.project_id,
+        text_extract=lead.leadpreview.text_extract,
+        callback_url=callback_url_for_nlp,
+    )
+    try:
+        url = f'{settings.DEEPL_SERVICE_DOMAIN}/api/deduplication/'
+        resp = requests.post(url, dedup_data)
+    except Exception as e:
+        logger.warning(
+            f"Got error from deepl deduplication endpoint. Exception: {e}"
+        )
+        return
+    if not resp.status_code == 200:
+        logger.warning(
+            "Got error from deepl deduplication endpoint. Status:"
+            f"{resp.status_code}. Error:\n{resp.text}"
+        )
+    return True
+    # TODO: retry? track status? track which extracted leads are requested for deduplication?
