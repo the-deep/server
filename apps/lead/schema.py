@@ -48,7 +48,12 @@ from .filter_set import (
 
 def get_lead_qs(info):
     lead_qs = Lead.objects.filter(project=info.context.active_project).\
-        annotate(duplicate_leads_count=Count('duplicate_leads', distinct=True))
+        annotate(
+            duplicates_count=Count('duplicate_leads', distinct=True),
+            duplicate_of_count=Count('duplicate_of', distinct=True)
+        ).annotate(
+            duplicate_leads_count=models.F('duplicates_count') + models.F('duplicate_of_count'),
+        )
     # Generate queryset according to permission
     if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
         return lead_qs
