@@ -353,11 +353,56 @@ class TestLeadQuerySchema(GraphQLTestCase):
         self.assertEqual(content['data']['project']['leads']['totalCount'], 11, content)
         self.assertListIds(content['data']['project']['leads']['results'], confidential_leads + normal_leads, content)
 
-    def test_lead_query_with_duplicates_count_filter(self):
+    def test_lead_query_with_duplicates_true(self):
         query = '''
             query MyQuery ($projectId: ID!) {
               project(id: $projectId) {
-                leads (duplicateLeadsCount_Gte: 1) {
+                leads (hasDuplicateLeads: true) {
+                  results {
+                    id
+                    title
+                    text
+                    duplicateLeadsCount
+                  }
+                }
+              }
+            }
+        '''
+        project = ProjectFactory.create()
+        member_user = UserFactory.create()
+        project.add_member(member_user, role=self.project_role_reader_non_confidential)
+        duplicate_leads = LeadFactory.create_batch(5, project=project)
+        lead = LeadFactory.create(project=project)
+        lead.duplicate_leads.set(duplicate_leads)
+        another_lead = LeadFactory.create(project=project)  # noqa
+
+        """
+        NOTE:
+        Here, total 7 leads are created: "lead" and 5 duplicates set for lead and
+        "another_lead" which has no duplicates nor is assigned to any other lead as duplicate.
+
+        So, while fetching leads with duplicates, there should be 6 leads fetched.
+        """
+
+        def _query_check(lead, **kwargs):
+            return self.query_check(query, variables={'projectId': project.id}, **kwargs)
+
+        self.force_login(member_user)
+        content = _query_check(lead)
+        leads_resp = content['data']['project']['leads']['results']
+        self.assertEqual(len(leads_resp), 6, "There are 6 leads which have/are duplicates.")
+
+        for lead_resp in leads_resp:
+            if lead_resp["id"] == str(lead.id):
+                self.assertEqual(lead_resp["duplicateLeadsCount"], 5)
+            else:
+                self.assertEqual(lead_resp["duplicateLeadsCount"], 1)
+
+    def test_lead_query_with_duplicates_false(self):
+        query = '''
+            query MyQuery ($projectId: ID!) {
+              project(id: $projectId) {
+                leads (hasDuplicateLeads: false) {
                     results {
                       id
                       title
@@ -384,8 +429,9 @@ class TestLeadQuerySchema(GraphQLTestCase):
         leads_resp = content['data']['project']['leads']['results']
         self.assertEqual(len(leads_resp), 1)
         lead_resp = leads_resp[0]
-        self.assertEqual(lead_resp["id"], str(lead.id))
-        self.assertEqual(lead_resp["duplicateLeadsCount"], 5)
+        self.assertEqual(lead_resp["id"], str(another_lead.id))
+        self.assertEqual(lead_resp["duplicateLeadsCount"], 0)
+
 
     def test_lead_query_with_duplicates(self):
         query = '''

@@ -327,11 +327,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
     emm_risk_factors = django_filters.CharFilter(method='emm_risk_factors_filter')
 
     # duplicates
-    duplicate_leads_count = django_filters.NumberFilter()
-    duplicate_leads_count__gte = django_filters.NumberFilter(
-        field_name='duplicate_leads', lookup_expr='gte')
-    duplicate_leads_count__lte = django_filters.NumberFilter(
-        field_name='duplicate_leads', lookup_expr='lte')
+    has_duplicate_leads = django_filters.BooleanFilter(method='has_duplicate_leads_filter', help_text='Has duplicate leads')
     duplicates_of = IDFilter(method='duplicates_of_filter')
 
     ordering = MultipleInputFilter(LeadOrderingEnum, method='ordering_filter')
@@ -543,6 +539,19 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             models.Q(duplicate_leads=lead_id) |
             models.Q(duplicate_of=lead_id)
         )
+
+    def has_duplicate_leads_filter(self, qs, _, val: bool):
+        if val is True:
+            return qs.filter(
+                models.Q(duplicate_leads__isnull=False) |
+                models.Q(duplicate_of__isnull=False),
+            )
+        elif val is False:
+            return qs.filter(
+                duplicate_leads=None,
+                duplicate_of=None,
+            )
+        return qs
 
     @property
     def qs(self):
