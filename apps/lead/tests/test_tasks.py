@@ -12,6 +12,7 @@ from lead.tasks import (
     send_deduplication_request_to_nlp_server,
 )
 from lead.models import Lead
+from lead.tasks import LeadExtraction
 
 from utils.common import get_or_write_file, makedirs
 from utils.extractor.tests.test_web_document import HTML_URL, REDHUM_URL
@@ -86,13 +87,15 @@ class ExtractFromLeadTaskTest(TestCase):
             settings.DEEPL_SERVICE_CALLBACK_DOMAIN +
             reverse('lead_deduplication_callback', kwargs={'version': 'v1'})
         )
+        client_id = LeadExtraction.generate_lead_client_id(lead)
         data = dict(
             lead_id=lead.id,
+            client_id=client_id,
             project_id=lead.project_id,
             text_extract=text_extract,
             callback_url=callback_url_for_nlp,
         )
-        url = f'{settings.DEEPL_SERVICE_DOMAIN}/api/deduplication/'
+        url = f'{settings.DEEPL_SERVICE_DOMAIN}/api/v1/deduplication/'
         post_func.assert_called_with(
             url,
             data,

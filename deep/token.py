@@ -43,9 +43,7 @@ class DeepTokenGenerator(PasswordResetTokenGenerator):
             return False
 
         # Check TIMEOUT
-        if (
-                self._num_days(self._today()) - ts
-        ) > self.reset_timeout_days:
+        if (self._num_days(self._today()) - ts) > self.reset_timeout_days:
             return False
 
         return True

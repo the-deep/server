@@ -723,6 +723,7 @@ class UserSavedLeadFilterSerializer(ProjectPropertySerializerMixin, serializers.
 
 
 class DeduplicationCallbackSerializer(serializers.Serializer):
+    client_id = serializers.CharField()
     lead_id = serializers.IntegerField()
     duplicate_lead_ids = serializers.ListField(child=serializers.IntegerField())
 
@@ -748,6 +749,14 @@ class DeduplicationCallbackSerializer(serializers.Serializer):
     def validate(self, data):
         if self.lead is None or self.duplicate_leads is None:
             raise serializers.ValidationError("Invalid data. Provide lead_id and duplicate_lead_ids")
+
+        # Also validate if lead_id corresponds to the client id
+        try:
+            lead = LeadExtraction.get_lead_from_client_id(data['client_id'])
+        except LeadExtraction.Exception.InvalidTokenValue:
+            raise serializers.ValidationError("Invalid token")
+        if lead.id != data['lead_id']:
+            raise serializers.ValidationError("Inconsistent lead_id and client_id")
 
         project_leads = self.duplicate_leads.filter(project=self.lead.project)
         if project_leads.count() != len(data["duplicate_lead_ids"]):

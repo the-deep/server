@@ -278,14 +278,16 @@ def send_deduplication_request_to_nlp_server(lead_id: int):
         settings.DEEPL_SERVICE_CALLBACK_DOMAIN +
         reverse('lead_deduplication_callback', kwargs={'version': 'v1'})
     )
+    client_id = LeadExtraction.generate_lead_client_id(lead)
     dedup_data = dict(
+        client_id=client_id,
         lead_id=lead.id,
         project_id=lead.project_id,
         text_extract=lead.leadpreview.text_extract,
         callback_url=callback_url_for_nlp,
     )
     try:
-        url = f'{settings.DEEPL_SERVICE_DOMAIN}/api/deduplication/'
+        url = f'{settings.DEEPL_SERVICE_DOMAIN}/api/v1/deduplication/'
         resp = requests.post(url, dedup_data)
     except Exception as e:
         logger.warning(

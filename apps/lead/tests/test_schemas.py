@@ -357,7 +357,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         query = '''
             query MyQuery ($projectId: ID!) {
               project(id: $projectId) {
-                leads (hasDuplicateLeads: true) {
+                leads (hasDuplicates: true) {
                   results {
                     id
                     title
@@ -402,7 +402,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         query = '''
             query MyQuery ($projectId: ID!) {
               project(id: $projectId) {
-                leads (hasDuplicateLeads: false) {
+                leads (hasDuplicates: false) {
                     results {
                       id
                       title
@@ -431,7 +431,6 @@ class TestLeadQuerySchema(GraphQLTestCase):
         lead_resp = leads_resp[0]
         self.assertEqual(lead_resp["id"], str(another_lead.id))
         self.assertEqual(lead_resp["duplicateLeadsCount"], 0)
-
 
     def test_lead_query_with_duplicates(self):
         query = '''
