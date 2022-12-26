@@ -575,7 +575,6 @@ class ExploreStastOrganizationType(OrganizationType):
             'long_name',
             'url',
             'logo',
-            'regions',
             'organization_type',
             'verified',
         )
@@ -593,7 +592,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
     total_publishers = graphene.Int()
 
     top_ten_authors = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
-    top_ten_sources = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
+    top_ten_publishers = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
     top_ten_frameworks = graphene.List(
         graphene.NonNull(
             type('ExploreDeepStatTopActiveFrameworksType', (graphene.ObjectType,), {
@@ -778,7 +777,7 @@ class Query:
                 ), 0),
             ).order_by('-source_count', '-project_count')[:10]
 
-            top_ten_sources = organization_qs.annotate(
+            top_ten_publishers = organization_qs.annotate(
                 source_count=models.functions.Coalesce(models.Subquery(
                     Lead.objects.filter(
                         source=models.OuterRef('pk')
@@ -891,10 +890,10 @@ class Query:
                 total_publishers=total_publishers,
                 total_active_users=total_active_users,
                 top_ten_authors=top_ten_authors,
-                top_ten_sources=top_ten_sources,
                 top_ten_frameworks=top_ten_frameworks,
                 top_ten_project_users=top_ten_project_users,
                 top_ten_project_entries=top_ten_project_entries,
                 project_by_region=project_by_region,
                 project_aggregration_monthly=project_aggregration_monthly,
+                top_ten_publishers=top_ten_publishers,
             )
