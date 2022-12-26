@@ -1072,10 +1072,12 @@ type ExploreDashboardStatType {
   totalAuthors: Int
   totalPublishers: Int
   topTenAuthors: [ExploreStastOrganizationType!]
-  topTenSources: [ExploreStastOrganizationType!]
+  topTenPublishers: [ExploreStastOrganizationType!]
   topTenFrameworks: [ExploreDeepStatTopActiveFrameworksType!]
   topTenProjectUsers: [ExploreDeepStatTopProjectType!]
   topTenProjectEntries: [ExploreDeepStatTopProjectEntryType!]
+  projectByRegion: [RegionWithProject]
+  projectAggregrationMonthly: [ExploreDeepStatProjetAggregrationMonthly!]
 }
 
 input ExploreDeepFilter {
@@ -1090,6 +1092,11 @@ input ExploreDeepProjectFilter {
   search: String
   organization: ID
   isEntryLessThan: Boolean
+}
+
+type ExploreDeepStatProjetAggregrationMonthly {
+  date: Date
+  projectCount: String
 }
 
 type ExploreDeepStatTopActiveFrameworksType {
@@ -1134,7 +1141,6 @@ type ExploreStastOrganizationType {
   url: String!
   logo: GalleryFileType
   verified: Boolean!
-  regions: [RegionWithProject!]!
   organizationType: OrganizationTypeType
   mergedAs: MergedAsOrganizationType
   sourceCount: Int
