@@ -13,6 +13,10 @@ from utils.graphene.filters import (
     IDListFilter,
     MultipleInputFilter,
 )
+from utils.graphene.fields import (
+    generate_object_field_from_input_type,
+    compare_input_output_type_fields,
+)
 from user_resource.filters import UserResourceFilterSet, UserResourceGqlFilterSet
 
 from geo.models import Region
@@ -27,6 +31,7 @@ from .enums import (
     ProjectOrderingEnum,
     PublicProjectOrderingEnum,
 )
+from entry.models import Entry
 
 
 class ProjectFilterSet(UserResourceFilterSet):
@@ -229,3 +234,56 @@ class PublicProjectByRegionGqlFileterSet(ProjectByRegionGqlFilterSet):
             is_test=False,
             is_deleted=False,
         )
+
+
+class ExploreProjectFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
+    organizations = IDListFilter(distinct=True)
+    is_test = django_filters.BooleanFilter(field_name='is_test', method='filter_is_test')
+    search = django_filters.CharFilter(method='filter_title')
+    is_entry_less_than = django_filters.BooleanFilter(field_name='is_entry_less_than', method='filter_is_entry_less_than')
+    regions = IDListFilter(distinct=True)
+
+    class Meta:
+        model = Project
+        fields = ()
+
+    def filter_is_test(self, qs, _, value):
+        if value:
+            return qs.filter(is_test=value)
+        return qs
+
+    def filter_title(self, qs, _, value):
+        if not value:
+            return qs
+        return qs.filter(title__icontains=value).distinct()
+
+    def filter_is_entry_less_than(self, qs, _, value):
+        if not value:
+            return qs
+        return qs.filter(
+            entry__isnull=False
+        ).annotate(
+            entry_count=models.Subquery(
+                Entry.objects.filter(
+                    project=models.OuterRef('id')
+                ).order_by().values('project').annotate(
+                    count=models.Count('id', distinct=True)
+                ).values('count').filter(count__lte=100)[:1],
+                output_field=models.IntegerField()
+            )
+        ).filter(entry_count__lte=100)
+
+
+def get_lead_filter_object_type(input_type):
+    new_fields_map = generate_object_field_from_input_type(input_type)
+    new_type = type('ExploreProjectFilterDataInputType', (graphene.ObjectType,), new_fields_map)
+    compare_input_output_type_fields(input_type, new_type)
+    return new_type
+
+
+ExploreProjectFilterDataInputType = type(
+    'ExploreProjectFilterDataInputType',
+    (graphene.InputObjectType,),
+    get_filtering_args_from_filterset(ExploreProjectFilterSet, 'project.schema.ProjectListType')
+)
+ExploreProjectFilterDataType = get_lead_filter_object_type(ExploreProjectFilterDataInputType)

@@ -1077,24 +1077,16 @@ type ExploreDashboardStatType {
   topTenProjectUsers: [ExploreDeepStatTopProjectType!]
   topTenProjectEntries: [ExploreDeepStatTopProjectEntryType!]
   projectByRegion: [RegionWithProject]
-  projectAggregrationMonthly: [ExploreDeepStatProjetAggregrationMonthly!]
+  projectAggregationMonthly: [ExploreDeepStatProjetAggregationMonthly!]
 }
 
 input ExploreDeepFilter {
   dateFrom: Date!
   dateTo: Date!
-  project: ExploreDeepProjectFilter
+  project: ExploreProjectFilterDataInputType
 }
 
-input ExploreDeepProjectFilter {
-  createdAt: Date
-  isTestProject: Boolean
-  search: String
-  organization: ID
-  isEntryLessThan: Boolean
-}
-
-type ExploreDeepStatProjetAggregrationMonthly {
+type ExploreDeepStatProjetAggregationMonthly {
   date: Date
   projectCount: String
 }
@@ -1117,6 +1109,22 @@ type ExploreDeepStatTopProjectType {
   projectId: ID!
   projectTitle: String
   userCount: Int!
+}
+
+input ExploreProjectFilterDataInputType {
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  organizations: [ID!]
+  isTest: Boolean
+  search: String
+  isEntryLessThan: Boolean
+  regions: [ID!]
 }
 
 type ExploreProjectStatTopActiveFrameworksType {
