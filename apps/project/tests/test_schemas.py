@@ -1238,31 +1238,31 @@ class TestProjectExploreStats(GraphQLSnapShotTestCase):
 
     def test_explore_deep_dashboard(self):
         query = """
-            query MyQuery($options: ExploreDeepFilter) {
-                deepExploreStats(options: $options) {
-                    topTenAuthorsList {
+            query MyQuery($filter: ExploreDeepFilter!) {
+                deepExploreStats(filter: $filter) {
+                    topTenAuthors {
                         id
                         sourceCount
                         projectCount
                     }
-                    topTenFrameworksList {
+                    topTenFrameworks {
                         analysisFrameworkId
                         analysisFrameworkTitle
                         entryCount
                         projectCount
                     }
-                    topTenProjectEntriesList {
+                    topTenProjectEntries {
                         entryCount
                         projectId
                         projectTitle
                         sourceCount
                     }
-                    topTenProjectUsersList {
+                    topTenProjectUsers {
                         projectId
                         projectTitle
                         userCount
                     }
-                    topTenSourcesList {
+                    topTenPublishers {
                         id
                         sourceCount
                         projectCount
@@ -1327,25 +1327,21 @@ class TestProjectExploreStats(GraphQLSnapShotTestCase):
         self.update_obj(EntryFactory.create(project=project_7, created_by=user2, lead=lead_5), created_at="2020-11-11")
         self.update_obj(EntryFactory.create(project=project_8, created_by=user, lead=lead_7), created_at="2020-09-11")
 
-        def _query_check(options=None, **kwargs):
+        def _query_check(filter=None, **kwargs):
             return self.query_check(
                 query,
                 variables={
-                    'options': options,
+                    'filter': filter,
                 },
                 **kwargs
             )
 
-        # Without login
-        _query_check(assert_for_error=True)
-
-        # With login - non-member zero count
-        options = {
+        filter = {
             "dateFrom": "2020-10-01",
             "dateTo": "2021-11-11"
         }
         self.force_login(user)
-        content = _query_check(options)['data']['deepExploreStats']
+        content = _query_check(filter)['data']['deepExploreStats']
         self.assertIsNotNone(content, content)
         self.assertEqual(content['totalActiveUsers'], 3)
         self.assertEqual(content['totalAuthors'], 3)

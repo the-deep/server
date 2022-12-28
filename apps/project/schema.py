@@ -70,6 +70,8 @@ from .filter_set import (
     ProjectUserGroupMembershipGqlFilterSet,
     ProjectByRegionGqlFilterSet,
     PublicProjectByRegionGqlFileterSet,
+    ExploreProjectFilterDataInputType,
+    ExploreProjectFilterSet,
 )
 from .activity import project_activity_log
 from .tasks import generate_viz_stats, get_project_stats
@@ -550,18 +552,10 @@ class PublicProjectByRegionListType(CustomDjangoListObjectType):
         filterset_class = PublicProjectByRegionGqlFileterSet
 
 
-class ExploreDeepProjectFilter(graphene.InputObjectType):
-    created_at = graphene.Date()
-    is_test_project = graphene.Boolean()
-    search = graphene.String()
-    organization = graphene.ID()
-    is_entry_less_than = graphene.Boolean()
-
-
 class ExploreDeepFilter(graphene.InputObjectType):
     date_from = graphene.Date(required=True)
     date_to = graphene.Date(required=True)
-    project = ExploreDeepProjectFilter()
+    project = ExploreProjectFilterDataInputType()
 
 
 class ExploreStastOrganizationType(OrganizationType):
@@ -623,9 +617,9 @@ class ExploreDashboardStatType(graphene.ObjectType):
         )
     )
     project_by_region = graphene.List(RegionWithProject)
-    project_aggregration_monthly = graphene.List(
+    project_aggregation_monthly = graphene.List(
         graphene.NonNull(
-            type('ExploreDeepStatProjetAggregrationMonthly', (graphene.ObjectType,), {
+            type('ExploreDeepStatProjetAggregationMonthly', (graphene.ObjectType,), {
                 'date': graphene.Date(),
                 'project_count': graphene.String(),
             })
@@ -714,26 +708,15 @@ class Query:
             project_qs = Project.objects.filter(
                 created_at__gte=date_from,
                 created_at__lte=date_to,
+                is_test=False
             )
             project_filter = filter.get('project')
             if project_filter:
-                search = project_filter.get('search')
-                if search:
-                    project_qs = project_qs.filter(
-                        title__icontains=search,
-                    )
-                is_test_project = project_filter.get('is_test_project')
-                if is_test_project:
-                    project_qs = project_qs.filter(
-                        is_test=True,
-                    )
-                is_entry_less_than = project_filter.get('is_entry_less_than')
-                if is_entry_less_than:
-                    project_qs = project_qs.filter(
-                        entry__isnull=False
-                    ).values('entry').annotate(
-                        entry_count=models.Count('entry')
-                    ).filter(entry_count__lte=100)
+                project_qs = ExploreProjectFilterSet(
+                    request=info.context.request,
+                    queryset=project_qs,
+                    data=project_filter
+                ).qs
 
             total_projects = project_qs.count()
             total_registered_users = User.objects.filter(
@@ -743,12 +726,14 @@ class Query:
             lead_qs = Lead.objects.filter(
                 created_at__gte=date_from,
                 created_at__lte=date_to,
+                project__in=project_qs
             )
             total_leads = lead_qs.distinct().count()
 
             entry_qs = Entry.objects.filter(
                 created_at__gte=date_from,
                 created_at__lte=date_to,
+                project__in=project_qs
             )
             total_entries = entry_qs.distinct().count()
             total_authors = lead_qs.values('authors').distinct().count()
@@ -769,10 +754,10 @@ class Query:
                     output_field=models.IntegerField(),
                 ), 0),
                 project_count=models.functions.Coalesce(models.Subquery(
-                    ProjectOrganization.objects.filter(
-                        organization=models.OuterRef('pk')
-                    ).order_by().values('organization')
-                    .annotate(cnt=models.Count('project_id')).values('cnt')[:1],
+                    Project.objects.filter(
+                        organizations=models.OuterRef('pk')
+                    ).order_by().values('organizations')
+                    .annotate(cnt=models.Count('*')).values('cnt')[:1],
                     output_field=models.IntegerField(),
                 ), 0),
             ).order_by('-source_count', '-project_count')[:10]
@@ -786,10 +771,10 @@ class Query:
                     output_field=models.IntegerField(),
                 ), 0),
                 project_count=models.functions.Coalesce(models.Subquery(
-                    ProjectOrganization.objects.filter(
-                        organization=models.OuterRef('pk')
-                    ).order_by().values('organization')
-                    .annotate(cnt=models.Count('project_id')).values('cnt')[:1],
+                    Project.objects.filter(
+                        organizations=models.OuterRef('pk')
+                    ).order_by().values('organizations')
+                    .annotate(cnt=models.Count('*')).values('cnt')[:1],
                     output_field=models.IntegerField(),
                 ), 0),
             ).order_by('-source_count', '-project_count')[:10]
@@ -875,7 +860,7 @@ class Query:
                 ),
             ).filter(projects_id__isnull=False).only('id', 'centroid')
 
-            project_aggregration_monthly = project_qs.values(
+            project_aggregation_monthly = project_qs.values(
                 date=TruncMonth('created_at')
             ).annotate(
                 project_count=models.Count('id')
@@ -894,6 +879,6 @@ class Query:
                 top_ten_project_users=top_ten_project_users,
                 top_ten_project_entries=top_ten_project_entries,
                 project_by_region=project_by_region,
-                project_aggregration_monthly=project_aggregration_monthly,
+                project_aggregation_monthly=project_aggregation_monthly,
                 top_ten_publishers=top_ten_publishers,
             )
