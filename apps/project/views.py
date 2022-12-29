@@ -12,6 +12,7 @@ from django.utils.encoding import force_text
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.db.models.functions import Cast
 from django.template.response import TemplateResponse
+from deep.permalinks import Permalink
 from rest_framework.exceptions import PermissionDenied
 from rest_framework import (
     exceptions,
@@ -897,9 +898,7 @@ def accept_project_confirm(
         'role': role,
         'frontend_url': get_frontend_url(''),
         'join_request': join_request,
-        'project_url': get_frontend_url(
-            'projects/{}/#/general'.format(join_request.project.id)
-        ) if join_request else None,
+        'project_url': Permalink.project(join_request.project.id) if join_request else None,
     }
 
     if (join_request and user) is not None and\
