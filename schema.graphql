@@ -1121,9 +1121,9 @@ input ExploreProjectFilterDataInputType {
   createdBy: [ID!]
   modifiedBy: [ID!]
   organizations: [ID!]
-  isTest: Boolean
+  includeTestProject: Boolean
   search: String
-  isEntryLessThan: Boolean
+  includeEntryLessThan: Boolean
   regions: [ID!]
 }
 
