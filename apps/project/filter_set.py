@@ -238,9 +238,12 @@ class PublicProjectByRegionGqlFileterSet(ProjectByRegionGqlFilterSet):
 
 class ExploreProjectFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
     organizations = IDListFilter(distinct=True)
-    is_test = django_filters.BooleanFilter(field_name='is_test', method='filter_is_test')
+    include_test_project = django_filters.BooleanFilter(field_name='is_test', method='filter_is_test')
     search = django_filters.CharFilter(method='filter_title')
-    is_entry_less_than = django_filters.BooleanFilter(field_name='is_entry_less_than', method='filter_is_entry_less_than')
+    include_entry_less_than = django_filters.BooleanFilter(
+        field_name='is_entry_less_than',
+        method='filter_is_entry_less_than'
+    )
     regions = IDListFilter(distinct=True)
 
     class Meta:
@@ -248,8 +251,8 @@ class ExploreProjectFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
         fields = ()
 
     def filter_is_test(self, qs, _, value):
-        if value:
-            return qs.filter(is_test=value)
+        if value is True:
+            return Project.objects.all()
         return qs
 
     def filter_title(self, qs, _, value):
