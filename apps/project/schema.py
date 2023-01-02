@@ -708,8 +708,7 @@ class Query:
             project_qs = Project.objects.filter(
                 created_at__gte=date_from,
                 created_at__lte=date_to,
-                is_test=False
-            )
+            ).exclude(is_test=True)
             project_filter = filter.get('project')
             if project_filter:
                 project_qs = ExploreProjectFilterSet(
@@ -754,10 +753,10 @@ class Query:
                     output_field=models.IntegerField(),
                 ), 0),
                 project_count=models.functions.Coalesce(models.Subquery(
-                    Project.objects.filter(
-                        organizations=models.OuterRef('pk')
-                    ).order_by().values('organizations')
-                    .annotate(cnt=models.Count('*')).values('cnt')[:1],
+                    Lead.objects.filter(
+                        authors=models.OuterRef('pk')
+                    ).order_by().values('authors')
+                    .annotate(cnt=models.Count('project_id')).values('cnt')[:1],
                     output_field=models.IntegerField(),
                 ), 0),
             ).order_by('-source_count', '-project_count')[:10]
@@ -771,10 +770,10 @@ class Query:
                     output_field=models.IntegerField(),
                 ), 0),
                 project_count=models.functions.Coalesce(models.Subquery(
-                    Project.objects.filter(
-                        organizations=models.OuterRef('pk')
-                    ).order_by().values('organizations')
-                    .annotate(cnt=models.Count('*')).values('cnt')[:1],
+                    Lead.objects.filter(
+                        source=models.OuterRef('pk')
+                    ).order_by().values('source')
+                    .annotate(cnt=models.Count('project_id')).values('cnt')[:1],
                     output_field=models.IntegerField(),
                 ), 0),
             ).order_by('-source_count', '-project_count')[:10]
