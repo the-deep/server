@@ -717,7 +717,7 @@ class Query:
                     data=project_filter
                 ).qs
 
-            total_projects = project_qs.count()
+            total_projects = project_qs.distinct().count()
             total_registered_users = User.objects.filter(
                 is_active=True,
             ).count()
@@ -756,7 +756,7 @@ class Query:
                     Lead.objects.filter(
                         authors=models.OuterRef('pk')
                     ).order_by().values('authors')
-                    .annotate(cnt=models.Count('project_id')).values('cnt')[:1],
+                    .annotate(cnt=models.Count('project_id', distinct=True)).values('cnt')[:1],
                     output_field=models.IntegerField(),
                 ), 0),
             ).order_by('-source_count', '-project_count')[:10]
@@ -773,7 +773,7 @@ class Query:
                     Lead.objects.filter(
                         source=models.OuterRef('pk')
                     ).order_by().values('source')
-                    .annotate(cnt=models.Count('project_id')).values('cnt')[:1],
+                    .annotate(cnt=models.Count('project_id', distinct=True)).values('cnt')[:1],
                     output_field=models.IntegerField(),
                 ), 0),
             ).order_by('-source_count', '-project_count')[:10]
@@ -782,7 +782,7 @@ class Query:
                 created_at__gte=date_from,
                 created_at__lte=date_to,
             )
-            top_ten_frameworks = analysis_framework_qs.annotate(
+            top_ten_frameworks = analysis_framework_qs.distinct().annotate(
                 project_count=models.functions.Coalesce(
                     models.Subquery(
                         Project.objects.filter(
@@ -808,7 +808,7 @@ class Query:
                 entry_count=models.F('entry_count'),
             )[:10]
 
-            top_ten_project_users = project_qs.annotate(
+            top_ten_project_users = project_qs.distinct().annotate(
                 user_count=models.functions.Coalesce(
                     models.Subquery(
                         ProjectMembership.objects.filter(
@@ -822,9 +822,9 @@ class Query:
                 project_id=models.F('id'),
                 project_title=models.F('title'),
                 user_count=models.F('user_count'),
-            )
+            )[:10]
 
-            top_ten_project_entries = project_qs.annotate(
+            top_ten_project_entries = project_qs.distinct().annotate(
                 source_count=models.functions.Coalesce(
                     models.Subquery(
                         Lead.objects.filter(
