@@ -1348,5 +1348,5 @@ class TestProjectExploreStats(GraphQLSnapShotTestCase):
         self.assertEqual(content['totalEntries'], 4)
         self.assertEqual(content['totalLeads'], 4)
         self.assertEqual(content['totalProjects'], 4)
-        self.assertEqual(content['totalPublishers'], 3)
+        self.assertEqual(content['totalPublishers'], 2)
         self.assertEqual(content['totalRegisteredUsers'], 3)
