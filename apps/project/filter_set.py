@@ -262,30 +262,28 @@ class ExploreProjectFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
 
     def filter_is_entry_less_than(self, qs, _, value):
         if value is True:
-            return qs.filter(
-                entry__isnull=False
-            ).annotate(
-                entry_count=models.Subquery(
+            return qs.annotate(
+                entry_count=models.functions.Coalesce(models.Subquery(
                     Entry.objects.filter(
                         project=models.OuterRef('id')
                     ).order_by().values('project').annotate(
                         count=models.Count('id', distinct=True)
                     ).values('count')[:1],
                     output_field=models.IntegerField()
-                )
+                ), 0)
             ).filter(entry_count__lte=100)
         elif value is False:
             return qs.filter(
                 entry__isnull=False
             ).annotate(
-                entry_count=models.Subquery(
+                entry_count=models.functions.Coalesce(models.Subquery(
                     Entry.objects.filter(
                         project=models.OuterRef('id')
                     ).order_by().values('project').annotate(
                         count=models.Count('id', distinct=True)
                     ).values('count')[:1],
                     output_field=models.IntegerField()
-                )
+                ), 0)
             ).filter(entry_count__gt=100)
         return qs
 
