@@ -3,7 +3,7 @@ from typing import List
 import graphene
 from django.db import transaction, models
 from django.db.models import QuerySet
-from django.db.models.functions import TruncMonth
+from django.db.models.functions import TruncMonth, TruncDay
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene.types import generic
@@ -625,6 +625,14 @@ class ExploreDashboardStatType(graphene.ObjectType):
             })
         )
     )
+    project_aggregation_daily = graphene.List(
+        graphene.NonNull(
+            type('ExploreDeepStatProjetAggregationDaily', (graphene.ObjectType,), {
+                'date': graphene.Date(),
+                'project_count': graphene.String(),
+            })
+        )
+    )
 
 
 class Query:
@@ -865,6 +873,12 @@ class Query:
                 project_count=models.Count('id')
             ).order_by('date')
 
+            project_aggregation_daily = project_qs.values(
+                date=TruncDay('created_at')
+            ).annotate(
+                project_count=models.Count('id')
+            ).order_by('date')
+
             return dict(
                 total_projects=total_projects,
                 total_registered_users=total_registered_users,
@@ -879,5 +893,6 @@ class Query:
                 top_ten_project_entries=top_ten_project_entries,
                 project_by_region=project_by_region,
                 project_aggregation_monthly=project_aggregation_monthly,
+                project_aggregation_daily=project_aggregation_daily,
                 top_ten_publishers=top_ten_publishers,
             )

@@ -1078,12 +1078,18 @@ type ExploreDashboardStatType {
   topTenProjectEntries: [ExploreDeepStatTopProjectEntryType!]
   projectByRegion: [RegionWithProject]
   projectAggregationMonthly: [ExploreDeepStatProjetAggregationMonthly!]
+  projectAggregationDaily: [ExploreDeepStatProjetAggregationDaily!]
 }
 
 input ExploreDeepFilter {
   dateFrom: Date!
   dateTo: Date!
   project: ExploreProjectFilterDataInputType
+}
+
+type ExploreDeepStatProjetAggregationDaily {
+  date: Date
+  projectCount: String
 }
 
 type ExploreDeepStatProjetAggregationMonthly {
