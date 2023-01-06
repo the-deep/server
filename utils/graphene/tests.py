@@ -5,6 +5,7 @@ import shutil
 import datetime
 from enum import Enum
 from unittest.mock import patch
+from typing import Union
 
 from factory import random as factory_random
 from snapshottest.django import TestCase as SnapShotTextCase
@@ -13,6 +14,7 @@ from django.core import management
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
+from django.db import models
 # dramatiq test case: setupclass is not properly called
 # from django_dramatiq.test import DramatiqTestCase
 from graphene_django.utils import GraphQLTestCase as BaseGraphQLTestCase
@@ -103,7 +105,7 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
     def logout(self):
         self.client.logout()
 
-    def genum(self, _enum: Enum):
+    def genum(self, _enum: Union[models.TextChoices, models.IntegerChoices, Enum]):
         """
         Return appropriate enum value.
         """

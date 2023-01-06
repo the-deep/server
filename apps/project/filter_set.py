@@ -294,4 +294,9 @@ ExploreProjectFilterDataInputType = type(
     (graphene.InputObjectType,),
     get_filtering_args_from_filterset(ExploreProjectFilterSet, 'project.schema.ProjectListType')
 )
+ProjectsFilterDataInputType = type(
+    'ProjectsFilterDataInputType',
+    (graphene.InputObjectType,),
+    get_filtering_args_from_filterset(ProjectGqlFilterSet, 'project.schema.ProjectListType')
+)
 ExploreProjectFilterDataType = get_lead_filter_object_type(ExploreProjectFilterDataInputType)

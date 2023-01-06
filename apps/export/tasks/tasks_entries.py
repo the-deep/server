@@ -3,6 +3,7 @@ import copy
 from django.db import models
 
 from deep.permissions import ProjectPermissions as PP
+from deep.filter_set import get_dummy_request
 from analysis_framework.models import Exportable
 from entry.models import Entry
 from export.models import Export
@@ -32,7 +33,7 @@ def export_entries(export):
     if PP.Permission.VIEW_ALL_LEAD not in user_project_permissions:
         leads_qs = leads_qs.filter(confidentiality=Lead.Confidentiality.UNPROTECTED)
     # Lead and Entry FilterSet needs request to work with active_project
-    dummy_request = LeadGQFilterSet.get_dummy_request(project)
+    dummy_request = get_dummy_request(active_project=project)
     leads_qs = LeadGQFilterSet(data=filters, queryset=leads_qs, request=dummy_request).qs.prefetch_related(
         'authors',
         'authors__organization_type',
