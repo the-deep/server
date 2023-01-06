@@ -488,6 +488,12 @@ type CancelUserExport {
   result: UserExportType
 }
 
+type CancelUserGenericExport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserGenericExportType
+}
+
 type ChangeUserPassword {
   errors: [GenericScalar!]
   ok: Boolean
@@ -674,6 +680,12 @@ type CreateUserExport {
   errors: [GenericScalar!]
   ok: Boolean
   result: UserExportType
+}
+
+type CreateUserGenericExport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserGenericExportType
 }
 
 type CreateUserGroup {
@@ -1263,6 +1275,7 @@ type ExportExtraOptionsType {
 }
 
 enum ExportFormatEnum {
+  CSV
   XLSX
   DOCX
   PDF
@@ -1416,6 +1429,33 @@ type GalleryFileType {
   mimeType: String
   metadata: GenericScalar
   file: FileFieldType
+}
+
+input GenericExportCreateInputType {
+  title: String
+  type: GenericExportDataTypeEnum!
+  format: GenericExportFormatEnum!
+  filters: UserGenericExportFiltersqlInputType!
+}
+
+enum GenericExportDataTypeEnum {
+  PROJECTS_STATS
+}
+
+enum GenericExportFormatEnum {
+  CSV
+  XLSX
+  DOCX
+  PDF
+  JSON
+}
+
+enum GenericExportStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILURE
+  CANCELED
 }
 
 scalar GenericScalar
@@ -1820,6 +1860,8 @@ type MissingPredictionReviewType {
 }
 
 type Mutation {
+  genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
+  genericExportCancel(id: ID!): CancelUserGenericExport
   notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
   projectCreate(data: ProjectCreateInputType!): CreateProject
   joinProject(data: ProjectJoinRequestInputType!): CreateProjectJoin
@@ -2360,6 +2402,28 @@ type ProjectVizDataType {
   publicUrl: String
 }
 
+input ProjectsFilterDataInputType {
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  ids: [ID!]
+  excludeIds: [ID!]
+  status: ProjectStatusEnum
+  organizations: [ID!]
+  analysisFrameworks: [ID!]
+  regions: [ID!]
+  search: String
+  isCurrentUserMember: Boolean
+  hasPermissionAccess: ProjectPermission
+  ordering: [ProjectOrderingEnum!]
+  isTest: Boolean
+}
+
 type PublicAnalysisFramework {
   id: ID!
   title: String!
@@ -2460,6 +2524,7 @@ type PublicProjectWithMembershipData {
 }
 
 type Query {
+  genericExport(id: ID!): UserGenericExportType
   rssFields(url: String): [RssFieldType!]
   atomFeedFields(url: String): [AtomFeedFieldType!]
   publicLead(uuid: UUID!): PublicLeadMetaType
@@ -2802,16 +2867,15 @@ type UserExportListType {
 
 type UserExportType {
   id: ID!
-  project: ID
-  isPreview: Boolean!
   title: String!
   exportedBy: UserType!
   exportedAt: DateTime!
   startedAt: DateTime
   endedAt: DateTime
-  extraOptions: ExportExtraOptionsType!
   mimeType: String!
-  pending: Boolean!
+  project: ID
+  extraOptions: ExportExtraOptionsType!
+  isPreview: Boolean!
   isArchived: Boolean!
   analysis: AnalysisType
   format: ExportFormatEnum!
@@ -2828,6 +2892,28 @@ type UserFeatureAccessType {
   key: FeatureKey!
   title: String!
   featureType: FeatureFeatureType!
+}
+
+input UserGenericExportFiltersqlInputType {
+  lead: LeadsFilterDataInputType
+  entry: EntriesFilterDataInputType
+  project: ProjectsFilterDataInputType
+}
+
+type UserGenericExportType {
+  id: ID!
+  title: String!
+  exportedBy: UserType!
+  exportedAt: DateTime!
+  startedAt: DateTime
+  endedAt: DateTime
+  mimeType: String!
+  format: GenericExportFormatEnum!
+  type: GenericExportDataTypeEnum!
+  status: GenericExportStatusEnum!
+  filters: GenericScalar
+  file: FileFieldType
+  fileDownloadUrl: String
 }
 
 input UserGroupInputType {

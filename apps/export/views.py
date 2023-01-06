@@ -104,7 +104,6 @@ class ExportTriggerView(views.APIView):
         export = Export.objects.create(
             title='Generating Export.....',
             exported_by=request.user,
-            pending=True,
             project=project,
             type=type,
             export_type=export_type,
