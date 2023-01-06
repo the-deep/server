@@ -455,7 +455,7 @@ class TestProjectSchema(GraphQLTestCase):
         )
         self.assertEqual(
             content['data']['publicProjects']['results'][1]['regionsTitle'],
-            None,
+            '',
             content
         )
         # make sure private projects are not visible here
