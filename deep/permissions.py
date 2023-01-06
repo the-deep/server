@@ -279,7 +279,7 @@ class ProjectPermissions(BasePermissions):
         Permission.VIEW_ENTRY: "You don't have permission to view entry",
         Permission.UPDATE_ENTRY: "You don't have permission to update entry",
         Permission.DELETE_ENTRY: "You don't have permission to delete entry",
-        Permission.CREATE_EXPORT: "You don't have permission to create entry",
+        Permission.CREATE_EXPORT: "You don't have permission to create exports",
         Permission.CAN_QUALITY_CONTROL: "You don't have permission to Quality Control",
     }
 

@@ -3,7 +3,7 @@ from utils.graphene.enums import (
     get_enum_name_from_django_field,
 )
 
-from .models import Export
+from .models import Export, GenericExport
 
 ExportFormatEnum = convert_enum_to_graphene_enum(Export.Format, name='ExportFormatEnum')
 ExportStatusEnum = convert_enum_to_graphene_enum(Export.Status, name='ExportStatusEnum')
@@ -14,14 +14,23 @@ ExportExcelSelectedStaticColumnEnum = convert_enum_to_graphene_enum(
     name='ExportExcelSelectedStaticColumnEnum',
 )
 
+GenericExportFormatEnum = convert_enum_to_graphene_enum(GenericExport.Format, name='GenericExportFormatEnum')
+GenericExportStatusEnum = convert_enum_to_graphene_enum(GenericExport.Status, name='GenericExportStatusEnum')
+GenericExportDataTypeEnum = convert_enum_to_graphene_enum(GenericExport.DataType, name='GenericExportDataTypeEnum')
 
 enum_map = {
-    get_enum_name_from_django_field(field): enum
-    for field, enum in (
-        (Export.format, ExportFormatEnum),
-        (Export.status, ExportStatusEnum),
-        (Export.type, ExportDataTypeEnum),
-        (Export.export_type, ExportExportTypeEnum)
+    # Need to pass model with abstract base class
+    get_enum_name_from_django_field(field, model_name=model.__name__): enum
+    for model, field, enum in (
+        # -- Project Exports
+        (Export, Export.format, ExportFormatEnum),
+        (Export, Export.status, ExportStatusEnum),
+        (Export, Export.type, ExportDataTypeEnum),
+        (Export, Export.export_type, ExportExportTypeEnum),
+        # -- Generic Exports
+        (GenericExport, GenericExport.format, GenericExportFormatEnum),
+        (GenericExport, GenericExport.status, GenericExportStatusEnum),
+        (GenericExport, GenericExport.type, GenericExportDataTypeEnum),
     )
 }
 

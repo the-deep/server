@@ -2,31 +2,117 @@ from django.db import models
 from django.core.cache import cache
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.crypto import get_random_string
 
 from deep.caches import CacheKey
 from deep.celery import app as celery_app
 from project.models import Project
 from export.mime_types import (
+    CSV_MIME_TYPE,
     DOCX_MIME_TYPE,
-    PDF_MIME_TYPE,
     EXCEL_MIME_TYPE,
     JSON_MIME_TYPE,
+    PDF_MIME_TYPE,
 )
 from analysis.models import Analysis
 
 
-class Export(models.Model):
-    """
-    Export model
+def export_upload_to(instance, filename: str) -> str:
+    random_string = get_random_string(length=10)
+    prefix = 'export'
+    if type(instance) == GenericExport:
+        prefix = 'global-export'
+    return f'{prefix}/{random_string}/{filename}'
 
-    Represents an exported file along with few other attributes
-    """
+
+class ExportBaseModel(models.Model):
     class Status(models.TextChoices):
         PENDING = 'pending', 'Pending'
         STARTED = 'started', 'Started'
         SUCCESS = 'success', 'Success'
         FAILURE = 'failure', 'Failure'
         CANCELED = 'canceled', 'Canceled'
+
+    class Format(models.TextChoices):
+        CSV = 'csv', 'csv'
+        XLSX = 'xlsx', 'xlsx'
+        DOCX = 'docx', 'docx'
+        PDF = 'pdf', 'pdf'
+        JSON = 'json', 'json'
+
+    # Mime types
+    MIME_TYPE_MAP = {
+        Format.CSV: CSV_MIME_TYPE,
+        Format.XLSX: EXCEL_MIME_TYPE,
+        Format.DOCX: DOCX_MIME_TYPE,
+        Format.PDF: PDF_MIME_TYPE,
+        Format.JSON: JSON_MIME_TYPE,
+    }
+    DEFAULT_MIME_TYPE = 'application/octet-stream'
+
+    # Used to validate which combination is supported and provide default title
+    DEFAULT_TITLE_LABEL = {}
+
+    CELERY_TASK_CACHE_KEY = 'N/A'
+
+    title = models.CharField(max_length=255)
+
+    exported_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    exported_at = models.DateTimeField(auto_now_add=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+
+    mime_type = models.CharField(max_length=200, blank=True)
+    file = models.FileField(upload_to=export_upload_to, max_length=255, null=True, blank=True, default=None)
+    format = models.CharField(max_length=100, choices=Format.choices)
+
+    status = models.CharField(max_length=30, choices=Status.choices, default=Status.PENDING)
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return self.title
+
+    @classmethod
+    def get_for(cls, user):
+        return cls.objects.filter(
+            exported_by=user,
+            is_deleted=False
+        ).distinct()
+
+    def set_task_id(self, async_id):
+        # Defined timeout is arbitrary now.
+        return cache.set(
+            self.CELERY_TASK_CACHE_KEY.format(self.pk),
+            async_id,
+            345600,
+        )
+
+    def get_task_id(self, clear=False):
+        cache_key = self.CELERY_TASK_CACHE_KEY.format(self.pk)
+        value = cache.get(cache_key)
+        if clear:
+            cache.delete(cache_key)
+        return value
+
+    def cancel(self, commit=True):
+        if self.status not in [self.Status.PENDING, self.Status.STARTED]:
+            return
+        celery_app.control.revoke(self.get_task_id(clear=True), terminate=True)
+        self.status = self.Status.CANCELED
+        if commit:
+            self.save(update_fields=('status',))
+
+
+class Export(ExportBaseModel):
+    """
+    Export model
+
+    Represents an exported file along with few other attributes
+    Scoped by a project
+    """
+    Format = ExportBaseModel.Format
 
     class DataType(models.TextChoices):
         ENTRIES = 'entries', 'Entries'
@@ -38,12 +124,6 @@ class Export(models.Model):
         EXCEL = 'excel', 'Excel'
         REPORT = 'report', 'Report'
         JSON = 'json', 'Json'
-
-    class Format(models.TextChoices):
-        XLSX = 'xlsx', 'xlsx'
-        DOCX = 'docx', 'docx'
-        PDF = 'pdf', 'pdf'
-        JSON = 'json', 'json'
 
     # Used by extra options
     class StaticColumn(models.TextChoices):
@@ -64,14 +144,7 @@ class Export(models.Model):
         LEAD_ENTRY_ID = 'lead_entry_id', 'Source-Entry Id'
         ENTRY_EXCERPT = 'entry_excerpt', 'Modified Excerpt, Original Excerpt'
 
-    MIME_TYPE_MAP = {
-        Format.XLSX: EXCEL_MIME_TYPE,
-        Format.DOCX: DOCX_MIME_TYPE,
-        Format.PDF: PDF_MIME_TYPE,
-        Format.JSON: JSON_MIME_TYPE,
-    }
-    DEFAULT_MIME_TYPE = 'application/octet-stream'
-
+    # NOTE: Also used to validate which combination is supported
     DEFAULT_TITLE_LABEL = {
         (DataType.ENTRIES, ExportType.EXCEL, Format.XLSX): 'Entries Excel Export',
         (DataType.ENTRIES, ExportType.REPORT, Format.DOCX): 'Entries General Export',
@@ -84,33 +157,23 @@ class Export(models.Model):
         (DataType.ANALYSES, ExportType.EXCEL, Format.XLSX): 'Analysis Excel Export',
     }
 
+    CELERY_TASK_CACHE_KEY = CacheKey.EXPORT_TASK_CACHE_KEY_FORMAT
+
     # Number of entries to proccess if is_preview is True
     PREVIEW_ENTRY_SIZE = 10
     PREVIEW_ASSESSMENT_SIZE = 10
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    is_preview = models.BooleanField(default=False)
 
-    title = models.CharField(max_length=255)
-
-    format = models.CharField(max_length=100, choices=Format.choices)
     type = models.CharField(max_length=99, choices=DataType.choices)
     export_type = models.CharField(max_length=100, choices=ExportType.choices)
-    exported_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    exported_at = models.DateTimeField(auto_now_add=True)
-    started_at = models.DateTimeField(null=True, blank=True)
-    ended_at = models.DateTimeField(null=True, blank=True)
 
     # Lead filters
     filters = models.JSONField(default=dict)
     # Additional configuration options
     extra_options = models.JSONField(default=dict)
 
-    mime_type = models.CharField(max_length=200, blank=True)
-    file = models.FileField(upload_to='export/', max_length=255, null=True, blank=True, default=None)
-
-    pending = models.BooleanField(default=True)
-    status = models.CharField(max_length=30, choices=Status.choices, default=Status.PENDING)
+    is_preview = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
     is_archived = models.BooleanField(default=False)
 
@@ -121,41 +184,43 @@ class Export(models.Model):
         on_delete=models.SET_NULL,
     )
 
-    def __str__(self):
-        return self.title
-
-    @staticmethod
-    def get_for(user):
-        return Export.objects.filter(
-            exported_by=user,
-            is_deleted=False
-        ).distinct()
-
     @classmethod
     def generate_title(cls, data_type, export_type, export_format):
         file_label = cls.DEFAULT_TITLE_LABEL[(data_type, export_type, export_format)]
         time_str = timezone.now().strftime('%Y%m%d')
         return f'{time_str} DEEP {file_label}'
 
-    def get_task_id(self, clear=False):
-        cache_key = CacheKey.EXPORT_TASK_CACHE_KEY_FORMAT.format(self.pk)
-        value = cache.get(cache_key)
-        if clear:
-            cache.delete(cache_key)
-        return value
-
-    def cancle(self, commit=True):
-        if self.status not in [Export.Status.PENDING, Export.Status.STARTED]:
-            return
-        celery_app.control.revoke(self.get_task_id(clear=True), terminate=True)
-        self.status = Export.Status.CANCELED
-        if commit:
-            self.save(update_fields=('status',))
-
     def save(self, *args, **kwargs):
         self.title = self.title or self.generate_title(self.type, self.export_type, self.format)
         return super().save(*args, **kwargs)
 
-    def set_task_id(self, async_id):
-        # Defined timeout is arbitrary now.
-        return cache.set(CacheKey.EXPORT_TASK_CACHE_KEY_FORMAT.format(self.pk), async_id, 345600)
+
+class GenericExport(ExportBaseModel):
+    """
+    Async export tasks not scoped by a project
+    """
+    Format = ExportBaseModel.Format
+
+    class DataType(models.TextChoices):
+        PROJECTS_STATS = 'projects_stats', 'Projects Stats'
+
+    CELERY_TASK_CACHE_KEY = CacheKey.GENERIC_EXPORT_TASK_CACHE_KEY_FORMAT
+
+    DEFAULT_TITLE_LABEL = {
+        (DataType.PROJECTS_STATS, Format.CSV): 'Projects Stats',
+    }
+
+    type = models.CharField(max_length=99, choices=DataType.choices)
+
+    # Filters, this is set of nested filters by object type.
+    filters = models.JSONField(default=dict)
+
+    @classmethod
+    def generate_title(cls, data_type, export_format):
+        file_label = cls.DEFAULT_TITLE_LABEL[(data_type, export_format)]
+        time_str = timezone.now().strftime('%Y%m%d')
+        return f'{time_str} Generic DEEP {file_label}'
+
+    def save(self, *args, **kwargs):
+        self.title = self.title or self.generate_title(self.type, self.format)
+        return super().save(*args, **kwargs)

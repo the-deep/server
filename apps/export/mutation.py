@@ -2,13 +2,23 @@ import graphene
 
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
+    GrapheneMutation,
     PsGrapheneMutation,
 )
 from deep.permissions import ProjectPermissions as PP
 
 from .models import Export
-from .schema import UserExportType, get_export_qs
-from .serializers import UserExportCreateGqlSerializer, UserExportUpdateGqlSerializer
+from .schema import (
+    UserExportType,
+    UserGenericExportType,
+    get_export_qs,
+    get_generic_export_qs,
+)
+from .serializers import (
+    UserExportCreateGqlSerializer,
+    UserExportUpdateGqlSerializer,
+    UserGenericExportCreateGqlSerializer,
+)
 
 
 ExportCreateInputType = generate_input_type_for_serializer(
@@ -24,10 +34,22 @@ ExportUpdateInputType = generate_input_type_for_serializer(
 )
 
 
+GenericExportCreateInputType = generate_input_type_for_serializer(
+    'GenericExportCreateInputType',
+    serializer_class=UserGenericExportCreateGqlSerializer,
+)
+
+
 class UserExportMutationMixin():
     @classmethod
     def filter_queryset(cls, _, info):
         return get_export_qs(info)
+
+
+class UserGenericExportMutationMixin():
+    @classmethod
+    def filter_queryset(cls, _, info):
+        return get_generic_export_qs(info)
 
 
 class CreateUserExport(PsGrapheneMutation):
@@ -61,7 +83,7 @@ class CancelUserExport(UserExportMutationMixin, PsGrapheneMutation):
         export, errors = cls.get_object(info, **kwargs)
         if export is None or errors:
             return cls(result=export, errors=errors, ok=True)
-        export.cancle()
+        export.cancel()
         return cls(result=export, errors=None, ok=True)
 
 
@@ -77,14 +99,53 @@ class DeleteUserExport(UserExportMutationMixin, PsGrapheneMutation):
         export, errors = cls.get_object(info, **kwargs)
         if export is None or errors:
             return cls(result=export, errors=errors, ok=True)
-        export.cancle(commit=False)
+        export.cancel(commit=False)
         export.is_deleted = True  # Soft delete
         export.save(update_fields=('status', 'is_deleted',))
         return cls(result=export, errors=None, ok=True)
 
 
-class Mutation():
+# Generic exports
+class CreateUserGenericExport(GrapheneMutation):
+    class Arguments:
+        data = GenericExportCreateInputType(required=True)
+
+    result = graphene.Field(UserGenericExportType)
+    # class vars
+    serializer_class = UserGenericExportCreateGqlSerializer
+    model = Export
+
+    @classmethod
+    def check_permissions(cls, *args, **_):
+        return True  # Allow all to create New Exports
+
+
+class CancelUserGenericExport(UserGenericExportMutationMixin, GrapheneMutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+    model = Export
+    result = graphene.Field(UserGenericExportType)
+
+    @classmethod
+    def check_permissions(cls, *args, **_):
+        return True  # Allow all to create calcel their exports
+
+    @classmethod
+    def perform_mutate(cls, root, info, **kwargs):
+        export, errors = cls.get_object(info, **kwargs)
+        if export is None or errors:
+            return cls(result=export, errors=errors, ok=True)
+        export.cancel()
+        return cls(result=export, errors=None, ok=True)
+
+
+class ProjectMutation():
     export_create = CreateUserExport.Field()
     export_update = UpdateUserExport.Field()
     export_cancel = CancelUserExport.Field()
     export_delete = DeleteUserExport.Field()
+
+
+class Mutation():
+    generic_export_create = CreateUserGenericExport.Field()
+    generic_export_cancel = CancelUserGenericExport.Field()

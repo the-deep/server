@@ -17,7 +17,6 @@ class ExportTests(TestCase):
         self.assert_200(response)
 
         self.assertEqual(response.data['title'], export.title)
-        self.assertTrue(response.data['pending'])
         self.assertEqual(response.data['exported_by'], self.user.id)
 
     def test_trigger_api_without_export_permission(self):
@@ -58,7 +57,6 @@ class ExportTests(TestCase):
         self.assert_200(response)
 
         export = Export.objects.get(id=response.data['export_triggered'])
-        self.assertTrue(export.pending)
         self.assertEqual(export.exported_by, self.user)
 
     def test_delete_export(self):

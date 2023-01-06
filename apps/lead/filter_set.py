@@ -357,13 +357,6 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             raise Exception(f'{self.request.active_project=} should be defined')
         return self.request.active_project
 
-    @staticmethod
-    def get_dummy_request(project):
-        """
-        Use this if request is not available
-        """
-        return type('DummyRequest', (object,), dict(active_project=project))()
-
     # Filters methods
     def search_filter(self, qs, name, value):
         # NOTE: This exists to make it compatible with post filter

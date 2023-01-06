@@ -7,7 +7,7 @@ from admin_auto_filters.filters import AutocompleteFilterFactory
 
 from deep.admin import ModelAdmin, document_preview
 
-from .models import Export
+from .models import Export, GenericExport
 from .tasks import export_task
 
 
@@ -47,19 +47,21 @@ class HaveExecutionTimeFilter(admin.SimpleListFilter):
         _filter = models.Q(started_at__isnull=False, ended_at__isnull=False)
         if self.value() == self.Parameter.TRUE:
             return queryset.filter(_filter)
-        return queryset.exclude(_filter)
+        if self.value() == self.Parameter.FALSE:
+            return queryset.exclude(_filter)
+        return queryset
 
 
 @admin.register(Export)
 class ExportAdmin(ModelAdmin):
     list_display = (
         'title', 'file', 'type', 'exported_by', 'exported_at', 'execution_time', 'project', 'export_type',
-        'format', 'pending', 'is_preview', 'status',
+        'format', 'is_preview', 'status',
     )
     search_fields = ('title',)
     readonly_fields = (document_preview('file'),)
     list_filter = (
-        'type', 'export_type', 'format', 'pending', 'status', 'is_preview', 'is_deleted', 'is_archived',
+        'type', 'export_type', 'format', 'status', 'is_preview', 'is_deleted', 'is_archived',
         ('ended_at', admin.EmptyFieldListFilter),
         HaveExecutionTimeFilter,
         AutocompleteFilterFactory('Project', 'project'),
@@ -73,6 +75,34 @@ class ExportAdmin(ModelAdmin):
         return super().get_queryset(request)\
             .annotate(execution_time=models.F('ended_at') - models.F('started_at'))\
             .select_related('exported_by', 'project')
+
+    @admin.display(
+        ordering='execution_time',
+        description='Execution Time',
+    )
+    def execution_time(self, obj):
+        return obj.execution_time
+
+
+@admin.register(GenericExport)
+class GenericExportAdmin(ModelAdmin):
+    list_display = (
+        'title', 'file', 'type', 'exported_by', 'exported_at', 'execution_time',
+        'format', 'status',
+    )
+    search_fields = ('title',)
+    readonly_fields = (document_preview('file'),)
+    list_filter = (
+        'type', 'format', 'status',
+        ('ended_at', admin.EmptyFieldListFilter),
+        HaveExecutionTimeFilter,
+        AutocompleteFilterFactory('Exported By', 'exported_by'),
+    )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request)\
+            .annotate(execution_time=models.F('ended_at') - models.F('started_at'))\
+            .select_related('exported_by')
 
     @admin.display(
         ordering='execution_time',
