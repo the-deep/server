@@ -70,12 +70,15 @@ class PublicProjectListType(CustomDjangoListObjectType):
                 ),
                 default=None
             ),
-            regions_title=models.Case(
-                models.When(
+            regions_title=StringAgg(
+                'regions__title',
+                ', ',
+                filter=models.Q(
+                    ~models.Q(regions__title=''),
                     regions__public=True,
-                    then=StringAgg('regions__title', ', ', distinct=True)
+                    regions__title__isnull=False,
                 ),
-                default=None,
+                distinct=True,
             ),
             organizations_title=StringAgg(
                 models.Case(
