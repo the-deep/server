@@ -31,3 +31,10 @@ class OrderEnumMixin():
             _ordering.nulls_last = True
             qs = qs.order_by(_ordering)
         return qs
+
+
+def get_dummy_request(**kwargs):
+    return type(
+        'DummyRequest', (object,),
+        kwargs,
+    )()

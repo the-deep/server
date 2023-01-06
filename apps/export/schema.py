@@ -2,6 +2,7 @@ import graphene
 
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
+from graphene.types.generic import GenericScalar
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from deep.serializers import URLCachedFileField
@@ -9,19 +10,22 @@ from utils.graphene.types import CustomDjangoListObjectType, FileFieldType
 from utils.graphene.fields import DjangoPaginatedListObjectField, generate_type_for_serializer
 
 from lead.schema import (
-    LeadsFilterDataType,
     LeadFilterDataType,
     get_lead_filter_data,
 )
 
+from lead.filter_set import LeadsFilterDataType
 from .serializers import ExportExtraOptionsSerializer
-from .models import Export
+from .models import Export, GenericExport
 from .filter_set import ExportGQLFilterSet
 from .enums import (
     ExportDataTypeEnum,
     ExportFormatEnum,
     ExportStatusEnum,
-    ExportExportTypeEnum
+    ExportExportTypeEnum,
+    GenericExportFormatEnum,
+    GenericExportStatusEnum,
+    GenericExportDataTypeEnum,
 )
 
 
@@ -31,6 +35,10 @@ def get_export_qs(info):
         exported_by=info.context.request.user,
         is_deleted=False,
     )
+
+
+def get_generic_export_qs(info):
+    return GenericExport.objects.filter(exported_by=info.context.request.user)
 
 
 ExportExtraOptionsType = generate_type_for_serializer(
@@ -45,7 +53,7 @@ class UserExportType(DjangoObjectType):
         only_fields = (
             'id', 'project', 'is_preview', 'title',
             'mime_type', 'extra_options', 'exported_by',
-            'exported_at', 'started_at', 'ended_at', 'pending', 'is_archived',
+            'exported_at', 'started_at', 'ended_at', 'is_archived',
             'analysis',
         )
 
@@ -81,13 +89,50 @@ class UserExportType(DjangoObjectType):
         )
 
 
+class UserGenericExportType(DjangoObjectType):
+    class Meta:
+        model = GenericExport
+        only_fields = (
+            'id',
+            'title',
+            'mime_type',
+            'exported_by',
+            'exported_at',
+            'started_at',
+            'ended_at',
+        )
+
+    format = graphene.Field(graphene.NonNull(GenericExportFormatEnum))
+    type = graphene.Field(graphene.NonNull(GenericExportDataTypeEnum))
+    status = graphene.Field(graphene.NonNull(GenericExportStatusEnum))
+    filters = GenericScalar(required=False)
+
+    file = graphene.Field(FileFieldType)
+    file_download_url = graphene.String()
+
+    @staticmethod
+    def get_custom_queryset(queryset, info, **kwargs):
+        return get_generic_export_qs(info)
+
+    @staticmethod
+    def resolve_file_download_url(root, info, **kwargs):
+        return info.context.request.build_absolute_uri(
+            URLCachedFileField.generate_url(
+                root.file.name,
+                parameters={
+                    'ResponseContentDisposition': f'filename = "{root.title}.{root.format}"'
+                }
+            )
+        )
+
+
 class UserExportListType(CustomDjangoListObjectType):
     class Meta:
         model = Export
         filterset_class = ExportGQLFilterSet
 
 
-class Query:
+class ProjectQuery:
     export = DjangoObjectField(UserExportType)
     exports = DjangoPaginatedListObjectField(
         UserExportListType,
@@ -99,3 +144,7 @@ class Query:
     @staticmethod
     def resolve_exports(root, info, **kwargs) -> QuerySet:
         return get_export_qs(info).filter(is_preview=False)
+
+
+class Query():
+    generic_export = DjangoObjectField(UserGenericExportType)
