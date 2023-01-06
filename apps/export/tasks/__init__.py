@@ -1,14 +1,14 @@
 import logging
 from django.utils import timezone
-from django.utils.crypto import get_random_string
 
 from celery import shared_task
 
 from deep.celery import CeleryQueue
-from export.models import Export
+from export.models import Export, GenericExport
 from .tasks_entries import export_entries
 from .tasks_assessment import export_assessments, export_planned_assessments
 from .tasks_analyses import export_analyses
+from .tasks_projects import export_projects_stats
 
 logger = logging.getLogger(__name__)
 
@@ -19,14 +19,16 @@ EXPORTER_TYPE = {
     Export.DataType.PLANNED_ASSESSMENTS: export_planned_assessments,
     Export.DataType.ANALYSES: export_analyses,
 }
+GENERIC_EXPORTER_TYPE = {
+    GenericExport.DataType.PROJECTS_STATS: export_projects_stats,
+}
 
 
 def get_export_filename(export):
-    random_string = get_random_string(length=10)
     filename = f'{export.title}.{export.format}'
-    if export.is_preview:
+    if getattr(export, 'is_preview', False):
         filename = f'(Preview) {filename}'
-    return f'{random_string}/{filename}'
+    return filename
 
 
 @shared_task(queue=CeleryQueue.EXPORT_HEAVY)
@@ -65,6 +67,55 @@ def export_task(export_id, force=False):
             export.save(update_fields=('status', 'ended_at',))
         logger.error(
             f'Export Failed {data_type}!!',
+            exc_info=True,
+            extra={
+                'data': {
+                    'export_id': export_id,
+                },
+            },
+        )
+        return_value = False
+
+    return return_value
+
+
+# NOTE: limit are in seconds
+@shared_task(queue=CeleryQueue.DEFAULT, time_limit=220, soft_time_limit=120)
+def generic_export_task(export_id, force=False):
+    data_type = 'UNKNOWN'
+    try:
+        export = GenericExport.objects.get(pk=export_id)
+        data_type = export.type
+        # Skip if export is already started
+        if not force and export.status != GenericExport.Status.PENDING:
+            logger.warning(f'Generic Export status is {export.get_status_display()}')
+            return 'SKIPPED'
+
+        # Update status to STARTED
+        export.status = GenericExport.Status.STARTED
+        export.started_at = timezone.now()
+        export.save(update_fields=('status', 'started_at',))
+
+        file = GENERIC_EXPORTER_TYPE[export.type](export)
+
+        export.mime_type = GenericExport.MIME_TYPE_MAP.get(export.format, GenericExport.DEFAULT_MIME_TYPE)
+        export.file.save(get_export_filename(export), file)
+
+        # Update status to SUCCESS
+        export.status = GenericExport.Status.SUCCESS
+        export.ended_at = timezone.now()
+        export.save()
+
+        return_value = True
+    except Exception:
+        export = GenericExport.objects.filter(id=export_id).first()
+        # Update status to FAILURE
+        if export:
+            export.status = GenericExport.Status.FAILURE
+            export.ended_at = timezone.now()
+            export.save(update_fields=('status', 'ended_at',))
+        logger.error(
+            f'Generic Export Failed {data_type}!!',
             exc_info=True,
             extra={
                 'data': {

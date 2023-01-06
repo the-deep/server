@@ -1,7 +1,6 @@
 from typing import Type, List
 from collections import OrderedDict
 
-from django.core.exceptions import PermissionDenied
 import graphene
 import graphene_django
 from graphene.types.generic import GenericScalar
@@ -15,6 +14,7 @@ from graphene_file_upload.scalars import Upload
 from utils.graphene.error_types import mutation_is_not_valid
 from utils.graphene.enums import get_enum_name_from_django_field
 # from utils.common import to_camelcase
+from deep.exceptions import PermissionDeniedException
 from deep.enums import ENUM_TO_GRAPHENE_ENUM_MAP
 from deep.serializers import IntegerIDField, StringIDField
 from deep.permissions import (
@@ -352,7 +352,7 @@ class ProjectScopeMixin():
     def check_permissions(cls, info, **_):
         for permission in cls.permissions:
             if not PP.check_permission(info, permission):
-                raise PermissionDenied(PP.get_permission_message(permission))
+                raise PermissionDeniedException(PP.get_permission_message(permission))
 
 
 class PsGrapheneMutation(ProjectScopeMixin, GrapheneMutation):
@@ -374,7 +374,7 @@ class AfScopeMixin():
     def check_permissions(cls, info, **_):
         for permission in cls.permissions:
             if not AfP.check_permission(info, permission):
-                raise PermissionDenied(AfP.get_permission_message(permission))
+                raise PermissionDeniedException(AfP.get_permission_message(permission))
 
 
 class AfGrapheneMutation(AfScopeMixin, GrapheneMutation):
@@ -392,7 +392,7 @@ class UgScopeMixin():
     def check_permissions(cls, info, **_):
         for permission in cls.permissions:
             if not UgP.check_permission(info, permission):
-                raise PermissionDenied(UgP.get_permission_message(permission))
+                raise PermissionDeniedException(UgP.get_permission_message(permission))
 
 
 class UserGroupGrapheneMutation(UgScopeMixin, GrapheneMutation):

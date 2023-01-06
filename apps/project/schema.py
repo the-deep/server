@@ -28,7 +28,7 @@ from user.models import User
 from user.schema import UserType
 from lead.schema import Query as LeadQuery
 from entry.schema import Query as EntryQuery
-from export.schema import Query as ExportQuery
+from export.schema import ProjectQuery as ExportQuery
 from geo.schema import RegionDetailType, ProjectScopeQuery as GeoQuery
 from quality_assurance.schema import Query as QualityAssuranceQuery
 from ary.schema import Query as AryQuery
