@@ -1147,7 +1147,7 @@ input ExploreProjectFilterDataInputType {
   createdBy: [ID!]
   modifiedBy: [ID!]
   organizations: [ID!]
-  includeTestProject: Boolean
+  isTest: Boolean
   search: String
   includeEntryLessThan: Boolean
   regions: [ID!]
@@ -1921,7 +1921,7 @@ type OrganizationType {
   url: String!
   logo: GalleryFileType
   verified: Boolean!
-  regions: [ExploreDashboardProjectRegion!]!
+  regions: [RegionWithProject!]!
   organizationType: OrganizationTypeType
   mergedAs: MergedAsOrganizationType
 }
