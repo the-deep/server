@@ -3,8 +3,14 @@ from typing import List
 import graphene
 from django.db import transaction, models
 from django.db.models import QuerySet
-from django.db.models.functions import TruncMonth, TruncDay
-from django.contrib.postgres.aggregates.general import ArrayAgg
+from django.db.models.functions import (
+    TruncMonth,
+    TruncDay,
+    Coalesce,
+    Cast,
+)
+from django.contrib.postgres.aggregates.general import ArrayAgg, StringAgg
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene.types import generic
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
@@ -576,6 +582,44 @@ class ExploreStastOrganizationType(OrganizationType):
     project_count = graphene.Int()
 
 
+class ExploreDashboardProjectRegion(DjangoObjectType):
+    class Meta:
+        model = Region
+        only_fields = (
+            'id', 'centroid',
+        )
+    project_ids = graphene.List(graphene.NonNull(graphene.ID))
+
+
+class ExploreDashboardProjectType(DjangoObjectType):
+    class Meta:
+        model = Project
+        skip_registry = True
+        fields = (
+            'id',
+            'title',
+            'description',
+            'created_at',
+        )
+
+    analysis_framework = graphene.ID(source='analysis_framework_id')
+    analysis_framework_title = graphene.String()
+    regions_title = graphene.String()
+    organizations_title = graphene.String()
+    number_of_users = graphene.Int(required=True)
+    number_of_leads = graphene.Int(required=True)
+    number_of_entries = graphene.Int(required=True)
+    analysis_framework_preview_image = graphene.String()
+
+    @staticmethod
+    def resolve_analysis_framework_preview_image(root, info, **kwargs):
+        if root.preview_image:
+            return info.context.request.build_absolute_uri(
+                URLCachedFileField.name_to_representation(root.preview_image)
+            )
+        return None
+
+
 class ExploreDashboardStatType(graphene.ObjectType):
     total_projects = graphene.Int()
     total_registered_users = graphene.Int()
@@ -616,23 +660,24 @@ class ExploreDashboardStatType(graphene.ObjectType):
             })
         )
     )
-    project_by_region = graphene.List(RegionWithProject)
+    project_by_region = graphene.List(ExploreDashboardProjectRegion)
     project_aggregation_monthly = graphene.List(
         graphene.NonNull(
             type('ExploreDeepStatProjetAggregationMonthly', (graphene.ObjectType,), {
-                'date': graphene.Date(),
-                'project_count': graphene.String(),
+                'date': graphene.Date(required=True),
+                'project_count': graphene.String(required=True),
             })
         )
     )
     project_aggregation_daily = graphene.List(
         graphene.NonNull(
             type('ExploreDeepStatProjetAggregationDaily', (graphene.ObjectType,), {
-                'date': graphene.Date(),
-                'project_count': graphene.String(),
+                'date': graphene.Date(required=True),
+                'project_count': graphene.String(required=True),
             })
         )
     )
+    projects = graphene.List(ExploreDashboardProjectType)
 
 
 class Query:
@@ -859,13 +904,13 @@ class Query:
             )[:10]
 
             project_by_region = Region.objects.annotate(
-                projects_id=ArrayAgg(
+                project_ids=ArrayAgg(
                     'project',
                     distinct=True,
                     ordering='project',
                     filter=models.Q(project__in=project_qs),
                 ),
-            ).filter(projects_id__isnull=False).only('id', 'centroid')
+            ).filter(project_ids__isnull=False).only('id', 'centroid')
 
             project_aggregation_monthly = project_qs.values(
                 date=TruncMonth('created_at')
@@ -878,6 +923,57 @@ class Query:
             ).annotate(
                 project_count=models.Count('id')
             ).order_by('date')
+
+            projects = project_qs.annotate(
+                analysis_framework_title=models.Case(
+                    models.When(
+                        analysis_framework__is_private=False,
+                        then=models.F('analysis_framework__title')
+                    ),
+                    default=None,
+                ),
+                preview_image=models.Case(
+                    models.When(
+                        analysis_framework__is_private=False,
+                        then=models.F('analysis_framework__preview_image')
+                    ),
+                    default=None
+                ),
+                regions_title=StringAgg(
+                    'regions__title',
+                    ', ',
+                    filter=models.Q(
+                        ~models.Q(regions__title=''),
+                        regions__public=True,
+                        regions__title__isnull=False,
+                    ),
+                    distinct=True,
+                ),
+                organizations_title=StringAgg(
+                    models.Case(
+                        models.When(
+                            projectorganization__organization__parent__isnull=False,
+                            then='projectorganization__organization__parent__title'
+                        ),
+                        default='projectorganization__organization__title',
+                    ),
+                    ', ',
+                    distinct=True,
+                ),
+                **{
+                    key: Coalesce(
+                        Cast(KeyTextTransform(key, 'stats_cache'), models.IntegerField()),
+                        0,
+                    )
+                    for key in ['number_of_leads', 'number_of_users', 'number_of_entries']
+                },
+            ).only(
+                'id',
+                'title',
+                'description',
+                'analysis_framework_id',
+                'created_at',
+            ).distinct()
 
             return dict(
                 total_projects=total_projects,
@@ -895,4 +991,5 @@ class Query:
                 project_aggregation_monthly=project_aggregation_monthly,
                 project_aggregation_daily=project_aggregation_daily,
                 top_ten_publishers=top_ten_publishers,
+                projects=projects,
             )
