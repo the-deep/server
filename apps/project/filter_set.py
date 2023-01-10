@@ -238,7 +238,7 @@ class PublicProjectByRegionGqlFileterSet(ProjectByRegionGqlFilterSet):
 
 class ExploreProjectFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
     organizations = IDListFilter(distinct=True)
-    include_test_project = django_filters.BooleanFilter(field_name='include_test_project', method='filter_is_test')
+    is_test = django_filters.BooleanFilter(method='filter_is_test')
     search = django_filters.CharFilter(method='filter_title')
     include_entry_less_than = django_filters.BooleanFilter(
         field_name='include_entry_less_than',
@@ -251,41 +251,34 @@ class ExploreProjectFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
         fields = ()
 
     def filter_is_test(self, qs, _, value):
-        if value is True:
-            return Project.objects.all()
-        return qs
+        if value is None:
+            return qs
+        return Project.objects.filter(is_test=value)
 
     def filter_title(self, qs, _, value):
         if not value:
             return qs
-        return qs.filter(title__icontains=value).distinct()
+        return qs.filter(title__icontains=value)
 
     def filter_is_entry_less_than(self, qs, _, value):
+        if value is None:
+            return qs
+        qs = qs.annotate(
+            entry_count=models.functions.Coalesce(models.Subquery(
+                Entry.objects.filter(
+                    project=models.OuterRef('id')
+                ).order_by().values('project').annotate(
+                    count=models.Count('id', distinct=True)
+                ).values('count')[:1],
+                output_field=models.IntegerField()
+            ), 0)
+        )
         if value is True:
-            return qs.annotate(
-                entry_count=models.functions.Coalesce(models.Subquery(
-                    Entry.objects.filter(
-                        project=models.OuterRef('id')
-                    ).order_by().values('project').annotate(
-                        count=models.Count('id', distinct=True)
-                    ).values('count')[:1],
-                    output_field=models.IntegerField()
-                ), 0)
-            ).filter(entry_count__lte=100)
-        elif value is False:
-            return qs.filter(
-                entry__isnull=False
-            ).annotate(
-                entry_count=models.functions.Coalesce(models.Subquery(
-                    Entry.objects.filter(
-                        project=models.OuterRef('id')
-                    ).order_by().values('project').annotate(
-                        count=models.Count('id', distinct=True)
-                    ).values('count')[:1],
-                    output_field=models.IntegerField()
-                ), 0)
-            ).filter(entry_count__gt=100)
-        return qs
+            return qs.filter(entry_count__lte=100)
+        return qs.filter(entry_count__gt=100)
+
+    def qs(self):
+        return super().qs().distinct()
 
 
 def get_lead_filter_object_type(input_type):
