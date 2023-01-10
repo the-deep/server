@@ -1061,6 +1061,27 @@ type EntryType {
 
 scalar EnumDescription
 
+type ExploreDashboardProjectRegion {
+  id: ID!
+  centroid: PointScalar
+  projectIds: [ID!]
+}
+
+type ExploreDashboardProjectType {
+  id: ID!
+  createdAt: DateTime!
+  title: String!
+  description: String!
+  analysisFramework: ID
+  analysisFrameworkTitle: String
+  regionsTitle: String
+  organizationsTitle: String
+  numberOfUsers: Int!
+  numberOfLeads: Int!
+  numberOfEntries: Int!
+  analysisFrameworkPreviewImage: String
+}
+
 type ExploreDashboardStatType {
   totalProjects: Int
   totalRegisteredUsers: Int
@@ -1074,9 +1095,10 @@ type ExploreDashboardStatType {
   topTenFrameworks: [ExploreDeepStatTopActiveFrameworksType!]
   topTenProjectUsers: [ExploreDeepStatTopProjectType!]
   topTenProjectEntries: [ExploreDeepStatTopProjectEntryType!]
-  projectByRegion: [RegionWithProject]
+  projectByRegion: [ExploreDashboardProjectRegion]
   projectAggregationMonthly: [ExploreDeepStatProjetAggregationMonthly!]
   projectAggregationDaily: [ExploreDeepStatProjetAggregationDaily!]
+  projects: [ExploreDashboardProjectType]
 }
 
 input ExploreDeepFilter {
@@ -1086,13 +1108,13 @@ input ExploreDeepFilter {
 }
 
 type ExploreDeepStatProjetAggregationDaily {
-  date: Date
-  projectCount: String
+  date: Date!
+  projectCount: String!
 }
 
 type ExploreDeepStatProjetAggregationMonthly {
-  date: Date
-  projectCount: String
+  date: Date!
+  projectCount: String!
 }
 
 type ExploreDeepStatTopActiveFrameworksType {
@@ -1899,7 +1921,7 @@ type OrganizationType {
   url: String!
   logo: GalleryFileType
   verified: Boolean!
-  regions: [RegionWithProject!]!
+  regions: [ExploreDashboardProjectRegion!]!
   organizationType: OrganizationTypeType
   mergedAs: MergedAsOrganizationType
 }
