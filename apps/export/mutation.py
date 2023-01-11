@@ -128,7 +128,7 @@ class CancelUserGenericExport(UserGenericExportMutationMixin, GrapheneMutation):
 
     @classmethod
     def check_permissions(cls, *args, **_):
-        return True  # Allow all to create calcel their exports
+        return True  # Allow all to cancel their exports
 
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
