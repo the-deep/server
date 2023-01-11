@@ -1437,7 +1437,7 @@ input GenericExportCreateInputType {
   title: String
   type: GenericExportDataTypeEnum!
   format: GenericExportFormatEnum!
-  filters: UserGenericExportFiltersqlInputType!
+  filters: UserGenericExportFiltersGqlInputType!
 }
 
 enum GenericExportDataTypeEnum {
@@ -2896,7 +2896,7 @@ type UserFeatureAccessType {
   featureType: FeatureFeatureType!
 }
 
-input UserGenericExportFiltersqlInputType {
+input UserGenericExportFiltersGqlInputType {
   lead: LeadsFilterDataInputType
   entry: EntriesFilterDataInputType
   project: ProjectsFilterDataInputType
