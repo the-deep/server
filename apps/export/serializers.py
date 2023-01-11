@@ -347,7 +347,7 @@ class UserExportUpdateGqlSerializer(UserExportBaseGqlMixin, serializers.ModelSer
         raise serializers.ValidationError('Not allowed using this serializer.')
 
 
-class UserGenericExportFiltersqlSerializer(serializers.Serializer):
+class UserGenericExportFiltersGqlSerializer(serializers.Serializer):
     lead = generate_serializer_field_class(LeadsFilterDataInputType, GraphqlSupportDrfSerializerJSONField)(required=False)
     entry = generate_serializer_field_class(EntriesFilterDataInputType, GraphqlSupportDrfSerializerJSONField)(required=False)
     project = generate_serializer_field_class(
@@ -368,7 +368,7 @@ class UserGenericExportCreateGqlSerializer(serializers.ModelSerializer):
             'filters',
         )
 
-    filters = UserGenericExportFiltersqlSerializer()
+    filters = UserGenericExportFiltersGqlSerializer()
 
     def validate_filters(self, filters):
         # Validate each data
@@ -387,6 +387,14 @@ class UserGenericExportCreateGqlSerializer(serializers.ModelSerializer):
         if errors:
             raise serializers.ValidationError(errors)
         return filters
+
+    def validate(self, data):
+        # Validate type, export_type and format
+        data_type = data['type']
+        _format = data['format']
+        if (data_type, _format) not in GenericExport.DEFAULT_TITLE_LABEL:
+            raise serializers.ValidationError(f'Unsupported Export request: {(data_type, _format)}')
+        return data
 
     def create(self, data):
         data['title'] = data.get('title') or GenericExport.generate_title(data['type'], data['format'])
