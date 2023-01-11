@@ -277,8 +277,9 @@ class ExploreProjectFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
             return qs.filter(entry_count__lte=100)
         return qs.filter(entry_count__gt=100)
 
+    @property
     def qs(self):
-        return super().qs().distinct()
+        return super().qs.distinct()
 
 
 def get_lead_filter_object_type(input_type):
