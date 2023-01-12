@@ -1724,7 +1724,7 @@ class WebInfoExtractionTests(TestCase):
 
         url = '/api/v1/web-info-extract/'
         data = {
-            'url': SAMPLE_WEB_INFO_URL,
+            'url': SAMPLE_WEB_INFO_URL
         }
 
         try:
@@ -1747,7 +1747,7 @@ class WebInfoExtractionTests(TestCase):
             'source': SimpleOrganizationSerializer(self.reliefweb).data,
             'source_raw': 'reliefweb',
             'author': None,
-            'authors_raw': [SAMPLE_WEB_INFO_SOURCE],
+            'author_raw': SAMPLE_WEB_INFO_SOURCE,
             'existing': False,
         }
         self.assertEqualWithWarning(expected, response.data)
