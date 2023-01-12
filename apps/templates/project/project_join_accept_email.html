@@ -1,0 +1,8 @@
+{% extends "base_email.html" %}
+
+{% block title %}
+    <p>
+        Hi there {{ user.get_display_name }},
+        Your request to join {{ project.title }} have been accepted for role {{ role }}.
+    </p>
+{% endblock %}

@@ -24,7 +24,11 @@ from analysis_framework.models import AnalysisFrameworkMembership
 from user.models import Feature
 from user.serializers import SimpleUserSerializer
 from user_group.models import UserGroup
-from user.utils import send_project_join_request_emails
+from user.utils import (
+    send_project_join_request_emails,
+    send_project_accept_email,
+    send_project_reject_email
+)
 from user_group.serializers import SimpleUserGroupSerializer
 from user_resource.serializers import UserResourceSerializer, DeprecatedUserResourceSerializer
 from ary.models import AssessmentTemplate
@@ -607,6 +611,9 @@ class ProjectAcceptRejectSerializer(serializers.ModelSerializer):
                 'added_by': responded_by,
             },
         )
+        transaction.on_commit(
+            lambda: send_project_accept_email.delay(join_request.id)
+        )
 
     @staticmethod
     def _reject_request(responded_by, join_request):
@@ -614,6 +621,9 @@ class ProjectAcceptRejectSerializer(serializers.ModelSerializer):
         join_request.responded_by = responded_by
         join_request.responded_at = timezone.now()
         join_request.save()
+        transaction.on_commit(
+            lambda: send_project_reject_email.delay(join_request.id)
+        )
 
     def update(self, instance, validated_data):
         validated_data['project'] = self.context['request'].active_project
