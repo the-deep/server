@@ -1075,6 +1075,11 @@ type EntryType {
 
 scalar EnumDescription
 
+type ExploreCountByDateType {
+  date: Date!
+  count: Int!
+}
+
 type ExploreDashboardProjectRegion {
   id: ID!
   centroid: PointScalar
@@ -1109,9 +1114,13 @@ type ExploreDashboardStatType {
   topTenFrameworks: [ExploreDeepStatTopActiveFrameworksType!]
   topTenProjectUsers: [ExploreDeepStatTopProjectType!]
   topTenProjectEntries: [ExploreDeepStatTopProjectEntryType!]
-  projectByRegion: [ExploreDashboardProjectRegion]
-  projectAggregationMonthly: [ExploreDeepStatProjetAggregationMonthly!]
-  projectAggregationDaily: [ExploreDeepStatProjetAggregationDaily!]
+  leadsCountByMonth: [ExploreCountByDateType!]
+  leadsCountByDay: [ExploreCountByDateType!]
+  entriesCountByMonth: [ExploreCountByDateType!]
+  entriesCountByDay: [ExploreCountByDateType!]
+  projectsByRegion: [ExploreDashboardProjectRegion]
+  projectsCountByMonth: [ExploreCountByDateType!]
+  projectsCountByDay: [ExploreCountByDateType!]
   projects: [ExploreDashboardProjectType]
 }
 
@@ -1121,28 +1130,18 @@ input ExploreDeepFilter {
   project: ExploreProjectFilterDataInputType
 }
 
-type ExploreDeepStatProjetAggregationDaily {
-  date: Date!
-  projectCount: String!
-}
-
-type ExploreDeepStatProjetAggregationMonthly {
-  date: Date!
-  projectCount: String!
-}
-
 type ExploreDeepStatTopActiveFrameworksType {
   analysisFrameworkId: ID!
   analysisFrameworkTitle: String
-  projectCount: Int!
-  entryCount: Int!
+  projectsCount: Int!
+  entriesCount: Int!
 }
 
 type ExploreDeepStatTopProjectEntryType {
   projectId: ID!
   projectTitle: String
-  sourceCount: Int!
-  entryCount: Int!
+  leadsCount: Int!
+  entriesCount: Int!
 }
 
 type ExploreDeepStatTopProjectType {
@@ -1191,8 +1190,8 @@ type ExploreStastOrganizationType {
   verified: Boolean!
   organizationType: OrganizationTypeType
   mergedAs: MergedAsOrganizationType
-  sourceCount: Int
-  projectCount: Int
+  leadsCount: Int
+  projectsCount: Int
 }
 
 input ExportCreateInputType {
