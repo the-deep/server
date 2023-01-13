@@ -147,6 +147,7 @@ LOCAL_APPS = [
     'quality_assurance',
     'unified_connector',
     'assisted_tagging',
+    'deep_explore',
 
     # MISC DEEP APPS
     'bulk_data_migration',
