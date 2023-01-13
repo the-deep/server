@@ -1116,6 +1116,7 @@ type ExploreDashboardStatType {
   leadsCountByDay: [ExploreCountByDateType!]
   entriesCountByMonth: [ExploreCountByDateType!]
   entriesCountByDay: [ExploreCountByDateType!]
+  entriesCountByRegion: [ExploreDeepStatEntriesCountByCentroidType!]
   projectsByRegion: [ExploreDashboardProjectRegion]
   projectsCountByMonth: [ExploreCountByDateType!]
   projectsCountByDay: [ExploreCountByDateType!]
@@ -1126,6 +1127,12 @@ input ExploreDeepFilter {
   dateFrom: Date!
   dateTo: Date!
   project: ExploreProjectFilterDataInputType
+}
+
+type ExploreDeepStatEntriesCountByCentroidType {
+  centroid: PointScalar
+  date: Date!
+  count: Int!
 }
 
 type ExploreDeepStatTopActiveFrameworksType {
