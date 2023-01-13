@@ -301,8 +301,20 @@ class GeoArea(models.Model):
     # TODO Rename to geometry
     polygons = models.GeometryField(null=True, blank=True, default=None)
 
+    # Cache
+    centroid = models.PointField(blank=True, null=True)
+
     def __str__(self):
         return self.title
+
+    @classmethod
+    def sync_centroid(cls):
+        cls.objects.filter(
+            polygons__isempty=False,
+            centroid__isempty=True,
+        ).update(
+            centroid=Centroid('polygons')
+        )
 
     @classmethod
     def get_for_project(cls, project, is_published=True):
