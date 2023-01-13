@@ -12,6 +12,7 @@ from django.contrib.postgres.aggregates.general import ArrayAgg, StringAgg
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
 
 from deep.serializers import URLCachedFileField
+from utils.graphene.geo_scalars import PointScalar
 # Schema
 from organization.schema import OrganizationType
 # Models
@@ -22,6 +23,7 @@ from project.models import Project, ProjectMembership
 from lead.models import Lead
 from entry.models import Entry
 from analysis_framework.models import AnalysisFramework
+from deep_explore.models import EntriesCountByGeoAreaAggregate
 
 # Filters
 from project.filter_set import ExploreProjectFilterDataInputType, ExploreProjectFilterSet
@@ -155,6 +157,15 @@ class ExploreDashboardStatType(graphene.ObjectType):
 
     entries_count_by_month = graphene.Field(ExploreCountByDateListType)
     entries_count_by_day = graphene.Field(ExploreCountByDateListType)
+    entries_count_by_region = graphene.List(
+        graphene.NonNull(
+            type('ExploreDeepStatEntriesCountByCentroidType', (graphene.ObjectType,), {
+                'centroid': PointScalar(),
+                'date': graphene.Date(required=True),
+                'count': graphene.NonNull(graphene.Int),
+            })
+        )
+    )
 
     projects_by_region = graphene.List(ExploreDashboardProjectRegion)
     projects_count_by_month = graphene.Field(ExploreCountByDateListType)
@@ -337,6 +348,21 @@ class ExploreDashboardStatType(graphene.ObjectType):
             # ---- By month/day
             entries_count_by_month = _count_by_date(entries_qs, TruncMonth)
             entries_count_by_day = _count_by_date(entries_qs, TruncDay)
+            entries_count_by_region = EntriesCountByGeoAreaAggregate.objects\
+                .filter(
+                    date__gte=date_from,
+                    date__lte=date_to,
+                    project__in=projects_qs,
+                    geo_area__centroid__isempty=False,
+                ).annotate(
+                    date__month=TruncMonth('date')
+                ).order_by('date__month').values('date__month', 'geo_area').annotate(
+                    count=models.Sum('entries_count'),
+                ).values(
+                    'count',
+                    date=models.F('date__month'),
+                    centroid=models.F('geo_area__centroid'),
+                )
 
             leads_count_by_month = _count_by_date(leads_qs, TruncMonth)
             leads_count_by_day = _count_by_date(leads_qs, TruncDay)
@@ -414,6 +440,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
                 # Entries by
                 entries_count_by_month=entries_count_by_month,
                 entries_count_by_day=entries_count_by_day,
+                entries_count_by_region=entries_count_by_region,
                 # Top ten aggregates
                 top_ten_authors=top_ten_authors,
                 top_ten_frameworks=top_ten_frameworks,
