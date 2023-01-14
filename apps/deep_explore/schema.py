@@ -414,3 +414,14 @@ class ExploreDashboardStatType(graphene.ObjectType):
             projects_qs=projects_qs,
             ref_projects_qs=ref_projects_qs,
         )
+
+
+class Query:
+    deep_explore_stats = graphene.Field(
+        ExploreDashboardStatType,
+        filter=ExploreDeepFilter(required=True)
+    )
+
+    @staticmethod
+    def resolve_deep_explore_stats(_, info, filter):
+        return ExploreDashboardStatType.custom_resolver(info, filter)
