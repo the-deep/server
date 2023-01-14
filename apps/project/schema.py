@@ -72,7 +72,6 @@ from .filter_set import (
 from .activity import project_activity_log
 from .tasks import generate_viz_stats, get_project_stats
 from .public_schema import PublicProjectListType
-from .deep_explore_schema import ExploreDeepFilter, ExploreDashboardStatType
 
 
 def get_recent_active_users(project, max_users=3):
@@ -575,12 +574,6 @@ class Query:
         )
     )
 
-    # Explore Deep Dashboard
-    deep_explore_stats = graphene.Field(
-        ExploreDashboardStatType,
-        filter=ExploreDeepFilter(required=True)
-    )
-
     # NOTE: This is a custom feature, see https://github.com/the-deep/graphene-django-extras
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
 
@@ -616,7 +609,3 @@ class Query:
     @staticmethod
     def resolve_public_projects_by_region(*args, **kwargs):
         return Query.resolve_projects_by_region(*args, **kwargs)
-
-    @staticmethod
-    def resolve_deep_explore_stats(_, info, filter):
-        return ExploreDashboardStatType.custom_resolver(info, filter)
