@@ -1126,8 +1126,8 @@ type ExploreDashboardStatType {
 }
 
 input ExploreDeepFilter {
-  dateFrom: Date!
-  dateTo: Date!
+  dateFrom: DateTime!
+  dateTo: DateTime!
   project: ExploreProjectFilterDataInputType
 }
 

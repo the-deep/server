@@ -49,8 +49,8 @@ def count_by_type_generator(type_name):
 
 
 class ExploreDeepFilter(graphene.InputObjectType):
-    date_from = graphene.Date(required=True)
-    date_to = graphene.Date(required=True)
+    date_from = graphene.DateTime(required=True)
+    date_to = graphene.DateTime(required=True)
     project = ExploreProjectFilterDataInputType()
 
 
@@ -182,268 +182,253 @@ class ExploreDashboardStatType(graphene.ObjectType):
                 count=models.Count('id')
             ).order_by('date')
 
+        def get_global_filters(date_field='created_at'):
+            return {
+                f'{date_field}__gte': filter['date_from'],
+                f'{date_field}__lte': filter['date_to'],
+            }
+
         # TODO: Don't calculate if not needed
-        if filter:
-            # Use django filter here with timezone support
-            date_from = filter.get('date_from')
-            date_to = filter.get('date_to')
+        # project specific filter
+        projects_qs = ExploreProjectFilterSet(
+            request=info.context.request,
+            data=filter.get('project'),
+        ).qs
 
-            # project specific filter
-            projects_qs = Project.objects.filter(
-                created_at__gte=date_from,
-                created_at__lte=date_to,
-            ).exclude(is_test=True)
-            project_filter = filter.get('project')
-            if project_filter:
-                projects_qs = ExploreProjectFilterSet(
-                    request=info.context.request,
-                    queryset=projects_qs,
-                    data=project_filter
-                ).qs
+        total_projects = projects_qs.distinct().count()
+        total_registered_users = User.objects.filter(
+            is_active=True,
+        ).count()
 
-            total_projects = projects_qs.distinct().count()
-            total_registered_users = User.objects.filter(
-                is_active=True,
-            ).count()
+        leads_qs = Lead.objects.filter(
+            **get_global_filters(),
+            project__in=projects_qs
+        )
+        total_leads = leads_qs.distinct().count()
 
-            leads_qs = Lead.objects.filter(
-                created_at__gte=date_from,
-                created_at__lte=date_to,
-                project__in=projects_qs
-            )
-            total_leads = leads_qs.distinct().count()
+        entries_qs = Entry.objects.filter(
+            **get_global_filters(),
+            project__in=projects_qs
+        )
+        total_entries = entries_qs.distinct().count()
+        total_authors = leads_qs.values('authors').distinct().count()
+        total_publishers = leads_qs.values('source').distinct().count()
+        total_active_users = leads_qs.values('created_by').union(
+            entries_qs.values('created_by')
+        ).count()
 
-            entries_qs = Entry.objects.filter(
-                created_at__gte=date_from,
-                created_at__lte=date_to,
-                project__in=projects_qs
-            )
-            total_entries = entries_qs.distinct().count()
-            total_authors = leads_qs.values('authors').distinct().count()
-            total_publishers = leads_qs.values('source').distinct().count()
-            total_active_users = leads_qs.values('created_by').union(
-                entries_qs.values('created_by')
-            ).count()
+        organization_qs = Organization.objects.filter(**get_global_filters())
+        top_ten_authors = organization_qs.annotate(
+            source_count=models.functions.Coalesce(models.Subquery(
+                Lead.objects.filter(
+                    authors=models.OuterRef('pk')
+                ).order_by().values('authors')
+                .annotate(cnt=models.Count('*')).values('cnt')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+            projects_count=models.functions.Coalesce(models.Subquery(
+                Lead.objects.filter(
+                    authors=models.OuterRef('pk')
+                ).order_by().values('authors')
+                .annotate(cnt=models.Count('project_id', distinct=True)).values('cnt')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+        ).order_by('-source_count', '-projects_count')[:10]
 
-            organization_qs = Organization.objects.filter(
-                created_at__gte=date_from,
-                created_at__lte=date_to
-            )
-            top_ten_authors = organization_qs.annotate(
-                source_count=models.functions.Coalesce(models.Subquery(
-                    Lead.objects.filter(
-                        authors=models.OuterRef('pk')
-                    ).order_by().values('authors')
-                    .annotate(cnt=models.Count('*')).values('cnt')[:1],
-                    output_field=models.IntegerField(),
+        top_ten_publishers = organization_qs.annotate(
+            source_count=models.functions.Coalesce(models.Subquery(
+                Lead.objects.filter(
+                    source=models.OuterRef('pk')
+                ).order_by().values('source')
+                .annotate(cnt=models.Count('*')).values('cnt')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+            projects_count=models.functions.Coalesce(models.Subquery(
+                Lead.objects.filter(
+                    source=models.OuterRef('pk')
+                ).order_by().values('source')
+                .annotate(cnt=models.Count('project_id', distinct=True)).values('cnt')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+        ).order_by('-source_count', '-projects_count')[:10]
+
+        analysis_framework_qs = AnalysisFramework.objects.filter(**get_global_filters())
+        top_ten_frameworks = analysis_framework_qs.distinct().annotate(
+            projects_count=models.functions.Coalesce(
+                models.Subquery(
+                    Project.objects.filter(
+                        analysis_framework=models.OuterRef('pk')
+                    ).order_by().values('analysis_framework').annotate(
+                        count=models.Count('id', distinct=True),
+                    ).values('count')[:1],
+                    output_field=models.IntegerField()
                 ), 0),
-                projects_count=models.functions.Coalesce(models.Subquery(
-                    Lead.objects.filter(
-                        authors=models.OuterRef('pk')
-                    ).order_by().values('authors')
-                    .annotate(cnt=models.Count('project_id', distinct=True)).values('cnt')[:1],
-                    output_field=models.IntegerField(),
+            entries_count=models.functions.Coalesce(
+                models.Subquery(
+                    Entry.objects.filter(
+                        project__analysis_framework=models.OuterRef('pk')
+                    ).order_by().values('project__analysis_framework').annotate(
+                        count=models.Count('id', distinct=True)
+                    ).values('count')[:1],
+                    output_field=models.IntegerField()
                 ), 0),
-            ).order_by('-source_count', '-projects_count')[:10]
+        ).order_by('-projects_count', '-entries_count').values(
+            'projects_count',
+            'entries_count',
+            analysis_framework_id=models.F('id'),
+            analysis_framework_title=models.F('title'),
+        )[:10]
 
-            top_ten_publishers = organization_qs.annotate(
-                source_count=models.functions.Coalesce(models.Subquery(
-                    Lead.objects.filter(
-                        source=models.OuterRef('pk')
-                    ).order_by().values('source')
-                    .annotate(cnt=models.Count('*')).values('cnt')[:1],
-                    output_field=models.IntegerField(),
+        top_ten_project_users = projects_qs.distinct().annotate(
+            user_count=models.functions.Coalesce(
+                models.Subquery(
+                    ProjectMembership.objects.filter(
+                        project=models.OuterRef('pk')
+                    ).order_by().values('project').annotate(
+                        count=models.Count('member', distinct=True),
+                    ).values('count')[:1],
+                    output_field=models.IntegerField()
                 ), 0),
-                projects_count=models.functions.Coalesce(models.Subquery(
-                    Lead.objects.filter(
-                        source=models.OuterRef('pk')
-                    ).order_by().values('source')
-                    .annotate(cnt=models.Count('project_id', distinct=True)).values('cnt')[:1],
-                    output_field=models.IntegerField(),
-                ), 0),
-            ).order_by('-source_count', '-projects_count')[:10]
+        ).order_by('-user_count').values(
+            project_id=models.F('id'),
+            project_title=models.F('title'),
+            user_count=models.F('user_count'),
+        )[:10]
 
-            analysis_framework_qs = AnalysisFramework.objects.filter(
-                created_at__gte=date_from,
-                created_at__lte=date_to,
+        top_ten_project_entries = projects_qs.distinct().annotate(
+            leads_count=models.functions.Coalesce(
+                models.Subquery(
+                    Lead.objects.filter(
+                        project=models.OuterRef('pk')
+                    ).order_by().values('project').annotate(
+                        count=models.Count('id', distinct=True),
+                    ).values('count')[:1],
+                    output_field=models.IntegerField()
+                ), 0),
+            entries_count=models.functions.Coalesce(
+                models.Subquery(
+                    Entry.objects.filter(
+                        project=models.OuterRef('pk')
+                    ).order_by().values('project').annotate(
+                        count=models.Count('id', distinct=True),
+                    ).values('count')[:1],
+                    output_field=models.IntegerField()
+                ), 0),
+        ).order_by('-leads_count', '-entries_count').values(
+            'leads_count',
+            'entries_count',
+            project_id=models.F('id'),
+            project_title=models.F('title'),
+        )[:10]
+
+        projects_by_region = Region.objects.annotate(
+            project_ids=ArrayAgg(
+                'project',
+                distinct=True,
+                ordering='project',
+                filter=models.Q(project__in=projects_qs),
+            ),
+        ).filter(project_ids__isnull=False).only('id', 'centroid')
+
+        # ---- By month/day
+        entries_count_by_month = _count_by_date(entries_qs, TruncMonth)
+        entries_count_by_day = _count_by_date(entries_qs, TruncDay)
+        entries_count_by_region = EntriesCountByGeoAreaAggregate.objects\
+            .filter(
+                **get_global_filters(date_field='date'),
+                project__in=projects_qs,
+                geo_area__centroid__isempty=False,
+            ).annotate(
+            ).order_by().values('geo_area').annotate(
+                count=models.Sum('entries_count'),
+            ).values(
+                'count',
+                centroid=models.F('geo_area__centroid'),
             )
-            top_ten_frameworks = analysis_framework_qs.distinct().annotate(
-                projects_count=models.functions.Coalesce(
-                    models.Subquery(
-                        Project.objects.filter(
-                            analysis_framework=models.OuterRef('pk')
-                        ).order_by().values('analysis_framework').annotate(
-                            count=models.Count('id', distinct=True),
-                        ).values('count')[:1],
-                        output_field=models.IntegerField()
-                    ), 0),
-                entries_count=models.functions.Coalesce(
-                    models.Subquery(
-                        Entry.objects.filter(
-                            project__analysis_framework=models.OuterRef('pk')
-                        ).order_by().values('project__analysis_framework').annotate(
-                            count=models.Count('id', distinct=True)
-                        ).values('count')[:1],
-                        output_field=models.IntegerField()
-                    ), 0),
-            ).order_by('-projects_count', '-entries_count').values(
-                'projects_count',
-                'entries_count',
-                analysis_framework_id=models.F('id'),
-                analysis_framework_title=models.F('title'),
-            )[:10]
 
-            top_ten_project_users = projects_qs.distinct().annotate(
-                user_count=models.functions.Coalesce(
-                    models.Subquery(
-                        ProjectMembership.objects.filter(
-                            project=models.OuterRef('pk')
-                        ).order_by().values('project').annotate(
-                            count=models.Count('member', distinct=True),
-                        ).values('count')[:1],
-                        output_field=models.IntegerField()
-                    ), 0),
-            ).order_by('-user_count').values(
-                project_id=models.F('id'),
-                project_title=models.F('title'),
-                user_count=models.F('user_count'),
-            )[:10]
+        leads_count_by_month = _count_by_date(leads_qs, TruncMonth)
+        leads_count_by_day = _count_by_date(leads_qs, TruncDay)
 
-            top_ten_project_entries = projects_qs.distinct().annotate(
-                leads_count=models.functions.Coalesce(
-                    models.Subquery(
-                        Lead.objects.filter(
-                            project=models.OuterRef('pk')
-                        ).order_by().values('project').annotate(
-                            count=models.Count('id', distinct=True),
-                        ).values('count')[:1],
-                        output_field=models.IntegerField()
-                    ), 0),
-                entries_count=models.functions.Coalesce(
-                    models.Subquery(
-                        Entry.objects.filter(
-                            project=models.OuterRef('pk')
-                        ).order_by().values('project').annotate(
-                            count=models.Count('id', distinct=True),
-                        ).values('count')[:1],
-                        output_field=models.IntegerField()
-                    ), 0),
-            ).order_by('-leads_count', '-entries_count').values(
-                'leads_count',
-                'entries_count',
-                project_id=models.F('id'),
-                project_title=models.F('title'),
-            )[:10]
+        projects_count_by_month = _count_by_date(projects_qs, TruncMonth)
+        projects_count_by_day = _count_by_date(projects_qs, TruncDay)
 
-            projects_by_region = Region.objects.annotate(
-                project_ids=ArrayAgg(
-                    'project',
-                    distinct=True,
-                    ordering='project',
-                    filter=models.Q(project__in=projects_qs),
+        projects = projects_qs.annotate(
+            analysis_framework_title=models.Case(
+                models.When(
+                    analysis_framework__is_private=False,
+                    then=models.F('analysis_framework__title')
                 ),
-            ).filter(project_ids__isnull=False).only('id', 'centroid')
-
-            # ---- By month/day
-            entries_count_by_month = _count_by_date(entries_qs, TruncMonth)
-            entries_count_by_day = _count_by_date(entries_qs, TruncDay)
-            entries_count_by_region = EntriesCountByGeoAreaAggregate.objects\
-                .filter(
-                    date__gte=date_from,
-                    date__lte=date_to,
-                    project__in=projects_qs,
-                    geo_area__centroid__isempty=False,
-                ).annotate(
-                ).order_by().values('geo_area').annotate(
-                    count=models.Sum('entries_count'),
-                ).values(
-                    'count',
-                    centroid=models.F('geo_area__centroid'),
+                default=None,
+            ),
+            preview_image=models.Case(
+                models.When(
+                    analysis_framework__is_private=False,
+                    then=models.F('analysis_framework__preview_image')
+                ),
+                default=None
+            ),
+            regions_title=StringAgg(
+                'regions__title',
+                ', ',
+                filter=models.Q(
+                    ~models.Q(regions__title=''),
+                    regions__public=True,
+                    regions__title__isnull=False,
+                ),
+                distinct=True,
+            ),
+            organizations_title=StringAgg(
+                models.Case(
+                    models.When(
+                        projectorganization__organization__parent__isnull=False,
+                        then='projectorganization__organization__parent__title'
+                    ),
+                    default='projectorganization__organization__title',
+                ),
+                ', ',
+                distinct=True,
+            ),
+            **{
+                key: Coalesce(
+                    Cast(KeyTextTransform(key, 'stats_cache'), models.IntegerField()),
+                    0,
                 )
+                for key in ['number_of_leads', 'number_of_users', 'number_of_entries']
+            },
+        ).only(
+            'id',
+            'title',
+            'description',
+            'analysis_framework_id',
+            'created_at',
+        ).distinct()
 
-            leads_count_by_month = _count_by_date(leads_qs, TruncMonth)
-            leads_count_by_day = _count_by_date(leads_qs, TruncDay)
-
-            projects_count_by_month = _count_by_date(projects_qs, TruncMonth)
-            projects_count_by_day = _count_by_date(projects_qs, TruncDay)
-
-            projects = projects_qs.annotate(
-                analysis_framework_title=models.Case(
-                    models.When(
-                        analysis_framework__is_private=False,
-                        then=models.F('analysis_framework__title')
-                    ),
-                    default=None,
-                ),
-                preview_image=models.Case(
-                    models.When(
-                        analysis_framework__is_private=False,
-                        then=models.F('analysis_framework__preview_image')
-                    ),
-                    default=None
-                ),
-                regions_title=StringAgg(
-                    'regions__title',
-                    ', ',
-                    filter=models.Q(
-                        ~models.Q(regions__title=''),
-                        regions__public=True,
-                        regions__title__isnull=False,
-                    ),
-                    distinct=True,
-                ),
-                organizations_title=StringAgg(
-                    models.Case(
-                        models.When(
-                            projectorganization__organization__parent__isnull=False,
-                            then='projectorganization__organization__parent__title'
-                        ),
-                        default='projectorganization__organization__title',
-                    ),
-                    ', ',
-                    distinct=True,
-                ),
-                **{
-                    key: Coalesce(
-                        Cast(KeyTextTransform(key, 'stats_cache'), models.IntegerField()),
-                        0,
-                    )
-                    for key in ['number_of_leads', 'number_of_users', 'number_of_entries']
-                },
-            ).only(
-                'id',
-                'title',
-                'description',
-                'analysis_framework_id',
-                'created_at',
-            ).distinct()
-
-            return dict(
-                # Single metrics
-                total_projects=total_projects,
-                total_registered_users=total_registered_users,
-                total_leads=total_leads,
-                total_entries=total_entries,
-                total_authors=total_authors,
-                total_publishers=total_publishers,
-                total_active_users=total_active_users,
-                # Leads by (TODO: Fetch when needed)
-                leads_count_by_month=leads_count_by_month,
-                leads_count_by_day=leads_count_by_day,
-                # Projects by (TODO: Fetch when needed)
-                projects_by_region=projects_by_region,
-                projects_count_by_month=projects_count_by_month,
-                projects_count_by_day=projects_count_by_day,
-                # Entries by
-                entries_count_by_month=entries_count_by_month,
-                entries_count_by_day=entries_count_by_day,
-                entries_count_by_region=entries_count_by_region,
-                # Top ten aggregates
-                top_ten_authors=top_ten_authors,
-                top_ten_frameworks=top_ten_frameworks,
-                top_ten_project_users=top_ten_project_users,
-                top_ten_project_entries=top_ten_project_entries,
-                top_ten_publishers=top_ten_publishers,
-                # Projects (TODO: Pagination)
-                projects=projects,
-            )
+        return dict(
+            # Single metrics
+            total_projects=total_projects,
+            total_registered_users=total_registered_users,
+            total_leads=total_leads,
+            total_entries=total_entries,
+            total_authors=total_authors,
+            total_publishers=total_publishers,
+            total_active_users=total_active_users,
+            # Leads by (TODO: Fetch when needed)
+            leads_count_by_month=leads_count_by_month,
+            leads_count_by_day=leads_count_by_day,
+            # Projects by (TODO: Fetch when needed)
+            projects_by_region=projects_by_region,
+            projects_count_by_month=projects_count_by_month,
+            projects_count_by_day=projects_count_by_day,
+            # Entries by
+            entries_count_by_month=entries_count_by_month,
+            entries_count_by_day=entries_count_by_day,
+            entries_count_by_region=entries_count_by_region,
+            # Top ten aggregates
+            top_ten_authors=top_ten_authors,
+            top_ten_frameworks=top_ten_frameworks,
+            top_ten_project_users=top_ten_project_users,
+            top_ten_project_entries=top_ten_project_entries,
+            top_ten_publishers=top_ten_publishers,
+            # Projects (TODO: Pagination)
+            projects=projects,
+        )
