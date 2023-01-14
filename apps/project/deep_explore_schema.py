@@ -1,4 +1,7 @@
+import json
+import copy
 import graphene
+from dataclasses import dataclass
 
 from graphene_django import DjangoObjectType
 from django.db import models
@@ -7,7 +10,10 @@ from django.db.models.functions import (
     TruncDay,
 )
 from django.contrib.postgres.aggregates.general import ArrayAgg
+from django.core.serializers.json import DjangoJSONEncoder
 
+from deep.caches import CacheKey
+from utils.common import graphene_cache, calculate_md5_str
 from utils.graphene.geo_scalars import PointScalar
 # Schema
 from organization.schema import OrganizationType
@@ -33,6 +39,20 @@ class ExploreCountByDateType(graphene.ObjectType):
 ExploreCountByDateListType = graphene.List(graphene.NonNull(ExploreCountByDateType))
 
 
+NODE_CACHE_TIMEOUT = 60 * 5  # 5 min
+
+
+def node_cache(cache_key):
+    def cache_key_gen(root: ExploreDashboardStatRoot, *_):
+        return root.cache_key
+
+    return graphene_cache(
+        cache_key,
+        timeout=NODE_CACHE_TIMEOUT,
+        cache_key_gen=cache_key_gen,
+    )
+
+
 def count_by_type_generator(type_name):
     return graphene.List(
         graphene.NonNull(
@@ -42,6 +62,15 @@ def count_by_type_generator(type_name):
             })
         )
     )
+
+
+def count_by_date_queryset_generator(qs, trunc_func):
+    # Used by ExploreCountByDateListType
+    return qs.values(
+        date=trunc_func('created_at')
+    ).annotate(
+        count=models.Count('id')
+    ).order_by('date')
 
 
 class ExploreDeepFilter(graphene.InputObjectType):
@@ -78,6 +107,43 @@ class ExploreDashboardProjectRegion(DjangoObjectType):
     project_ids = graphene.List(graphene.NonNull(graphene.ID))
 
 
+class ExploreDeepStatTopActiveFrameworksType(graphene.ObjectType):
+    analysis_framework_id = graphene.Field(graphene.NonNull(graphene.ID))
+    analysis_framework_title = graphene.String()
+    projects_count = graphene.NonNull(graphene.Int)
+    entries_count = graphene.NonNull(graphene.Int)
+
+
+class ExploreDeepStatTopProjectType(graphene.ObjectType):
+    project_id = graphene.Field(graphene.NonNull(graphene.ID))
+    project_title = graphene.String()
+    user_count = graphene.NonNull(graphene.Int)
+
+
+class ExploreDeepStatTopProjectEntryType(graphene.ObjectType):
+    project_id = graphene.Field(graphene.NonNull(graphene.ID))
+    project_title = graphene.String()
+    leads_count = graphene.NonNull(graphene.Int)
+    entries_count = graphene.NonNull(graphene.Int)
+
+
+class ExploreDeepStatEntriesCountByCentroidType(graphene.ObjectType):
+    centroid = PointScalar()
+    count = graphene.NonNull(graphene.Int)
+
+
+@dataclass
+class ExploreDashboardStatRoot():
+    cache_key: str
+    analysis_framework_qs: models.QuerySet
+    entries_count_by_geo_area_aggregate_qs: models.QuerySet
+    entries_qs: models.QuerySet
+    leads_qs: models.QuerySet
+    organization_qs: models.QuerySet
+    projects_qs: models.QuerySet
+    ref_projects_qs: models.QuerySet  # Without global filters
+
+
 class ExploreDashboardStatType(graphene.ObjectType):
     total_projects = graphene.Int()
     total_registered_users = graphene.Int()
@@ -89,101 +155,62 @@ class ExploreDashboardStatType(graphene.ObjectType):
 
     top_ten_authors = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
     top_ten_publishers = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
-    top_ten_frameworks = graphene.List(
-        graphene.NonNull(
-            type('ExploreDeepStatTopActiveFrameworksType', (graphene.ObjectType,), {
-                'analysis_framework_id': graphene.Field(graphene.NonNull(graphene.ID)),
-                'analysis_framework_title': graphene.String(),
-                'projects_count': graphene.NonNull(graphene.Int),
-                'entries_count': graphene.NonNull(graphene.Int)
-            })
-        )
-    )
-    top_ten_project_users = graphene.List(
-        graphene.NonNull(
-            type('ExploreDeepStatTopProjectType', (graphene.ObjectType,), {
-                'project_id': graphene.Field(graphene.NonNull(graphene.ID)),
-                'project_title': graphene.String(),
-                'user_count': graphene.NonNull(graphene.Int),
-            })
-        )
-    )
-    top_ten_project_entries = graphene.List(
-        graphene.NonNull(
-            type('ExploreDeepStatTopProjectEntryType', (graphene.ObjectType,), {
-                'project_id': graphene.Field(graphene.NonNull(graphene.ID)),
-                'project_title': graphene.String(),
-                'leads_count': graphene.NonNull(graphene.Int),
-                'entries_count': graphene.NonNull(graphene.Int),
-            })
-        )
-    )
+    top_ten_frameworks = graphene.List(graphene.NonNull(ExploreDeepStatTopActiveFrameworksType))
+    top_ten_project_users = graphene.List(graphene.NonNull(ExploreDeepStatTopProjectType))
+    top_ten_project_entries = graphene.List(graphene.NonNull(ExploreDeepStatTopProjectEntryType))
 
     leads_count_by_month = graphene.Field(ExploreCountByDateListType)
     leads_count_by_day = graphene.Field(ExploreCountByDateListType)
 
     entries_count_by_month = graphene.Field(ExploreCountByDateListType)
     entries_count_by_day = graphene.Field(ExploreCountByDateListType)
-    entries_count_by_region = graphene.List(
-        graphene.NonNull(
-            type('ExploreDeepStatEntriesCountByCentroidType', (graphene.ObjectType,), {
-                'centroid': PointScalar(),
-                'count': graphene.NonNull(graphene.Int),
-            })
-        )
-    )
+    entries_count_by_region = graphene.List(graphene.NonNull(ExploreDeepStatEntriesCountByCentroidType))
 
     projects_by_region = graphene.List(ExploreDashboardProjectRegion)
     projects_count_by_month = graphene.Field(ExploreCountByDateListType)
     projects_count_by_day = graphene.Field(ExploreCountByDateListType)
 
     @staticmethod
-    def custom_resolver(info, filter):
-        def _count_by_date(qs, trunc_func):
-            # Used by ExploreCountByDateListType
-            return qs.values(
-                date=trunc_func('created_at')
-            ).annotate(
-                count=models.Count('id')
-            ).order_by('date')
+    @node_cache(CacheKey.ExploreDeep.TOTAL_PROJECTS)
+    def resolve_total_projects(root: ExploreDashboardStatRoot, *_) -> int:
+        return root.projects_qs.count()
 
-        def get_global_filters(date_field='created_at'):
-            return {
-                f'{date_field}__gte': filter['date_from'],
-                f'{date_field}__lte': filter['date_to'],
-            }
+    @staticmethod
+    @node_cache(CacheKey.ExploreDeep.TOTAL_REGISTERED_USERS)
+    def resolve_total_registered_users(*_) -> int:
+        return User.objects.filter(is_active=True).count()
 
-        # TODO: Don't calculate if not needed
-        # project specific filter
-        projects_qs = ExploreProjectFilterSet(
-            request=info.context.request,
-            data=filter.get('project'),
-        ).qs
+    @staticmethod
+    @node_cache(CacheKey.ExploreDeep.TOTAL_LEADS)
+    def resolve_total_leads(root: ExploreDashboardStatRoot, *_) -> int:
+        return root.leads_qs.count()
 
-        total_projects = projects_qs.distinct().count()
-        total_registered_users = User.objects.filter(
-            is_active=True,
+    @staticmethod
+    @node_cache(CacheKey.ExploreDeep.TOTAL_ENTRIES)
+    def resolve_total_entries(root: ExploreDashboardStatRoot, *_) -> int:
+        return root.entries_qs.count()
+
+    @staticmethod
+    @node_cache(CacheKey.ExploreDeep.TOTAL_ACTIVE_USERS)
+    def resolve_total_active_users(root: ExploreDashboardStatRoot, *_) -> int:
+        return root.leads_qs.values('created_by').union(
+            root.entries_qs.values('created_by')
         ).count()
 
-        leads_qs = Lead.objects.filter(
-            **get_global_filters(),
-            project__in=projects_qs
-        )
-        total_leads = leads_qs.distinct().count()
+    @staticmethod
+    @node_cache(CacheKey.ExploreDeep.TOTAL_AUTHORS)
+    def resolve_total_authors(root: ExploreDashboardStatRoot, *_) -> int:
+        return root.leads_qs.values('authors').distinct().count()
 
-        entries_qs = Entry.objects.filter(
-            **get_global_filters(),
-            project__in=projects_qs
-        )
-        total_entries = entries_qs.distinct().count()
-        total_authors = leads_qs.values('authors').distinct().count()
-        total_publishers = leads_qs.values('source').distinct().count()
-        total_active_users = leads_qs.values('created_by').union(
-            entries_qs.values('created_by')
-        ).count()
+    @staticmethod
+    @node_cache(CacheKey.ExploreDeep.TOTAL_PUBLISHERS)
+    def resolve_total_publishers(root: ExploreDashboardStatRoot, *_) -> int:
+        return root.leads_qs.values('source').distinct().count()
 
-        organization_qs = Organization.objects.filter(**get_global_filters())
-        top_ten_authors = organization_qs.annotate(
+    @staticmethod
+    @node_cache(CacheKey.ExploreDeep.TOP_TEN_AUTHORS)
+    def resolve_top_ten_authors(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+        return root.organization_qs.annotate(
             source_count=models.functions.Coalesce(models.Subquery(
                 Lead.objects.filter(
                     authors=models.OuterRef('pk')
@@ -200,7 +227,9 @@ class ExploreDashboardStatType(graphene.ObjectType):
             ), 0),
         ).order_by('-source_count', '-projects_count')[:10]
 
-        top_ten_publishers = organization_qs.annotate(
+    @staticmethod
+    def resolve_top_ten_publishers(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+        return root.organization_qs.annotate(
             source_count=models.functions.Coalesce(models.Subquery(
                 Lead.objects.filter(
                     source=models.OuterRef('pk')
@@ -217,8 +246,9 @@ class ExploreDashboardStatType(graphene.ObjectType):
             ), 0),
         ).order_by('-source_count', '-projects_count')[:10]
 
-        analysis_framework_qs = AnalysisFramework.objects.filter(**get_global_filters())
-        top_ten_frameworks = analysis_framework_qs.distinct().annotate(
+    @staticmethod
+    def resolve_top_ten_frameworks(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+        return root.analysis_framework_qs.distinct().annotate(
             projects_count=models.functions.Coalesce(
                 models.Subquery(
                     Project.objects.filter(
@@ -244,7 +274,9 @@ class ExploreDashboardStatType(graphene.ObjectType):
             analysis_framework_title=models.F('title'),
         )[:10]
 
-        top_ten_project_users = projects_qs.distinct().annotate(
+    @staticmethod
+    def resolve_top_ten_project_users(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+        return root.projects_qs.distinct().annotate(
             user_count=models.functions.Coalesce(
                 models.Subquery(
                     ProjectMembership.objects.filter(
@@ -260,7 +292,9 @@ class ExploreDashboardStatType(graphene.ObjectType):
             user_count=models.F('user_count'),
         )[:10]
 
-        top_ten_project_entries = projects_qs.distinct().annotate(
+    @staticmethod
+    def resolve_top_ten_project_entries(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+        return root.projects_qs.distinct().annotate(
             leads_count=models.functions.Coalesce(
                 models.Subquery(
                     Lead.objects.filter(
@@ -286,60 +320,97 @@ class ExploreDashboardStatType(graphene.ObjectType):
             project_title=models.F('title'),
         )[:10]
 
-        projects_by_region = Region.objects.annotate(
-            project_ids=ArrayAgg(
-                'project',
-                distinct=True,
-                ordering='project',
-                filter=models.Q(project__in=projects_qs),
-            ),
-        ).filter(project_ids__isnull=False).only('id', 'centroid')
+    @staticmethod
+    def resolve_leads_count_by_month(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+        return count_by_date_queryset_generator(root.leads_qs, TruncMonth)
 
-        # ---- By month/day
-        entries_count_by_month = _count_by_date(entries_qs, TruncMonth)
-        entries_count_by_day = _count_by_date(entries_qs, TruncDay)
-        entries_count_by_region = EntriesCountByGeoAreaAggregate.objects\
-            .filter(
-                **get_global_filters(date_field='date'),
-                project__in=projects_qs,
-                geo_area__centroid__isempty=False,
-            ).order_by().values('geo_area').annotate(
+    @staticmethod
+    def resolve_leads_count_by_day(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+        return count_by_date_queryset_generator(root.leads_qs, TruncDay)
+
+    @staticmethod
+    def resolve_entries_count_by_month(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+        return count_by_date_queryset_generator(root.entries_qs, TruncDay)
+
+    @staticmethod
+    def resolve_entries_count_by_day(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+        return count_by_date_queryset_generator(root.entries_qs, TruncDay)
+
+    @staticmethod
+    def resolve_entries_count_by_region(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+        return root.entries_count_by_geo_area_aggregate_qs\
+            .order_by().values('geo_area').annotate(
                 count=models.Sum('entries_count'),
             ).values(
                 'count',
                 centroid=models.F('geo_area__centroid'),
             )
 
-        leads_count_by_month = _count_by_date(leads_qs, TruncMonth)
-        leads_count_by_day = _count_by_date(leads_qs, TruncDay)
+    @staticmethod
+    def resolve_projects_by_region(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+        return Region.objects.annotate(
+            project_ids=ArrayAgg(
+                'project',
+                distinct=True,
+                ordering='project',
+                filter=models.Q(project__in=root.projects_qs),
+            ),
+        ).filter(project_ids__isnull=False).only('id', 'centroid')
 
-        projects_count_by_month = _count_by_date(projects_qs, TruncMonth)
-        projects_count_by_day = _count_by_date(projects_qs, TruncDay)
+    @staticmethod
+    def resolve_projects_count_by_month(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+        return count_by_date_queryset_generator(root.projects_qs, TruncMonth)
 
-        return dict(
-            # Single metrics
-            total_projects=total_projects,
-            total_registered_users=total_registered_users,
-            total_leads=total_leads,
-            total_entries=total_entries,
-            total_authors=total_authors,
-            total_publishers=total_publishers,
-            total_active_users=total_active_users,
-            # Leads by (TODO: Fetch when needed)
-            leads_count_by_month=leads_count_by_month,
-            leads_count_by_day=leads_count_by_day,
-            # Projects by (TODO: Fetch when needed)
-            projects_by_region=projects_by_region,
-            projects_count_by_month=projects_count_by_month,
-            projects_count_by_day=projects_count_by_day,
-            # Entries by
-            entries_count_by_month=entries_count_by_month,
-            entries_count_by_day=entries_count_by_day,
-            entries_count_by_region=entries_count_by_region,
-            # Top ten aggregates
-            top_ten_authors=top_ten_authors,
-            top_ten_frameworks=top_ten_frameworks,
-            top_ten_project_users=top_ten_project_users,
-            top_ten_project_entries=top_ten_project_entries,
-            top_ten_publishers=top_ten_publishers,
+    @staticmethod
+    def resolve_projects_count_by_day(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+        return count_by_date_queryset_generator(root.projects_qs, TruncDay)
+
+    @staticmethod
+    def custom_resolver(info, _filter):
+        """
+        This is used as root for other resovler
+        """
+        def get_global_filters(date_field='created_at'):
+            return {
+                f'{date_field}__gte': _filter['date_from'],
+                f'{date_field}__lte': _filter['date_to'],
+            }
+
+        # Without global filters, to be used for related models
+        ref_projects_qs = ExploreProjectFilterSet(
+            request=info.context.request,
+            data=_filter.get('project'),
+        ).qs
+
+        projects_qs = copy.deepcopy(ref_projects_qs).filter(**get_global_filters())
+        organization_qs = Organization.objects.filter(**get_global_filters())
+        analysis_framework_qs = AnalysisFramework.objects.filter(**get_global_filters())
+
+        # With ref_projects_qs as filter
+        entries_qs = Entry.objects.filter(**get_global_filters(), project__in=ref_projects_qs)
+        leads_qs = Lead.objects.filter(**get_global_filters(), project__in=ref_projects_qs)
+        entries_count_by_geo_area_aggregate_qs = EntriesCountByGeoAreaAggregate.objects\
+            .filter(
+                **get_global_filters(date_field='date'),
+                project__in=ref_projects_qs,
+                geo_area__centroid__isempty=False,
+            )
+
+        cache_key = calculate_md5_str(
+            json.dumps(
+                _filter,
+                sort_keys=True,
+                indent=2,
+                cls=DjangoJSONEncoder,
+            ).encode('utf-8')
+        )
+        return ExploreDashboardStatRoot(
+            cache_key=cache_key,
+            analysis_framework_qs=analysis_framework_qs,
+            entries_count_by_geo_area_aggregate_qs=entries_count_by_geo_area_aggregate_qs,
+            entries_qs=entries_qs,
+            leads_qs=leads_qs,
+            organization_qs=organization_qs,
+            projects_qs=projects_qs,
+            ref_projects_qs=ref_projects_qs,
         )
