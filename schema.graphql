@@ -1095,8 +1095,8 @@ type ExploreDashboardStatType {
   topTenAuthors: [ExploreStastOrganizationType!]
   topTenPublishers: [ExploreStastOrganizationType!]
   topTenFrameworks: [ExploreDeepStatTopActiveFrameworksType!]
-  topTenProjectUsers: [ExploreDeepStatTopProjectType!]
-  topTenProjectEntries: [ExploreDeepStatTopProjectEntryType!]
+  topTenProjectsByUsers: [ExploreDeepStatTopProjectType!]
+  topTenProjectsByEntries: [ExploreDeepStatTopProjectEntryType!]
   leadsCountByMonth: [ExploreCountByDateType!]
   leadsCountByDay: [ExploreCountByDateType!]
   entriesCountByMonth: [ExploreCountByDateType!]
@@ -1119,23 +1119,23 @@ type ExploreDeepStatEntriesCountByCentroidType {
 }
 
 type ExploreDeepStatTopActiveFrameworksType {
-  analysisFrameworkId: ID!
-  analysisFrameworkTitle: String
+  id: ID!
+  title: String!
   projectsCount: Int!
   entriesCount: Int!
 }
 
 type ExploreDeepStatTopProjectEntryType {
-  projectId: ID!
-  projectTitle: String
+  id: ID!
+  title: String
   leadsCount: Int!
   entriesCount: Int!
 }
 
 type ExploreDeepStatTopProjectType {
-  projectId: ID!
-  projectTitle: String
-  userCount: Int!
+  id: ID!
+  title: String
+  usersCount: Int!
 }
 
 input ExploreProjectFilterDataInputType {
@@ -1171,13 +1171,6 @@ type ExploreProjectStatTopActiveProjectsType {
 type ExploreStastOrganizationType {
   id: ID!
   title: String!
-  shortName: String!
-  longName: String!
-  url: String!
-  logo: GalleryFileType
-  verified: Boolean!
-  organizationType: OrganizationTypeType
-  mergedAs: MergedAsOrganizationType
   leadsCount: Int
   projectsCount: Int
 }
@@ -2507,6 +2500,7 @@ type PublicProjectWithMembershipData {
 }
 
 type Query {
+  deepExploreStats(filter: ExploreDeepFilter!): ExploreDashboardStatType
   genericExport(id: ID!): UserGenericExportType
   rssFields(url: String): [RssFieldType!]
   atomFeedFields(url: String): [AtomFeedFieldType!]
@@ -2536,7 +2530,6 @@ type Query {
   projectsByRegion(projectFilter: RegionProjectFilterData, ordering: String): ProjectByRegionListType
   publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, ordering: [PublicProjectOrderingEnum!], isTest: Boolean, page: Int = 1, pageSize: Int): PublicProjectListType
   publicProjectsByRegion(projectFilter: RegionProjectFilterData, page: Int = 1, ordering: String, pageSize: Int): PublicProjectByRegionListType
-  deepExploreStats(filter: ExploreDeepFilter!): ExploreDashboardStatType
   assistedTagging: AssistedTaggingRootQueryType
   customEnum: CustomEnum
   _debug: DjangoDebug
