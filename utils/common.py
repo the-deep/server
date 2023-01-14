@@ -12,8 +12,8 @@ import requests
 import logging
 from datetime import timedelta, datetime
 
-from django.utils.hashable import make_hashable
 from django.core.cache import cache
+from django.utils.hashable import make_hashable
 from django.utils.encoding import force_str
 from django.core.files.storage import FileSystemStorage, get_storage_class
 from django.conf import settings
@@ -442,12 +442,6 @@ def calculate_md5(file):
         if not chunk:
             break
         hash_md5.update(chunk)
-    return hash_md5.hexdigest()
-
-
-def calculate_md5_str(string):
-    hash_md5 = hashlib.md5()
-    hash_md5.update(string)
     return hash_md5.hexdigest()
 
 

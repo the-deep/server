@@ -1,4 +1,3 @@
-import json
 import copy
 import graphene
 from dataclasses import dataclass
@@ -10,14 +9,9 @@ from django.db.models.functions import (
     TruncDay,
 )
 from django.contrib.postgres.aggregates.general import ArrayAgg
-from django.core.serializers.json import DjangoJSONEncoder
 
-from deep.caches import CacheKey
-from utils.common import graphene_cache, calculate_md5_str
+from deep.caches import CacheKey, CacheHelper
 from utils.graphene.geo_scalars import PointScalar
-# Schema
-from organization.schema import OrganizationType
-# Models
 from organization.models import Organization
 from geo.models import Region
 from user.models import User
@@ -27,7 +21,6 @@ from entry.models import Entry
 from analysis_framework.models import AnalysisFramework
 from deep_explore.models import EntriesCountByGeoAreaAggregate
 
-# Filters
 from project.filter_set import ExploreProjectFilterDataInputType, ExploreProjectFilterSet
 
 
@@ -39,6 +32,7 @@ class ExploreCountByDateType(graphene.ObjectType):
 ExploreCountByDateListType = graphene.List(graphene.NonNull(ExploreCountByDateType))
 
 
+# TODO?
 NODE_CACHE_TIMEOUT = 60 * 5  # 5 min
 
 
@@ -46,7 +40,7 @@ def node_cache(cache_key):
     def cache_key_gen(root: ExploreDashboardStatRoot, *_):
         return root.cache_key
 
-    return graphene_cache(
+    return CacheHelper.gql_cache(
         cache_key,
         timeout=NODE_CACHE_TIMEOUT,
         cache_key_gen=cache_key_gen,
@@ -73,26 +67,52 @@ def count_by_date_queryset_generator(qs, trunc_func):
     ).order_by('date')
 
 
+def get_top_ten_organizations_list(queryset, lead_field):
+    return [
+        {
+            **org,
+            'id': org.pop('_id'),
+            'title': org.pop('_title'),
+        }
+        for org in queryset.annotate(
+            _id=models.functions.Coalesce(models.F('parent'), models.F('id')),
+            _title=models.functions.Coalesce(models.F('parent__title'), models.F('title')),
+        ).annotate(
+            leads_count=models.functions.Coalesce(models.Subquery(
+                # TODO: Use global filers
+                Lead.objects.filter(
+                    **{lead_field: models.OuterRef('_id')}
+                ).order_by().values(lead_field)
+                .annotate(cnt=models.Count('*')).values('cnt')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+            projects_count=models.functions.Coalesce(models.Subquery(
+                # TODO: Use global filers
+                Lead.objects.filter(
+                    **{lead_field: models.OuterRef('_id')}
+                ).order_by().values(lead_field)
+                .annotate(cnt=models.Count('project_id', distinct=True)).values('cnt')[:1],
+                output_field=models.IntegerField(),
+            ), 0),
+        ).order_by('-leads_count', '-projects_count').values(
+            'leads_count',
+            'projects_count',
+            # Fetch parent data if available (merged_as)
+            '_id',
+            '_title',
+        ).distinct()[:10]
+    ]
+
+
 class ExploreDeepFilter(graphene.InputObjectType):
     date_from = graphene.DateTime(required=True)
     date_to = graphene.DateTime(required=True)
     project = ExploreProjectFilterDataInputType()
 
 
-class ExploreStastOrganizationType(OrganizationType):
-    class Meta:
-        model = Organization
-        skip_registry = True
-        fields = (
-            'id',
-            'title',
-            'short_name',
-            'long_name',
-            'url',
-            'logo',
-            'organization_type',
-            'verified',
-        )
+class ExploreStastOrganizationType(graphene.ObjectType):
+    id = graphene.ID(required=True)
+    title = graphene.String(required=True)
     leads_count = graphene.Int()
     projects_count = graphene.Int()
 
@@ -108,21 +128,21 @@ class ExploreDashboardProjectRegion(DjangoObjectType):
 
 
 class ExploreDeepStatTopActiveFrameworksType(graphene.ObjectType):
-    analysis_framework_id = graphene.Field(graphene.NonNull(graphene.ID))
-    analysis_framework_title = graphene.String()
+    id = graphene.ID(required=True)
+    title = graphene.String(required=True)
     projects_count = graphene.NonNull(graphene.Int)
     entries_count = graphene.NonNull(graphene.Int)
 
 
 class ExploreDeepStatTopProjectType(graphene.ObjectType):
-    project_id = graphene.Field(graphene.NonNull(graphene.ID))
-    project_title = graphene.String()
-    user_count = graphene.NonNull(graphene.Int)
+    id = graphene.ID(required=True)
+    title = graphene.String()
+    users_count = graphene.Int(required=True)
 
 
 class ExploreDeepStatTopProjectEntryType(graphene.ObjectType):
-    project_id = graphene.Field(graphene.NonNull(graphene.ID))
-    project_title = graphene.String()
+    id = graphene.ID(required=True)
+    title = graphene.String()
     leads_count = graphene.NonNull(graphene.Int)
     entries_count = graphene.NonNull(graphene.Int)
 
@@ -156,8 +176,8 @@ class ExploreDashboardStatType(graphene.ObjectType):
     top_ten_authors = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
     top_ten_publishers = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
     top_ten_frameworks = graphene.List(graphene.NonNull(ExploreDeepStatTopActiveFrameworksType))
-    top_ten_project_users = graphene.List(graphene.NonNull(ExploreDeepStatTopProjectType))
-    top_ten_project_entries = graphene.List(graphene.NonNull(ExploreDeepStatTopProjectEntryType))
+    top_ten_projects_by_users = graphene.List(graphene.NonNull(ExploreDeepStatTopProjectType))
+    top_ten_projects_by_entries = graphene.List(graphene.NonNull(ExploreDeepStatTopProjectEntryType))
 
     leads_count_by_month = graphene.Field(ExploreCountByDateListType)
     leads_count_by_day = graphene.Field(ExploreCountByDateListType)
@@ -170,6 +190,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
     projects_count_by_month = graphene.Field(ExploreCountByDateListType)
     projects_count_by_day = graphene.Field(ExploreCountByDateListType)
 
+    # --- Numeric data ----
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOTAL_PROJECTS)
     def resolve_total_projects(root: ExploreDashboardStatRoot, *_) -> int:
@@ -207,119 +228,105 @@ class ExploreDashboardStatType(graphene.ObjectType):
     def resolve_total_publishers(root: ExploreDashboardStatRoot, *_) -> int:
         return root.leads_qs.values('source').distinct().count()
 
+    # --- Array data ----
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_AUTHORS)
     def resolve_top_ten_authors(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
-        return root.organization_qs.annotate(
-            source_count=models.functions.Coalesce(models.Subquery(
-                Lead.objects.filter(
-                    authors=models.OuterRef('pk')
-                ).order_by().values('authors')
-                .annotate(cnt=models.Count('*')).values('cnt')[:1],
-                output_field=models.IntegerField(),
-            ), 0),
-            projects_count=models.functions.Coalesce(models.Subquery(
-                Lead.objects.filter(
-                    authors=models.OuterRef('pk')
-                ).order_by().values('authors')
-                .annotate(cnt=models.Count('project_id', distinct=True)).values('cnt')[:1],
-                output_field=models.IntegerField(),
-            ), 0),
-        ).order_by('-source_count', '-projects_count')[:10]
+        return get_top_ten_organizations_list(root.organization_qs, 'authors')
 
     @staticmethod
+    @node_cache(CacheKey.ExploreDeep.TOP_TEN_PUBLISHERS)
     def resolve_top_ten_publishers(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
-        return root.organization_qs.annotate(
-            source_count=models.functions.Coalesce(models.Subquery(
-                Lead.objects.filter(
-                    source=models.OuterRef('pk')
-                ).order_by().values('source')
-                .annotate(cnt=models.Count('*')).values('cnt')[:1],
-                output_field=models.IntegerField(),
-            ), 0),
-            projects_count=models.functions.Coalesce(models.Subquery(
-                Lead.objects.filter(
-                    source=models.OuterRef('pk')
-                ).order_by().values('source')
-                .annotate(cnt=models.Count('project_id', distinct=True)).values('cnt')[:1],
-                output_field=models.IntegerField(),
-            ), 0),
-        ).order_by('-source_count', '-projects_count')[:10]
+        return get_top_ten_organizations_list(root.organization_qs, 'source')
 
     @staticmethod
+    @node_cache(CacheKey.ExploreDeep.TOP_TEN_FRAMEWORKS)
     def resolve_top_ten_frameworks(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
-        return root.analysis_framework_qs.distinct().annotate(
-            projects_count=models.functions.Coalesce(
-                models.Subquery(
-                    Project.objects.filter(
-                        analysis_framework=models.OuterRef('pk')
-                    ).order_by().values('analysis_framework').annotate(
-                        count=models.Count('id', distinct=True),
-                    ).values('count')[:1],
-                    output_field=models.IntegerField()
-                ), 0),
-            entries_count=models.functions.Coalesce(
-                models.Subquery(
-                    Entry.objects.filter(
-                        project__analysis_framework=models.OuterRef('pk')
-                    ).order_by().values('project__analysis_framework').annotate(
-                        count=models.Count('id', distinct=True)
-                    ).values('count')[:1],
-                    output_field=models.IntegerField()
-                ), 0),
-        ).order_by('-projects_count', '-entries_count').values(
-            'projects_count',
-            'entries_count',
-            analysis_framework_id=models.F('id'),
-            analysis_framework_title=models.F('title'),
-        )[:10]
+        return list(
+            root.analysis_framework_qs.distinct().annotate(
+                projects_count=models.functions.Coalesce(
+                    models.Subquery(
+                        # TODO: Use global filers
+                        Project.objects.filter(
+                            analysis_framework=models.OuterRef('pk')
+                        ).order_by().values('analysis_framework').annotate(
+                            count=models.Count('id', distinct=True),
+                        ).values('count')[:1],
+                        output_field=models.IntegerField()
+                    ), 0),
+                entries_count=models.functions.Coalesce(
+                    models.Subquery(
+                        # TODO: Use global filers
+                        Entry.objects.filter(
+                            project__analysis_framework=models.OuterRef('pk')
+                        ).order_by().values('project__analysis_framework').annotate(
+                            count=models.Count('id', distinct=True)
+                        ).values('count')[:1],
+                        output_field=models.IntegerField()
+                    ), 0),
+            ).order_by('-entries_count', '-projects_count').values(
+                'id',
+                'title',
+                'projects_count',
+                'entries_count',
+            )[:10]
+        )
 
     @staticmethod
-    def resolve_top_ten_project_users(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
-        return root.projects_qs.distinct().annotate(
-            user_count=models.functions.Coalesce(
-                models.Subquery(
-                    ProjectMembership.objects.filter(
-                        project=models.OuterRef('pk')
-                    ).order_by().values('project').annotate(
-                        count=models.Count('member', distinct=True),
-                    ).values('count')[:1],
-                    output_field=models.IntegerField()
-                ), 0),
-        ).order_by('-user_count').values(
-            project_id=models.F('id'),
-            project_title=models.F('title'),
-            user_count=models.F('user_count'),
-        )[:10]
+    @node_cache(CacheKey.ExploreDeep.TOP_TEN_PROJECTS_BY_USERS)
+    def resolve_top_ten_projects_by_users(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+        return list(
+            root.projects_qs.distinct().annotate(
+                users_count=models.functions.Coalesce(
+                    models.Subquery(
+                        ProjectMembership.objects.filter(
+                            project=models.OuterRef('pk')
+                        ).order_by().values('project').annotate(
+                            count=models.Count('member', distinct=True),
+                        ).values('count')[:1],
+                        output_field=models.IntegerField()
+                    ), 0),
+            ).order_by('-users_count').values(
+                'id',
+                'title',
+                'users_count',
+            )[:10]
+        )
 
     @staticmethod
-    def resolve_top_ten_project_entries(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
-        return root.projects_qs.distinct().annotate(
-            leads_count=models.functions.Coalesce(
-                models.Subquery(
-                    Lead.objects.filter(
-                        project=models.OuterRef('pk')
-                    ).order_by().values('project').annotate(
-                        count=models.Count('id', distinct=True),
-                    ).values('count')[:1],
-                    output_field=models.IntegerField()
-                ), 0),
-            entries_count=models.functions.Coalesce(
-                models.Subquery(
-                    Entry.objects.filter(
-                        project=models.OuterRef('pk')
-                    ).order_by().values('project').annotate(
-                        count=models.Count('id', distinct=True),
-                    ).values('count')[:1],
-                    output_field=models.IntegerField()
-                ), 0),
-        ).order_by('-leads_count', '-entries_count').values(
-            'leads_count',
-            'entries_count',
-            project_id=models.F('id'),
-            project_title=models.F('title'),
-        )[:10]
+    @node_cache(CacheKey.ExploreDeep.TOP_TEN_PROJECTS_BY_ENTRIES)
+    def resolve_top_ten_projects_by_entries(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+        return list(
+            root.projects_qs.distinct().annotate(
+                leads_count=models.functions.Coalesce(
+                    models.Subquery(
+                        # TODO: Use global filers
+                        Lead.objects.filter(
+                            project=models.OuterRef('pk')
+                        ).order_by().values('project').annotate(
+                            count=models.Count('id', distinct=True),
+                        ).values('count')[:1],
+                        output_field=models.IntegerField()
+                    ), 0),
+                entries_count=models.functions.Coalesce(
+                    models.Subquery(
+                        # TODO: Use global filers
+                        Entry.objects.filter(
+                            project=models.OuterRef('pk')
+                        ).order_by().values('project').annotate(
+                            count=models.Count('id', distinct=True),
+                        ).values('count')[:1],
+                        output_field=models.IntegerField()
+                    ), 0),
+            ).order_by('-entries_count', '-leads_count').values(
+                'id',
+                'title',
+                'leads_count',
+                'entries_count',
+            )[:10]
+        )
 
+    # --- Time-series data ----
     @staticmethod
     def resolve_leads_count_by_month(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
         return count_by_date_queryset_generator(root.leads_qs, TruncMonth)
@@ -396,14 +403,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
                 geo_area__centroid__isempty=False,
             )
 
-        cache_key = calculate_md5_str(
-            json.dumps(
-                _filter,
-                sort_keys=True,
-                indent=2,
-                cls=DjangoJSONEncoder,
-            ).encode('utf-8')
-        )
+        cache_key = CacheHelper.generate_hash(_filter.__dict__)
         return ExploreDashboardStatRoot(
             cache_key=cache_key,
             analysis_framework_qs=analysis_framework_qs,
