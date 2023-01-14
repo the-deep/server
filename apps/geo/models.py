@@ -310,8 +310,11 @@ class GeoArea(models.Model):
     @classmethod
     def sync_centroid(cls):
         cls.objects.filter(
+            (
+                models.Q(centroid__isempty=True) |
+                models.Q(centroid__isnull=True)
+            ),
             polygons__isempty=False,
-            centroid__isempty=True,
         ).update(
             centroid=Centroid('polygons')
         )
