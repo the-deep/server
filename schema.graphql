@@ -1086,21 +1086,6 @@ type ExploreDashboardProjectRegion {
   projectIds: [ID!]
 }
 
-type ExploreDashboardProjectType {
-  id: ID!
-  createdAt: DateTime!
-  title: String!
-  description: String!
-  analysisFramework: ID
-  analysisFrameworkTitle: String
-  regionsTitle: String
-  organizationsTitle: String
-  numberOfUsers: Int!
-  numberOfLeads: Int!
-  numberOfEntries: Int!
-  analysisFrameworkPreviewImage: String
-}
-
 type ExploreDashboardStatType {
   totalProjects: Int
   totalRegisteredUsers: Int
@@ -1122,7 +1107,6 @@ type ExploreDashboardStatType {
   projectsByRegion: [ExploreDashboardProjectRegion]
   projectsCountByMonth: [ExploreCountByDateType!]
   projectsCountByDay: [ExploreCountByDateType!]
-  projects: [ExploreDashboardProjectType]
 }
 
 input ExploreDeepFilter {

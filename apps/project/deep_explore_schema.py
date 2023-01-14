@@ -5,13 +5,9 @@ from django.db import models
 from django.db.models.functions import (
     TruncMonth,
     TruncDay,
-    Coalesce,
-    Cast,
 )
-from django.contrib.postgres.aggregates.general import ArrayAgg, StringAgg
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.contrib.postgres.aggregates.general import ArrayAgg
 
-from deep.serializers import URLCachedFileField
 from utils.graphene.geo_scalars import PointScalar
 # Schema
 from organization.schema import OrganizationType
@@ -82,35 +78,6 @@ class ExploreDashboardProjectRegion(DjangoObjectType):
     project_ids = graphene.List(graphene.NonNull(graphene.ID))
 
 
-class ExploreDashboardProjectType(DjangoObjectType):
-    class Meta:
-        model = Project
-        skip_registry = True
-        fields = (
-            'id',
-            'title',
-            'description',
-            'created_at',
-        )
-
-    analysis_framework = graphene.ID(source='analysis_framework_id')
-    analysis_framework_title = graphene.String()
-    regions_title = graphene.String()
-    organizations_title = graphene.String()
-    number_of_users = graphene.Int(required=True)
-    number_of_leads = graphene.Int(required=True)
-    number_of_entries = graphene.Int(required=True)
-    analysis_framework_preview_image = graphene.String()
-
-    @staticmethod
-    def resolve_analysis_framework_preview_image(root, info, **kwargs):
-        if root.preview_image:
-            return info.context.request.build_absolute_uri(
-                URLCachedFileField.name_to_representation(root.preview_image)
-            )
-        return None
-
-
 class ExploreDashboardStatType(graphene.ObjectType):
     total_projects = graphene.Int()
     total_registered_users = graphene.Int()
@@ -169,8 +136,6 @@ class ExploreDashboardStatType(graphene.ObjectType):
     projects_by_region = graphene.List(ExploreDashboardProjectRegion)
     projects_count_by_month = graphene.Field(ExploreCountByDateListType)
     projects_count_by_day = graphene.Field(ExploreCountByDateListType)
-
-    projects = graphene.List(ExploreDashboardProjectType)
 
     @staticmethod
     def custom_resolver(info, filter):
@@ -338,7 +303,6 @@ class ExploreDashboardStatType(graphene.ObjectType):
                 **get_global_filters(date_field='date'),
                 project__in=projects_qs,
                 geo_area__centroid__isempty=False,
-            ).annotate(
             ).order_by().values('geo_area').annotate(
                 count=models.Sum('entries_count'),
             ).values(
@@ -351,57 +315,6 @@ class ExploreDashboardStatType(graphene.ObjectType):
 
         projects_count_by_month = _count_by_date(projects_qs, TruncMonth)
         projects_count_by_day = _count_by_date(projects_qs, TruncDay)
-
-        projects = projects_qs.annotate(
-            analysis_framework_title=models.Case(
-                models.When(
-                    analysis_framework__is_private=False,
-                    then=models.F('analysis_framework__title')
-                ),
-                default=None,
-            ),
-            preview_image=models.Case(
-                models.When(
-                    analysis_framework__is_private=False,
-                    then=models.F('analysis_framework__preview_image')
-                ),
-                default=None
-            ),
-            regions_title=StringAgg(
-                'regions__title',
-                ', ',
-                filter=models.Q(
-                    ~models.Q(regions__title=''),
-                    regions__public=True,
-                    regions__title__isnull=False,
-                ),
-                distinct=True,
-            ),
-            organizations_title=StringAgg(
-                models.Case(
-                    models.When(
-                        projectorganization__organization__parent__isnull=False,
-                        then='projectorganization__organization__parent__title'
-                    ),
-                    default='projectorganization__organization__title',
-                ),
-                ', ',
-                distinct=True,
-            ),
-            **{
-                key: Coalesce(
-                    Cast(KeyTextTransform(key, 'stats_cache'), models.IntegerField()),
-                    0,
-                )
-                for key in ['number_of_leads', 'number_of_users', 'number_of_entries']
-            },
-        ).only(
-            'id',
-            'title',
-            'description',
-            'analysis_framework_id',
-            'created_at',
-        ).distinct()
 
         return dict(
             # Single metrics
@@ -429,6 +342,4 @@ class ExploreDashboardStatType(graphene.ObjectType):
             top_ten_project_users=top_ten_project_users,
             top_ten_project_entries=top_ten_project_entries,
             top_ten_publishers=top_ten_publishers,
-            # Projects (TODO: Pagination)
-            projects=projects,
         )
