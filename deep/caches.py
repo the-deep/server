@@ -16,3 +16,14 @@ class CacheKey:
     # Local (RAM) Cache
     TEMP_CLIENT_ID_KEY_FORMAT = 'client-id-mixin-{request_hash}-{instance_type}-{instance_id}'
     TEMP_CUSTOM_CLIENT_ID_KEY_FORMAT = '{prefix}-client-id-mixin-{request_hash}-{instance_type}-{instance_id}'
+
+    class ExploreDeep:
+        _PREFIX = 'EXPLORE-DEEP-{}-'
+        TOTAL_PROJECTS = _PREFIX + 'TOTAL-PROJECTS'
+        TOTAL_REGISTERED_USERS = _PREFIX + 'TOTAL-REGISTERED-USERS'
+        TOTAL_LEADS = _PREFIX + 'TOTAL-LEADS'
+        TOTAL_ENTRIES = _PREFIX + 'TOTAL-ENTRIES'
+        TOTAL_ACTIVE_USERS = _PREFIX + 'TOTAL-ACTIVE-USERS'
+        TOTAL_AUTHORS = _PREFIX + 'TOTAL-AUTHORS'
+        TOTAL_PUBLISHERS = _PREFIX + 'TOTAL-PUBLISHERS'
+        TOP_TEN_AUTHORS = _PREFIX + 'TOP-TEN-AUTHORS'
