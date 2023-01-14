@@ -1131,7 +1131,6 @@ input ExploreDeepFilter {
 
 type ExploreDeepStatEntriesCountByCentroidType {
   centroid: PointScalar
-  date: Date!
   count: Int!
 }
 

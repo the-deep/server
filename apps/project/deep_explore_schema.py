@@ -161,7 +161,6 @@ class ExploreDashboardStatType(graphene.ObjectType):
         graphene.NonNull(
             type('ExploreDeepStatEntriesCountByCentroidType', (graphene.ObjectType,), {
                 'centroid': PointScalar(),
-                'date': graphene.Date(required=True),
                 'count': graphene.NonNull(graphene.Int),
             })
         )
@@ -355,12 +354,10 @@ class ExploreDashboardStatType(graphene.ObjectType):
                     project__in=projects_qs,
                     geo_area__centroid__isempty=False,
                 ).annotate(
-                    date__month=TruncMonth('date')
-                ).order_by('date__month').values('date__month', 'geo_area').annotate(
+                ).order_by().values('geo_area').annotate(
                     count=models.Sum('entries_count'),
                 ).values(
                     'count',
-                    date=models.F('date__month'),
                     centroid=models.F('geo_area__centroid'),
                 )
 
