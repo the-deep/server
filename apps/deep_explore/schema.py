@@ -67,7 +67,7 @@ def count_by_date_queryset_generator(qs, trunc_func):
     ).order_by('date')
 
 
-def get_top_ten_organizations_list(queryset, lead_field):
+def get_top_ten_organizations_list(queryset, lead_qs, lead_field):
     return [
         {
             **org,
@@ -79,16 +79,14 @@ def get_top_ten_organizations_list(queryset, lead_field):
             _title=models.functions.Coalesce(models.F('parent__title'), models.F('title')),
         ).annotate(
             leads_count=models.functions.Coalesce(models.Subquery(
-                # TODO: Use global filers
-                Lead.objects.filter(
+                lead_qs.filter(
                     **{lead_field: models.OuterRef('_id')}
                 ).order_by().values(lead_field)
                 .annotate(cnt=models.Count('*')).values('cnt')[:1],
                 output_field=models.IntegerField(),
             ), 0),
             projects_count=models.functions.Coalesce(models.Subquery(
-                # TODO: Use global filers
-                Lead.objects.filter(
+                lead_qs.filter(
                     **{lead_field: models.OuterRef('_id')}
                 ).order_by().values(lead_field)
                 .annotate(cnt=models.Count('project_id', distinct=True)).values('cnt')[:1],
@@ -232,12 +230,12 @@ class ExploreDashboardStatType(graphene.ObjectType):
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_AUTHORS)
     def resolve_top_ten_authors(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
-        return get_top_ten_organizations_list(root.organization_qs, 'authors')
+        return get_top_ten_organizations_list(root.organization_qs, root.leads_qs, 'authors')
 
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_PUBLISHERS)
     def resolve_top_ten_publishers(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
-        return get_top_ten_organizations_list(root.organization_qs, 'source')
+        return get_top_ten_organizations_list(root.organization_qs, root.leads_qs, 'source')
 
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_FRAMEWORKS)
@@ -246,8 +244,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
             root.analysis_framework_qs.distinct().annotate(
                 projects_count=models.functions.Coalesce(
                     models.Subquery(
-                        # TODO: Use global filers
-                        Project.objects.filter(
+                        root.projects_qs.filter(
                             analysis_framework=models.OuterRef('pk')
                         ).order_by().values('analysis_framework').annotate(
                             count=models.Count('id', distinct=True),
@@ -256,8 +253,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
                     ), 0),
                 entries_count=models.functions.Coalesce(
                     models.Subquery(
-                        # TODO: Use global filers
-                        Entry.objects.filter(
+                        root.entries_qs(
                             project__analysis_framework=models.OuterRef('pk')
                         ).order_by().values('project__analysis_framework').annotate(
                             count=models.Count('id', distinct=True)
@@ -300,8 +296,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
             root.projects_qs.distinct().annotate(
                 leads_count=models.functions.Coalesce(
                     models.Subquery(
-                        # TODO: Use global filers
-                        Lead.objects.filter(
+                        root.leads_qs.filter(
                             project=models.OuterRef('pk')
                         ).order_by().values('project').annotate(
                             count=models.Count('id', distinct=True),
@@ -311,7 +306,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
                 entries_count=models.functions.Coalesce(
                     models.Subquery(
                         # TODO: Use global filers
-                        Entry.objects.filter(
+                        root.entries_qs.filter(
                             project=models.OuterRef('pk')
                         ).order_by().values('project').annotate(
                             count=models.Count('id', distinct=True),
