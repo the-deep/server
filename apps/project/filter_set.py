@@ -240,7 +240,7 @@ class ExploreProjectFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
     organizations = IDListFilter(distinct=True)
     is_test = django_filters.BooleanFilter(method='filter_is_test')
     search = django_filters.CharFilter(method='filter_title')
-    include_entry_less_than = django_filters.BooleanFilter(
+    include_entry_less_than = django_filters.BooleanFilter(  # TODO: Update to exclude
         field_name='include_entry_less_than',
         method='filter_is_entry_less_than'
     )
@@ -261,21 +261,18 @@ class ExploreProjectFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
         return qs.filter(title__icontains=value)
 
     def filter_is_entry_less_than(self, qs, _, value):
-        if value is None:
-            return qs
-        qs = qs.annotate(
-            entry_count=models.functions.Coalesce(models.Subquery(
-                Entry.objects.filter(
-                    project=models.OuterRef('id')
-                ).order_by().values('project').annotate(
-                    count=models.Count('id', distinct=True)
-                ).values('count')[:1],
-                output_field=models.IntegerField()
-            ), 0)
-        )
-        if value is True:
-            return qs.filter(entry_count__lte=100)
-        return qs.filter(entry_count__gt=100)
+        if value is False:
+            return qs.annotate(
+                entry_count=models.functions.Coalesce(models.Subquery(
+                    Entry.objects.filter(
+                        project=models.OuterRef('id')
+                    ).order_by().values('project').annotate(
+                        count=models.Count('id', distinct=True)
+                    ).values('count')[:1],
+                    output_field=models.IntegerField()
+                ), 0)
+            ).filter(entry_count__gt=100)
+        return qs
 
     @property
     def qs(self):
