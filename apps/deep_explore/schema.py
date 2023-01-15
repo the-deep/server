@@ -15,7 +15,7 @@ from utils.graphene.geo_scalars import PointScalar
 from organization.models import Organization
 from geo.models import Region
 from user.models import User
-from project.models import Project, ProjectMembership
+from project.models import ProjectMembership
 from lead.models import Lead
 from entry.models import Entry
 from analysis_framework.models import AnalysisFramework
@@ -67,37 +67,34 @@ def count_by_date_queryset_generator(qs, trunc_func):
     ).order_by('date')
 
 
-def get_top_ten_organizations_list(queryset, lead_qs, lead_field):
+def get_top_ten_organizations_list(queryset, leads_qs, project_qs, lead_field):
     return [
         {
-            **org,
-            'id': org.pop('_id'),
-            'title': org.pop('_title'),
+            **data,
+            'id': data.pop('org_id'),
+            'title': data.pop('org_title'),
         }
-        for org in queryset.annotate(
-            _id=models.functions.Coalesce(models.F('parent'), models.F('id')),
-            _title=models.functions.Coalesce(models.F('parent__title'), models.F('title')),
+        for data in leads_qs.filter(
+            **{f'{lead_field}__in': queryset},
         ).annotate(
-            leads_count=models.functions.Coalesce(models.Subquery(
-                lead_qs.filter(
-                    **{lead_field: models.OuterRef('_id')}
-                ).order_by().values(lead_field)
-                .annotate(cnt=models.Count('*')).values('cnt')[:1],
-                output_field=models.IntegerField(),
-            ), 0),
-            projects_count=models.functions.Coalesce(models.Subquery(
-                lead_qs.filter(
-                    **{lead_field: models.OuterRef('_id')}
-                ).order_by().values(lead_field)
-                .annotate(cnt=models.Count('project_id', distinct=True)).values('cnt')[:1],
-                output_field=models.IntegerField(),
-            ), 0),
+            org_id=models.functions.Coalesce(
+                models.F(f'{lead_field}__parent'),
+                models.F(f'{lead_field}__id')
+            ),
+            org_title=models.functions.Coalesce(
+                models.F(f'{lead_field}__parent__title'),
+                models.F(f'{lead_field}__title')
+            ),
+        ).order_by().values('org_id', 'org_title').annotate(
+            leads_count=models.Count('id', distinct=True),
+            projects_count=models.Count(
+                'project', distinct=True, filter=models.Q(project__in=project_qs)
+            ),
         ).order_by('-leads_count', '-projects_count').values(
+            'org_id',
+            'org_title',
             'leads_count',
             'projects_count',
-            # Fetch parent data if available (merged_as)
-            '_id',
-            '_title',
         ).distinct()[:10]
     ]
 
@@ -230,12 +227,12 @@ class ExploreDashboardStatType(graphene.ObjectType):
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_AUTHORS)
     def resolve_top_ten_authors(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
-        return get_top_ten_organizations_list(root.organization_qs, root.leads_qs, 'authors')
+        return get_top_ten_organizations_list(root.organization_qs, root.leads_qs, root.projects_qs, 'authors')
 
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_PUBLISHERS)
     def resolve_top_ten_publishers(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
-        return get_top_ten_organizations_list(root.organization_qs, root.leads_qs, 'source')
+        return get_top_ten_organizations_list(root.organization_qs, root.leads_qs, root.projects_qs, 'source')
 
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_FRAMEWORKS)
@@ -245,7 +242,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
                 projects_count=models.functions.Coalesce(
                     models.Subquery(
                         root.projects_qs.filter(
-                            analysis_framework=models.OuterRef('pk')
+                            analysis_framework=models.OuterRef('pk'),
                         ).order_by().values('analysis_framework').annotate(
                             count=models.Count('id', distinct=True),
                         ).values('count')[:1],
@@ -253,10 +250,10 @@ class ExploreDashboardStatType(graphene.ObjectType):
                     ), 0),
                 entries_count=models.functions.Coalesce(
                     models.Subquery(
-                        root.entries_qs(
-                            project__analysis_framework=models.OuterRef('pk')
-                        ).order_by().values('project__analysis_framework').annotate(
-                            count=models.Count('id', distinct=True)
+                        root.entries_qs.filter(
+                            analysis_framework=models.OuterRef('pk'),
+                        ).order_by().values('analysis_framework').annotate(
+                            count=models.Count('id', distinct=True),
                         ).values('count')[:1],
                         output_field=models.IntegerField()
                     ), 0),
