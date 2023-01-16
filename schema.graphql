@@ -1150,7 +1150,7 @@ input ExploreProjectFilterDataInputType {
   organizations: [ID!]
   isTest: Boolean
   search: String
-  includeEntryLessThan: Boolean
+  excludeEntryLessThan: Boolean
   regions: [ID!]
 }
 
