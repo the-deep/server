@@ -1085,13 +1085,14 @@ type ExploreDashboardProjectRegion {
 }
 
 type ExploreDashboardStatType {
-  totalProjects: Int
-  totalRegisteredUsers: Int
-  totalLeads: Int
-  totalEntries: Int
-  totalActiveUsers: Int
-  totalAuthors: Int
-  totalPublishers: Int
+  totalProjects: Int!
+  totalRegisteredUsers: Int!
+  totalLeads: Int!
+  totalEntries: Int!
+  totalEntriesAddedLastWeek: Int!
+  totalActiveUsers: Int!
+  totalAuthors: Int!
+  totalPublishers: Int!
   topTenAuthors: [ExploreStastOrganizationType!]
   topTenPublishers: [ExploreStastOrganizationType!]
   topTenFrameworks: [ExploreDeepStatTopActiveFrameworksType!]
