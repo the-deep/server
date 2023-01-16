@@ -29,6 +29,7 @@ env = environ.Env(
     DEEP_BACKEND_HOST=str,
     DJANGO_ALLOWED_HOST=str,
     DEEPER_SITE_NAME=(str, 'DEEPER'),
+    CORS_ALLOWED_ORIGINS=(list, []),
     # Database
     DATABASE_NAME=str,
     DATABASE_USER=str,
@@ -645,12 +646,13 @@ else:
         },
     }
 
+CORS_ALLOWED_ORIGINS = env('CORS_ALLOWED_ORIGINS')
+
 # CORS CONFIGS
-if DEBUG:
-    CORS_ORIGIN_ALLOW_ALL = True
+if DEBUG and not CORS_ALLOWED_ORIGINS:
+    CORS_ALLOW_ALL_ORIGINS = True
 else:
-    # Restrict to thedeep.io 1 level subdomains only in Production
-    CORS_ORIGIN_REGEX_WHITELIST = [
+    CORS_ALLOWED_ORIGIN_REGEXES = [
         r"^https://[\w-]+\.thedeep\.io$",
     ]
 
