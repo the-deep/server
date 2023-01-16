@@ -2,14 +2,9 @@ import graphene
 import django_filters
 from django.db import models
 from django.db.models.functions import Coalesce
-from graphene_django.filter.utils import get_filtering_args_from_filterset
 
-from deep.filter_set import DjangoFilterCSVWidget
+from deep.filter_set import DjangoFilterCSVWidget, generate_type_for_filter_set
 from user_resource.filters import UserResourceFilterSet
-from utils.graphene.fields import (
-    generate_object_field_from_input_type,
-    compare_input_output_type_fields,
-)
 from utils.graphene.filters import (
     NumberInFilter,
     MultipleInputFilter,
@@ -558,17 +553,12 @@ class LeadGroupGQFilterSet(UserResourceGqlFilterSet):
         return qs.filter(title__icontains=value).distinct()
 
 
-def get_lead_filter_object_type(input_type):
-    new_fields_map = generate_object_field_from_input_type(input_type, skip_fields=['entries_filter_data'])
-    new_fields_map['entries_filter_data'] = graphene.Field(EntriesFilterDataType)
-    new_type = type('LeadsFilterDataType', (graphene.ObjectType,), new_fields_map)
-    compare_input_output_type_fields(input_type, new_type)
-    return new_type
-
-
-LeadsFilterDataInputType = type(
+LeadsFilterDataType, LeadsFilterDataInputType = generate_type_for_filter_set(
+    LeadGQFilterSet,
+    'lead.schema.LeadListType',
+    'LeadsFilterDataType',
     'LeadsFilterDataInputType',
-    (graphene.InputObjectType,),
-    get_filtering_args_from_filterset(LeadGQFilterSet, 'lead.schema.LeadListType')
+    custom_new_fields_map={
+        'entries_filter_data': graphene.Field(EntriesFilterDataType),
+    },
 )
-LeadsFilterDataType = get_lead_filter_object_type(LeadsFilterDataInputType)

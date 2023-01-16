@@ -7,15 +7,11 @@ from django.db.models.functions import Concat, Lower
 import django_filters
 
 from deep.permissions import ProjectPermissions as PP
-from deep.filter_set import OrderEnumMixin
+from deep.filter_set import OrderEnumMixin, generate_type_for_filter_set
 from utils.graphene.filters import (
     SimpleInputFilter,
     IDListFilter,
     MultipleInputFilter,
-)
-from utils.graphene.fields import (
-    generate_object_field_from_input_type,
-    compare_input_output_type_fields,
 )
 from user_resource.filters import UserResourceFilterSet, UserResourceGqlFilterSet
 
@@ -31,7 +27,6 @@ from .enums import (
     ProjectOrderingEnum,
     PublicProjectOrderingEnum,
 )
-from entry.models import Entry
 
 
 class ProjectFilterSet(UserResourceFilterSet):
@@ -236,62 +231,9 @@ class PublicProjectByRegionGqlFileterSet(ProjectByRegionGqlFilterSet):
         )
 
 
-class ExploreProjectFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
-    organizations = IDListFilter(distinct=True)
-    is_test = django_filters.BooleanFilter(method='filter_is_test')
-    search = django_filters.CharFilter(method='filter_title')
-    exclude_entry_less_than = django_filters.BooleanFilter(method='filter_exclude_entry_less_than')
-    regions = IDListFilter(distinct=True)
-
-    class Meta:
-        model = Project
-        fields = ()
-
-    def filter_is_test(self, qs, _, value):
-        if value is None:
-            return qs
-        return Project.objects.filter(is_test=value)
-
-    def filter_title(self, qs, _, value):
-        if not value:
-            return qs
-        return qs.filter(title__icontains=value)
-
-    def filter_exclude_entry_less_than(self, qs, _, value):
-        if value is True:
-            return qs.annotate(
-                entry_count=models.functions.Coalesce(models.Subquery(
-                    Entry.objects.filter(
-                        project=models.OuterRef('id')
-                    ).order_by().values('project').annotate(
-                        count=models.Count('id', distinct=True)
-                    ).values('count')[:1],
-                    output_field=models.IntegerField()
-                ), 0)
-            ).filter(entry_count__gt=100)
-        # False and None has same result
-        return qs
-
-    @property
-    def qs(self):
-        return super().qs.distinct()
-
-
-def get_lead_filter_object_type(input_type):
-    new_fields_map = generate_object_field_from_input_type(input_type)
-    new_type = type('ExploreProjectFilterDataInputType', (graphene.ObjectType,), new_fields_map)
-    compare_input_output_type_fields(input_type, new_type)
-    return new_type
-
-
-ExploreProjectFilterDataInputType = type(
-    'ExploreProjectFilterDataInputType',
-    (graphene.InputObjectType,),
-    get_filtering_args_from_filterset(ExploreProjectFilterSet, 'project.schema.ProjectListType')
-)
-ProjectsFilterDataInputType = type(
+ProjectsFilterDataType, ProjectsFilterDataInputType = generate_type_for_filter_set(
+    ProjectGqlFilterSet,
+    'project.schema.ProjectListType',
+    'ProjectsFilterDataType',
     'ProjectsFilterDataInputType',
-    (graphene.InputObjectType,),
-    get_filtering_args_from_filterset(ProjectGqlFilterSet, 'project.schema.ProjectListType')
 )
-ExploreProjectFilterDataType = get_lead_filter_object_type(ExploreProjectFilterDataInputType)

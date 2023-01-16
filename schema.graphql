@@ -1754,6 +1754,7 @@ input LeadsFilterDataInputType {
 }
 
 type LeadsFilterDataType {
+  entriesFilterData: EntriesFilterDataType
   createdBy: [ID!]
   modifiedBy: [ID!]
   ids: [ID!]
@@ -1788,7 +1789,6 @@ type LeadsFilterDataType {
   emmRiskFactors: String
   hasDuplicates: Boolean
   duplicatesOf: ID
-  entriesFilterData: EntriesFilterDataType
 }
 
 type Login {
