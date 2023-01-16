@@ -50,7 +50,7 @@ def get_update_entries_count_by_geo_area_aggregate_sql():
         entries_count=models.Count('id', distinct=True),
     ).values('date', 'project', 'geo_area', 'entries_count')
     """
-    # Above Django Queryset is used to generate below SELECT SQL Query
+    # NOTE: Above Django Queryset is used to generate below SELECT SQL Query
     return f"""
         INSERT INTO "{_tb(EntriesCountByGeoAreaAggregate)}" (
             project_id,
@@ -61,7 +61,7 @@ def get_update_entries_count_by_geo_area_aggregate_sql():
         (
             SELECT
               "{_tb(Entry)}".project_id AS project_id,
-              jsonb_array_elements_text(
+              JSONB_ARRAY_ELEMENTS_TEXT(
                   ("{_tb(Attribute)}".data->'value')
               )::int AS geo_area_id,
               DATE_TRUNC(
