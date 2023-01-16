@@ -240,10 +240,7 @@ class ExploreProjectFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
     organizations = IDListFilter(distinct=True)
     is_test = django_filters.BooleanFilter(method='filter_is_test')
     search = django_filters.CharFilter(method='filter_title')
-    include_entry_less_than = django_filters.BooleanFilter(  # TODO: Update to exclude
-        field_name='include_entry_less_than',
-        method='filter_is_entry_less_than'
-    )
+    exclude_entry_less_than = django_filters.BooleanFilter(method='filter_exclude_entry_less_than')
     regions = IDListFilter(distinct=True)
 
     class Meta:
@@ -260,8 +257,8 @@ class ExploreProjectFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
             return qs
         return qs.filter(title__icontains=value)
 
-    def filter_is_entry_less_than(self, qs, _, value):
-        if value is False:
+    def filter_exclude_entry_less_than(self, qs, _, value):
+        if value is True:
             return qs.annotate(
                 entry_count=models.functions.Coalesce(models.Subquery(
                     Entry.objects.filter(
@@ -272,6 +269,7 @@ class ExploreProjectFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
                     output_field=models.IntegerField()
                 ), 0)
             ).filter(entry_count__gt=100)
+        # False and None has same result
         return qs
 
     @property
