@@ -1,8 +1,10 @@
 import copy
 import graphene
+from datetime import timedelta
 from dataclasses import dataclass
 
 from django.db import models
+from django.utils import timezone
 from django.db.models.functions import (
     TruncMonth,
     TruncDay,
@@ -139,18 +141,20 @@ class ExploreDashboardStatRoot():
     entries_qs: models.QuerySet
     leads_qs: models.QuerySet
     organization_qs: models.QuerySet
+    registered_users: models.QuerySet
     projects_qs: models.QuerySet
     ref_projects_qs: models.QuerySet  # Without global filters
 
 
 class ExploreDashboardStatType(graphene.ObjectType):
-    total_projects = graphene.Int()
-    total_registered_users = graphene.Int()
-    total_leads = graphene.Int()
-    total_entries = graphene.Int()
-    total_active_users = graphene.Int()
-    total_authors = graphene.Int()
-    total_publishers = graphene.Int()
+    total_projects = graphene.Int(required=True)
+    total_registered_users = graphene.Int(required=True)
+    total_leads = graphene.Int(required=True)
+    total_entries = graphene.Int(required=True)
+    total_entries_added_last_week = graphene.Int(required=True)
+    total_active_users = graphene.Int(required=True)
+    total_authors = graphene.Int(required=True)
+    total_publishers = graphene.Int(required=True)
 
     top_ten_authors = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
     top_ten_publishers = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
@@ -177,8 +181,8 @@ class ExploreDashboardStatType(graphene.ObjectType):
 
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOTAL_REGISTERED_USERS_COUNT)
-    def resolve_total_registered_users(*_) -> int:
-        return User.objects.filter(is_active=True).count()
+    def resolve_total_registered_users(root: ExploreDashboardStatRoot, *_) -> int:
+        return root.registered_users.filter(is_active=True).count()
 
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOTAL_LEADS_COUNT)
@@ -189,6 +193,13 @@ class ExploreDashboardStatType(graphene.ObjectType):
     @node_cache(CacheKey.ExploreDeep.TOTAL_ENTRIES_COUNT)
     def resolve_total_entries(root: ExploreDashboardStatRoot, *_) -> int:
         return root.entries_qs.count()
+
+    @staticmethod
+    @CacheHelper.gql_cache(CacheKey.ExploreDeep.TOTAL_ENTRIES_ADDED_LAST_WEEK_COUNT, timeout=NODE_CACHE_TIMEOUT)
+    def resolve_total_entries_added_last_week(*_) -> int:
+        return Entry.objects.filter(
+            created_at__gte=timezone.now().date() - timedelta(days=7)
+        ).count()
 
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOTAL_ACTIVE_USERS_COUNT)
@@ -372,6 +383,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
         projects_qs = copy.deepcopy(ref_projects_qs).filter(**get_global_filters())
         organization_qs = Organization.objects.filter(**get_global_filters())
         analysis_framework_qs = AnalysisFramework.objects.filter(**get_global_filters())
+        registered_users = User.objects.filter(**get_global_filters('date_joined'))
 
         # With ref_projects_qs as filter
         entries_qs = Entry.objects.filter(**get_global_filters(), project__in=ref_projects_qs)
@@ -386,13 +398,14 @@ class ExploreDashboardStatType(graphene.ObjectType):
         cache_key = CacheHelper.generate_hash(_filter.__dict__)
         return ExploreDashboardStatRoot(
             cache_key=cache_key,
+            ref_projects_qs=ref_projects_qs,
+            projects_qs=projects_qs,
             analysis_framework_qs=analysis_framework_qs,
-            entries_count_by_geo_area_aggregate_qs=entries_count_by_geo_area_aggregate_qs,
+            organization_qs=organization_qs,
+            registered_users=registered_users,
             entries_qs=entries_qs,
             leads_qs=leads_qs,
-            organization_qs=organization_qs,
-            projects_qs=projects_qs,
-            ref_projects_qs=ref_projects_qs,
+            entries_count_by_geo_area_aggregate_qs=entries_count_by_geo_area_aggregate_qs,
         )
 
 
