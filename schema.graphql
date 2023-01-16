@@ -1750,6 +1750,7 @@ input LeadsFilterDataInputType {
 }
 
 type LeadsFilterDataType {
+  entriesFilterData: EntriesFilterDataType
   createdBy: [ID!]
   modifiedBy: [ID!]
   ids: [ID!]
@@ -1782,7 +1783,6 @@ type LeadsFilterDataType {
   emmEntities: String
   emmKeywords: String
   emmRiskFactors: String
-  entriesFilterData: EntriesFilterDataType
 }
 
 type Login {

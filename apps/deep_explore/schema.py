@@ -2,7 +2,6 @@ import copy
 import graphene
 from dataclasses import dataclass
 
-from graphene_django import DjangoObjectType
 from django.db import models
 from django.db.models.functions import (
     TruncMonth,
@@ -21,7 +20,7 @@ from entry.models import Entry
 from analysis_framework.models import AnalysisFramework
 from deep_explore.models import EntriesCountByGeoAreaAggregate
 
-from project.filter_set import ExploreProjectFilterDataInputType, ExploreProjectFilterSet
+from .filter_set import ExploreProjectFilterDataInputType, ExploreProjectFilterSet
 
 
 class ExploreCountByDateType(graphene.ObjectType):
@@ -44,17 +43,6 @@ def node_cache(cache_key):
         cache_key,
         timeout=NODE_CACHE_TIMEOUT,
         cache_key_gen=cache_key_gen,
-    )
-
-
-def count_by_type_generator(type_name):
-    return graphene.List(
-        graphene.NonNull(
-            type(type_name, (graphene.ObjectType,), {
-                'date': graphene.Date(required=True),
-                'count': graphene.Int(required=True),
-            })
-        )
     )
 
 
@@ -112,13 +100,9 @@ class ExploreStastOrganizationType(graphene.ObjectType):
     projects_count = graphene.Int()
 
 
-class ExploreDashboardProjectRegion(DjangoObjectType):
-    class Meta:
-        model = Region
-        skip_registry = True
-        only_fields = (
-            'id', 'centroid',
-        )
+class ExploreDashboardProjectRegion(graphene.ObjectType):
+    id = graphene.ID(required=True)
+    centroid = PointScalar()
     project_ids = graphene.List(graphene.NonNull(graphene.ID))
 
 
@@ -187,55 +171,55 @@ class ExploreDashboardStatType(graphene.ObjectType):
 
     # --- Numeric data ----
     @staticmethod
-    @node_cache(CacheKey.ExploreDeep.TOTAL_PROJECTS)
+    @node_cache(CacheKey.ExploreDeep.TOTAL_PROJECTS_COUNT)
     def resolve_total_projects(root: ExploreDashboardStatRoot, *_) -> int:
         return root.projects_qs.count()
 
     @staticmethod
-    @node_cache(CacheKey.ExploreDeep.TOTAL_REGISTERED_USERS)
+    @node_cache(CacheKey.ExploreDeep.TOTAL_REGISTERED_USERS_COUNT)
     def resolve_total_registered_users(*_) -> int:
         return User.objects.filter(is_active=True).count()
 
     @staticmethod
-    @node_cache(CacheKey.ExploreDeep.TOTAL_LEADS)
+    @node_cache(CacheKey.ExploreDeep.TOTAL_LEADS_COUNT)
     def resolve_total_leads(root: ExploreDashboardStatRoot, *_) -> int:
         return root.leads_qs.count()
 
     @staticmethod
-    @node_cache(CacheKey.ExploreDeep.TOTAL_ENTRIES)
+    @node_cache(CacheKey.ExploreDeep.TOTAL_ENTRIES_COUNT)
     def resolve_total_entries(root: ExploreDashboardStatRoot, *_) -> int:
         return root.entries_qs.count()
 
     @staticmethod
-    @node_cache(CacheKey.ExploreDeep.TOTAL_ACTIVE_USERS)
+    @node_cache(CacheKey.ExploreDeep.TOTAL_ACTIVE_USERS_COUNT)
     def resolve_total_active_users(root: ExploreDashboardStatRoot, *_) -> int:
         return root.leads_qs.values('created_by').union(
             root.entries_qs.values('created_by')
         ).count()
 
     @staticmethod
-    @node_cache(CacheKey.ExploreDeep.TOTAL_AUTHORS)
+    @node_cache(CacheKey.ExploreDeep.TOTAL_AUTHORS_COUNT)
     def resolve_total_authors(root: ExploreDashboardStatRoot, *_) -> int:
         return root.leads_qs.values('authors').distinct().count()
 
     @staticmethod
-    @node_cache(CacheKey.ExploreDeep.TOTAL_PUBLISHERS)
+    @node_cache(CacheKey.ExploreDeep.TOTAL_PUBLISHERS_COUNT)
     def resolve_total_publishers(root: ExploreDashboardStatRoot, *_) -> int:
         return root.leads_qs.values('source').distinct().count()
 
     # --- Array data ----
     @staticmethod
-    @node_cache(CacheKey.ExploreDeep.TOP_TEN_AUTHORS)
+    @node_cache(CacheKey.ExploreDeep.TOP_TEN_AUTHORS_LIST)
     def resolve_top_ten_authors(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
         return get_top_ten_organizations_list(root.organization_qs, root.leads_qs, root.projects_qs, 'authors')
 
     @staticmethod
-    @node_cache(CacheKey.ExploreDeep.TOP_TEN_PUBLISHERS)
+    @node_cache(CacheKey.ExploreDeep.TOP_TEN_PUBLISHERS_LIST)
     def resolve_top_ten_publishers(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
         return get_top_ten_organizations_list(root.organization_qs, root.leads_qs, root.projects_qs, 'source')
 
     @staticmethod
-    @node_cache(CacheKey.ExploreDeep.TOP_TEN_FRAMEWORKS)
+    @node_cache(CacheKey.ExploreDeep.TOP_TEN_FRAMEWORKS_LIST)
     def resolve_top_ten_frameworks(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
         return list(
             root.analysis_framework_qs.distinct().annotate(
@@ -266,7 +250,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
         )
 
     @staticmethod
-    @node_cache(CacheKey.ExploreDeep.TOP_TEN_PROJECTS_BY_USERS)
+    @node_cache(CacheKey.ExploreDeep.TOP_TEN_PROJECTS_BY_USERS_LIST)
     def resolve_top_ten_projects_by_users(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
         return list(
             root.projects_qs.distinct().annotate(
@@ -287,7 +271,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
         )
 
     @staticmethod
-    @node_cache(CacheKey.ExploreDeep.TOP_TEN_PROJECTS_BY_ENTRIES)
+    @node_cache(CacheKey.ExploreDeep.TOP_TEN_PROJECTS_BY_ENTRIES_LIST)
     def resolve_top_ten_projects_by_entries(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
         return list(
             root.projects_qs.distinct().annotate(
@@ -354,7 +338,11 @@ class ExploreDashboardStatType(graphene.ObjectType):
                 ordering='project',
                 filter=models.Q(project__in=root.projects_qs),
             ),
-        ).filter(project_ids__isnull=False).only('id', 'centroid')
+        ).filter(project_ids__isnull=False).values(
+            'id',
+            'centroid',
+            'project_ids',
+        )
 
     @staticmethod
     def resolve_projects_count_by_month(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
