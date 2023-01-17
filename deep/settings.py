@@ -464,6 +464,11 @@ CELERY_BEAT_SCHEDULE = {
         # Every 6 hour
         'schedule': crontab(minute=0, hour='*/6'),
     },
+    'update_deep_explore_entries_count_by_geo_aggreagate_task': {
+        'task': 'deep_explore.tasks.update_deep_explore_entries_count_by_geo_aggreagate_task',
+        # Every day at 01:00
+        'schedule': crontab(minute=0, hour=1),
+    },
     'project_generate_stats': {
         'task': 'project.tasks.generate_project_stats_cache',
         # Every 5 min
