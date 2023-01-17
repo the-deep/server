@@ -28,11 +28,12 @@ class DateHelper():
             return date.strftime("%Y-%m-%d")
 
 
-def get_update_entries_count_by_geo_area_aggregate_sql():
-    def _tb(model):
-        # Return database table name
-        return model._meta.db_table
+def _tb(model):
+    # Return database table name
+    return model._meta.db_table
 
+
+def get_update_entries_count_by_geo_area_aggregate_sql():
     """
     geo_attributes_qs = Attribute.objects\
         .filter(widget__widget_id=Widget.WidgetType.GEO)
@@ -94,8 +95,18 @@ def get_update_entries_count_by_geo_area_aggregate_sql():
     """
 
 
-def update_deep_explore_entries_count_by_geo_aggreagate():
+def update_deep_explore_entries_count_by_geo_aggreagate(start_over=False):
     tracker = AggregateTracker.latest(AggregateTracker.Type.ENTRIES_COUNT_BY_GEO_AREA)
+    if start_over:
+        # Clean all previous data
+        tracker.value = None
+        # Truncate table and sequences
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute(f"TRUNCATE TABLE {_tb(EntriesCountByGeoAreaAggregate)} RESTART IDENTITY;")
+            tracker.save()
+        logger.warning("Removed all previous data.")
+
     if tracker.value:
         # Use tracker data if available
         from_date = DateHelper.py_date(tracker.value)
@@ -116,6 +127,7 @@ def update_deep_explore_entries_count_by_geo_aggreagate():
         start_time = time.time()
         with connection.cursor() as cursor:
             cursor.execute(get_update_entries_count_by_geo_area_aggregate_sql(), params)
+            logger.info(f'Rows affected: {cursor.rowcount}')
         logger.info(f"Successfull. Runtime: {time.time() - start_time} seconds")
         tracker.value = until_date
         logger.info(f"Saving date {tracker.value} as last tracker")
@@ -125,4 +137,9 @@ def update_deep_explore_entries_count_by_geo_aggreagate():
 @shared_task
 @redis_lock('update_deep_explore_entries_count_by_geo_aggreagate')
 def update_deep_explore_entries_count_by_geo_aggreagate_task():
-    return update_deep_explore_entries_count_by_geo_aggreagate()
+    # Weekly clean-up old data and calculate from start.
+    # https://docs.python.org/3/library/datetime.html#datetime.datetime.weekday
+    start_over = False
+    if timezone.now().weekday() == 6:  # Every sunday
+        start_over = True
+    return update_deep_explore_entries_count_by_geo_aggreagate(start_over=start_over)
