@@ -16,21 +16,13 @@ from utils.graphene.geo_scalars import PointScalar
 from organization.models import Organization
 from geo.models import Region
 from user.models import User
-from project.models import ProjectMembership
+from project.models import Project, ProjectMembership
 from lead.models import Lead
 from entry.models import Entry
 from analysis_framework.models import AnalysisFramework
 from deep_explore.models import EntriesCountByGeoAreaAggregate
 
 from .filter_set import ExploreProjectFilterDataInputType, ExploreProjectFilterSet
-
-
-class ExploreCountByDateType(graphene.ObjectType):
-    date = graphene.Date(required=True)
-    count = graphene.Int(required=True)
-
-
-ExploreCountByDateListType = graphene.List(graphene.NonNull(ExploreCountByDateType))
 
 
 # TODO?
@@ -46,6 +38,25 @@ def node_cache(cache_key):
         timeout=NODE_CACHE_TIMEOUT,
         cache_key_gen=cache_key_gen,
     )
+
+
+def get_global_filters(_filter, date_field='created_at'):
+    return {
+        f'{date_field}__gte': _filter['date_from'],
+        f'{date_field}__lte': _filter['date_to'],
+    }
+
+
+def project_queryset():
+    return Project.objects.filter(is_private=False)
+
+
+class ExploreCountByDateType(graphene.ObjectType):
+    date = graphene.Date(required=True)
+    count = graphene.Int(required=True)
+
+
+ExploreCountByDateListType = graphene.List(graphene.NonNull(ExploreCountByDateType))
 
 
 def count_by_date_queryset_generator(qs, trunc_func):
@@ -89,7 +100,7 @@ def get_top_ten_organizations_list(queryset, leads_qs, project_qs, lead_field):
     ]
 
 
-class ExploreDeepFilter(graphene.InputObjectType):
+class ExploreDeepFilterInputType(graphene.InputObjectType):
     date_from = graphene.DateTime(required=True)
     date_to = graphene.DateTime(required=True)
     project = ExploreProjectFilterDataInputType()
@@ -368,29 +379,24 @@ class ExploreDashboardStatType(graphene.ObjectType):
         """
         This is used as root for other resovler
         """
-        def get_global_filters(date_field='created_at'):
-            return {
-                f'{date_field}__gte': _filter['date_from'],
-                f'{date_field}__lte': _filter['date_to'],
-            }
-
         # Without global filters, to be used for related models
         ref_projects_qs = ExploreProjectFilterSet(
             request=info.context.request,
+            queryset=project_queryset(),
             data=_filter.get('project'),
         ).qs
 
-        projects_qs = copy.deepcopy(ref_projects_qs).filter(**get_global_filters())
-        organization_qs = Organization.objects.filter(**get_global_filters())
-        analysis_framework_qs = AnalysisFramework.objects.filter(**get_global_filters())
-        registered_users = User.objects.filter(**get_global_filters('date_joined'))
+        projects_qs = copy.deepcopy(ref_projects_qs).filter(**get_global_filters(_filter))
+        organization_qs = Organization.objects.filter(**get_global_filters(_filter))
+        analysis_framework_qs = AnalysisFramework.objects.filter(**get_global_filters(_filter))
+        registered_users = User.objects.filter(**get_global_filters(_filter, date_field='date_joined'))
 
         # With ref_projects_qs as filter
-        entries_qs = Entry.objects.filter(**get_global_filters(), project__in=ref_projects_qs)
-        leads_qs = Lead.objects.filter(**get_global_filters(), project__in=ref_projects_qs)
+        entries_qs = Entry.objects.filter(**get_global_filters(_filter), project__in=ref_projects_qs)
+        leads_qs = Lead.objects.filter(**get_global_filters(_filter), project__in=ref_projects_qs)
         entries_count_by_geo_area_aggregate_qs = EntriesCountByGeoAreaAggregate.objects\
             .filter(
-                **get_global_filters(date_field='date'),
+                **get_global_filters(_filter, date_field='date'),
                 project__in=ref_projects_qs,
                 geo_area__centroid__isempty=False,
             )
@@ -412,7 +418,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
 class Query:
     deep_explore_stats = graphene.Field(
         ExploreDashboardStatType,
-        filter=ExploreDeepFilter(required=True)
+        filter=ExploreDeepFilterInputType(required=True)
     )
 
     @staticmethod

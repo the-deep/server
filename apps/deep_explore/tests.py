@@ -61,7 +61,7 @@ class TestDeepExploreStats(GraphQLSnapShotTestCase):
 
     def test_explore_deep_dashboard(self):
         query = """
-            query MyQuery($filter: ExploreDeepFilter!) {
+            query MyQuery($filter: ExploreDeepFilterInputType!) {
                 deepExploreStats(filter: $filter) {
                     topTenAuthors {
                         id

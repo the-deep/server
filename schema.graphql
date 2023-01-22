@@ -1108,7 +1108,7 @@ type ExploreDashboardStatType {
   projectsCountByDay: [ExploreCountByDateType!]
 }
 
-input ExploreDeepFilter {
+input ExploreDeepFilterInputType {
   dateFrom: DateTime!
   dateTo: DateTime!
   project: ExploreProjectFilterDataInputType
@@ -2501,7 +2501,7 @@ type PublicProjectWithMembershipData {
 }
 
 type Query {
-  deepExploreStats(filter: ExploreDeepFilter!): ExploreDashboardStatType
+  deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
   genericExport(id: ID!): UserGenericExportType
   rssFields(url: String): [RssFieldType!]
   atomFeedFields(url: String): [AtomFeedFieldType!]
@@ -2875,6 +2875,7 @@ input UserGenericExportFiltersGqlInputType {
   lead: LeadsFilterDataInputType
   entry: EntriesFilterDataInputType
   project: ProjectsFilterDataInputType
+  deepExplore: ExploreDeepFilterInputType
 }
 
 type UserGenericExportType {
