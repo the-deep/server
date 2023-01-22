@@ -4,11 +4,10 @@ from io import StringIO
 from django.db import models
 
 from deep.filter_set import get_dummy_request
-from project.models import Project, ProjectOrganization, ProjectRole, ProjectMembership
+from project.models import ProjectOrganization, ProjectRole, ProjectMembership
 from organization.models import Organization
-from project.filter_set import ProjectGqlFilterSet
-from lead.filter_set import LeadGQFilterSet
-from entry.filter_set import EntryGQFilterSet
+from deep_explore.filter_set import ExploreProjectFilterSet
+from deep_explore.schema import get_global_filters, project_queryset
 
 
 def get_organizations_display(project, organization_type=None):
@@ -32,10 +31,11 @@ def export_projects_stats(export):
         ),
     )
 
-    filters = export.filters or {}
-    projects_filters = filters.get('project') or {}
-    leads_filters = filters.get('lead') or {}
-    entries_filters = filters.get('entry') or {}
+    filters = (export.filters or {}).get('deep_explore') or {}
+    if not filters:
+        raise Exception('This should be defined.')
+
+    project_filters = filters.get('project') or {}
 
     file = StringIO()
     headers = [
@@ -59,14 +59,12 @@ def export_projects_stats(export):
         '# of Exports',
     ]
 
-    projects_qs = Project.objects.filter(
-        is_private=False,
-        is_test=False,
-    ).annotate(
+    projects_qs = project_queryset().annotate(
         analysis_framework_title=models.F('analysis_framework__title'),
     )
 
-    projects_qs = ProjectGqlFilterSet(projects_filters, queryset=projects_qs, **filterset_attrs).qs
+    projects_qs = ExploreProjectFilterSet(project_filters, queryset=projects_qs, **filterset_attrs).qs
+    projects_qs = projects_qs.filter(**get_global_filters(filters))
 
     writer = csv.DictWriter(file, fieldnames=headers, extrasaction='ignore')
     writer.writeheader()
@@ -81,8 +79,8 @@ def export_projects_stats(export):
         regions_qs = project.regions
         members_qs = project.members
         exports_qs = project.export_set
-        leads_qs = LeadGQFilterSet(leads_filters, queryset=project.lead_set, **filterset_attrs).qs
-        entries_qs = EntryGQFilterSet(entries_filters, queryset=project.entry_set, **filterset_attrs).qs
+        leads_qs = project.lead_set.filter(**get_global_filters(filters))
+        entries_qs = project.entry_set.filter(**get_global_filters(filters))
 
         writer.writerow({
             'ID': project.id,

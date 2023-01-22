@@ -2,7 +2,7 @@ import datetime
 
 from unittest.mock import patch
 
-from utils.graphene.tests import GraphQLTestCase
+from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
 
 from user.factories import UserFactory
 from project.factories import ProjectFactory
@@ -760,7 +760,10 @@ class TestExportMutationSchema(GraphQLTestCase):
         self.assertEqual(content['id'], str(export1.id), content)
 
 
-class TestGenericExportMutationSchema(GraphQLTestCase):
+class TestGenericExportMutationSchema(GraphQLSnapShotTestCase):
+    factories_used = [AnalysisFrameworkFactory, ProjectFactory, LeadFactory, UserFactory]
+    ENABLE_NOW_PATCHER = True
+
     CREATE_GENERIC_EXPORT_QUERY = '''
         mutation MyMutation ($input: GenericExportCreateInputType!) {
             genericExportCreate(data: $input) {
@@ -792,11 +795,23 @@ class TestGenericExportMutationSchema(GraphQLTestCase):
         super().setUp()
         # TODO: Add more fixture here.
         self.af = AnalysisFrameworkFactory.create()
-        self.project = ProjectFactory.create(analysis_framework=self.af)
+        self.project, *_ = ProjectFactory.create_batch(2, analysis_framework=self.af)
         self.lead = LeadFactory.create(project=self.project)
         EntryFactory.create_batch(10, lead=self.lead, project=self.project, analysis_framework=self.af)
         # User with role
         self.user = UserFactory.create()
+        # -- Some other data which shouldn't be visible in exports
+        # Private project
+        ProjectFactory.create(analysis_framework=self.af, is_private=True)
+        # Project created around the filter
+        self.update_obj(
+            ProjectFactory.create(analysis_framework=self.af),
+            created_at=self.PATCHER_NOW_VALUE - datetime.timedelta(days=11),
+        )
+        self.update_obj(
+            ProjectFactory.create(analysis_framework=self.af),
+            created_at=self.PATCHER_NOW_VALUE + datetime.timedelta(days=11),
+        )
 
     def test_project_stats(self):
         def _query_check(minput, **kwargs):
@@ -809,7 +824,12 @@ class TestGenericExportMutationSchema(GraphQLTestCase):
         minput = dict(
             format=self.genum(GenericExport.Format.CSV),
             type=self.genum(GenericExport.DataType.PROJECTS_STATS),
-            filters={},
+            filters={
+                "deepExplore": {
+                    "dateFrom": self.get_datetime_str(self.PATCHER_NOW_VALUE - datetime.timedelta(days=10)),
+                    "dateTo": self.get_datetime_str(self.PATCHER_NOW_VALUE + datetime.timedelta(days=10)),
+                }
+            },
         )
         # -- Without login
         _query_check(minput, assert_for_error=True)
@@ -820,6 +840,10 @@ class TestGenericExportMutationSchema(GraphQLTestCase):
         with self.captureOnCommitCallbacks(execute=True):
             response = _query_check(minput, okay=True)['data']
         self.assertNotEqual(response['genericExportCreate']['result'], None, response)
+        generic_export = GenericExport.objects.get(pk=response['genericExportCreate']['result']['id'])
+        self.assertEqual(generic_export.status, GenericExport.Status.SUCCESS, response)
+        self.assertNotEqual(generic_export.file.name, None, response)
+        self.assertMatchSnapshot(generic_export.file.read().decode('utf-8'), 'generic-export-csv')
 
 
 class GeneraltestCase(GraphQLTestCase):
