@@ -32,3 +32,11 @@ class EntriesCountByGeoAreaAggregate(models.Model):
     class Meta:
         ordering = ('date',)
         unique_together = ('project', 'geo_area', 'date')
+
+
+class PublicExploreYearSnapshot(models.Model):
+    """
+    Used to store yearly snapshot used by public dashboard
+    """
+    year = models.SmallIntegerField(unique=True)
+    file = models.FileField(upload_to='deep-explore/public-snapshot/', max_length=255)

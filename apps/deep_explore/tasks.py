@@ -1,17 +1,27 @@
 import logging
 import datetime
 import time
+import json
 from typing import Union
 from celery import shared_task
 
 from django.db import connection, models, transaction
+from django.core.serializers.json import DjangoJSONEncoder
+from django.core.files.base import ContentFile
 from django.utils import timezone
+from django.test import override_settings
 
+from deep.schema import schema as gql_schema
 from utils.common import redis_lock
 from entry.models import Entry, Attribute
+from project.models import Project
 from analysis_framework.models import Widget
 
-from .models import AggregateTracker, EntriesCountByGeoAreaAggregate
+from .models import (
+    AggregateTracker,
+    EntriesCountByGeoAreaAggregate,
+    PublicExploreYearSnapshot,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +41,84 @@ class DateHelper():
 def _tb(model):
     # Return database table name
     return model._meta.db_table
+
+
+DEEP_EXPLORE_FULL_QUERY = """
+    query MyQuery($filter: ExploreDeepFilterInputType!) {
+      deepExploreStats(filter: $filter) {
+        totalActiveUsers
+        totalAuthors
+        totalEntries
+        totalEntriesAddedLastWeek
+        totalLeads
+        totalProjects
+        totalPublishers
+        totalRegisteredUsers
+        topTenPublishers {
+          id
+          title
+          leadsCount
+          projectsCount
+        }
+        topTenProjectsByUsers {
+          id
+          title
+          usersCount
+        }
+        topTenProjectsByEntries {
+          id
+          title
+          entriesCount
+          leadsCount
+        }
+        topTenFrameworks {
+          id
+          title
+          projectsCount
+          entriesCount
+        }
+        topTenAuthors {
+          id
+          title
+          projectsCount
+          leadsCount
+        }
+        projectsCountByMonth {
+          count
+          date
+        }
+        projectsCountByDay {
+          count
+          date
+        }
+        projectsByRegion {
+          id
+          centroid
+          projectIds
+        }
+        leadsCountByMonth {
+          date
+          count
+        }
+        leadsCountByDay {
+          date
+          count
+        }
+        entriesCountByRegion {
+          centroid
+          count
+        }
+        entriesCountByMonth {
+          date
+          count
+        }
+        entriesCountByDay {
+          date
+          count
+        }
+      }
+    }
+"""
 
 
 def get_update_entries_count_by_geo_area_aggregate_sql():
@@ -134,6 +222,44 @@ def update_deep_explore_entries_count_by_geo_aggreagate(start_over=False):
         tracker.save()
 
 
+def generate_public_deep_explore_snapshot():
+    class DummyContext:
+        request = None
+
+    dates = Project.objects.aggregate(
+        min_year=models.Min('created_at__year'),
+        max_year=models.Max('created_at__year'),
+    )
+    for year in range(dates['min_year'], dates['max_year'] + 1):
+        with override_settings(
+            CACHES={
+                'default': {
+                    'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+                    'LOCATION': 'unique-snowflake',
+                }
+            },
+        ):
+            result = gql_schema.execute(
+                DEEP_EXPLORE_FULL_QUERY,
+                context=DummyContext(),
+                variables={
+                    'filter': {
+                        'dateFrom': f'{year}-01-01T00:00:00Z',
+                        'dateTo': f'{year+1}-01-01T00:00:00Z',
+                    }
+                })
+            if result.errors:
+                logger.error(f'Failed to generate: {result.errors}', exc_info=True)
+                continue
+            snapshot = PublicExploreYearSnapshot.objects.filter(year=year).first() or PublicExploreYearSnapshot(year=year)
+            file_content = ContentFile(json.dumps(result.data, cls=DjangoJSONEncoder).encode('utf-8'))
+            # Delete current file
+            snapshot.file.delete()
+            # Save new file
+            snapshot.file.save(f'{year}-snapshot.json', file_content)
+            snapshot.save()
+
+
 @shared_task
 @redis_lock('update_deep_explore_entries_count_by_geo_aggreagate')
 def update_deep_explore_entries_count_by_geo_aggreagate_task():
@@ -143,3 +269,9 @@ def update_deep_explore_entries_count_by_geo_aggreagate_task():
     if timezone.now().weekday() == 6:  # Every sunday
         start_over = True
     return update_deep_explore_entries_count_by_geo_aggreagate(start_over=start_over)
+
+
+@shared_task
+@redis_lock('update_public_deep_explore_snapshot')
+def update_public_deep_explore_snapshot():
+    return generate_public_deep_explore_snapshot()

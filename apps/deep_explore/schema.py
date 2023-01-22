@@ -10,9 +10,11 @@ from django.db.models.functions import (
     TruncDay,
 )
 from django.contrib.postgres.aggregates.general import ArrayAgg
+from graphene_django import DjangoObjectType, DjangoListField
 
 from deep.caches import CacheKey, CacheHelper
 from utils.graphene.geo_scalars import PointScalar
+from utils.graphene.types import FileFieldType
 from organization.models import Organization
 from geo.models import Region
 from user.models import User
@@ -20,7 +22,7 @@ from project.models import Project, ProjectMembership
 from lead.models import Lead
 from entry.models import Entry
 from analysis_framework.models import AnalysisFramework
-from deep_explore.models import EntriesCountByGeoAreaAggregate
+from deep_explore.models import EntriesCountByGeoAreaAggregate, PublicExploreYearSnapshot
 
 from .filter_set import ExploreProjectFilterDataInputType, ExploreProjectFilterSet
 
@@ -157,6 +159,7 @@ class ExploreDashboardStatRoot():
     ref_projects_qs: models.QuerySet  # Without global filters
 
 
+# XXX: Make sure to update deep_explore.tasks.DEEP_EXPLORE_FULL_QUERY
 class ExploreDashboardStatType(graphene.ObjectType):
     total_projects = graphene.Int(required=True)
     total_registered_users = graphene.Int(required=True)
@@ -375,13 +378,13 @@ class ExploreDashboardStatType(graphene.ObjectType):
         return count_by_date_queryset_generator(root.projects_qs, TruncDay)
 
     @staticmethod
-    def custom_resolver(info, _filter):
+    def custom_resolver(request, _filter):
         """
         This is used as root for other resovler
         """
         # Without global filters, to be used for related models
         ref_projects_qs = ExploreProjectFilterSet(
-            request=info.context.request,
+            request=request,
             queryset=project_queryset(),
             data=_filter.get('project'),
         ).qs
@@ -415,12 +418,23 @@ class ExploreDashboardStatType(graphene.ObjectType):
         )
 
 
+class PublicExploreYearSnapshotType(DjangoObjectType):
+    class Meta:
+        model = PublicExploreYearSnapshot
+        only_fields = (
+            'id',
+            'year',
+        )
+    file = graphene.Field(FileFieldType)
+
+
 class Query:
     deep_explore_stats = graphene.Field(
         ExploreDashboardStatType,
         filter=ExploreDeepFilterInputType(required=True)
     )
+    public_deep_explore_yearly_snapshots = DjangoListField(PublicExploreYearSnapshotType)
 
     @staticmethod
     def resolve_deep_explore_stats(_, info, filter):
-        return ExploreDashboardStatType.custom_resolver(info, filter)
+        return ExploreDashboardStatType.custom_resolver(info.context.request, filter)
