@@ -320,11 +320,11 @@ class TestCase(test.APITestCase):
         self.assertEqual(len(r_data['results']), count, f'Filters: {filters}')
         return response
 
-    def get_datetime_str(self, datetime):
-        return datetime.strftime('%Y-%m-%d%z')
+    def get_datetime_str(self, _datetime):
+        return _datetime.strftime('%Y-%m-%d%z')
 
-    def get_date_str(self, datetime):
-        return datetime.strftime('%Y-%m-%d')
+    def get_date_str(self, _datetime):
+        return _datetime.strftime('%Y-%m-%d')
 
     def get_aware_datetime(self, *args, **kwargs):
         return timezone.make_aware(datetime.datetime(*args, **kwargs))

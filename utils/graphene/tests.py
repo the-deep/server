@@ -75,6 +75,7 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
 
     GRAPHQL_SCHEMA = 'deep.schema.schema'
     ENABLE_NOW_PATCHER = False
+    PATCHER_NOW_VALUE = datetime.datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
 
     def _setup_premailer_patcher(self, mock):
         mock.get.return_value.text = ''
@@ -88,7 +89,7 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         self._setup_premailer_patcher(self.premailer_patcher_requests.start())
         if self.ENABLE_NOW_PATCHER:
             self.now_patcher = patch('django.utils.timezone.now')
-            self.now_datetime = datetime.datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+            self.now_datetime = self.PATCHER_NOW_VALUE
             self.now_datetime_str = self.now_datetime.isoformat()
             self.now_patcher.start().return_value = self.now_datetime
 
@@ -318,11 +319,11 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         obj.save()
         return obj
 
-    def get_datetime_str(self, datetime):
-        return datetime.strftime('%Y-%m-%d%z')
+    def get_datetime_str(self, _datetime):
+        return _datetime.isoformat()
 
-    def get_date_str(self, datetime):
-        return datetime.strftime('%Y-%m-%d')
+    def get_date_str(self, _datetime):
+        return _datetime.strftime('%Y-%m-%d')
 
     def get_aware_datetime(self, *args, **kwargs):
         return timezone.make_aware(datetime.datetime(*args, **kwargs))
