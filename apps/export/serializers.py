@@ -13,6 +13,8 @@ from deep.serializers import (
 from lead.filter_set import LeadGQFilterSet, LeadsFilterDataInputType
 from entry.filter_set import EntryGQFilterSet, EntriesFilterDataInputType
 from project.filter_set import ProjectGqlFilterSet, ProjectsFilterDataInputType
+from deep_explore.schema import ExploreDeepFilterInputType
+from deep_explore.filter_set import ExploreProjectFilterSet
 from analysis_framework.models import Widget, Exportable
 from .tasks import export_task, generic_export_task
 from .models import Export, GenericExport
@@ -354,6 +356,10 @@ class UserGenericExportFiltersGqlSerializer(serializers.Serializer):
         ProjectsFilterDataInputType,
         GraphqlSupportDrfSerializerJSONField,
     )(required=False)
+    deep_explore = generate_serializer_field_class(
+        ExploreDeepFilterInputType,
+        GraphqlSupportDrfSerializerJSONField,
+    )(required=False)
 
 
 class UserGenericExportCreateGqlSerializer(serializers.ModelSerializer):
@@ -371,19 +377,40 @@ class UserGenericExportCreateGqlSerializer(serializers.ModelSerializer):
     filters = UserGenericExportFiltersGqlSerializer()
 
     def validate_filters(self, filters):
+        def _validate_filterset(filter_data, filter_key, filter_set):
+            filter_data = filter_data.get(filter_key)
+            if not filter_data:
+                return
+            filter_set = filter_set(data=filter_data, request=self.context['request'])
+            if not filter_set.is_valid():
+                return filter_set.errors
+
         # Validate each data
         errors = {}
         for filter_key, FilterSet in [
             ('project', ProjectGqlFilterSet),
             ('lead', LeadGQFilterSet),
             ('entry', EntryGQFilterSet),
+            ('deep_explore', None),
         ]:
-            filter_data = filters.get(filter_key)
-            if not filter_data:
+            if filter_key == 'deep_explore':
+                filter_data = filters.get(filter_key) or {}
+                if filterset_errors := _validate_filterset(
+                    filter_data,
+                    'project',
+                    ExploreProjectFilterSet,
+                ):
+                    errors[filter_key] = {
+                        'project': filterset_errors
+                    }
                 continue
-            filter_set = FilterSet(data=filter_data, request=self.context['request'])
-            if not filter_set.is_valid():
-                errors[filter_key] = filter_set.errors
+            # Generic
+            if filterset_errors := _validate_filterset(
+                filters,
+                filter_key,
+                FilterSet,
+            ):
+                errors[filter_key] = filterset_errors
         if errors:
             raise serializers.ValidationError(errors)
         return filters
