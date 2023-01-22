@@ -465,11 +465,6 @@ CELERY_BEAT_SCHEDULE = {
         # Every 6 hour
         'schedule': crontab(minute=0, hour='*/6'),
     },
-    'update_deep_explore_entries_count_by_geo_aggreagate_task': {
-        'task': 'deep_explore.tasks.update_deep_explore_entries_count_by_geo_aggreagate_task',
-        # Every day at 01:00
-        'schedule': crontab(minute=0, hour=1),
-    },
     'project_generate_stats': {
         'task': 'project.tasks.generate_project_stats_cache',
         # Every 5 min
@@ -515,6 +510,16 @@ CELERY_BEAT_SCHEDULE = {
     'index_leads': {
         'task': 'deduplication.tasks.indexing.create_indices',
         'schedule': crontab(minute=0, hour=2),  # execute every second hour of the day
+    # Deep Explore
+    'update_deep_explore_entries_count_by_geo_aggreagate_task': {
+        'task': 'deep_explore.tasks.update_deep_explore_entries_count_by_geo_aggreagate_task',
+        # Every day at 01:00
+        'schedule': crontab(minute=0, hour=1),
+    },
+    'update_public_deep_explore_snapshot': {
+        'task': 'deep_explore.tasks.update_public_deep_explore_snapshot',
+        # Every day at 01:00
+        'schedule': crontab(minute=0, hour=1),
     },
 }
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
@@ -874,6 +879,7 @@ GRAPHENE_NODES_WHITELIST = (
     'publicAnalysisFrameworks',
     'publicOrganizations',
     'publicLead',
+    'publicDeepExploreYearlySnapshots',
 )
 
 # https://docs.graphene-python.org/projects/django/en/latest/settings/
