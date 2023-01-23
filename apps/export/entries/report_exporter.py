@@ -307,7 +307,7 @@ class ReportExporter:
                 continue
 
             # Map text to entry->order->text
-            collected_widget_text[entry_id] = collected_widget_text.get(entry_id, {})
+            collected_widget_text[entry_id] = collected_widget_text.get(entry_id) or {}
             collected_widget_text[entry_id][widget_order] = (
                 widget_title,
                 text and text.strip(),  # Widget Text Value
@@ -454,8 +454,8 @@ class ReportExporter:
             raw_export_data = []
             for each in entry.exportdata_set.all():
                 export_datum = {
-                    **each.data.get('common', {}),
-                    **each.data.get('report', {}),
+                    **(each.data.get('common') or {}),
+                    **(each.data.get('report') or {}),
                 }
                 if export_datum.get('widget_key') and export_datum['widget_key'] in self.exporting_widgets_keys:
                     raw_export_data.append(export_datum)
@@ -523,7 +523,7 @@ class ReportExporter:
         para.add_run(excerpt)
 
         # Add texts from TextWidget
-        entry_texts = self.collected_widget_text.get(entry.id, {})
+        entry_texts = self.collected_widget_text.get(entry.id) or {}
         widget_texts_exists = not not entry_texts.keys()
         if widget_texts_exists:
             self.doc.add_paragraph()  # Blank line
