@@ -190,7 +190,7 @@ class WidgetExporter:
 class ReportExporter:
     def __init__(
         self,
-        exporting_widgets=None,
+        exporting_widgets=None,  # eg: ["517", "43", "42"]
         is_preview=False,
         show_lead_entry_id=True,
         show_assessment_data=True,
@@ -200,19 +200,19 @@ class ReportExporter:
         self.show_lead_entry_id = show_lead_entry_id
         self.show_assessment_data = show_assessment_data
         self.show_entry_widget_data = show_entry_widget_data
-        self.entry_group_labels = {}
+        # self.entry_group_labels = {}  # TODO: Remove entry group labels?
 
         self.doc = Document(
             os.path.join(settings.APPS_DIR, 'static/doc_export/template.docx')
         )
         self.lead_ids = []
         # ordered list of widget ids
-        self.exporting_widgets = exporting_widgets or []
-        # format of exporting_widgets = "[517,43,42,[405,"scalewidget-xe11vlcxs2gqdh1r","Scale"]]"
-        self.exporting_widgets_keys = [
-            Widget.objects.get(id=each).key if not isinstance(each, list) else each[1]
-            for each in self.exporting_widgets
+        self.exporting_widgets_ids = [
+            int(_id) for _id in exporting_widgets or []
         ]
+        self.exporting_widgets_keys = list(
+            Widget.objects.filter(id__in=self.exporting_widgets_ids).values_list('key', flat=True)
+        )
         self.region_data = {}
         # XXX: Limit memory usage? (Or use redis?)
         self.geoarea_data_cache = {}
@@ -227,7 +227,7 @@ class ReportExporter:
         self.exportables = exportables
 
         geo_data_required = Widget.objects.filter(
-            id__in=[each[0] if type(each) in (list, tuple) else each for each in self.exporting_widgets],
+            id__in=self.exporting_widgets_ids,
             widget_id=geo_widget.WIDGET_ID
         ).exists()
         # Load geo data if required
@@ -269,55 +269,49 @@ class ReportExporter:
     def load_text_from_text_widgets(self, entries, text_widget_ids):
         """
         Prefetch entry texts from text_Widgets
-        text_widget_ids: [id1, id2, [id1, 'widget-key', 'widget-label']]
+        text_widget_ids: ["id1", "id2"]
         """
         # User defined widget order (Generate order map)
+        widget_ids = [int(id) for id in text_widget_ids]
         widget_map = {
-            id: index
-            for index, id in enumerate(text_widget_ids) if isinstance(id, int)
+            int(id): index
+            for index, id in enumerate(text_widget_ids)
         }
-        conditional_widget_map = {
-            f'{array[0]}-{array[1]}': (index, array[2])
-            for index, array in enumerate(text_widget_ids) if isinstance(array, list) and len(array) == 3
-        }
+
+        attribute_qs = Attribute.objects.filter(
+            entry__in=entries,
+            data__value__isnull=False,
+            widget__id__in=widget_ids,
+        )
 
         # Collect text from textWidgets for given entries using user defined widget data
         collected_widget_text = {}
-        for attribute_d in Attribute.objects.filter(
-            entry__in=entries,
-            data__value__isnull=False,
-            widget__id__in=[(id if isinstance(id, int) else id[0]) for id in text_widget_ids],
-        ).values(
-            'entry_id', 'data__value', 'widget__title', 'widget__id', 'widget__widget_id'
+        for (
+            entry_id,
+            text,
+            widget_title,
+            widget_id,
+            widget_type,
+        ) in attribute_qs.values_list(
+            'entry_id',
+            'data__value',  # Text
+            'widget__title',
+            'widget__id',
+            'widget__widget_id',  # Widget Type
         ):
-            entry_id = attribute_d['entry_id']
-            widget_id = attribute_d['widget__id']
-            widget_type = attribute_d['widget__widget_id']
-
             if widget_type == 'conditionalWidget':
-                selected_widget_key = attribute_d['data__value'].get('selected_widget_key')
-                widget_order, widget_title = (
-                    conditional_widget_map.get(f'{widget_id}-{selected_widget_key}', (None, None))
-                )
-                text = (
-                    (
-                        attribute_d['data__value'].get(selected_widget_key) or {}
-                    ).get('data') or {}
-                ).get('value')
-            else:
-                widget_order = widget_map[widget_id]
-                widget_title = attribute_d['widget__title']
-                text = attribute_d['data__value']
+                continue
 
+            widget_order = widget_map[widget_id]
             if widget_order is None:
                 continue
 
             # Map text to entry->order->text
-            collected_widget_text[entry_id] = collected_widget_text.get(entry_id, {})
-            collected_widget_text[entry_id][widget_order] = [
+            collected_widget_text[entry_id] = collected_widget_text.get(entry_id) or {}
+            collected_widget_text[entry_id][widget_order] = (
                 widget_title,
                 text and text.strip(),  # Widget Text Value
-            ]
+            )
 
         self.collected_widget_text = collected_widget_text
         return self
@@ -459,29 +453,24 @@ class ReportExporter:
         if entry.id not in self.entry_widget_data_cache:
             raw_export_data = []
             for each in entry.exportdata_set.all():
-                if 'other' in each.data.get('report', {}):
-                    for rep in each.data['report'].get('other', []):
-                        if rep.get('widget_key') and rep['widget_key'] in self.exporting_widgets_keys:
-                            raw_export_data.append(rep)
-                else:
-                    export_datum = {
-                        **each.data.get('common', {}),
-                        **each.data.get('report', {}),
-                    }
-                    if export_datum.get('widget_key') and export_datum['widget_key'] in self.exporting_widgets_keys:
-                        raw_export_data.append(export_datum)
+                export_datum = {
+                    **(each.data.get('common') or {}),
+                    **(each.data.get('report') or {}),
+                }
+                if export_datum.get('widget_key') and export_datum['widget_key'] in self.exporting_widgets_keys:
+                    raw_export_data.append(export_datum)
             raw_export_data.sort(key=lambda x: self.exporting_widgets_keys.index(x['widget_key']))
 
             export_data = []
             if raw_export_data:
                 for data in raw_export_data:
                     try:
-                        resp = WidgetExporter.get_widget_information_into_report(
+                        if resp := WidgetExporter.get_widget_information_into_report(
                             data,
                             bold=True,
                             _get_geo_admin_level_1_data=self._get_geo_admin_level_1_data
-                        )
-                        resp and export_data.append(resp)
+                        ):
+                            export_data.append(resp)
                     except ExportDataVersionMismatch:
                         logger.error(
                             f'ExportDataVersionMismatch: For entry {entry.id}, project {entry.project.id}',
@@ -534,19 +523,18 @@ class ReportExporter:
         para.add_run(excerpt)
 
         # Add texts from TextWidget
-        widget_texts_exists = len(self.collected_widget_text.get(entry.id, [])) > 0
-        entry_texts = self.collected_widget_text.get(entry.id, {})
-        widget_texts_exists and self.doc.add_paragraph()  # Blank line
-        for order in sorted(entry_texts.keys()):
-            title, text = entry_texts[order]
-            para = self.doc.add_paragraph().justify()
-            para.add_run(f'{title}: ', bold=True)
-            para.add_run(text)
+        entry_texts = self.collected_widget_text.get(entry.id) or {}
+        widget_texts_exists = not not entry_texts.keys()
         if widget_texts_exists:
-            para = self.doc.add_paragraph()
+            self.doc.add_paragraph()  # Blank line
+            for order in sorted(entry_texts.keys()):
+                title, text = entry_texts[order]
+                para = self.doc.add_paragraph().justify()
+                para.add_run(f'{title}: ', bold=True)
+                para.add_run(text)
+            para = self.doc.add_paragraph().justify()
 
-        # NOTE: Use doc.add_image for limiting image size to page width
-        # and run.add_image for actual size image
+        # NOTE: Use doc.add_image for limiting image size to page width and run.add_image for actual size image
 
         image = None
         image_text = None
@@ -564,25 +552,36 @@ class ReportExporter:
 
         if image:
             self.doc.add_image(image)
-            self.doc.add_paragraph(image_text).justify()
+            if image_text:
+                self.doc.add_paragraph(image_text).justify()
             para = self.doc.add_paragraph().justify()
 
         lead = entry.lead
         self.lead_ids.append(lead.id)
+
+        # --- Reference Start
+        if widget_texts_exists or image:
+            para.add_run('(')  # Starting from new line
+        else:
+            para.add_run(' (')  # Starting from same line
 
         source = lead.get_source_display() or 'Reference'
         author = lead.get_authors_display()
         url = lead.url or Permalink.lead_share_view(lead.uuid)
         date = entry.lead.published_on
 
-        para.add_run('(' if widget_texts_exists else ' (')
-
         # Add author is available
-        (author and author.lower() != (source or '').lower()) and (
-            para.add_hyperlink(url, f'{author}, ') if url else para.add_run(f'{author}, ')
-        )
+        if (author and author.lower() != (source or '').lower()):
+            if url:
+                para.add_hyperlink(url, f'{author}, ')
+            else:
+                para.add_run(f'{author}, ')
         # Add source (with url if available)
-        para.add_hyperlink(url, source) if url else para.add_run(source)
+        if url:
+            para.add_hyperlink(url, source)
+        else:
+            para.add_run(source)
+
         # Add (confidential/restricted) to source without ,
         if lead.confidentiality == Lead.Confidentiality.CONFIDENTIAL:
             para.add_run(' (confidential)')
@@ -590,20 +589,23 @@ class ReportExporter:
             para.add_run(' (restricted)')
 
         # Add lead title if available
-        lead.title and para.add_run(f", {lead.title}")
+        if lead.title:
+            para.add_run(f", {lead.title}")
+
         # Finally add date
         # TODO: use utils.common.format_date and perhaps use information date
-        date and para.add_run(f", {date.strftime('%d/%m/%Y')}")
-        # para.add_run(f", {'Controlled' if entry.controlled else 'Unverified'}")
+        if date:
+            para.add_run(f", {date.strftime('%d/%m/%Y')}")
+
         para.add_run(')')
-        # para = self.doc.add_paragraph().justify()
+        # --- Reference End
 
         # Adding Entry Group Labels
-        group_labels = self.entry_group_labels.get(entry.pk) or []
-        if len(group_labels) > 0:
-            para.add_run(' (')
-            para.add_run(', '.join([f'{group} : {label}' for group, label in group_labels]))
-            para.add_run(')')
+        # group_labels = self.entry_group_labels.get(entry.pk) or []
+        # if len(group_labels) > 0:
+        #     para.add_run(' (')
+        #     para.add_run(', '.join([f'{group} : {label}' for group, label in group_labels]))
+        #     para.add_run(')')
 
         self.doc.add_paragraph()
 
