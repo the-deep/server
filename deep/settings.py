@@ -154,6 +154,7 @@ LOCAL_APPS = [
     'commons',
     'redis_store',
     'jwt_auth',
+    'deduplication',
 ]
 
 INSTALLED_APPS = [

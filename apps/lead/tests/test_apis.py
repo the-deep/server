@@ -1774,9 +1774,10 @@ class TestExtractorCallback(TestCase):
         super().setUp()
         self.lead = LeadFactory.create()
 
+    @mock.patch('lead.serializers.index_lead_and_calculate_duplicates')
     @mock.patch('lead.tasks.RequestHelper.get_text')
     @mock.patch('lead.tasks.RequestHelper.get_file')
-    def test_extractor_callback_url(self, get_file_mock, get_text_mock):
+    def test_extractor_callback_url(self, get_file_mock, get_text_mock, index_lead_func):
         url = '/api/v1/callback/lead-extract/'
         self.authenticate()
 
@@ -1822,6 +1823,8 @@ class TestExtractorCallback(TestCase):
         self.assertEqual(lead_preview.word_count, 300)
         self.assertEqual(lead_preview.page_count, 4)
         self.assertEqual(LeadPreviewImage.objects.filter(lead=self.lead).count(), 2)
+
+        index_lead_func.assert_called_with(self.lead)
 
     def test_client_id_generator(self):
         project = self.create_project()

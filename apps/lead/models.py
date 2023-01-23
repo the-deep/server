@@ -141,6 +141,8 @@ class Lead(UserResource, ProjectEntityMixin):
         on_delete=models.SET_NULL, related_name='+', blank=True, null=True
     )
     duplicate_leads = models.ManyToManyField("Lead", blank=True, related_name="duplicate_of")
+    is_indexed = models.BooleanField(default=False)
+    indexed_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return '{}'.format(self.title)

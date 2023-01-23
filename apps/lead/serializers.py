@@ -30,7 +30,8 @@ from project.models import ProjectMembership
 from unified_connector.models import ConnectorSourceLead
 from lead.filter_set import LeadsFilterDataInputType
 
-from .tasks import LeadExtraction, send_deduplication_request_to_nlp_server
+from .tasks import LeadExtraction
+from deduplication.tasks.indexing import index_lead_and_calculate_duplicates
 from .models import (
     EMMEntity,
     Lead,
@@ -694,8 +695,8 @@ class ExtractCallbackSerializer(serializers.Serializer):
                 data.get('total_words_count'),
                 data.get('total_pages'),
             )
-            # Request to deep nlp for deduplication
-            send_deduplication_request_to_nlp_server.delay(lead.id)
+            # Add to deduplication index
+            index_lead_and_calculate_duplicates(lead)
             return lead
         lead.update_extraction_status(Lead.ExtractionStatus.FAILED)
         return lead
