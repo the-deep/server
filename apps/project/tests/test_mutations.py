@@ -3,7 +3,11 @@ from datetime import timedelta
 from factory import fuzzy
 
 from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
-from user.utils import send_project_join_request_emails
+from user.utils import (
+    send_project_join_request_emails,
+    send_project_accept_email,
+    send_project_reject_email,
+)
 
 from user.models import Feature
 from notification.models import Notification
@@ -629,7 +633,7 @@ class TestProjectJoinMutation(GraphQLTestCase):
         'project.serializers.send_project_join_request_emails.delay',
         side_effect=send_project_join_request_emails.delay
     )
-    def test_valid_project_join(self, send_project_join_request_emails_mock):
+    def test_valid_project_join(self, send_project_join_request_email_mock):
         user = UserFactory.create()
         admin_user = UserFactory.create()
         project = ProjectFactory.create()
@@ -647,7 +651,7 @@ class TestProjectJoinMutation(GraphQLTestCase):
             content = self.query_check(self.project_join_mutation, minput=minput, okay=True)
         self.assertEqual(content['data']['joinProject']['result']['requestedBy']['id'], str(user.id), content)
         self.assertEqual(content['data']['joinProject']['result']['project']['id'], str(project.id), content)
-        send_project_join_request_emails_mock.assert_called_once()
+        send_project_join_request_email_mock.assert_called_once()
         # confirm that the notification is also created
         assert notification_qs.count() > old_count
 
@@ -776,7 +780,11 @@ class TestProjectJoinAcceptRejectMutation(GraphQLSnapShotTestCase):
         '''
         super().setUp()
 
-    def test_project_join_request_accept(self):
+    @mock.patch(
+        'project.serializers.send_project_accept_email.delay',
+        side_effect=send_project_accept_email.delay
+    )
+    def test_project_join_request_accept(self, send_project_accept_email_mock):
         user = UserFactory.create()
         user2 = UserFactory.create()
         project = ProjectFactory.create()
@@ -804,8 +812,12 @@ class TestProjectJoinAcceptRejectMutation(GraphQLSnapShotTestCase):
 
         # with login
         self.force_login(user)
-        content = self.query_check(self.projet_accept_reject_mutation, minput=minput,
-                                   variables={'projectId': project.id, 'joinRequestId': join_request.id})
+        with self.captureOnCommitCallbacks(execute=True):
+            content = self.query_check(
+                self.projet_accept_reject_mutation,
+                minput=minput,
+                variables={'projectId': project.id, 'joinRequestId': join_request.id}
+            )
         self.assertEqual(
             content['data']['project']['acceptRejectProject']['result']['requestedBy']['id'],
             str(user2.id), content
@@ -822,6 +834,7 @@ class TestProjectJoinAcceptRejectMutation(GraphQLSnapShotTestCase):
         # make sure memberships is created
         self.assertIn(user2.id, ProjectMembership.objects.filter(project=project).values_list('member', flat=True))
         assert notification_qs.count() > old_count
+        send_project_accept_email_mock.assert_called_once()
         # Check Project change logs
         self.assertMatchSnapshot(
             list(
@@ -830,7 +843,11 @@ class TestProjectJoinAcceptRejectMutation(GraphQLSnapShotTestCase):
             'project-change-log',
         )
 
-    def test_project_join_request_reject(self):
+    @mock.patch(
+        'project.serializers.send_project_reject_email.delay',
+        side_effect=send_project_reject_email.delay
+    )
+    def test_project_join_request_reject(self, send_project_reject_email_mock):
         user = UserFactory.create()
         user2 = UserFactory.create()
         project = ProjectFactory.create()
@@ -850,13 +867,18 @@ class TestProjectJoinAcceptRejectMutation(GraphQLSnapShotTestCase):
 
         # with login
         self.force_login(user)
-        content = self.query_check(self.projet_accept_reject_mutation, minput=minput,
-                                   variables={'projectId': project.id, 'joinRequestId': join_request.id})
+        with self.captureOnCommitCallbacks(execute=True):
+            content = self.query_check(
+                self.projet_accept_reject_mutation,
+                minput=minput,
+                variables={'projectId': project.id, 'joinRequestId': join_request.id}
+            )
         self.assertEqual(
             content['data']['project']['acceptRejectProject']['result']['status'],
             self.genum(ProjectJoinRequest.Status.REJECTED),
             content
         )
+        send_project_reject_email_mock.assert_called_once()
         # Check project change logs
         assert ProjectChangeLog.objects.filter(project=project).count() == 0
 

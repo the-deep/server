@@ -166,6 +166,46 @@ def send_project_join_request_emails(join_request_id):
         )
 
 
+def project_context(join_request_id):
+    join_request = ProjectJoinRequest.objects.get(id=join_request_id)
+    project = join_request.project
+    user = join_request.requested_by
+    role = join_request.role
+
+    context = {
+        'project': project,
+        'user': user,
+        'role': role,
+    }
+    return context
+
+
+@shared_task
+def send_project_accept_email(join_request_id):
+    context = project_context(join_request_id)
+
+    send_mail_to_user(
+        context['user'],
+        EmailCondition.JOIN_REQUESTS,
+        context=context,
+        subject_template_name='project/project_join_accept.txt',
+        email_template_name='project/project_join_accept_email.html',
+    )
+
+
+@shared_task
+def send_project_reject_email(join_request_id):
+    context = project_context(join_request_id)
+
+    send_mail_to_user(
+        context['user'],
+        EmailCondition.JOIN_REQUESTS,
+        context=context,
+        subject_template_name='project/project_join_reject.txt',
+        email_template_name='project/project_join_reject_email.html',
+    )
+
+
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
