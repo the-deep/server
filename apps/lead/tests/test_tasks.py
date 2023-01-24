@@ -5,7 +5,6 @@ from django.urls import reverse
 
 from deep.tests import TestCase
 
-from lead.factories import LeadPreviewFactory, LeadFactory
 from lead.tasks import (
     extract_from_lead,
     _preprocess,

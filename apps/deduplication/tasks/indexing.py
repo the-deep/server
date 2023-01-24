@@ -22,7 +22,7 @@ def find_and_set_duplicate_leads(index: MinHashLSH, lead: Lead, minhash: LeanMin
 
 
 def process_and_index_lead(lead: Lead, index: MinHashLSH):
-    minhash = get_minhash(lead.leadpreview.text_extract)
+    minhash = get_minhash(lead.leadpreview.text_extract or lead.text)
     insert_to_index(index, lead.id, minhash)
     lead.is_indexed = True
     lead.indexed_at = timezone.now()
@@ -111,7 +111,7 @@ def get_index_object_for_project(project: Project) -> LSHIndex:
 @shared_task
 @warn_on_exception(logger)
 def index_lead_and_calculate_duplicates(lead: Lead):
-    text = lead.leadpreview.text_extract
+    text = lead.leadpreview.text_extract or lead.text
     if not text:
         return
 

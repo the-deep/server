@@ -45,7 +45,7 @@ class TestTasks(TestCase):
         """When lead has no text, the function should return early without calling
         the function get_index_object_for_project
         """
-        lead = LeadFactory.create()
+        lead = LeadFactory.create(text="")
         LeadPreviewFactory.create(lead=lead, text_extract="")
         index_lead_and_calculate_duplicates(lead)
         get_index_func.assert_not_called()
@@ -85,11 +85,10 @@ class TestTasks(TestCase):
         project = ProjectFactory.create()
         lead1 = LeadFactory.create(project=project)
         lead2 = LeadFactory.create(project=project)
-        print('lead1 dupilcates', lead1.duplicate_leads)
         # Create lead previews with same conent
         common_text = "This is a common text between two leads. The purpose is to mark them as duplicates"
         LeadPreviewFactory.create(lead=lead1, text_extract=common_text)
-        LeadPreviewFactory.create(lead=lead2, text_extract=common_text)
+        LeadPreviewFactory.create(lead=lead2, text_extract=common_text[20:])
         assert list(lead1.duplicate_leads.all()) == [], "No duplicates for lead1 in the beginning"
         assert list(lead2.duplicate_leads.all()) == [], "No duplicates for lead2 in the beginning"
 

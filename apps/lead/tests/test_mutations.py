@@ -1,3 +1,4 @@
+from unittest import mock
 from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
 
 from organization.factories import OrganizationFactory
@@ -66,7 +67,8 @@ class TestLeadMutationSchema(GraphQLTestCase):
         self.project.add_member(self.readonly_member_user, role=self.project_role_reader_non_confidential)
         self.project.add_member(self.member_user, role=self.project_role_member)
 
-    def test_lead_create(self):
+    @mock.patch('lead.serializers.index_lead_and_calculate_duplicates.delay')
+    def test_lead_create(self, index_and_calculate_dups_func):
         """
         This test makes sure only valid users can create lead
         """
@@ -96,6 +98,8 @@ class TestLeadMutationSchema(GraphQLTestCase):
         self.force_login(self.member_user)
         content = _query_check(minput)['data']['project']['leadCreate1']['result']
         self.assertEqual(content['title'], minput['title'], content)
+
+        index_and_calculate_dups_func.assert_called()
 
     def test_lead_create_validation(self):
         """
