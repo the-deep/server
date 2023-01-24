@@ -35,13 +35,13 @@ def process_and_index_lead(lead: Lead, index: MinHashLSH):
 def process_and_index_leads(
     project: Project,
     index_obj: LSHIndex,
-    index: MinHashLSH,
 ):
     # Fetch leads which have been extracted and which have not been indexed
     leads = Lead.objects.filter(
         project=project,
         is_indexed=False,
     )
+    index: MinHashLSH = index_obj.index
     try:
         batches = batched(leads, batch_size=200)
         for i, batch in enumerate(batches):
@@ -75,11 +75,10 @@ def create_project_index(project: Project):
     index_obj = get_index_object_for_project(project)
 
     if index_obj.has_errored:
+        logger.warning(f"")
         return
 
-    index = index_obj.index
-
-    process_and_index_leads(project, index_obj, index)
+    process_and_index_leads(project, index_obj)
 
 
 @shared_task
@@ -127,6 +126,7 @@ def index_lead_and_calculate_duplicates(lead: Lead):
     index_obj.save(update_fields=['index_pickle'])
 
 
+@shared_task
 def remove_lead_from_index(lead: Lead):
     index_obj = get_index_object_for_project(lead.project)
 

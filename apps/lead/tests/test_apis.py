@@ -306,7 +306,8 @@ class LeadTests(TestCase):
 
         self.assertEqual(Lead.objects.count(), lead_count)
 
-    def test_delete_lead(self):
+    @mock.patch('lead.views.remove_lead_from_index.delay')
+    def test_delete_lead(self, remove_lead_from_index_func):
         project = self.create(Project, role=self.admin_role)
         lead = self.create(Lead, project=project)
         url = '/api/v1/leads/{}/'.format(lead.id)
@@ -314,6 +315,7 @@ class LeadTests(TestCase):
         self.authenticate()
         response = self.client.delete(url)
         self.assert_204(response)
+        remove_lead_from_index_func.assert_called_once()
 
     def test_delete_lead_no_perm(self):
         project = self.create(Project, role=self.admin_role)

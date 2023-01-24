@@ -3,7 +3,7 @@ from project.permissions import get_project_entities
 
 class ProjectEntityMixin:
     """
-    Mixin with build in permission methods for project entities like lead,
+    Mixin with built in permission methods for project entities like lead,
     entry, assessments, etc.
     """
     def __getattr__(self, name):
