@@ -504,6 +504,11 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'organization.tasks.update_organization_popularity',
         'schedule': crontab(minute=0, hour=0),  # execute every day
     },
+    # Lead indexing for deduplication
+    'index_leads': {
+        'task': 'deduplication.tasks.indexing.create_indices',
+        'schedule': crontab(minute=0, hour=2), # execute every second hour of the day
+    },
 }
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 

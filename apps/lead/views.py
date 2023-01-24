@@ -43,6 +43,7 @@ from unified_connector.sources.base import OrganizationSearch
 from entry.models import Entry
 
 from .tasks import extract_from_lead
+from deduplication.tasks.indexing import remove_lead_from_index
 from .models import (
     LeadGroup,
     Lead,
@@ -174,6 +175,13 @@ class LeadViewSet(viewsets.ModelViewSet):
                 similarity=TrigramSimilarity('title', similar_lead.title)
             ).filter(similarity__gt=0.3).order_by('-similarity')
         return leads
+
+    def destroy(self, *args, **kwargs):
+        lead = self.get_object()
+        result = super().destroy(*args, **kwargs)
+        # remove from index after the deletion is successful
+        remove_lead_from_index.delay(lead)
+        return result
 
     # TODO: Remove this API endpoint after client is using summary
     @action(
@@ -829,16 +837,6 @@ class LeadExtractCallbackView(views.APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = ExtractCallbackSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return response.Response("Request successfully completed", status=status.HTTP_200_OK)
-
-
-class LeadDeduplicationCallbackView(views.APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request, **kwargs):
-        serializer = DeduplicationCallbackSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return response.Response("Request successfully completed", status=status.HTTP_200_OK)
