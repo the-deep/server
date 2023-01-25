@@ -172,8 +172,8 @@ class Lead(UserResource, ProjectEntityMixin):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         update_fields = kwargs.get('update_fields')
-
         initial_fields = ['text', 'attachment', 'attachment_id', 'url']
+
         if (
             not settings.TESTING and (
                 self.id is None or

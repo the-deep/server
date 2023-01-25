@@ -62,7 +62,6 @@ from .serializers import (
     LeadOptionsBodySerializer,
     LegacyLeadOptionsSerializer,
     ExtractCallbackSerializer,
-    DeduplicationCallbackSerializer,
 )
 
 
@@ -180,7 +179,7 @@ class LeadViewSet(viewsets.ModelViewSet):
         lead = self.get_object()
         result = super().destroy(*args, **kwargs)
         # remove from index after the deletion is successful
-        remove_lead_from_index.delay(lead)
+        remove_lead_from_index.delay(lead.id)
         return result
 
     # TODO: Remove this API endpoint after client is using summary
