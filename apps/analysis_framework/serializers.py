@@ -3,7 +3,7 @@ from django.utils.functional import cached_property
 from drf_dynamic_fields import DynamicFieldsMixin
 from rest_framework import serializers, exceptions
 from drf_writable_nested.serializers import WritableNestedModelSerializer
-from django.db.models import Q
+from django.db import models
 
 from deep.serializers import RemoveNullFieldsMixin, TempClientIdMixin, IntegerIDField
 from user_resource.serializers import UserResourceSerializer
@@ -205,7 +205,7 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
         user = None
         if 'request' in self.context:
             user = self.context['request'].user
-        projects = obj.project_set.exclude(Q(is_private=True) & ~Q(members=user))
+        projects = obj.project_set.exclude(models.Q(is_private=True) & ~models.Q(members=user))
         return SimpleProjectSerializer(projects, context=self.context, many=True, read_only=True).data
 
     def get_users_with_add_permission(self, obj):
@@ -370,6 +370,21 @@ class SectionGqlSerializer(TempClientIdMixin, WritableNestedModelSerializer):
             'widgets',
             'client_id',
         )
+
+    # NOTE: Overriding perform_nested_delete_or_update to have custom behaviour for section->widgets on delete
+    def perform_nested_delete_or_update(self, pks_to_delete, model_class, instance, related_field, field_source):
+        if model_class != Widget:
+            return super().perform_nested_delete_or_update(
+                pks_to_delete, model_class, instance, related_field, field_source
+            )
+        # Ignore on_delete, just delete the widgets if removed from Section instead of
+        # just removing section from widget which is the default behaviour for WritableNestedModelSerializer
+        # https://github.com/beda-software/drf-writable-nested/blob/master/drf_writable_nested/mixins.py#L302-L308
+        qs = Widget.objects.filter(
+            section=self.instance,  # NOTE: Adding this additional filter just to make sure
+            pk__in=pks_to_delete
+        )
+        qs.delete()
 
     # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
     # This makes sure only scoped (individual AF) instances (widgets) are updated.
