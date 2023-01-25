@@ -521,7 +521,7 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
         # preview or lead text, the function will return. And later
         # when preview is ready after extraction, it will be called
         # again
-        index_lead_and_calculate_duplicates.delay(lead)
+        index_lead_and_calculate_duplicates.delay(lead.id)
         return lead
 
     def update(self, instance, validated_data):
@@ -698,12 +698,12 @@ class ExtractCallbackSerializer(serializers.Serializer):
             lead = LeadExtraction.save_lead_data(
                 lead,
                 data['text_path'],
-                data.get('images_path', [])[:10],   # TODO: Support for more images, to much image will error.
+                data.get('images_path', [])[:10],   # TODO: Support for more images, too much image will error.
                 data.get('total_words_count'),
                 data.get('total_pages'),
             )
             # Add to deduplication index
-            index_lead_and_calculate_duplicates(lead)
+            index_lead_and_calculate_duplicates(lead.id)
             return lead
         lead.update_extraction_status(Lead.ExtractionStatus.FAILED)
         return lead
@@ -728,51 +728,3 @@ class UserSavedLeadFilterSerializer(ProjectPropertySerializerMixin, serializers.
         data['project'] = self.project
         data['user'] = self.current_user
         return data
-
-
-class DeduplicationCallbackSerializer(serializers.Serializer):
-    client_id = serializers.CharField()
-    lead_id = serializers.IntegerField()
-    duplicate_lead_ids = serializers.ListField(child=serializers.IntegerField())
-
-    def __init__(self, *args, **kwargs):
-        self.lead = None
-        self.duplicate_leads = None
-        super().__init__(*args, **kwargs)
-
-    def validate_lead_id(self, lead_id):
-        self.lead = Lead.objects.filter(pk=lead_id).first()
-        if not self.lead:
-            raise serializers.ValidationError("Lead does not exist")
-        return lead_id
-
-    def validate_duplicate_lead_ids(self, lead_ids):
-        if not lead_ids:
-            raise serializers.ValidationError("Empty lead ids")
-        self.duplicate_leads = Lead.objects.filter(pk__in=lead_ids)
-        if self.duplicate_leads.count() != len(lead_ids):
-            raise serializers.ValidationError("All of the duplicate lead ids do not exist")
-        return lead_ids
-
-    def validate(self, data):
-        if self.lead is None or self.duplicate_leads is None:
-            raise serializers.ValidationError("Invalid data. Provide lead_id and duplicate_lead_ids")
-
-        # Also validate if lead_id corresponds to the client id
-        try:
-            lead = LeadExtraction.get_lead_from_client_id(data['client_id'])
-        except LeadExtraction.Exception.InvalidTokenValue:
-            raise serializers.ValidationError("Invalid token")
-        if lead.id != data['lead_id']:
-            raise serializers.ValidationError("Inconsistent lead_id and client_id")
-
-        project_leads = self.duplicate_leads.filter(project=self.lead.project)
-        if project_leads.count() != len(data["duplicate_lead_ids"]):
-            raise serializers.ValidationError("Leads belong to different project")
-        return data
-
-    def create(self, _):
-        if self.lead is None or self.duplicate_leads is None:
-            raise serializers.ValidationError("Invalid data. Provide lead_id and duplicate_lead_ids")
-        self.lead.duplicate_leads.set(self.duplicate_leads)
-        return self.lead

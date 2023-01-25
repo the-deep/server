@@ -47,7 +47,7 @@ class TestTasks(TestCase):
         """
         lead = LeadFactory.create(text="")
         LeadPreviewFactory.create(lead=lead, text_extract="")
-        index_lead_and_calculate_duplicates(lead)
+        index_lead_and_calculate_duplicates(lead.id)
         get_index_func.assert_not_called()
 
     @patch('deduplication.tasks.indexing.process_and_index_lead')
@@ -55,7 +55,7 @@ class TestTasks(TestCase):
         project = ProjectFactory.create()
         lead = LeadFactory.create(project=project)
         LSHIndexFactory.create(project=project, has_errored=True)
-        index_lead_and_calculate_duplicates(lead)
+        index_lead_and_calculate_duplicates(lead.id)
         process_lead_func.assert_not_called()
 
     def test_index_lead_and_calculate_duplicates(self):
@@ -63,7 +63,7 @@ class TestTasks(TestCase):
         project = ProjectFactory.create()
         lead = LeadFactory.create(project=project)
         LeadPreviewFactory.create(lead=lead, text_extract="This is some text")
-        index_lead_and_calculate_duplicates(lead)
+        index_lead_and_calculate_duplicates(lead.id)
 
         # get LSHIndex object
         index_obj = LSHIndex.objects.get(project=project)
@@ -93,20 +93,20 @@ class TestTasks(TestCase):
         assert list(lead2.duplicate_leads.all()) == [], "No duplicates for lead2 in the beginning"
 
         # Index lead1, at this point there should be no duplicates for it
-        index_lead_and_calculate_duplicates(lead1)
+        index_lead_and_calculate_duplicates(lead1.id)
 
         # Index lead2, at this point, lead1 should be marked its duplicate
-        index_lead_and_calculate_duplicates(lead2)
+        index_lead_and_calculate_duplicates(lead2.id)
         assert lead2.duplicate_leads is not None
 
     def test_remove_lead_from_index(self):
         project = ProjectFactory.create()
         lead = LeadFactory.create(project=project)
         LeadPreviewFactory.create(lead=lead, text_extract="This is some text")
-        index_lead_and_calculate_duplicates(lead)
+        index_lead_and_calculate_duplicates(lead.id)
         index_obj = get_index_object_for_project(project)
         assert lead.id in index_obj.index, "The lead should be present in index"
         # Now remove lead
-        remove_lead_from_index(lead)
+        remove_lead_from_index(lead.id)
         index_obj = get_index_object_for_project(project)
         assert lead.id not in index_obj.index, "The lead should be removed in index"

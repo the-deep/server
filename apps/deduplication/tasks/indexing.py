@@ -110,7 +110,11 @@ def get_index_object_for_project(project: Project) -> LSHIndex:
 
 @shared_task
 @warn_on_exception(logger)
-def index_lead_and_calculate_duplicates(lead: Lead):
+def index_lead_and_calculate_duplicates(lead_id: int):
+    lead = Lead.objects.filter(id=lead_id).first()
+    if lead is None:
+        logger.warning(f"Cannot index inexistent lead(id={lead_id})")
+        return
     text = lead.leadpreview.text_extract or lead.text
     if not text:
         return
@@ -118,6 +122,7 @@ def index_lead_and_calculate_duplicates(lead: Lead):
     index_obj = get_index_object_for_project(lead.project)
     if index_obj.has_errored:
         # TODO: Re-create index? or just ignore?
+        logger.warning(f"LSHIndex object has errored. object id {index_obj.id}")
         return
 
     index = process_and_index_lead(lead, index_obj.index)
@@ -127,7 +132,11 @@ def index_lead_and_calculate_duplicates(lead: Lead):
 
 
 @shared_task
-def remove_lead_from_index(lead: Lead):
+def remove_lead_from_index(lead_id: int):
+    lead = Lead.objects.filter(id=lead_id).first()
+    if lead is None:
+        logger.warning(f"Cannot remove inexistent lead(id={lead_id}) from index")
+        return
     index_obj = get_index_object_for_project(lead.project)
 
     if index_obj.has_errored:
