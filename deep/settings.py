@@ -507,7 +507,7 @@ CELERY_BEAT_SCHEDULE = {
     # Lead indexing for deduplication
     'index_leads': {
         'task': 'deduplication.tasks.indexing.create_indices',
-        'schedule': crontab(minute=0, hour=2), # execute every second hour of the day
+        'schedule': crontab(minute=0, hour=2),  # execute every second hour of the day
     },
 }
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'

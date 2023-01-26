@@ -58,9 +58,9 @@ class LSHIndex(UserResourceCreated):
     def load_index(self):
         """This sets the attribute index if pickle is present"""
         if (
-            hasattr(self, "index_pickle")
-            and self.index_pickle is not None
-            and self.pickle_version is not None
+            hasattr(self, "index_pickle") and
+            self.index_pickle is not None and
+            self.pickle_version is not None
         ):
             supported_formats = pickle.compatible_formats
             if self.pickle_version not in supported_formats:
