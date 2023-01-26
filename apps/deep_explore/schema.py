@@ -28,7 +28,7 @@ from .filter_set import ExploreProjectFilterDataInputType, ExploreProjectFilterS
 
 
 # TODO?
-NODE_CACHE_TIMEOUT = 60 * 5  # 5 min
+NODE_CACHE_TIMEOUT = 60 * 60 * 1  # 1 Hour
 
 
 def node_cache(cache_key):
@@ -235,48 +235,58 @@ class ExploreDashboardStatType(graphene.ObjectType):
     # --- Array data ----
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_AUTHORS_LIST)
-    def resolve_top_ten_authors(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+    def resolve_top_ten_authors(root: ExploreDashboardStatRoot, *_):
         return get_top_ten_organizations_list(root.organization_qs, root.leads_qs, root.projects_qs, 'authors')
 
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_PUBLISHERS_LIST)
-    def resolve_top_ten_publishers(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+    def resolve_top_ten_publishers(root: ExploreDashboardStatRoot, *_):
         return get_top_ten_organizations_list(root.organization_qs, root.leads_qs, root.projects_qs, 'source')
 
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_FRAMEWORKS_LIST)
-    def resolve_top_ten_frameworks(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
-        return list(
-            root.analysis_framework_qs.distinct().annotate(
-                projects_count=models.functions.Coalesce(
-                    models.Subquery(
-                        root.projects_qs.filter(
-                            analysis_framework=models.OuterRef('pk'),
-                        ).order_by().values('analysis_framework').annotate(
-                            count=models.Count('id', distinct=True),
-                        ).values('count')[:1],
-                        output_field=models.IntegerField()
-                    ), 0),
-                entries_count=models.functions.Coalesce(
-                    models.Subquery(
-                        root.entries_qs.filter(
-                            analysis_framework=models.OuterRef('pk'),
-                        ).order_by().values('analysis_framework').annotate(
-                            count=models.Count('id', distinct=True),
-                        ).values('count')[:1],
-                        output_field=models.IntegerField()
-                    ), 0),
-            ).order_by('-entries_count', '-projects_count').values(
+    def resolve_top_ten_frameworks(root: ExploreDashboardStatRoot, *_):
+        projects_count_by_af = {
+            af: count
+            for af, count in root.projects_qs.filter(
+                analysis_framework__in=root.analysis_framework_qs
+            ).order_by().values('analysis_framework').annotate(
+                count=models.Count('id'),
+            ).values_list('analysis_framework', 'count')
+        }
+        entries_count_by_af = {
+            af: count
+            for af, count in root.entries_qs.filter(
+                analysis_framework__in=root.analysis_framework_qs
+            ).order_by().values('analysis_framework').annotate(
+                count=models.Count('id'),
+            ).values_list('analysis_framework', 'count')
+        }
+        af_count_data = sorted([
+            (af_id, entries_count_by_af.get(af_id, 0), projects_count_by_af.get(af_id, 0))
+            for af_id in set([*projects_count_by_af.keys(), *entries_count_by_af.keys()])
+        ], key=lambda x: x[1:], reverse=True)[:10]
+        af_data = {
+            af['id']: af
+            for af in root.analysis_framework_qs.distinct().filter(
+            ).values(
                 'id',
                 'title',
-                'projects_count',
-                'entries_count',
-            )[:10]
-        )
+            )
+        }
+        return [
+            {
+                **af_data[af_id],
+                'entries_count': entries_count,
+                'projects_count': projects_count,
+            }
+            for af_id, entries_count, projects_count in af_count_data
+            if af_id in af_data
+        ]
 
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_PROJECTS_BY_USERS_LIST)
-    def resolve_top_ten_projects_by_users(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+    def resolve_top_ten_projects_by_users(root: ExploreDashboardStatRoot, *_):
         return list(
             root.projects_qs.distinct().annotate(
                 users_count=models.functions.Coalesce(
@@ -297,7 +307,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
 
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_PROJECTS_BY_ENTRIES_LIST)
-    def resolve_top_ten_projects_by_entries(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+    def resolve_top_ten_projects_by_entries(root: ExploreDashboardStatRoot, *_):
         return list(
             root.projects_qs.distinct().annotate(
                 leads_count=models.functions.Coalesce(
@@ -329,23 +339,23 @@ class ExploreDashboardStatType(graphene.ObjectType):
 
     # --- Time-series data ----
     @staticmethod
-    def resolve_leads_count_by_month(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+    def resolve_leads_count_by_month(root: ExploreDashboardStatRoot, *_):
         return count_by_date_queryset_generator(root.leads_qs, TruncMonth)
 
     @staticmethod
-    def resolve_leads_count_by_day(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+    def resolve_leads_count_by_day(root: ExploreDashboardStatRoot, *_):
         return count_by_date_queryset_generator(root.leads_qs, TruncDay)
 
     @staticmethod
-    def resolve_entries_count_by_month(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+    def resolve_entries_count_by_month(root: ExploreDashboardStatRoot, *_):
         return count_by_date_queryset_generator(root.entries_qs, TruncDay)
 
     @staticmethod
-    def resolve_entries_count_by_day(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+    def resolve_entries_count_by_day(root: ExploreDashboardStatRoot, *_):
         return count_by_date_queryset_generator(root.entries_qs, TruncDay)
 
     @staticmethod
-    def resolve_entries_count_by_region(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+    def resolve_entries_count_by_region(root: ExploreDashboardStatRoot, *_):
         return root.entries_count_by_geo_area_aggregate_qs\
             .order_by().values('geo_area').annotate(
                 count=models.Sum('entries_count'),
@@ -355,7 +365,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
             )
 
     @staticmethod
-    def resolve_projects_by_region(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+    def resolve_projects_by_region(root: ExploreDashboardStatRoot, *_):
         return Region.objects.annotate(
             project_ids=ArrayAgg(
                 'project',
@@ -370,11 +380,11 @@ class ExploreDashboardStatType(graphene.ObjectType):
         )
 
     @staticmethod
-    def resolve_projects_count_by_month(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+    def resolve_projects_count_by_month(root: ExploreDashboardStatRoot, *_):
         return count_by_date_queryset_generator(root.projects_qs, TruncMonth)
 
     @staticmethod
-    def resolve_projects_count_by_day(root: ExploreDashboardStatRoot, *_) -> models.QuerySet:
+    def resolve_projects_count_by_day(root: ExploreDashboardStatRoot, *_):
         return count_by_date_queryset_generator(root.projects_qs, TruncDay)
 
     @staticmethod
