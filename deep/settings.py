@@ -54,6 +54,12 @@ env = environ.Env(
     USE_SES_EMAIL_CONFIG=(bool, False),
     SES_AWS_ACCESS_KEY_ID=(str, None),
     SES_AWS_SECRET_ACCESS_KEY=(str, None),
+    # SMTP
+    USE_SMTP_EMAIL_CONFIG=(bool, False),
+    SMTP_EMAIL_HOST=str,
+    SMTP_EMAIL_PORT=int,
+    SMTP_EMAIL_USERNAME=str,
+    SMTP_EMAIL_PASSWORD=str,
     # Hcaptcha
     HCAPTCHA_SECRET=(str, '0x0000000000000000000000000000000000000000'),
     # Sentry
@@ -694,6 +700,7 @@ CORS_ALLOW_HEADERS = (
 
 # Email CONFIGS
 USE_SES_EMAIL_CONFIG = env('USE_SES_EMAIL_CONFIG')
+USE_SMTP_EMAIL_CONFIG = env('USE_SMTP_EMAIL_CONFIG')
 DEFAULT_FROM_EMAIL = EMAIL_FROM = env('EMAIL_FROM')
 
 ADMINS = tuple(parseaddr(email) for email in env.list('DJANGO_ADMINS'))
@@ -706,6 +713,12 @@ if USE_SES_EMAIL_CONFIG and not TESTING:
     # If environment variable are not provided, then EC2 Role will be used.
     AWS_SES_ACCESS_KEY_ID = env('SES_AWS_ACCESS_KEY_ID')
     AWS_SES_SECRET_ACCESS_KEY = env('SES_AWS_SECRET_ACCESS_KEY')
+elif USE_SMTP_EMAIL_CONFIG:  # Use SMTP instead https://docs.djangoproject.com/en/3.2/topics/email/#smtp-backend
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = env('SMTP_EMAIL_HOST')
+    EMAIL_PORT = env('SMTP_EMAIL_PORT')
+    EMAIL_HOST_USER = env('SMTP_EMAIL_USERNAME')
+    EMAIL_HOST_PASSWORD = env('SMTP_EMAIL_PASSWORD')
 else:
     """
     DUMP THE EMAIL TO CONSOLE
@@ -806,13 +819,13 @@ if DEBUG and env('DOCKER_HOST_IP') and not TESTING:
     # https://github.com/flavors/django-graphiql-debug-toolbar#installation
     # FIXME: If mutation are triggered twice https://github.com/flavors/django-graphiql-debug-toolbar/pull/12/files
     # FIXME: All request are triggered twice. Creating multiple entries in admin panel as well.
+    # INTERNAL_IPS = [env('DOCKER_HOST_IP')]
     # # JUST FOR Graphiql
     # INSTALLED_APPS += ['debug_toolbar', 'graphiql_debug_toolbar']
-    # MIDDLEWARE = ['deep.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
+    # MIDDLEWARE = ['graphiql_debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
     # # JUST FOR DRF
     # INSTALLED_APPS += ['debug_toolbar']
     # MIDDLEWARE = ['debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
-    # INTERNAL_IPS = [env('DOCKER_HOST_IP')]
     pass
 
 # https://docs.djangoproject.com/en/3.1/ref/settings/#std:setting-APPEND_SLASH
@@ -899,9 +912,6 @@ GRAPHENE_DJANGO_EXTRAS = {
     'DEFAULT_PAGE_SIZE': 20,
     'MAX_PAGE_SIZE': 50,
 }
-
-if DEEP_ENVIRONMENT in ['production']:
-    GRAPHENE['MIDDLEWARE'].append('deep.middleware.DisableIntrospectionSchemaMiddleware')
 
 UNHCR_PORTAL_API_KEY = env('UNHCR_PORTAL_API_KEY')
 
