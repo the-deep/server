@@ -23,16 +23,3 @@ def insert_to_index(index, lead_id, lead_hash: LeanMinHash):
         index.insert(lead_id, lead_hash)
     except ValueError:
         pass
-
-
-def get_similar_documents(lsh_index: LSHIndex, document: str):
-    if lsh_index.index is None:
-        return None
-    dochash = get_minhash(document)
-    return lsh_index.index.query(dochash)
-
-
-def serialize_minhash(minhash: LeanMinHash):
-    buf = bytearray(minhash.bytesize())
-    minhash.serialize(buf)
-    return buf

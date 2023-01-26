@@ -1,7 +1,5 @@
-from unittest.mock import patch, Mock
 from parameterized import parameterized
 from django.conf import settings
-from django.urls import reverse
 
 from deep.tests import TestCase
 
