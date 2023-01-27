@@ -102,6 +102,88 @@ def get_top_ten_organizations_list(queryset, leads_qs, project_qs, lead_field):
     ]
 
 
+def get_top_ten_frameworks_list(analysis_framework_qs, projects_qs, entries_qs):
+    # Calcuate projects/entries count
+    projects_count_by_af = {
+        af: count
+        for af, count in projects_qs.filter(
+            analysis_framework__in=analysis_framework_qs
+        ).order_by().values('analysis_framework').annotate(
+            count=models.Count('id'),
+        ).values_list('analysis_framework', 'count')
+    }
+    entries_count_by_af = {
+        af: count
+        for af, count in entries_qs.filter(
+            analysis_framework__in=analysis_framework_qs
+        ).order_by().values('analysis_framework').annotate(
+            count=models.Count('id'),
+        ).values_list('analysis_framework', 'count')
+    }
+    # Sort AF id using projects/entries count
+    af_count_data = sorted([
+        (af_id, entries_count_by_af.get(af_id, 0), projects_count_by_af.get(af_id, 0))
+        for af_id in set([*projects_count_by_af.keys(), *entries_count_by_af.keys()])
+    ], key=lambda x: x[1:], reverse=True)[:10]
+    # Fetch Top ten AF
+    af_data = {
+        af['id']: af
+        for af in analysis_framework_qs.distinct().filter(
+        ).values('id', 'title')
+    }
+    # Return AF data with projects/entries count
+    return [
+        {
+            **af_data[af_id],
+            'entries_count': entries_count,
+            'projects_count': projects_count,
+        }
+        for af_id, entries_count, projects_count in af_count_data
+        if af_id in af_data
+    ]
+
+
+def get_top_ten_projects_by_entries_list(projects_qs, leads_qs, entries_qs):
+    # Calcuate projects/entries count
+    leads_count_by_project = {
+        af: count
+        for af, count in leads_qs.filter(
+            project__in=projects_qs,
+        ).order_by().values('project').annotate(
+            count=models.Count('id'),
+        ).values_list('project', 'count')
+    }
+    entries_count_by_project = {
+        af: count
+        for af, count in entries_qs.filter(
+            project__in=projects_qs,
+        ).order_by().values('project').annotate(
+            count=models.Count('id'),
+        ).values_list('project', 'count')
+    }
+    # Sort Project id using projects/entries count
+    project_count_data = sorted([
+        (project_id, entries_count_by_project.get(project_id, 0), leads_count_by_project.get(project_id, 0))
+        for project_id in set([*leads_count_by_project.keys(), *entries_count_by_project.keys()])
+    ], key=lambda x: x[1:], reverse=True)[:10]
+    # Fetch Top ten Project
+    project_data = {
+        af['id']: af
+        for af in projects_qs.distinct().filter(
+        ).values('id', 'title')
+    }
+    # Return Project data with projects/entries count
+    return [
+        {
+            **project_data[project_id],
+            'entries_count': entries_count,
+            'leads_count': leads_count,
+        }
+        for project_id, entries_count, leads_count in project_count_data
+        if project_id in project_data
+    ]
+
+
 class ExploreDeepFilterInputType(graphene.InputObjectType):
     date_from = graphene.DateTime(required=True)
     date_to = graphene.DateTime(required=True)
@@ -218,9 +300,13 @@ class ExploreDashboardStatType(graphene.ObjectType):
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOTAL_ACTIVE_USERS_COUNT)
     def resolve_total_active_users(root: ExploreDashboardStatRoot, *_) -> int:
-        return root.leads_qs.values('created_by').union(
-            root.entries_qs.values('created_by')
-        ).count()
+        created_by_qs = root.leads_qs.values('created_by').union(
+            root.entries_qs.values('created_by'),
+            # Modified By
+            root.leads_qs.values('modified_by'),
+            root.entries_qs.values('modified_by'),
+        )
+        return User.objects.filter(id__in=created_by_qs).values('id').distinct().count()
 
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOTAL_AUTHORS_COUNT)
@@ -246,43 +332,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_FRAMEWORKS_LIST)
     def resolve_top_ten_frameworks(root: ExploreDashboardStatRoot, *_):
-        projects_count_by_af = {
-            af: count
-            for af, count in root.projects_qs.filter(
-                analysis_framework__in=root.analysis_framework_qs
-            ).order_by().values('analysis_framework').annotate(
-                count=models.Count('id'),
-            ).values_list('analysis_framework', 'count')
-        }
-        entries_count_by_af = {
-            af: count
-            for af, count in root.entries_qs.filter(
-                analysis_framework__in=root.analysis_framework_qs
-            ).order_by().values('analysis_framework').annotate(
-                count=models.Count('id'),
-            ).values_list('analysis_framework', 'count')
-        }
-        af_count_data = sorted([
-            (af_id, entries_count_by_af.get(af_id, 0), projects_count_by_af.get(af_id, 0))
-            for af_id in set([*projects_count_by_af.keys(), *entries_count_by_af.keys()])
-        ], key=lambda x: x[1:], reverse=True)[:10]
-        af_data = {
-            af['id']: af
-            for af in root.analysis_framework_qs.distinct().filter(
-            ).values(
-                'id',
-                'title',
-            )
-        }
-        return [
-            {
-                **af_data[af_id],
-                'entries_count': entries_count,
-                'projects_count': projects_count,
-            }
-            for af_id, entries_count, projects_count in af_count_data
-            if af_id in af_data
-        ]
+        return get_top_ten_frameworks_list(root.analysis_framework_qs, root.projects_qs, root.entries_qs)
 
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_PROJECTS_BY_USERS_LIST)
@@ -308,34 +358,7 @@ class ExploreDashboardStatType(graphene.ObjectType):
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_PROJECTS_BY_ENTRIES_LIST)
     def resolve_top_ten_projects_by_entries(root: ExploreDashboardStatRoot, *_):
-        return list(
-            root.projects_qs.distinct().annotate(
-                leads_count=models.functions.Coalesce(
-                    models.Subquery(
-                        root.leads_qs.filter(
-                            project=models.OuterRef('pk')
-                        ).order_by().values('project').annotate(
-                            count=models.Count('id', distinct=True),
-                        ).values('count')[:1],
-                        output_field=models.IntegerField()
-                    ), 0),
-                entries_count=models.functions.Coalesce(
-                    models.Subquery(
-                        # TODO: Use global filers
-                        root.entries_qs.filter(
-                            project=models.OuterRef('pk')
-                        ).order_by().values('project').annotate(
-                            count=models.Count('id', distinct=True),
-                        ).values('count')[:1],
-                        output_field=models.IntegerField()
-                    ), 0),
-            ).order_by('-entries_count', '-leads_count').values(
-                'id',
-                'title',
-                'leads_count',
-                'entries_count',
-            )[:10]
-        )
+        return get_top_ten_projects_by_entries_list(root.projects_qs, root.leads_qs, root.entries_qs)
 
     # --- Time-series data ----
     @staticmethod
