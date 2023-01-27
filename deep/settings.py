@@ -516,6 +516,7 @@ CELERY_BEAT_SCHEDULE = {
     'index_leads': {
         'task': 'deduplication.tasks.indexing.create_indices',
         'schedule': crontab(minute=0, hour=2),  # execute every second hour of the day
+    },
     # Deep Explore
     'update_deep_explore_entries_count_by_geo_aggreagate_task': {
         'task': 'deep_explore.tasks.update_deep_explore_entries_count_by_geo_aggreagate_task',
