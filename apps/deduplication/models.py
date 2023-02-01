@@ -5,7 +5,6 @@ import logging
 
 from apps.user_resource.models import UserResourceCreated
 from project.models import Project
-from lead.models import Lead
 
 
 logger = logging.getLogger(__name__)
@@ -29,28 +28,41 @@ class LSHIndex(UserResourceCreated):
     datasketch_lsh_perm256 0.55           0.7981           52.82732             6.4
     datasketch_lsh_perm128 0.55           0.7816           37.68474             4.81983
     """
-    NUM_PERM = 256
+    NUM_PERM = 128
 
-    class IndexStatus(models.TextChoices):
-        CREATING = "creating", "Creating"
-        CREATED = "created", "Created"
+    class IndexStatus(models.IntegerChoices):
+        CREATING = 0, "Creating"
+        CREATED = 1, "Created"
 
     name = models.CharField(max_length=256)
-    status = models.CharField(
-        max_length=20,
+    status = models.PositiveIntegerField(
         choices=IndexStatus.choices,
         default=IndexStatus.CREATING,
     )
     project = models.OneToOneField(
         Project,
-        null=True,
         on_delete=models.CASCADE,
         unique=True,
     )
     pickle_version = models.CharField(max_length=10, null=True)
     index_pickle = models.BinaryField(null=True)
+    """
+    A NOTE ON index_pickle - @bewakes, Feb 02 2023
+
+    The index needs to persist that's why it is pickled and stored in db.
+    Another alternative would be to store it in other storages like s3 but I
+    think using db is lot cleaner.
+
+    One concern is what if the index gets larger. Postgres column can handle
+    columns upto 2 GB. The index indeed increases linearly in size with ~700
+    Bytes per document. But the number of leads in a project in DEEP is maximum
+    ~8300 till date, which will make the index size around 7MB which is not
+    that much even if we have around 20K leads per project.
+
+    We can also use redis as storage, but we will eventually need to persist
+    data somewhere and having both will add complexity.
+    """
     has_errored = models.BooleanField(default=False)
-    error = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "LSH Indices"
@@ -66,7 +78,7 @@ class LSHIndex(UserResourceCreated):
             if self.pickle_version not in supported_formats:
                 logger.warn(
                     "Pickle versions not compatible, setting index to None"
-                )  # noqa
+                )
                 self._index = None
             else:
                 self._index = pickle.loads(self.index_pickle)
@@ -92,49 +104,7 @@ class LSHIndex(UserResourceCreated):
         super().__init__(*args, **kwargs)
 
     def save(self, *args, **kwargs):
-        # Set self._index_loaded = False so that next time it is
-        # accessed, it is reloaded
+        # Set self._index_loaded = False so that next time it is accessed, it
+        # is reloaded
         self._index_loaded = False
         super().save(*args, **kwargs)
-
-
-class LeadHash(UserResourceCreated):
-    """
-    Object that stores hash of leads
-    """
-
-    lead = models.OneToOneField(Lead, on_delete=models.CASCADE)
-    lsh_index = models.ForeignKey(LSHIndex, on_delete=models.CASCADE)
-
-    lead_hash = models.BinaryField()
-
-    class Meta:
-        unique_together = ("lead", "lsh_index")
-        verbose_name_plural = "Lead Hashes"
-
-
-class DeduplicationRequest(UserResourceCreated):
-    class RequestStatus(models.TextChoices):
-        PENDING = "pending", "Pending"
-        CALCULATED = "calculated", "Calculated"
-        RESPONDED = "responded", "Responded"
-
-    status = models.CharField(
-        max_length=15,
-        choices=RequestStatus.choices,
-        default=RequestStatus.PENDING,
-    )
-    client_id = models.TextField()
-    project_id = models.IntegerField()
-    lead_id = models.IntegerField()
-    callback_url = models.TextField()
-    text_extract = models.TextField()
-    has_errored = models.BooleanField(default=False)
-    error = models.TextField(null=True, blank=True)
-    result = models.JSONField(default=dict)
-
-    class Meta:
-        unique_together = ("project_id", "lead_id")
-
-    def __str__(self):
-        return f"{self.status}: Project({self.project_id}) Lead({self.lead_id})"

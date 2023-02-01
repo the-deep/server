@@ -306,8 +306,7 @@ class LeadTests(TestCase):
 
         self.assertEqual(Lead.objects.count(), lead_count)
 
-    @mock.patch('lead.views.remove_lead_from_index.delay')
-    def test_delete_lead(self, remove_lead_from_index_func):
+    def test_delete_lead(self):
         project = self.create(Project, role=self.admin_role)
         lead = self.create(Lead, project=project)
         url = '/api/v1/leads/{}/'.format(lead.id)
@@ -315,7 +314,6 @@ class LeadTests(TestCase):
         self.authenticate()
         response = self.client.delete(url)
         self.assert_204(response)
-        remove_lead_from_index_func.assert_called_once()
 
     def test_delete_lead_no_perm(self):
         project = self.create(Project, role=self.admin_role)
@@ -1776,10 +1774,10 @@ class TestExtractorCallback(TestCase):
         super().setUp()
         self.lead = LeadFactory.create()
 
-    @mock.patch('deduplication.tasks.indexing.process_and_index_lead')
+    @mock.patch('lead.serializers.index_lead_and_calculate_duplicates.delay')
     @mock.patch('lead.tasks.RequestHelper.get_text')
     @mock.patch('lead.tasks.RequestHelper.get_file')
-    def test_extractor_callback_url(self, get_file_mock, get_text_mock, process_and_index_lead_func):
+    def test_extractor_callback_url(self, get_file_mock, get_text_mock, index_lead_func):
         url = '/api/v1/callback/lead-extract/'
         self.authenticate()
 
@@ -1815,7 +1813,8 @@ class TestExtractorCallback(TestCase):
 
         data['extraction_status'] = 1
         # After callback [Success]
-        response = self.client.post(url, data)
+        with self.captureOnCommitCallbacks(execute=True):
+            response = self.client.post(url, data)
         self.assert_200(response)
         self.lead.refresh_from_db()
         self.assertEqual(self.lead.extraction_status, Lead.ExtractionStatus.SUCCESS)
@@ -1826,7 +1825,7 @@ class TestExtractorCallback(TestCase):
         self.assertEqual(lead_preview.page_count, 4)
         self.assertEqual(LeadPreviewImage.objects.filter(lead=self.lead).count(), 2)
 
-        process_and_index_lead_func.assert_called()
+        index_lead_func.assert_called_once_with(self.lead.id)
 
     def test_client_id_generator(self):
         project = self.create_project()

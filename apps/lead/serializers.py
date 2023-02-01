@@ -516,12 +516,13 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
                 source__unified_connector__project=lead.project,
             ).update(already_added=True)
 
-        # Call bg task for indexing. This call is okay to make even if lead
-        # has preview and not ready. This is because, if there is no
-        # preview or lead text, the function will return. And later
-        # when preview is ready after extraction, it will be called
-        # again
-        index_lead_and_calculate_duplicates.delay(lead.id)
+        """
+        Call bg task for indexing. This call is okay to make even if lead has
+        preview and not ready. This is because, if there is no preview or lead
+        text, the function will return. And later when preview is ready after
+        extraction, it will be called again.
+        """
+        transaction.on_commit(lambda: index_lead_and_calculate_duplicates.delay(lead.id))
         return lead
 
     def update(self, instance, validated_data):
@@ -703,7 +704,7 @@ class ExtractCallbackSerializer(serializers.Serializer):
                 data.get('total_pages'),
             )
             # Add to deduplication index
-            index_lead_and_calculate_duplicates(lead.id)
+            transaction.on_commit(lambda: index_lead_and_calculate_duplicates.delay(lead.id))
             return lead
         lead.update_extraction_status(Lead.ExtractionStatus.FAILED)
         return lead

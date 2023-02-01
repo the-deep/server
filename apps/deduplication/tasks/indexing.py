@@ -5,7 +5,6 @@ from celery import shared_task
 from celery.utils.log import get_task_logger
 from datasketch import LeanMinHash, MinHashLSH
 
-from utils.decorators import warn_on_exception
 from utils.common import batched
 from lead.models import Lead
 from project.models import Project
@@ -17,8 +16,8 @@ logger = get_task_logger(__name__)
 
 def find_and_set_duplicate_leads(index: MinHashLSH, lead: Lead, minhash: LeanMinHash):
     duplicate_lead_ids = index.query(minhash)
-    duplicate_leads = Lead.objects.filter(pk__in=duplicate_lead_ids)
-    lead.duplicate_leads.set(duplicate_leads)
+    duplicate_leads_qs = Lead.objects.filter(pk__in=duplicate_lead_ids)
+    lead.duplicate_leads.set(duplicate_leads_qs)
 
 
 def process_and_index_lead(lead: Lead, index: MinHashLSH):
@@ -40,13 +39,13 @@ def process_and_index_leads(
     index_obj: LSHIndex,
 ):
     # Fetch leads which have been extracted and which have not been indexed
-    leads = Lead.objects.filter(
+    leads_qs = Lead.objects.filter(
         project=project,
         is_indexed=False,
     )
     index: MinHashLSH = index_obj.index
     try:
-        batches = batched(leads, batch_size=200)
+        batches = batched(leads_qs, batch_size=200)
         for batch in batches:
             with transaction.atomic():
                 for lead in batch:
@@ -55,15 +54,13 @@ def process_and_index_leads(
                 index_obj.index = index
                 index_obj.save()
     except Exception:
-        logger.warning(
+        logger.error(
             f"Error creating index for project {project.title}({project.id})",
             exc_info=True
         )
-        import traceback
 
         index_obj.has_errored = True
-        index_obj.error = traceback.format_exc()
-        index_obj.save(update_fields=['has_errored', 'error'])
+        index_obj.save(update_fields=['has_errored'])
     else:
         index_obj.status = LSHIndex.IndexStatus.CREATED
         index_obj.save(update_fields=['status'])
@@ -76,7 +73,7 @@ def create_project_index(project: Project):
     index_obj = get_index_object_for_project(project)
 
     if index_obj.has_errored:
-        logger.warning(f"Errored index object, LSHIndex id {index_obj.id}. Aborting.")
+        logger.error(f"Errored index object, LSHIndex id {index_obj.id}. Aborting.")
         return
 
     process_and_index_leads(project, index_obj)
@@ -109,11 +106,14 @@ def get_index_object_for_project(project: Project) -> LSHIndex:
 
 
 @shared_task
-@warn_on_exception(logger)
 def index_lead_and_calculate_duplicates(lead_id: int):
     lead = Lead.objects.filter(id=lead_id).first()
     if lead is None:
-        logger.warning(f"Cannot index inexistent lead(id={lead_id})")
+        logger.error(f"Cannot index inexistent lead(id={lead_id})")
+        return
+
+    text = lead.leadpreview.text_extract if hasattr(lead, 'leadpreview') else lead.text
+    if not text:
         return
 
     index_obj = get_index_object_for_project(lead.project)
