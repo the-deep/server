@@ -440,10 +440,6 @@ class TestLeadQuerySchema(GraphQLTestCase):
                   results {
                     id
                     title
-                    entriesCount {
-                      total
-                      controlled
-                    }
                   }
                 }
               }
@@ -477,10 +473,6 @@ class TestLeadQuerySchema(GraphQLTestCase):
                   results {
                     id
                     title
-                    entriesCount {
-                      total
-                      controlled
-                    }
                   }
                 }
               }

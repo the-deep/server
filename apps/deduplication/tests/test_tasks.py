@@ -33,7 +33,7 @@ class TestTasks(TestCase):
 
     def test_get_index_object_for_project_existing(self):
         """Test get index object when there is an existing index object for project"""
-        LSHIndexFactory.create()
+        LSHIndexFactory.create(project=self.project)
         index_obj = get_index_object_for_project(self.project)
         original_count = LSHIndex.objects.count()
         assert index_obj is not None
@@ -83,8 +83,7 @@ class TestTasks(TestCase):
 
     def test_find_and_set_duplicate_leads(self):
         project = ProjectFactory.create()
-        lead1 = LeadFactory.create(project=project)
-        lead2 = LeadFactory.create(project=project)
+        [lead1, lead2] = LeadFactory.create_batch(2, project=project)
         # Create lead previews with same conent
         common_text = "This is a common text between two leads. The purpose is to mark them as duplicates"
         LeadPreviewFactory.create(lead=lead1, text_extract=common_text)
