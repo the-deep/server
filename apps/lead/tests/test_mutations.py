@@ -1,3 +1,4 @@
+from unittest import mock
 from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
 
 from organization.factories import OrganizationFactory
@@ -66,17 +67,19 @@ class TestLeadMutationSchema(GraphQLTestCase):
         self.project.add_member(self.readonly_member_user, role=self.project_role_reader_non_confidential)
         self.project.add_member(self.member_user, role=self.project_role_member)
 
-    def test_lead_create(self):
+    @mock.patch('lead.serializers.index_lead_and_calculate_duplicates.delay')
+    def test_lead_create(self, index_and_calculate_dups_func):
         """
         This test makes sure only valid users can create lead
         """
         def _query_check(minput, **kwargs):
-            return self.query_check(
-                self.CREATE_LEAD_QUERY,
-                minput=minput,
-                variables={'projectId': self.project.id},
-                **kwargs
-            )
+            with self.captureOnCommitCallbacks(execute=True):
+                return self.query_check(
+                    self.CREATE_LEAD_QUERY,
+                    minput=minput,
+                    variables={'projectId': self.project.id},
+                    **kwargs
+                )
 
         minput = dict(
             title='Lead Title 101',
@@ -96,6 +99,8 @@ class TestLeadMutationSchema(GraphQLTestCase):
         self.force_login(self.member_user)
         content = _query_check(minput)['data']['project']['leadCreate1']['result']
         self.assertEqual(content['title'], minput['title'], content)
+
+        index_and_calculate_dups_func.assert_called()
 
     def test_lead_create_validation(self):
         """
@@ -187,7 +192,8 @@ class TestLeadMutationSchema(GraphQLTestCase):
         result = _query_check(okay=False)['data']['project']['leadCreate1']['result']
         self.assertEqual(result, None, result)
 
-    def test_lead_delete_validation(self):
+    @mock.patch('lead.receivers.remove_lead_from_index.delay')
+    def test_lead_delete_validation(self, remove_lead_from_index_func):
         """
         This test checks create lead validations
         """
@@ -211,12 +217,13 @@ class TestLeadMutationSchema(GraphQLTestCase):
         lead = LeadFactory.create(project=self.project)
 
         def _query_check(lead, will_delete=False, **kwargs):
-            result = self.query_check(
-                query,
-                mnested=['project'],
-                variables={'projectId': self.project.id, 'leadId': lead.id},
-                **kwargs,
-            )
+            with self.captureOnCommitCallbacks(execute=True):
+                result = self.query_check(
+                    query,
+                    mnested=['project'],
+                    variables={'projectId': self.project.id, 'leadId': lead.id},
+                    **kwargs,
+                )
             if will_delete:
                 with self.assertRaises(Lead.DoesNotExist):
                     lead.refresh_from_db()
@@ -240,6 +247,7 @@ class TestLeadMutationSchema(GraphQLTestCase):
         # Success with normal lead (with project membership)
         result = _query_check(lead, will_delete=True, okay=True)['data']['project']['leadDelete']['result']
         self.assertEqual(result['title'], lead.title, result)
+        remove_lead_from_index_func.assert_called_once()
 
     def test_lead_update_validation(self):
         query = '''

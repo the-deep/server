@@ -31,6 +31,7 @@ from unified_connector.models import ConnectorSourceLead
 from lead.filter_set import LeadsFilterDataInputType
 
 from .tasks import LeadExtraction
+from deduplication.tasks.indexing import index_lead_and_calculate_duplicates
 from .models import (
     EMMEntity,
     Lead,
@@ -514,6 +515,14 @@ class LeadGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserRe
                 connector_lead=lead.connector_lead,
                 source__unified_connector__project=lead.project,
             ).update(already_added=True)
+
+        """
+        Call bg task for indexing. This call is okay to make even if lead has
+        preview and not ready. This is because, if there is no preview or lead
+        text, the function will return. And later when preview is ready after
+        extraction, it will be called again.
+        """
+        transaction.on_commit(lambda: index_lead_and_calculate_duplicates.delay(lead.id))
         return lead
 
     def update(self, instance, validated_data):
@@ -687,13 +696,16 @@ class ExtractCallbackSerializer(serializers.Serializer):
         success = data['extraction_status'] == 1
         lead = data['lead']   # Added from validate
         if success:
-            return LeadExtraction.save_lead_data(
+            lead = LeadExtraction.save_lead_data(
                 lead,
                 data['text_path'],
-                data.get('images_path', [])[:10],   # TODO: Support for more images, to much image will error.
+                data.get('images_path', [])[:10],   # TODO: Support for more images, too much image will error.
                 data.get('total_words_count'),
                 data.get('total_pages'),
             )
+            # Add to deduplication index
+            transaction.on_commit(lambda: index_lead_and_calculate_duplicates.delay(lead.id))
+            return lead
         lead.update_extraction_status(Lead.ExtractionStatus.FAILED)
         return lead
 

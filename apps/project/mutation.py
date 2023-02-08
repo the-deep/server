@@ -120,7 +120,6 @@ class UpdateProject(PsGrapheneMutation):
 
 
 class ProjectAcceptReject(PsGrapheneMutation):
-
     class Arguments:
         data = ProjectAcceptRejectInputType(required=True)
         id = graphene.ID(required=True)
