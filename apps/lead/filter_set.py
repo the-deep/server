@@ -15,6 +15,7 @@ from utils.graphene.filters import (
     MultipleInputFilter,
     SimpleInputFilter,
     IDListFilter,
+    IDFilter,
     DateGteFilter,
     DateLteFilter,
 )
@@ -325,6 +326,10 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
     emm_keywords = django_filters.CharFilter(method='emm_keywords_filter')
     emm_risk_factors = django_filters.CharFilter(method='emm_risk_factors_filter')
 
+    # duplicates
+    has_duplicates = django_filters.BooleanFilter(method='has_duplicates_filter', help_text='Has duplicate leads')
+    duplicates_of = IDFilter(method='duplicates_of_filter')
+
     ordering = MultipleInputFilter(LeadOrderingEnum, method='ordering_filter')
 
     class Meta:
@@ -526,6 +531,21 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             )
         # Call super function
         return super().filter_queryset(qs)
+
+    def duplicates_of_filter(self, qs, _, lead_id: int):
+        if lead_id is None:
+            return qs
+        return qs.filter(
+            models.Q(duplicate_leads=lead_id) |
+            models.Q(duplicate_of=lead_id)
+        )
+
+    def has_duplicates_filter(self, qs, _, val: bool):
+        if val is True:
+            return qs.filter(duplicate_leads_count__gt=0)
+        elif val is False:
+            return qs.filter(duplicate_leads_count=0)
+        return qs
 
     @property
     def qs(self):

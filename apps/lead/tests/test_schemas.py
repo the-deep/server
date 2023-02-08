@@ -337,6 +337,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
 
         # --- non-member user (zero leads)
         content = _query_check()
+
         self.assertEqual(content['data']['project']['leads']['totalCount'], 0, content)
         self.assertEqual(len(content['data']['project']['leads']['results']), 0, content)
 
@@ -351,6 +352,149 @@ class TestLeadQuerySchema(GraphQLTestCase):
         content = _query_check()
         self.assertEqual(content['data']['project']['leads']['totalCount'], 11, content)
         self.assertListIds(content['data']['project']['leads']['results'], confidential_leads + normal_leads, content)
+
+    def test_lead_query_with_duplicates_true(self):
+        query = '''
+            query MyQuery ($projectId: ID!) {
+              project(id: $projectId) {
+                leads (hasDuplicates: true) {
+                  results {
+                    id
+                    title
+                    text
+                    duplicateLeadsCount
+                  }
+                }
+              }
+            }
+        '''
+        project = ProjectFactory.create()
+        member_user = UserFactory.create()
+        project.add_member(member_user, role=self.project_role_reader_non_confidential)
+        duplicate_leads = LeadFactory.create_batch(5, project=project)
+        lead = LeadFactory.create(project=project)
+        lead.duplicate_leads.set(duplicate_leads)
+        another_lead = LeadFactory.create(project=project)  # noqa
+
+        """
+        NOTE:
+        Here, total 7 leads are created: "lead" and 5 duplicates set for lead and
+        "another_lead" which has no duplicates nor is assigned to any other lead as duplicate.
+
+        So, while fetching leads with duplicates, there should be 6 leads fetched.
+        """
+
+        def _query_check(lead, **kwargs):
+            return self.query_check(query, variables={'projectId': project.id}, **kwargs)
+
+        self.force_login(member_user)
+        content = _query_check(lead)
+        leads_resp = content['data']['project']['leads']['results']
+        self.assertEqual(len(leads_resp), 6, "There are 6 leads which have/are duplicates.")
+
+        for lead_resp in leads_resp:
+            if lead_resp["id"] == str(lead.id):
+                self.assertEqual(lead_resp["duplicateLeadsCount"], 5)
+            else:
+                self.assertEqual(lead_resp["duplicateLeadsCount"], 1)
+
+    def test_lead_query_with_duplicates_false(self):
+        query = '''
+            query MyQuery ($projectId: ID!) {
+              project(id: $projectId) {
+                leads (hasDuplicates: false) {
+                    results {
+                      id
+                      title
+                      text
+                      duplicateLeadsCount
+                    }
+                }
+              }
+            }
+        '''
+        project = ProjectFactory.create()
+        member_user = UserFactory.create()
+        project.add_member(member_user, role=self.project_role_reader_non_confidential)
+        duplicate_leads = LeadFactory.create_batch(5, project=project)
+        lead = LeadFactory.create(project=project)
+        lead.duplicate_leads.set(duplicate_leads)
+        another_lead = LeadFactory.create(project=project)  # noqa
+
+        def _query_check(lead, **kwargs):
+            return self.query_check(query, variables={'projectId': project.id}, **kwargs)
+
+        self.force_login(member_user)
+        content = _query_check(lead)
+        leads_resp = content['data']['project']['leads']['results']
+        self.assertEqual(len(leads_resp), 1)
+        lead_resp = leads_resp[0]
+        self.assertEqual(lead_resp["id"], str(another_lead.id))
+        self.assertEqual(lead_resp["duplicateLeadsCount"], 0)
+
+    def test_lead_query_with_duplicates(self):
+        query = '''
+            query MyQuery ($projectId: ID! $duplicatesOf: ID!) {
+              project(id: $projectId) {
+                leads (duplicatesOf: $duplicatesOf) {
+                  results {
+                    id
+                    title
+                  }
+                }
+              }
+            }
+        '''
+        project = ProjectFactory.create()
+        member_user = UserFactory.create()
+        project.add_member(member_user, role=self.project_role_reader_non_confidential)
+        duplicate_leads = LeadFactory.create_batch(5, project=project)
+        lead = LeadFactory.create(project=project)
+        lead.duplicate_leads.set(duplicate_leads)
+
+        def _query_check(lead, **kwargs):
+            return self.query_check(query, variables={'projectId': project.id, 'duplicatesOf': lead.id}, **kwargs)
+
+        self.force_login(member_user)
+        content = _query_check(lead)
+        duplicate_leads_resp = content["data"]["project"]["leads"]["results"]
+        self.assertEqual(len(duplicate_leads_resp), len(duplicate_leads))
+
+    def test_lead_query_with_duplicates_reverse(self):
+        """
+        This tests the following:
+        If lead A has duplicate_leads = [B, C, D] then
+        querying duplicate leads of either B, C or D should return A.
+        """
+        query = '''
+            query MyQuery ($projectId: ID! $duplicatesOf: ID!) {
+              project(id: $projectId) {
+                leads (duplicatesOf: $duplicatesOf) {
+                  results {
+                    id
+                    title
+                  }
+                }
+              }
+            }
+        '''
+        project = ProjectFactory.create()
+        member_user = UserFactory.create()
+        project.add_member(member_user, role=self.project_role_reader_non_confidential)
+        duplicate_leads = LeadFactory.create_batch(5, project=project)
+        lead = LeadFactory.create(project=project)
+        lead.duplicate_leads.set(duplicate_leads)
+
+        def _query_check(lead, **kwargs):
+            return self.query_check(query, variables={'projectId': project.id, 'duplicatesOf': lead.id}, **kwargs)
+
+        self.force_login(member_user)
+        for d_lead in duplicate_leads:
+            content = _query_check(d_lead)
+            duplicate_leads_resp = content["data"]["project"]["leads"]["results"]
+            self.assertEqual(len(duplicate_leads_resp), 1)
+            dup = duplicate_leads_resp[0]
+            self.assertEqual(dup["id"], str(lead.id))
 
     def test_leads_fields_query(self):
         """

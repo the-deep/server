@@ -140,6 +140,9 @@ class Lead(UserResource, ProjectEntityMixin):
         'unified_connector.ConnectorLead',
         on_delete=models.SET_NULL, related_name='+', blank=True, null=True
     )
+    duplicate_leads = models.ManyToManyField("Lead", blank=True, related_name="duplicate_of")
+    is_indexed = models.BooleanField(default=False)
+    indexed_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return '{}'.format(self.title)
@@ -169,8 +172,8 @@ class Lead(UserResource, ProjectEntityMixin):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         update_fields = kwargs.get('update_fields')
-
         initial_fields = ['text', 'attachment', 'attachment_id', 'url']
+
         if (
             not settings.TESTING and (
                 self.id is None or

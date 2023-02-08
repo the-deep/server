@@ -1,5 +1,6 @@
 from parameterized import parameterized
 from django.conf import settings
+
 from deep.tests import TestCase
 
 from lead.tasks import (

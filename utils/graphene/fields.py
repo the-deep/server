@@ -1,7 +1,7 @@
 import inspect
 from functools import partial
 from collections import OrderedDict
-from typing import Type
+from typing import Type, Optional
 
 from django.db.models import QuerySet
 import graphene
@@ -153,7 +153,7 @@ class DjangoPaginatedListObjectField(DjangoFilterPaginateListField):
         _type,
         pagination=None,
         fields=None,
-        extra_filter_meta=None,
+        extra_filter_meta: Optional[dict] = None,
         filterset_class=None,
         *args,
         **kwargs,
