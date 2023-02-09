@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 
 from export.formats.xlsx import WorkBook, RowsBuilder
 from openpyxl.styles import Alignment, Font
-from utils.common import format_date, underscore_to_title
+from utils.common import deep_date_format, underscore_to_title
 
 import logging
 
@@ -118,7 +118,7 @@ class ExcelExporter:
             rows = RowsBuilder(self.split, self.group, split=False)
             lead = assessment.lead
             rows.add_value_list([
-                format_date(lead.created_at),
+                deep_date_format(lead.created_at),
                 lead.created_by.username,
                 lead.title,
                 (lead.source and lead.source.title) or lead.source_raw,

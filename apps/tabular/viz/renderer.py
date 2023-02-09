@@ -5,6 +5,7 @@ from datetime import datetime
 from django.conf import settings
 
 from deep.documents_types import CHART_IMAGE_MIME
+from utils.common import deep_date_format
 from gallery.models import File
 from tabular.models import Field
 from tabular.viz import (
@@ -136,7 +137,7 @@ def generate_chart(field, chart_type, images_format=['svg']):
             else:
                 params['x_params']['type'] = 'category'
                 params['x_params']['ticktext'] = [
-                    datetime.strptime(value, '%Y-%m-%dT%H:%M:%S').strftime('%d-%m-%Y')
+                    deep_date_format(datetime.strptime(value, '%Y-%m-%dT%H:%M:%S'))
                     for value in df['value']
                 ]
                 params['x_params']['tickvals'] = df['value']

@@ -13,6 +13,7 @@ from django.db.models import (
 )
 from docx.shared import Inches
 from deep.permalinks import Permalink
+from utils.common import deep_date_format
 
 from export.formats.docx import Document
 
@@ -593,9 +594,8 @@ class ReportExporter:
             para.add_run(f", {lead.title}")
 
         # Finally add date
-        # TODO: use utils.common.format_date and perhaps use information date
         if date:
-            para.add_run(f", {date.strftime('%d/%m/%Y')}")
+            para.add_run(f", {deep_date_format(date)}")
 
         para.add_run(')')
         # --- Reference End
@@ -719,7 +719,7 @@ class ReportExporter:
         """
         self.doc.add_heading(
             'DEEP Export — {} — {}'.format(
-                datetime.today().strftime('%b %d, %Y'),
+                deep_date_format(datetime.today()),
                 project.title,
             ),
             1,
@@ -818,10 +818,12 @@ class ReportExporter:
             author = lead.get_authors_display()
             source = lead.get_source_display() or 'Missing source'
 
-            author and para.add_run(f'{author}.')
+            if author:
+                para.add_run(f'{author}.')
             para.add_run(f' {source}.')
             para.add_run(f' {lead.title}.')
-            lead.published_on and para.add_run(f" {lead.published_on.strftime('%m/%d/%y')}. ")
+            if lead.published_on:
+                para.add_run(f" {deep_date_format(lead.published_on)}. ")
 
             para = self.doc.add_paragraph()
             url = lead.url or Permalink.lead_share_view(lead.uuid)
