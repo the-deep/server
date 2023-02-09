@@ -4,7 +4,7 @@ from django.db import models
 
 from deep.permalinks import Permalink
 from utils.common import (
-    format_date,
+    deep_date_format,
     excel_column_name,
     get_valid_xml_string as xstr
 )
@@ -15,8 +15,6 @@ from lead.models import Lead
 from export.models import Export
 
 logger = logging.getLogger(__name__)
-
-EXPORT_DATE_FORMAT = '%m/%d/%y'
 
 
 def get_hyperlink(url, text):
@@ -227,11 +225,11 @@ class ExcelExporter:
         assignee,
     ):
         if exportable == Export.StaticColumn.LEAD_PUBLISHED_ON:
-            return format_date(lead.published_on)
+            return deep_date_format(lead.published_on)
         if exportable == Export.StaticColumn.ENTRY_CREATED_BY:
             return entry.created_by and entry.created_by.profile.get_display_name()
         elif exportable == Export.StaticColumn.ENTRY_CREATED_AT:
-            return format_date(entry.created_at.date())
+            return deep_date_format(entry.created_at)
         elif exportable == Export.StaticColumn.ENTRY_CONTROL_STATUS:
             return 'Controlled' if entry.controlled else 'Uncontrolled'
         elif exportable == Export.StaticColumn.LEAD_ID:
@@ -550,7 +548,7 @@ class ExcelExporter:
                 [[
                     lead.get_authors_display(),
                     lead.get_source_display(),
-                    (lead.published_on and lead.published_on.strftime(EXPORT_DATE_FORMAT)) or '',
+                    deep_date_format(lead.published_on),
                     get_hyperlink(lead.url, lead.title) if lead.url else lead.title,
                     lead.filtered_entry_count,
                 ]]

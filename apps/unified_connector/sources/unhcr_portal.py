@@ -5,8 +5,10 @@ import datetime
 
 from bs4 import BeautifulSoup as Soup
 
-from .base import Source
+from utils.common import deep_date_format
 from connector.utils import ConnectorWrapper
+
+from .base import Source
 
 
 COUNTRIES_OPTIONS = [
@@ -215,8 +217,7 @@ COUNTRIES_OPTIONS = [
 
 def _format_date_or_none(iso_datestr):
     try:
-        date = datetime.datetime.strptime(iso_datestr, '%Y-%m-%d')
-        return date.strftime('%d-%m-%Y')
+        return deep_date_format(datetime.datetime.strptime(iso_datestr, '%Y-%m-%d'))
     except Exception:
         return None
 

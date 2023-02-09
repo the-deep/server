@@ -1,7 +1,6 @@
 from datetime import datetime
-from utils.common import combine_dicts as _combine_dicts
+from utils.common import combine_dicts as _combine_dicts, deep_date_format
 
-DATE_FORMAT = '%d-%m-%Y'
 ISO_FORMAT = '%Y-%m-%d'
 
 
@@ -19,7 +18,7 @@ def str_to_dmy_date(datestr):
     """Uses DATE_FORMAT"""
     if not datestr:
         return None
-    return datetime.strptime(datestr, ISO_FORMAT).strftime(DATE_FORMAT)
+    return deep_date_format(datetime.strptime(datestr, ISO_FORMAT))
 
 
 def get_value(d, key, default=None):
@@ -79,7 +78,7 @@ def get_assessment_meta(assessment):
 
     return {
         'lead': {
-            'date_of_lead_publication': lead.published_on.strftime(DATE_FORMAT),
+            'date_of_lead_publication': deep_date_format(lead.published_on),
             'unique_assessment_id': assessment.id,  # TODO: something else like id hash
             'imported_by': ', '.join([user.username for user in lead.assignee.all()]),
             'lead_title': lead.title,
@@ -122,7 +121,7 @@ def get_planned_assessment_meta(assessment):
 
     return {
         'assessment': {
-            'created_date': assessment.created_at.strftime('%Y-%b-%d'),
+            'created_date': deep_date_format(assessment.created_at),
             'title': assessment.title,
             'project': assessment.project.title,
 
