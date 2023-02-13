@@ -1099,7 +1099,8 @@ type ExploreDashboardStatType {
   topTenPublishers: [ExploreStastOrganizationType!]
   topTenFrameworks: [ExploreDeepStatTopActiveFrameworksType!]
   topTenProjectsByUsers: [ExploreDeepStatTopProjectType!]
-  topTenProjectsByEntries: [ExploreDeepStatTopProjectEntryType!]
+  topTenProjectsByEntries: [ExploreDeepStatTopProjectLeadEntryType!]
+  topTenProjectsByLeads: [ExploreDeepStatTopProjectLeadEntryType!]
   leadsCountByMonth: [ExploreCountByDateType!]
   leadsCountByDay: [ExploreCountByDateType!]
   entriesCountByMonth: [ExploreCountByDateType!]
@@ -1128,7 +1129,7 @@ type ExploreDeepStatTopActiveFrameworksType {
   entriesCount: Int!
 }
 
-type ExploreDeepStatTopProjectEntryType {
+type ExploreDeepStatTopProjectLeadEntryType {
   id: ID!
   title: String
   leadsCount: Int!

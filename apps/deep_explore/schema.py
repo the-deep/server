@@ -1,5 +1,6 @@
 import copy
 import graphene
+from typing import List, Callable
 from datetime import timedelta
 from dataclasses import dataclass
 
@@ -42,7 +43,7 @@ def node_cache(cache_key):
     )
 
 
-def get_global_filters(_filter, date_field='created_at'):
+def get_global_filters(_filter: dict, date_field='created_at'):
     return {
         f'{date_field}__gte': _filter['date_from'],
         f'{date_field}__lte': _filter['date_to'],
@@ -61,7 +62,7 @@ class ExploreCountByDateType(graphene.ObjectType):
 ExploreCountByDateListType = graphene.List(graphene.NonNull(ExploreCountByDateType))
 
 
-def count_by_date_queryset_generator(qs, trunc_func):
+def count_by_date_queryset_generator(qs: models.QuerySet, trunc_func: Callable):
     # Used by ExploreCountByDateListType
     return qs.values(
         date=trunc_func('created_at')
@@ -70,7 +71,12 @@ def count_by_date_queryset_generator(qs, trunc_func):
     ).order_by('date')
 
 
-def get_top_ten_organizations_list(queryset, leads_qs, project_qs, lead_field):
+def get_top_ten_organizations_list(
+    organization_queryset: models.QuerySet,
+    leads_qs: models.QuerySet,
+    project_qs: models.QuerySet,
+    lead_field: models.QuerySet,
+) -> List[dict]:
     return [
         {
             **data,
@@ -78,7 +84,7 @@ def get_top_ten_organizations_list(queryset, leads_qs, project_qs, lead_field):
             'title': data.pop('org_title'),
         }
         for data in leads_qs.filter(
-            **{f'{lead_field}__in': queryset},
+            **{f'{lead_field}__in': organization_queryset},
         ).annotate(
             org_id=models.functions.Coalesce(
                 models.F(f'{lead_field}__parent'),
@@ -102,7 +108,11 @@ def get_top_ten_organizations_list(queryset, leads_qs, project_qs, lead_field):
     ]
 
 
-def get_top_ten_frameworks_list(analysis_framework_qs, projects_qs, entries_qs):
+def get_top_ten_frameworks_list(
+    analysis_framework_qs: models.QuerySet,
+    projects_qs: models.QuerySet,
+    entries_qs: models.QuerySet,
+) -> List[dict]:
     # Calcuate projects/entries count
     projects_count_by_af = {
         af: count
@@ -143,7 +153,20 @@ def get_top_ten_frameworks_list(analysis_framework_qs, projects_qs, entries_qs):
     ]
 
 
-def get_top_ten_projects_by_entries_list(projects_qs, leads_qs, entries_qs):
+def get_top_ten_projects_by_leads_and_entries_list(
+    projects_qs: models.QuerySet,
+    leads_qs: models.QuerySet,
+    entries_qs: models.QuerySet,
+    order_by_entry: bool = True,  # Order by entry if True else order by lead
+) -> List[dict]:
+    def _order_by_entry(x):
+        # x (project_id, entries_count, leads_count)
+        return x[1:]
+
+    def _order_by_lead(x):
+        # x (project_id, entries_count, leads_count)
+        return x[1:][::-1]
+
     # Calcuate projects/entries count
     leads_count_by_project = {
         af: count
@@ -162,10 +185,17 @@ def get_top_ten_projects_by_entries_list(projects_qs, leads_qs, entries_qs):
         ).values_list('project', 'count')
     }
     # Sort Project id using projects/entries count
-    project_count_data = sorted([
-        (project_id, entries_count_by_project.get(project_id, 0), leads_count_by_project.get(project_id, 0))
-        for project_id in set([*leads_count_by_project.keys(), *entries_count_by_project.keys()])
-    ], key=lambda x: x[1:], reverse=True)[:10]
+    project_count_data = sorted(
+        [
+            (project_id, entries_count_by_project.get(project_id, 0), leads_count_by_project.get(project_id, 0))
+            for project_id in set([*leads_count_by_project.keys(), *entries_count_by_project.keys()])
+        ],
+        key=(
+            _order_by_entry if order_by_entry
+            else _order_by_lead
+        ),
+        reverse=True,
+    )[:10]
     # Fetch Top ten Project
     project_data = {
         af['id']: af
@@ -216,7 +246,7 @@ class ExploreDeepStatTopProjectType(graphene.ObjectType):
     users_count = graphene.Int(required=True)
 
 
-class ExploreDeepStatTopProjectEntryType(graphene.ObjectType):
+class ExploreDeepStatTopProjectLeadEntryType(graphene.ObjectType):
     id = graphene.ID(required=True)
     title = graphene.String()
     leads_count = graphene.NonNull(graphene.Int)
@@ -256,7 +286,8 @@ class ExploreDashboardStatType(graphene.ObjectType):
     top_ten_publishers = graphene.List(graphene.NonNull(ExploreStastOrganizationType))
     top_ten_frameworks = graphene.List(graphene.NonNull(ExploreDeepStatTopActiveFrameworksType))
     top_ten_projects_by_users = graphene.List(graphene.NonNull(ExploreDeepStatTopProjectType))
-    top_ten_projects_by_entries = graphene.List(graphene.NonNull(ExploreDeepStatTopProjectEntryType))
+    top_ten_projects_by_entries = graphene.List(graphene.NonNull(ExploreDeepStatTopProjectLeadEntryType))
+    top_ten_projects_by_leads = graphene.List(graphene.NonNull(ExploreDeepStatTopProjectLeadEntryType))
 
     leads_count_by_month = graphene.Field(ExploreCountByDateListType)
     leads_count_by_day = graphene.Field(ExploreCountByDateListType)
@@ -358,7 +389,22 @@ class ExploreDashboardStatType(graphene.ObjectType):
     @staticmethod
     @node_cache(CacheKey.ExploreDeep.TOP_TEN_PROJECTS_BY_ENTRIES_LIST)
     def resolve_top_ten_projects_by_entries(root: ExploreDashboardStatRoot, *_):
-        return get_top_ten_projects_by_entries_list(root.projects_qs, root.leads_qs, root.entries_qs)
+        return get_top_ten_projects_by_leads_and_entries_list(
+            root.projects_qs,
+            root.leads_qs,
+            root.entries_qs,
+            order_by_entry=True,
+        )
+
+    @staticmethod
+    @node_cache(CacheKey.ExploreDeep.TOP_TEN_PROJECTS_BY_SOURCES_LIST)
+    def resolve_top_ten_projects_by_leads(root: ExploreDashboardStatRoot, *_):
+        return get_top_ten_projects_by_leads_and_entries_list(
+            root.projects_qs,
+            root.leads_qs,
+            root.entries_qs,
+            order_by_entry=False,
+        )
 
     # --- Time-series data ----
     @staticmethod
