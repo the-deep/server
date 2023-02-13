@@ -71,6 +71,12 @@ DEEP_EXPLORE_FULL_QUERY = """
           entriesCount
           leadsCount
         }
+        topTenProjectsByLeads {
+          id
+          title
+          entriesCount
+          leadsCount
+        }
         topTenFrameworks {
           id
           title
