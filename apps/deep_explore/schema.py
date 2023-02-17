@@ -505,6 +505,7 @@ class PublicExploreYearSnapshotType(DjangoObjectType):
             'year',
         )
     file = graphene.Field(FileFieldType)
+    download_file = graphene.Field(FileFieldType)
 
 
 class Query:

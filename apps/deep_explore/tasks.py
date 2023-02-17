@@ -10,12 +10,14 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.files.base import ContentFile
 from django.utils import timezone
 from django.test import override_settings
+from djangorestframework_camel_case.util import underscoreize
 
 from deep.schema import schema as gql_schema
 from utils.common import redis_lock
 from entry.models import Entry, Attribute
 from project.models import Project
 from analysis_framework.models import Widget
+from export.tasks.tasks_projects import generate_projects_stats
 
 from .models import (
     AggregateTracker,
@@ -43,7 +45,7 @@ def _tb(model):
     return model._meta.db_table
 
 
-DEEP_EXPLORE_FULL_QUERY = """
+DEEP_EXPLORE_WITH_FILTER_QUERY = """
     query MyQuery($filter: ExploreDeepFilterInputType!) {
       deepExploreStats(filter: $filter) {
         totalActiveUsers
@@ -89,6 +91,18 @@ DEEP_EXPLORE_FULL_QUERY = """
           projectsCount
           leadsCount
         }
+        projectsByRegion {
+          id
+          centroid
+          projectIds
+        }
+      }
+    }
+"""
+
+DEEP_EXPLORE_FULL_QUERY = """
+    query MyQuery($filter: ExploreDeepFilterInputType!) {
+      deepExploreStats(filter: $filter) {
         projectsCountByMonth {
           count
           date
@@ -96,11 +110,6 @@ DEEP_EXPLORE_FULL_QUERY = """
         projectsCountByDay {
           count
           date
-        }
-        projectsByRegion {
-          id
-          centroid
-          projectIds
         }
         leadsCountByMonth {
           date
@@ -232,38 +241,76 @@ def generate_public_deep_explore_snapshot():
     class DummyContext:
         request = None
 
-    dates = Project.objects.aggregate(
-        min_year=models.Min('created_at__year'),
-        max_year=models.Max('created_at__year'),
+    class DummyExport:
+        exported_by = None
+        filters = None
+
+    def _get_date_filter(min_year, max_year):
+        return {
+            'dateFrom': f"{min_year}-01-01T00:00:00Z",
+            'dateTo': f"{max_year}-01-01T00:00:00Z",
+        }
+
+    @override_settings(
+        CACHES={
+            'default': {
+                'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+                'LOCATION': 'unique-snowflake',
+            }
+        },
     )
-    for year in range(dates['min_year'], dates['max_year'] + 1):
-        with override_settings(
-            CACHES={
-                'default': {
-                    'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-                    'LOCATION': 'unique-snowflake',
-                }
-            },
-        ):
-            result = gql_schema.execute(
-                DEEP_EXPLORE_FULL_QUERY,
-                context=DummyContext(),
-                variables={
-                    'filter': {
-                        'dateFrom': f'{year}-01-01T00:00:00Z',
-                        'dateTo': f'{year+1}-01-01T00:00:00Z',
-                    }
-                })
-            if result.errors:
-                logger.error(f'Failed to generate: {result.errors}', exc_info=True)
-                continue
-            snapshot = PublicExploreYearSnapshot.objects.filter(year=year).first() or PublicExploreYearSnapshot(year=year)
-            file_content = ContentFile(json.dumps(result.data, cls=DjangoJSONEncoder).encode('utf-8'))
+    def _save_snapshot(
+        gql_query,
+        filters,
+        year,
+        snapshot_filename
+    ):
+        result = gql_schema.execute(
+            gql_query,
+            context=DummyContext(),
+            variables={
+                'filter': filters,
+            }
+        )
+        if result.errors:
+            logger.error(f'Failed to generate: {result.errors}', exc_info=True)
+            return
+        snapshot = PublicExploreYearSnapshot.objects.filter(year=year).first() or PublicExploreYearSnapshot(year=year)
+        file_content = ContentFile(json.dumps(result.data, cls=DjangoJSONEncoder).encode('utf-8'))
+        # Delete current file
+        snapshot.file.delete()
+        # Save new file
+        snapshot.file.save(f'{snapshot_filename}.json', file_content)
+        if year != 0:  # Skip for Global snapshots
+            # Generate
+            download_file = generate_projects_stats(
+                # CamelCase to snake_case
+                underscoreize(filters),
+                None,
+            )
             # Delete current file
-            snapshot.file.delete()
+            snapshot.download_file.delete()
             # Save new file
-            snapshot.file.save(f'{year}-snapshot.json', file_content)
-            snapshot.save()
+            snapshot.download_file.save(f'{snapshot_filename}.csv', download_file)
+        snapshot.save()
+
+    data_min_year = Project.objects.aggregate(min_year=models.Min('created_at__year'))['min_year']
+    data_max_year = timezone.now().year
+    # Global
+    _save_snapshot(
+        DEEP_EXPLORE_FULL_QUERY,
+        _get_date_filter(data_min_year, data_max_year),
+        0,
+        'Global-snapshot'
+    )
+    # By year
+    for year in range(data_min_year, data_max_year + 1):
+        _save_snapshot(
+            DEEP_EXPLORE_WITH_FILTER_QUERY,
+            _get_date_filter(year, year + 1),
+            year,
+            f'{year}-snapshot',
+        )
 
 
 @shared_task

@@ -2426,6 +2426,7 @@ type PublicExploreYearSnapshotType {
   id: ID!
   year: Int!
   file: FileFieldType
+  downloadFile: FileFieldType
 }
 
 type PublicGalleryFileType {
