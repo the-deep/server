@@ -22,16 +22,15 @@ def get_organizations_display(project, organization_type=None):
     ])
 
 
-def export_projects_stats(export):
+def generate_projects_stats(filters, user):
     PROJECT_OWNER_ROLE = ProjectRole.objects.get(type=ProjectRole.Type.PROJECT_OWNER)
     filterset_attrs = dict(
         request=get_dummy_request(
             active_project=None,
-            user=export.exported_by,
+            user=user,
         ),
     )
 
-    filters = (export.filters or {}).get('deep_explore') or {}
     if not filters:
         raise Exception('This should be defined.')
 
@@ -106,3 +105,10 @@ def export_projects_stats(export):
             '# of Exports': exports_qs.count(),
         })
     return file
+
+
+def export_projects_stats(export):
+    return generate_projects_stats(
+        (export.filters or {}).get('deep_explore') or {},
+        export.exported_by,
+    )

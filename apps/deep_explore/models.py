@@ -38,5 +38,10 @@ class PublicExploreYearSnapshot(models.Model):
     """
     Used to store yearly snapshot used by public dashboard
     """
-    year = models.SmallIntegerField(unique=True)
+    year = models.SmallIntegerField(unique=True)  # 0 for global
     file = models.FileField(upload_to='deep-explore/public-snapshot/', max_length=255)
+    # Empty for global
+    download_file = models.FileField(upload_to='deep-explore/public-excel-export/', max_length=255, blank=True)
+
+    class Meta:
+        ordering = ('year',)
