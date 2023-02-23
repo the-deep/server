@@ -27,7 +27,7 @@ from entry.models import Entry
 from entry.filter_set import EntryGQFilterSet, EntriesFilterDataInputType, EntriesFilterDataType
 from user_resource.filters import UserResourceGqlFilterSet
 
-from .models import Lead, LeadGroup
+from .models import Lead, LeadGroup, LeadDuplicates
 from .enums import (
     LeadConfidentialityEnum,
     LeadStatusEnum,
@@ -535,16 +535,15 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
     def duplicates_of_filter(self, qs, _, lead_id: int):
         if lead_id is None:
             return qs
-        return qs.filter(
-            models.Q(duplicate_leads=lead_id) |
-            models.Q(duplicate_of=lead_id)
-        )
+        dup_qs1 = LeadDuplicates.objects.filter(source_lead=lead_id).values_list('target_lead', flat=True)
+        dup_qs2 = LeadDuplicates.objects.filter(target_lead=lead_id).values_list('source_lead', flat=True)
+        return qs.filter(pk__in=dup_qs1.union(dup_qs2))
 
     def has_duplicates_filter(self, qs, _, val: bool):
         if val is True:
-            return qs.filter(duplicate_leads_count__gt=0)
+            return qs.filter(duplicates_count__gt=0)
         elif val is False:
-            return qs.filter(duplicate_leads_count=0)
+            return qs.filter(duplicates_count=0)
         return qs
 
     @property

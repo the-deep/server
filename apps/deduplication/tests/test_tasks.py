@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from project.factories import ProjectFactory
 from lead.factories import LeadPreviewFactory, LeadFactory
+from lead.models import Lead
 from deduplication.models import LSHIndex
 from deduplication.factories import LSHIndexFactory
 from deduplication.tasks.indexing import (
@@ -87,7 +88,8 @@ class TestTasks(TestCase):
         # Create lead previews with same conent
         common_text = "This is a common text between two leads. The purpose is to mark them as duplicates"
         LeadPreviewFactory.create(lead=lead1, text_extract=common_text)
-        LeadPreviewFactory.create(lead=lead2, text_extract=common_text[20:])
+        # Have same text so that, they will be marked as duplicates
+        LeadPreviewFactory.create(lead=lead2, text_extract=common_text)
         assert list(lead1.duplicate_leads.all()) == [], "No duplicates for lead1 in the beginning"
         assert list(lead2.duplicate_leads.all()) == [], "No duplicates for lead2 in the beginning"
 
@@ -97,6 +99,14 @@ class TestTasks(TestCase):
         # Index lead2, at this point, lead1 should be marked its duplicate
         index_lead_and_calculate_duplicates(lead2.id)
         assert lead2.duplicate_leads is not None
+
+        # Also has_duplicates of both the leads should be true
+        lead1 = Lead.objects.get(pk=lead1.id)
+        lead2 = Lead.objects.get(pk=lead2.id)
+        assert lead1.is_indexed is True
+        assert lead2.is_indexed is True
+        assert lead1.duplicates_count == 1
+        assert lead2.duplicates_count == 1
 
     def test_remove_lead_from_index(self):
         project = ProjectFactory.create()
