@@ -66,8 +66,8 @@
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="d_2f56ee5d095018b7___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io">coverage.py v7.1.0</a>,
-            created at 2023-02-09 06:13 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.2.1">coverage.py v7.2.1</a>,
+            created at 2023-02-27 05:33 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"/>
@@ -88,7 +88,7 @@
     <p class="pln"><span class="n"><a id="t4" href="#t4">4</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t5" href="#t5">5</a></span><span class="t"><span class="key">from</span> <span class="nam">export</span><span class="op">.</span><span class="nam">formats</span><span class="op">.</span><span class="nam">xlsx</span> <span class="key">import</span> <span class="nam">WorkBook</span><span class="op">,</span> <span class="nam">RowsBuilder</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t6" href="#t6">6</a></span><span class="t"><span class="key">from</span> <span class="nam">openpyxl</span><span class="op">.</span><span class="nam">styles</span> <span class="key">import</span> <span class="nam">Alignment</span><span class="op">,</span> <span class="nam">Font</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t7" href="#t7">7</a></span><span class="t"><span class="key">from</span> <span class="nam">utils</span><span class="op">.</span><span class="nam">common</span> <span class="key">import</span> <span class="nam">format_date</span><span class="op">,</span> <span class="nam">underscore_to_title</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t7" href="#t7">7</a></span><span class="t"><span class="key">from</span> <span class="nam">utils</span><span class="op">.</span><span class="nam">common</span> <span class="key">import</span> <span class="nam">deep_date_format</span><span class="op">,</span> <span class="nam">underscore_to_title</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t8" href="#t8">8</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t9" href="#t9">9</a></span><span class="t"><span class="key">import</span> <span class="nam">logging</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t10" href="#t10">10</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -202,7 +202,7 @@
     <p class="mis show_mis"><span class="n"><a id="t118" href="#t118">118</a></span><span class="t">            <span class="nam">rows</span> <span class="op">=</span> <span class="nam">RowsBuilder</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">split</span><span class="op">,</span> <span class="nam">self</span><span class="op">.</span><span class="nam">group</span><span class="op">,</span> <span class="nam">split</span><span class="op">=</span><span class="key">False</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t119" href="#t119">119</a></span><span class="t">            <span class="nam">lead</span> <span class="op">=</span> <span class="nam">assessment</span><span class="op">.</span><span class="nam">lead</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t120" href="#t120">120</a></span><span class="t">            <span class="nam">rows</span><span class="op">.</span><span class="nam">add_value_list</span><span class="op">(</span><span class="op">[</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t121" href="#t121">121</a></span><span class="t">                <span class="nam">format_date</span><span class="op">(</span><span class="nam">lead</span><span class="op">.</span><span class="nam">created_at</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t121" href="#t121">121</a></span><span class="t">                <span class="nam">deep_date_format</span><span class="op">(</span><span class="nam">lead</span><span class="op">.</span><span class="nam">created_at</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t122" href="#t122">122</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">created_by</span><span class="op">.</span><span class="nam">username</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t123" href="#t123">123</a></span><span class="t">                <span class="nam">lead</span><span class="op">.</span><span class="nam">title</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t124" href="#t124">124</a></span><span class="t">                <span class="op">(</span><span class="nam">lead</span><span class="op">.</span><span class="nam">source</span> <span class="key">and</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">source</span><span class="op">.</span><span class="nam">title</span><span class="op">)</span> <span class="key">or</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">source_raw</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -384,8 +384,8 @@
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="d_2f56ee5d095018b7___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io">coverage.py v7.1.0</a>,
-            created at 2023-02-09 06:13 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.2.1">coverage.py v7.2.1</a>,
+            created at 2023-02-27 05:33 +0000
         </p>
     </div>
 </footer>
