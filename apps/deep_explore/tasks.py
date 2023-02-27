@@ -2,8 +2,10 @@ import logging
 import datetime
 import time
 import json
-from typing import Union
+import pytz
+from typing import Union, Tuple
 from celery import shared_task
+from dateutil.relativedelta import relativedelta
 
 from django.db import connection, models, transaction
 from django.core.serializers.json import DjangoJSONEncoder
@@ -22,7 +24,7 @@ from export.tasks.tasks_projects import generate_projects_stats
 from .models import (
     AggregateTracker,
     EntriesCountByGeoAreaAggregate,
-    PublicExploreYearSnapshot,
+    PublicExploreSnapshot,
 )
 
 logger = logging.getLogger(__name__)
@@ -45,95 +47,179 @@ def _tb(model):
     return model._meta.db_table
 
 
-DEEP_EXPLORE_WITH_FILTER_QUERY = """
-    query MyQuery($filter: ExploreDeepFilterInputType!) {
-      deepExploreStats(filter: $filter) {
-        totalActiveUsers
-        totalAuthors
-        totalEntries
-        totalEntriesAddedLastWeek
-        totalLeads
-        totalProjects
-        totalPublishers
-        totalRegisteredUsers
-        topTenPublishers {
-          id
-          title
-          leadsCount
-          projectsCount
+class Query:
+    YEARLY = """
+        query MyQuery($filter: ExploreDeepFilterInputType!) {
+          deepExploreStats(filter: $filter) {
+            totalActiveUsers
+            totalAuthors
+            totalEntries
+            totalEntriesAddedLastWeek
+            totalLeads
+            totalProjects
+            totalPublishers
+            totalRegisteredUsers
+            topTenPublishers {
+              id
+              title
+              leadsCount
+              projectsCount
+            }
+            topTenProjectsByUsers {
+              id
+              title
+              usersCount
+            }
+            topTenProjectsByEntries {
+              id
+              title
+              entriesCount
+              leadsCount
+            }
+            topTenProjectsByLeads {
+              id
+              title
+              entriesCount
+              leadsCount
+            }
+            topTenFrameworks {
+              id
+              title
+              projectsCount
+              entriesCount
+            }
+            topTenAuthors {
+              id
+              title
+              projectsCount
+              leadsCount
+            }
+            projectsByRegion {
+              id
+              centroid
+              projectIds
+            }
+            entriesCountByRegion {
+              centroid
+              count
+            }
+          }
         }
-        topTenProjectsByUsers {
-          id
-          title
-          usersCount
-        }
-        topTenProjectsByEntries {
-          id
-          title
-          entriesCount
-          leadsCount
-        }
-        topTenProjectsByLeads {
-          id
-          title
-          entriesCount
-          leadsCount
-        }
-        topTenFrameworks {
-          id
-          title
-          projectsCount
-          entriesCount
-        }
-        topTenAuthors {
-          id
-          title
-          projectsCount
-          leadsCount
-        }
-        projectsByRegion {
-          id
-          centroid
-          projectIds
-        }
-      }
-    }
-"""
+    """
 
-DEEP_EXPLORE_FULL_QUERY = """
-    query MyQuery($filter: ExploreDeepFilterInputType!) {
-      deepExploreStats(filter: $filter) {
-        projectsCountByMonth {
-          count
-          date
+    GLOBAL_TIME_SERIES = """
+        query MyQuery($filter: ExploreDeepFilterInputType!) {
+          deepExploreStats(filter: $filter) {
+            projectsCountByMonth {
+              count
+              date
+            }
+            projectsCountByDay {
+              count
+              date
+            }
+            leadsCountByMonth {
+              date
+              count
+            }
+            leadsCountByDay {
+              date
+              count
+            }
+            entriesCountByMonth {
+              date
+              count
+            }
+            entriesCountByDay {
+              date
+              count
+            }
+          }
         }
-        projectsCountByDay {
-          count
-          date
+    """
+
+    GLOBAL_FULL = """
+        query MyQuery($filter: ExploreDeepFilterInputType!) {
+          deepExploreStats(filter: $filter) {
+            totalActiveUsers
+            totalAuthors
+            totalEntries
+            totalEntriesAddedLastWeek
+            totalLeads
+            totalProjects
+            totalPublishers
+            totalRegisteredUsers
+            topTenPublishers {
+              id
+              title
+              leadsCount
+              projectsCount
+            }
+            topTenProjectsByUsers {
+              id
+              title
+              usersCount
+            }
+            topTenProjectsByEntries {
+              id
+              title
+              entriesCount
+              leadsCount
+            }
+            topTenProjectsByLeads {
+              id
+              title
+              entriesCount
+              leadsCount
+            }
+            topTenFrameworks {
+              id
+              title
+              projectsCount
+              entriesCount
+            }
+            topTenAuthors {
+              id
+              title
+              projectsCount
+              leadsCount
+            }
+            projectsByRegion {
+              id
+              centroid
+              projectIds
+            }
+            entriesCountByRegion {
+              centroid
+              count
+            }
+            projectsCountByMonth {
+              count
+              date
+            }
+            projectsCountByDay {
+              count
+              date
+            }
+            leadsCountByMonth {
+              date
+              count
+            }
+            leadsCountByDay {
+              date
+              count
+            }
+            entriesCountByMonth {
+              date
+              count
+            }
+            entriesCountByDay {
+              date
+              count
+            }
+          }
         }
-        leadsCountByMonth {
-          date
-          count
-        }
-        leadsCountByDay {
-          date
-          count
-        }
-        entriesCountByRegion {
-          centroid
-          count
-        }
-        entriesCountByMonth {
-          date
-          count
-        }
-        entriesCountByDay {
-          date
-          count
-        }
-      }
-    }
-"""
+    """
 
 
 def get_update_entries_count_by_geo_area_aggregate_sql():
@@ -241,15 +327,33 @@ def generate_public_deep_explore_snapshot():
     class DummyContext:
         request = None
 
-    class DummyExport:
-        exported_by = None
-        filters = None
+    def get_or_create(_type: PublicExploreSnapshot.Type, start_date: datetime.date, end_date: datetime.date, **kwargs):
+        snapshot = PublicExploreSnapshot.objects.get_or_create(
+            type=_type,
+            **kwargs,
+            defaults=dict(
+                start_date=start_date,
+                end_date=end_date,
+            ),
+        )[0]
+        # For already existing
+        snapshot.start_date = start_date
+        snapshot.end_date = end_date
+        return snapshot
 
-    def _get_date_filter(min_year, max_year):
+    def _get_date_filter(min_date: datetime.date, max_date: datetime.date) -> dict:
         return {
-            'dateFrom': f"{min_year}-01-01T00:00:00Z",
-            'dateTo': f"{max_year}-01-01T00:00:00Z",
+            'dateFrom': min_date.isoformat(),
+            'dateTo': max_date.isoformat(),
         }
+
+    def _get_date_meta(min_year, max_year) -> Tuple[Tuple[datetime.date, datetime.date], dict]:
+        min_date = datetime.datetime(year=min_year, month=1, day=1, tzinfo=pytz.UTC)
+        max_date = datetime.datetime(year=max_year, month=1, day=1, tzinfo=pytz.UTC) - relativedelta(days=1)
+        return (
+            min_date.date(),
+            max_date.date(),
+        ), _get_date_filter(min_date, max_date)
 
     @override_settings(
         CACHES={
@@ -262,8 +366,9 @@ def generate_public_deep_explore_snapshot():
     def _save_snapshot(
         gql_query,
         filters,
-        year,
-        snapshot_filename
+        snapshot_filename,
+        snapshot,
+        generate_download_file=True,
     ):
         result = gql_schema.execute(
             gql_query,
@@ -275,13 +380,12 @@ def generate_public_deep_explore_snapshot():
         if result.errors:
             logger.error(f'Failed to generate: {result.errors}', exc_info=True)
             return
-        snapshot = PublicExploreYearSnapshot.objects.filter(year=year).first() or PublicExploreYearSnapshot(year=year)
         file_content = ContentFile(json.dumps(result.data, cls=DjangoJSONEncoder).encode('utf-8'))
         # Delete current file
         snapshot.file.delete()
         # Save new file
         snapshot.file.save(f'{snapshot_filename}.json', file_content)
-        if year != 0:  # Skip for Global snapshots
+        if generate_download_file:  # Skip for Global snapshots
             # Generate
             download_file = generate_projects_stats(
                 # CamelCase to snake_case
@@ -294,22 +398,45 @@ def generate_public_deep_explore_snapshot():
             snapshot.download_file.save(f'{snapshot_filename}.csv', download_file)
         snapshot.save()
 
-    data_min_year = Project.objects.aggregate(min_year=models.Min('created_at__year'))['min_year']
-    data_max_year = timezone.now().year
-    # Global
+    # Global year range
+    data_min_date = Project.objects.aggregate(min_created_at=models.Min('created_at'))['min_created_at']
+    data_max_date = timezone.now() - relativedelta(days=1)
+    date_range, date_filter = (data_min_date, data_max_date), _get_date_filter(data_min_date, data_max_date)
+    # Global - Time series
     _save_snapshot(
-        DEEP_EXPLORE_FULL_QUERY,
-        _get_date_filter(data_min_year, data_max_year),
-        0,
-        'Global-snapshot'
+        Query.GLOBAL_TIME_SERIES,
+        date_filter,
+        'Global-time-series-snapshot',
+        get_or_create(
+            PublicExploreSnapshot.Type.GLOBAL,
+            *date_range,
+            global_type=PublicExploreSnapshot.GlobalType.TIME_SERIES,
+        ),
+        generate_download_file=False,
+    )
+    # Global - Full
+    _save_snapshot(
+        Query.GLOBAL_FULL,
+        date_filter,
+        'Global-full-snapshot',
+        get_or_create(
+            PublicExploreSnapshot.Type.GLOBAL,
+            *date_range,
+            global_type=PublicExploreSnapshot.GlobalType.FULL,
+        ),
     )
     # By year
-    for year in range(data_min_year, data_max_year + 1):
+    for year in range(data_min_date.year, data_max_date.year + 1):
+        date_range, date_filter = _get_date_meta(year, year + 1)
         _save_snapshot(
-            DEEP_EXPLORE_WITH_FILTER_QUERY,
-            _get_date_filter(year, year + 1),
-            year,
+            Query.YEARLY,
+            date_filter,
             f'{year}-snapshot',
+            get_or_create(
+                PublicExploreSnapshot.Type.YEARLY_SNAPSHOT,
+                *date_range,
+                year=year,
+            ),
         )
 
 

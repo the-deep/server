@@ -2422,9 +2422,9 @@ type PublicAnalysisFrameworkListType {
   pageSize: Int
 }
 
-type PublicExploreYearSnapshotType {
+type PublicExploreSnapshotType {
   id: ID!
-  year: Int!
+  year: Int
   file: FileFieldType
   downloadFile: FileFieldType
 }
@@ -2518,7 +2518,7 @@ type PublicProjectWithMembershipData {
 
 type Query {
   deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
-  publicDeepExploreYearlySnapshots: [PublicExploreYearSnapshotType!]
+  publicDeepExploreYearlySnapshots: [PublicExploreSnapshotType!]
   genericExport(id: ID!): UserGenericExportType
   rssFields(url: String): [RssFieldType!]
   atomFeedFields(url: String): [AtomFeedFieldType!]
