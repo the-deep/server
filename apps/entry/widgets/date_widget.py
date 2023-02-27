@@ -1,6 +1,6 @@
 from dateutil.parser import parse as date_parse
 
-from utils.common import ONE_DAY
+from utils.common import ONE_DAY, deep_date_format
 from analysis_framework.widgets.date_widget import WIDGET_ID
 
 # NOTE: Please update the data version when you update the data format
@@ -12,7 +12,7 @@ def parse_date_str(value):
     date = value and date_parse(value)
     number = date and int(date.timestamp() / ONE_DAY)
     # NOTE: Please update the data version when you update the data format
-    return date and date.strftime('%d-%m-%Y'), number
+    return deep_date_format(date, fallback=None), number
 
 
 def _get_date(widget, data, widget_properties):
