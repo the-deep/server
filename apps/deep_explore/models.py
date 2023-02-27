@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 
 from project.models import Project
 from geo.models import GeoArea
@@ -34,14 +35,44 @@ class EntriesCountByGeoAreaAggregate(models.Model):
         unique_together = ('project', 'geo_area', 'date')
 
 
-class PublicExploreYearSnapshot(models.Model):
+class PublicExploreSnapshot(models.Model):
     """
-    Used to store yearly snapshot used by public dashboard
+    Used to store snapshot used by public dashboard
     """
-    year = models.SmallIntegerField(unique=True)  # 0 for global
+    class Type(models.IntegerChoices):
+        GLOBAL = 1, 'Global Snapshot'
+        YEARLY_SNAPSHOT = 2, 'Yearly Snapshot'
+
+    class GlobalType(models.IntegerChoices):
+        FULL = 1, 'Full Dataset'
+        TIME_SERIES = 2, 'Time Series Dataset'
+
+    type = models.SmallIntegerField(choices=Type.choices)
+    global_type = models.SmallIntegerField(choices=GlobalType.choices, null=True)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    year = models.SmallIntegerField(unique=True, null=True)
     file = models.FileField(upload_to='deep-explore/public-snapshot/', max_length=255)
     # Empty for global
     download_file = models.FileField(upload_to='deep-explore/public-excel-export/', max_length=255, blank=True)
 
     class Meta:
-        ordering = ('year',)
+        ordering = ('type', 'year',)
+
+    def clean(self):
+        validation_set = [
+            (PublicExploreSnapshot.Type.GLOBAL, PublicExploreSnapshot.GlobalType.TIME_SERIES, 'file'),
+            (PublicExploreSnapshot.Type.GLOBAL, PublicExploreSnapshot.GlobalType.FULL, 'file'),
+            (PublicExploreSnapshot.Type.GLOBAL, PublicExploreSnapshot.GlobalType.FULL, 'download_file'),
+            (PublicExploreSnapshot.Type.YEARLY_SNAPSHOT, None, 'year'),
+            (PublicExploreSnapshot.Type.YEARLY_SNAPSHOT, None, 'file'),
+            (PublicExploreSnapshot.Type.YEARLY_SNAPSHOT, None, 'download_file'),
+        ]
+        fields = ['year', 'file', 'download_file']
+        check_set = (self.type, self.global_type)
+        for field in fields:
+            if (*check_set, field) in validation_set:
+                if getattr(self, field) is None:
+                    raise ValidationError(
+                        f'<Type:{self.type}>+<GlobalType:{self.global_type}> needs <field:{field}> to be defined.'
+                    )
