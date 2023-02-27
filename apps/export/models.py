@@ -3,6 +3,7 @@ from django.core.cache import cache
 from django.contrib.auth.models import User
 from django.utils import timezone
 
+from utils.common import deep_date_format
 from deep.caches import CacheKey
 from deep.celery import app as celery_app
 from project.models import Project
@@ -134,7 +135,7 @@ class Export(models.Model):
     @classmethod
     def generate_title(cls, data_type, export_type, export_format):
         file_label = cls.DEFAULT_TITLE_LABEL[(data_type, export_type, export_format)]
-        time_str = timezone.now().strftime('%Y%m%d')
+        time_str = deep_date_format(timezone.now())
         return f'{time_str} DEEP {file_label}'
 
     def get_task_id(self, clear=False):

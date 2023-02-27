@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import hashlib
-from collections import Counter
-from functools import reduce
 import os
 import re
 import time
@@ -10,7 +8,10 @@ import string
 import tempfile
 import requests
 import logging
-from datetime import timedelta, datetime
+import datetime
+from typing import Union, Optional
+from collections import Counter
+from functools import reduce
 
 from django.utils.hashable import make_hashable
 from django.utils.encoding import force_str
@@ -124,20 +125,25 @@ def get_valid_xml_string(string, escape=True):
     return ''
 
 
-def format_date(date):
-    return date and date.strftime('%d-%m-%Y')
+def deep_date_format(
+    date: Optional[Union[datetime.date, datetime.datetime]],
+    fallback: Optional[str] = ''
+) -> Optional[str]:
+    if date:
+        return date.strftime('%d-%m-%Y')
+    return fallback
 
 
 def parse_date(date_str):
     try:
-        return date_str and datetime.strptime(date_str, '%d-%m-%Y')
+        return date_str and datetime.datetime.strptime(date_str, '%d-%m-%Y')
     except ValueError:
         return None
 
 
 def parse_time(time_str):
     try:
-        return time_str and datetime.strptime(time_str, '%H:%M').time()
+        return time_str and datetime.datetime.strptime(time_str, '%H:%M').time()
     except ValueError:
         return None
 
@@ -351,7 +357,7 @@ create_plotly_image.marker = dict(
 
 def get_redis_lock_ttl(lock):
     try:
-        return timedelta(seconds=redis.get_connection().ttl(lock.name))
+        return datetime.timedelta(seconds=redis.get_connection().ttl(lock.name))
     except Exception:
         pass
 
