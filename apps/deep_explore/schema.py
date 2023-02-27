@@ -23,9 +23,10 @@ from project.models import Project, ProjectMembership
 from lead.models import Lead
 from entry.models import Entry
 from analysis_framework.models import AnalysisFramework
-from deep_explore.models import EntriesCountByGeoAreaAggregate, PublicExploreYearSnapshot
+from deep_explore.models import EntriesCountByGeoAreaAggregate, PublicExploreSnapshot
 
 from .filter_set import ExploreProjectFilterDataInputType, ExploreProjectFilterSet
+from .enums import PublicExploreSnapshotTypeEnum, PublicExploreSnapshotGlobalTypeEnum
 
 
 # TODO?
@@ -497,13 +498,17 @@ class ExploreDashboardStatType(graphene.ObjectType):
         )
 
 
-class PublicExploreYearSnapshotType(DjangoObjectType):
+class PublicExploreSnapshotType(DjangoObjectType):
     class Meta:
-        model = PublicExploreYearSnapshot
+        model = PublicExploreSnapshot
         only_fields = (
             'id',
+            'start_date',
+            'end_date',
             'year',
         )
+    type = graphene.Field(PublicExploreSnapshotTypeEnum, required=True)
+    global_type = graphene.Field(PublicExploreSnapshotGlobalTypeEnum)
     file = graphene.Field(FileFieldType)
     download_file = graphene.Field(FileFieldType)
 
@@ -513,8 +518,17 @@ class Query:
         ExploreDashboardStatType,
         filter=ExploreDeepFilterInputType(required=True)
     )
-    public_deep_explore_yearly_snapshots = DjangoListField(PublicExploreYearSnapshotType)
+    public_deep_explore_yearly_snapshots = DjangoListField(PublicExploreSnapshotType)
+    public_deep_explore_global_snapshots = DjangoListField(PublicExploreSnapshotType)
 
     @staticmethod
     def resolve_deep_explore_stats(_, info, filter):
         return ExploreDashboardStatType.custom_resolver(info.context.request, filter)
+
+    @staticmethod
+    def resolve_public_deep_explore_yearly_snapshots(*_):
+        return PublicExploreSnapshot.objects.filter(type=PublicExploreSnapshot.Type.YEARLY_SNAPSHOT)
+
+    @staticmethod
+    def resolve_public_deep_explore_global_snapshots(*_):
+        return PublicExploreSnapshot.objects.filter(type=PublicExploreSnapshot.Type.GLOBAL)
