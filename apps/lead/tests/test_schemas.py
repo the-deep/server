@@ -362,7 +362,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     id
                     title
                     text
-                    duplicatesCount
+                    duplicateLeadsCount
                   }
                 }
               }
@@ -372,8 +372,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         member_user = UserFactory.create()
         project.add_member(member_user, role=self.project_role_reader_non_confidential)
         # NOTE: duplicate_counts should not be set manually. Here it's done for testing purposes
-        duplicate_leads = LeadFactory.create_batch(5, project=project, duplicates_count=1)
-        lead = LeadFactory.create(project=project, duplicates_count=5)
+        duplicate_leads = LeadFactory.create_batch(5, project=project, duplicate_leads_count=1)
+        lead = LeadFactory.create(project=project, duplicate_leads_count=5)
         lead.duplicate_leads.set(duplicate_leads)
         another_lead = LeadFactory.create(project=project)  # noqa
 
@@ -395,9 +395,9 @@ class TestLeadQuerySchema(GraphQLTestCase):
 
         for lead_resp in leads_resp:
             if lead_resp["id"] == str(lead.id):
-                self.assertEqual(lead_resp["duplicatesCount"], 5)
+                self.assertEqual(lead_resp["duplicateLeadsCount"], 5)
             else:
-                self.assertEqual(lead_resp["duplicatesCount"], 1)
+                self.assertEqual(lead_resp["duplicateLeadsCount"], 1)
 
     def test_lead_query_with_duplicates_false(self):
         query = '''
@@ -408,7 +408,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                       id
                       title
                       text
-                      duplicatesCount
+                      duplicateLeadsCount
                     }
                 }
               }
@@ -417,8 +417,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         project = ProjectFactory.create()
         member_user = UserFactory.create()
         project.add_member(member_user, role=self.project_role_reader_non_confidential)
-        duplicate_leads = LeadFactory.create_batch(5, project=project, duplicates_count=1)
-        lead = LeadFactory.create(project=project, duplicates_count=5)
+        duplicate_leads = LeadFactory.create_batch(5, project=project, duplicate_leads_count=1)
+        lead = LeadFactory.create(project=project, duplicate_leads_count=5)
         lead.duplicate_leads.set(duplicate_leads)
         another_lead = LeadFactory.create(project=project)  # noqa
 
@@ -431,7 +431,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         self.assertEqual(len(leads_resp), 1)
         lead_resp = leads_resp[0]
         self.assertEqual(lead_resp["id"], str(another_lead.id))
-        self.assertEqual(lead_resp["duplicatesCount"], 0)
+        self.assertEqual(lead_resp["duplicateLeadsCount"], 0)
 
     def test_lead_query_with_duplicates(self):
         query = '''
