@@ -2420,11 +2420,25 @@ type PublicAnalysisFrameworkListType {
   pageSize: Int
 }
 
+enum PublicExploreSnapshotGlobalTypeEnum {
+  FULL
+  TIME_SERIES
+}
+
 type PublicExploreSnapshotType {
   id: ID!
+  startDate: Date!
+  endDate: Date!
   year: Int
+  type: PublicExploreSnapshotTypeEnum!
+  globalType: PublicExploreSnapshotGlobalTypeEnum
   file: FileFieldType
   downloadFile: FileFieldType
+}
+
+enum PublicExploreSnapshotTypeEnum {
+  GLOBAL
+  YEARLY_SNAPSHOT
 }
 
 type PublicGalleryFileType {
@@ -2517,6 +2531,7 @@ type PublicProjectWithMembershipData {
 type Query {
   deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
   publicDeepExploreYearlySnapshots: [PublicExploreSnapshotType!]
+  publicDeepExploreGlobalSnapshots: [PublicExploreSnapshotType!]
   genericExport(id: ID!): UserGenericExportType
   rssFields(url: String): [RssFieldType!]
   atomFeedFields(url: String): [AtomFeedFieldType!]
