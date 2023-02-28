@@ -2,7 +2,7 @@ import graphene
 from functools import reduce
 from typing import Union
 from django.db import models
-from django.db.models import QuerySet, Count
+from django.db.models import QuerySet
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
@@ -361,7 +361,7 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
         )
     )
     # Duplicate leads
-    duplicates_count = graphene.Int()
+    duplicate_leads_count = graphene.Int()
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):

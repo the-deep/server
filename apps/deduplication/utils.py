@@ -6,7 +6,7 @@ from deduplication.models import LSHIndex
 
 def preprocess_text(txt: str):
     # Remove punctuations and make lowercase
-    return re.sub("['\".,?``!@#$%^&*()_+-={};:<>]", "", txt).lower()
+    return re.sub(r"[!\"#\$%&\'\(\)\*\+,-\./:;<=>\?@\[\\\]\^_`{\|}~]", "", txt).lower()
 
 
 def get_minhash(txt: str) -> LeanMinHash:

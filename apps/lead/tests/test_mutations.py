@@ -192,8 +192,8 @@ class TestLeadMutationSchema(GraphQLTestCase):
         result = _query_check(okay=False)['data']['project']['leadCreate1']['result']
         self.assertEqual(result, None, result)
 
-    @mock.patch('lead.receivers.remove_lead_from_index.delay')
-    def test_lead_delete_validation(self, remove_lead_from_index_func):
+    @mock.patch('lead.receivers.update_index_and_duplicates')
+    def test_lead_delete_validation(self, update_indices_func):
         """
         This test checks create lead validations
         """
@@ -247,7 +247,7 @@ class TestLeadMutationSchema(GraphQLTestCase):
         # Success with normal lead (with project membership)
         result = _query_check(lead, will_delete=True, okay=True)['data']['project']['leadDelete']['result']
         self.assertEqual(result['title'], lead.title, result)
-        remove_lead_from_index_func.assert_called_once()
+        update_indices_func.assert_called_once()
 
     def test_lead_update_validation(self):
         query = '''

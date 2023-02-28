@@ -541,9 +541,9 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
 
     def has_duplicates_filter(self, qs, _, val: bool):
         if val is True:
-            return qs.filter(duplicates_count__gt=0)
+            return qs.filter(duplicate_leads_count__gt=0)
         elif val is False:
-            return qs.filter(duplicates_count=0)
+            return qs.filter(duplicate_leads_count=0)
         return qs
 
     @property

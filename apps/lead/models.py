@@ -146,7 +146,7 @@ class Lead(UserResource, ProjectEntityMixin):
         through='LeadDuplicates',
     )
     is_indexed = models.BooleanField(default=False)
-    duplicates_count = models.PositiveIntegerField(default=0)
+    duplicate_leads_count = models.PositiveIntegerField(default=0)
     indexed_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):

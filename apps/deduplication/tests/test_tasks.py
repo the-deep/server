@@ -1,10 +1,12 @@
 import pytest
-from unittest import TestCase
 from unittest.mock import patch
+from django.db.models import Q
 
+from deep.tests import TestCase
 from project.factories import ProjectFactory
 from lead.factories import LeadPreviewFactory, LeadFactory
-from lead.models import Lead
+from lead.receivers import update_index_and_duplicates
+from lead.models import Lead, LeadDuplicates
 from deduplication.models import LSHIndex
 from deduplication.factories import LSHIndexFactory
 from deduplication.tasks.indexing import (
@@ -12,6 +14,7 @@ from deduplication.tasks.indexing import (
     get_index_object_for_project,
     index_lead_and_calculate_duplicates,
     remove_lead_from_index,
+    create_project_index,
 )
 
 
@@ -22,6 +25,7 @@ class TestTasks(TestCase):
     """
 
     def setUp(self):
+        super().setUp()
         self.project = ProjectFactory.create()
 
     def test_get_index_object_for_project_new(self):
@@ -105,8 +109,8 @@ class TestTasks(TestCase):
         lead2 = Lead.objects.get(pk=lead2.id)
         assert lead1.is_indexed is True
         assert lead2.is_indexed is True
-        assert lead1.duplicates_count == 1
-        assert lead2.duplicates_count == 1
+        assert lead1.duplicate_leads_count == 1
+        assert lead2.duplicate_leads_count == 1
 
     def test_remove_lead_from_index(self):
         project = ProjectFactory.create()
@@ -119,3 +123,74 @@ class TestTasks(TestCase):
         remove_lead_from_index(lead.id)
         index_obj = get_index_object_for_project(project)
         assert lead.id not in index_obj.index, "The lead should be removed in index"
+
+    def test_remove_lead_index_object(self):
+        project = ProjectFactory.create()
+        num_leads = 3
+        leads = LeadFactory.create_batch(num_leads, project=project)
+        # Create lead previews with same conent
+        common_text = "This is a common text between two leads. The purpose is to mark them as duplicates"
+        for lead in leads:
+            # Have same text so that, they will be marked as duplicates
+            LeadPreviewFactory.create(lead=lead, text_extract=common_text)
+
+        assert LSHIndex.objects.count() == 0, "No index should be created"
+        assert LeadDuplicates.objects.all().count() == 0, "No duplicates"
+        assert Lead.objects.filter(project=project, is_indexed=True).count() == 0, "No leads are indexed"
+
+        # Create index
+        create_project_index(project)
+        assert LSHIndex.objects.count() == 1, "An index should be created"
+
+        assert LeadDuplicates.objects.all().count() > 0, "Duplicates should be created"
+
+        project_leads_qs = Lead.objects.filter(project=project)
+        indexed_leads_qs = project_leads_qs.filter(is_indexed=True)
+        assert indexed_leads_qs.count() == num_leads, "Leads must be indexed"
+
+        leads_with_duplicates = project_leads_qs.filter(duplicate_leads_count__gt=0)
+        assert leads_with_duplicates.count() == num_leads, "All leads should have duplicates"
+
+        # Delete index object
+        with self.captureOnCommitCallbacks(execute=True):
+            LSHIndex.objects.filter(project=project).delete()
+
+        project_leads = Lead.objects.filter(project=project)
+        assert project_leads.filter(is_indexed=True).count() == 0, "No leads should be indexed"
+        assert project_leads.filter(duplicate_leads_count__gt=0).count() == 0, "No leads should have duplicates"
+        assert LeadDuplicates.objects.all().count() == 0
+
+    def test_update_index_and_duplicates(self):
+        project = ProjectFactory.create()
+        num_leads = 3
+        leads = LeadFactory.create_batch(num_leads, project=project)
+        first_lead = leads[0]
+
+        # Create lead previews with same conent
+        common_text = "This is a common text between two leads. The purpose is to mark them as duplicates"
+        for lead in leads:
+            # Have same text so that, they will be marked as duplicates
+            LeadPreviewFactory.create(lead=lead, text_extract=common_text)
+
+        create_project_index(project)
+
+        # Refresh lead objects
+        for lead in leads:
+            lead.refresh_from_db()
+
+        project_leads = Lead.objects.filter(project=project)
+        assert project_leads.filter(duplicate_leads_count=0).count() == 0, "Leads should have duplicates"
+        assert LeadDuplicates.objects.filter(
+            Q(source_lead_id=first_lead.id) |
+            Q(target_lead_id=first_lead.id)
+        ).count() > 0, "There should be duplicates entries for the first lead"
+
+        # NOTE: this should have been called by signal
+        update_index_and_duplicates(first_lead)
+
+        # Check for new duplicate_leads_count
+        for lead_ in leads[1:]:
+            original_count = lead_.duplicate_leads_count
+            lead_.refresh_from_db()
+            lead = Lead.objects.get(id=lead_.id)
+            assert lead.duplicate_leads_count == original_count - 1
