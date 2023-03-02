@@ -1,5 +1,6 @@
 import pickle
 from django.db import transaction
+from django.db.models import F
 from django.utils import timezone
 from celery import shared_task
 from celery.utils.log import get_task_logger
@@ -17,7 +18,13 @@ logger = get_task_logger(__name__)
 def find_and_set_duplicate_leads(index: MinHashLSH, lead: Lead, minhash: LeanMinHash):
     duplicate_lead_ids = index.query(minhash)
     duplicate_leads_qs = Lead.objects.filter(pk__in=duplicate_lead_ids)
+    duplicate_leads_count = duplicate_leads_qs.count()
+    if duplicate_leads_count > 0:
+        lead.duplicate_leads_count += duplicate_leads_count
+        duplicate_leads_qs\
+            .update(duplicate_leads_count=F('duplicate_leads_count') + 1)
     lead.duplicate_leads.set(duplicate_leads_qs)
+    lead.save(update_fields=['duplicate_leads_count'])
 
 
 def process_and_index_lead(lead: Lead, index: MinHashLSH):

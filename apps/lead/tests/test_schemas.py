@@ -371,8 +371,9 @@ class TestLeadQuerySchema(GraphQLTestCase):
         project = ProjectFactory.create()
         member_user = UserFactory.create()
         project.add_member(member_user, role=self.project_role_reader_non_confidential)
-        duplicate_leads = LeadFactory.create_batch(5, project=project)
-        lead = LeadFactory.create(project=project)
+        # NOTE: duplicate_counts should not be set manually. Here it's done for testing purposes
+        duplicate_leads = LeadFactory.create_batch(5, project=project, duplicate_leads_count=1)
+        lead = LeadFactory.create(project=project, duplicate_leads_count=5)
         lead.duplicate_leads.set(duplicate_leads)
         another_lead = LeadFactory.create(project=project)  # noqa
 
@@ -416,8 +417,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         project = ProjectFactory.create()
         member_user = UserFactory.create()
         project.add_member(member_user, role=self.project_role_reader_non_confidential)
-        duplicate_leads = LeadFactory.create_batch(5, project=project)
-        lead = LeadFactory.create(project=project)
+        duplicate_leads = LeadFactory.create_batch(5, project=project, duplicate_leads_count=1)
+        lead = LeadFactory.create(project=project, duplicate_leads_count=5)
         lead.duplicate_leads.set(duplicate_leads)
         another_lead = LeadFactory.create(project=project)  # noqa
 
