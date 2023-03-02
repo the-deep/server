@@ -2,7 +2,7 @@ import graphene
 from functools import reduce
 from typing import Union
 from django.db import models
-from django.db.models import QuerySet, Count
+from django.db.models import QuerySet
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
@@ -47,13 +47,7 @@ from .filter_set import (
 
 
 def get_lead_qs(info):
-    lead_qs = Lead.objects.filter(project=info.context.active_project).\
-        annotate(
-            duplicates_count=Count('duplicate_leads', distinct=True),
-            duplicate_of_count=Count('duplicate_of', distinct=True)
-    ).annotate(
-        duplicate_leads_count=models.F('duplicates_count') + models.F('duplicate_of_count'),
-    )
+    lead_qs = Lead.objects.filter(project=info.context.active_project)
     # Generate queryset according to permission
     if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
         return lead_qs

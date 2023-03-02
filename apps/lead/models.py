@@ -140,8 +140,13 @@ class Lead(UserResource, ProjectEntityMixin):
         'unified_connector.ConnectorLead',
         on_delete=models.SET_NULL, related_name='+', blank=True, null=True
     )
-    duplicate_leads = models.ManyToManyField("Lead", blank=True, related_name="duplicate_of")
+    duplicate_leads = models.ManyToManyField(
+        "Lead",
+        blank=True,
+        through='LeadDuplicates',
+    )
     is_indexed = models.BooleanField(default=False)
+    duplicate_leads_count = models.PositiveIntegerField(default=0)
     indexed_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
@@ -407,3 +412,18 @@ class UserSavedLeadFilter(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+
+
+class LeadDuplicates(models.Model):
+    source_lead = models.ForeignKey(
+        Lead,
+        on_delete=models.CASCADE,
+    )
+    target_lead = models.ForeignKey(
+        Lead,
+        on_delete=models.CASCADE,
+        related_name="duplicate_of",
+    )
+    # This is to collect feedback from user whether this duplicate pair is
+    # valid or not.
+    is_valid = models.BooleanField(default=True)
