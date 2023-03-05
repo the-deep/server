@@ -7,7 +7,8 @@ from entry.filter_set import EntryGQFilterSet
 from .models import (
     Analysis,
     AnalysisPillar,
-    DiscardedEntry
+    DiscardedEntry,
+    AnalyticalStatement,
 )
 
 
@@ -77,3 +78,9 @@ class AnalysisPillarEntryGQFilterSet(EntryGQFilterSet):
         if value:
             return queryset.exclude(id__in=value)
         return queryset
+
+
+class AnalyticalStatementGQFilterSet(UserResourceGqlFilterSet):
+    class Meta:
+        model = AnalyticalStatement
+        fields = ()
