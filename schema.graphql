@@ -201,24 +201,18 @@ type AnalysisListType {
   pageSize: Int
 }
 
-type AnalysisPillarDetailType {
+type AnalysisOverviewOrganizationType {
   id: ID!
   title: String!
-  mainStatement: String!
-  informationGap: String!
-  filters: GenericScalar
-  assignee: UserType!
-  clientId: String!
-  analysis: ID!
-  clonedFrom: ID!
-  entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadCreatedBy: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], leadAuthoringOrganizationTypes: [ID!], leadAuthorOrganizations: [ID!], leadSourceOrganizations: [ID!], search: String, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataInputType!], hasComment: Boolean, isVerified: Boolean, discarded: Boolean, excludeEntries: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarEntryListType
+  count: Int!
 }
 
-type AnalysisPillarEntryListType {
-  results: [EntryType!]
-  totalCount: Int
-  page: Int
-  pageSize: Int
+type AnalysisOverviewType {
+  totalEntriesCount: Int!
+  totalLeadsCount: Int!
+  analyzedEntriesCount: Int!
+  analyzedLeadsCount: Int!
+  authoringOrganizations: [AnalysisOverviewOrganizationType!]
 }
 
 type AnalysisPillarListType {
@@ -234,10 +228,21 @@ type AnalysisPillarType {
   mainStatement: String!
   informationGap: String!
   filters: GenericScalar
-  assignee: UserType!
   clientId: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  assignee: UserType!
   analysis: ID!
-  clonedFrom: ID!
+  clonedFrom: ID
+  analyzedEntriesCount: Int!
+  statements: [AnalyticalStatementType!]
+}
+
+type AnalysisPublicationDateType {
+  startDate: Date!
+  endDate: Date!
 }
 
 type AnalysisType {
@@ -245,9 +250,46 @@ type AnalysisType {
   title: String!
   startDate: Date
   endDate: Date!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  clonedFrom: ID
+  teamLead: UserType!
+  publicationDate: AnalysisPublicationDateType
+  analyzedEntriesCount: Int!
+  analyzedLeadsCount: Int!
+  pillars: [AnalysisPillarType!]
+}
+
+type AnalyticalStatementEntryType {
+  id: ID!
+  order: Int!
   clientId: String!
-  teamLead: ID!
-  clonedFrom: ID!
+  entry: ID!
+  analyticalStatement: ID!
+}
+
+type AnalyticalStatementListType {
+  results: [AnalyticalStatementType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalyticalStatementType {
+  id: ID!
+  statement: String!
+  includeInReport: Boolean!
+  order: Int!
+  clientId: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  clonedFrom: ID
+  entriesCount: Int!
+  entries: [AnalyticalStatementEntryType!]
 }
 
 type AssessmentListType {
@@ -2053,10 +2095,13 @@ type ProjectDetailType {
   organizations: [ProjectOrganizationType!]
   hasAnalysisFramework: Boolean!
   hasAssessmentTemplate: Boolean!
+  analysisOverview: AnalysisOverviewType
   analysis(id: ID!): AnalysisType
   analyses(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisListType
-  analysisPillar(id: ID!): AnalysisPillarDetailType
+  analysisPillar(id: ID!): AnalysisPillarType
   analysisPillars(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], analyses: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarListType
+  analyticalStatement(id: ID!): AnalyticalStatementType
+  analyticalStatements(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalyticalStatementListType
   assessment(id: ID!): AssessmentType
   assessments(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentListType
   reviewComment(id: ID!): EntryReviewCommentDetailType
