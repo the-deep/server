@@ -2,7 +2,6 @@ from django.utils.functional import cached_property
 
 from utils.graphene.dataloaders import WithContextMixin
 
-from user_resource.dataloaders import DataLoaders as UserResourceDataLoaders
 from project.dataloaders import DataLoaders as ProjectDataLoaders
 from user.dataloaders import DataLoaders as UserDataLoaders
 from user_group.dataloaders import DataLoaders as UserGroupDataLoaders
@@ -16,9 +15,6 @@ from unified_connector.dataloaders import DataLoaders as UnifiedConnectorDataLoa
 
 
 class GlobalDataLoaders(WithContextMixin):
-    @cached_property
-    def user_resource(self):
-        return UserResourceDataLoaders(context=self.context)
 
     @cached_property
     def user_group(self):
