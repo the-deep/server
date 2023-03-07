@@ -11,7 +11,7 @@ from user_resource.schema import UserResourceMixin, resolve_user_field
 
 from lead.models import Lead
 from entry.models import Entry
-# from entry.schema import get_entry_qs
+from entry.schema import get_entry_qs
 from user.schema import UserType
 
 from .models import (
@@ -94,6 +94,12 @@ class AnalyticalStatementType(UserResourceMixin, ClientIdMixin, DjangoObjectType
         return info.context.dl.analysis.analytical_statement_entries.load(root.id)
 
 
+class AnalysisPillarEntryListType(CustomDjangoListObjectType):
+    class Meta:
+        model = Entry
+        filterset_class = AnalysisPillarEntryGQFilterSet
+
+
 class AnalysisPillarType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     class Meta:
         model = AnalysisPillar
@@ -113,6 +119,13 @@ class AnalysisPillarType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     # XXX: N+1 and No pagination
     statements = graphene.List(graphene.NonNull(AnalyticalStatementType))
 
+    entries = DjangoPaginatedListObjectField(
+        AnalysisPillarEntryListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+
     @staticmethod
     def get_custom_queryset(queryset, info, **_):
         return get_analysis_pillar_qs(info)
@@ -128,6 +141,18 @@ class AnalysisPillarType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     @staticmethod
     def resolve_statements(root, info, **_):
         return info.context.dl.analysis.analysis_pillar_analytical_statements.load(root.id)
+
+    @staticmethod
+    def resolve_entries(root, info, **kwargs):
+        # filtering out the entries whose lead published_on date is less than analysis end_date
+        queryset = get_entry_qs(info).filter(
+            project=root.analysis.project_id,
+            lead__published_on__lte=root.analysis.end_date
+        )
+        discarded_entries_qs = DiscardedEntry.objects.filter(analysis_pillar=root).values('entry')
+        if kwargs.get('discarded'):  # NOTE: From AnalysisPillarEntryGQFilterSet.discarded
+            return queryset.filter(id__in=discarded_entries_qs)
+        return queryset.exclude(id__in=discarded_entries_qs)
 
 
 class AnalysisType(UserResourceMixin, DjangoObjectType):
@@ -267,12 +292,6 @@ class AnalysisOverviewType(graphene.ObjectType):
             )
             for count, title, _id in qs
         ]
-
-
-class AnalysisPillarEntryListType(CustomDjangoListObjectType):
-    class Meta:
-        model = Entry
-        filterset_class = AnalysisPillarEntryGQFilterSet
 
 
 class AnalysisPillarListType(CustomDjangoListObjectType):

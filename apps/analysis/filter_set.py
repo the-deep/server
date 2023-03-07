@@ -70,7 +70,7 @@ class AnalysisPillarEntryGQFilterSet(EntryGQFilterSet):
     discarded = django_filters.BooleanFilter(method='filter_discarded')
     exclude_entries = IDListFilter(method='filter_exclude_entries')
 
-    def filter_discarded(self, queryset, _, value):
+    def filter_discarded(self, queryset, *_):
         # NOTE: This is only for argument, filter is done in AnalysisPillarType.resolve_entries
         return queryset
 
