@@ -36,6 +36,7 @@ class AnalysisFramework(UserResource):
     preview_image = models.FileField(
         upload_to='af-preview-image/', max_length=255, null=True, blank=True, default=None,
     )
+    export = models.FileField(upload_to='af-exports/', max_length=255, null=True, blank=True, default=None)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
