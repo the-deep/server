@@ -95,6 +95,7 @@ class AnalysisFrameworkType(DjangoObjectType):
 
     current_user_role = graphene.Field(AnalysisFrameworkRoleTypeEnum)
     preview_image = graphene.Field(FileFieldType)
+    export = graphene.Field(FileFieldType)
     allowed_permissions = graphene.List(
         graphene.NonNull(
             graphene.Enum.from_enum(AfP.Permission),
@@ -190,6 +191,7 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
     filters = DjangoListField(AnalysisFrameworkFilterType)
     exportables = DjangoListField(AnalysisFrameworkExportableType)
     preview_image = graphene.Field(FileFieldType)
+    export = graphene.Field(FileFieldType)
     visible_projects = DjangoListField(AnalysisFrameworkVisibleProjectType)
     prediction_tags_mapping = graphene.List(
         graphene.NonNull(
