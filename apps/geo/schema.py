@@ -8,7 +8,7 @@ from utils.graphene.fields import DjangoPaginatedListObjectField
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 
 from geo.models import Region, GeoArea, AdminLevel
-from geo.filter_set import RegionFilterSet, GeoAreaGqlFilterSet
+from geo.filter_set import RegionGqlFilterSet, GeoAreaGqlFilterSet
 
 
 def get_users_region_qs(info):
@@ -79,7 +79,7 @@ class RegionDetailType(RegionType):
 class RegionListType(CustomDjangoListObjectType):
     class Meta:
         model = Region
-        filterset_class = RegionFilterSet
+        filterset_class = RegionGqlFilterSet
 
 
 class Query:
