@@ -41,18 +41,14 @@ def _generate_project_viz_stats(project_id):
         stats, stats_confidential = get_project_ary_entry_stats(project)
         project_stats.status = ProjectStats.Status.SUCCESS
         project_stats.modified_at = timezone.now()
-        project_stats.file.save(
-            f'project-stats-{project_id}.json',
-            ContentFile(
-                json.dumps(stats, cls=DjangoJSONEncoder).encode('utf-8'),
-            ),
-        )
-        project_stats.confidential_file.save(
-            f'project-stats-confidential-{project_id}.json',
-            ContentFile(
-                json.dumps(stats_confidential, cls=DjangoJSONEncoder).encode('utf-8'),
-            ),
-        )
+        stats_content = ContentFile(json.dumps(stats, cls=DjangoJSONEncoder).encode('utf-8'))
+        confidential_stats_content = ContentFile(json.dumps(stats_confidential, cls=DjangoJSONEncoder).encode('utf-8'))
+        # Delete current file
+        project_stats.file.delete()
+        project_stats.confidential_file.delete()
+        # Save new file
+        project_stats.file.save(f'project-stats-{project_id}.json', stats_content)
+        project_stats.confidential_file.save(f'project-stats-confidential-{project_id}.json', confidential_stats_content)
         project_stats.save()
     except Exception:
         logger.warning(f'Ary Stats Generation Failed ({project_id})!!', exc_info=True)

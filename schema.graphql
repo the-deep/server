@@ -490,6 +490,12 @@ type CancelUserExport {
   result: UserExportType
 }
 
+type CancelUserGenericExport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserGenericExportType
+}
+
 type ChangeUserPassword {
   errors: [GenericScalar!]
   ok: Boolean
@@ -676,6 +682,12 @@ type CreateUserExport {
   errors: [GenericScalar!]
   ok: Boolean
   result: UserExportType
+}
+
+type CreateUserGenericExport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserGenericExportType
 }
 
 type CreateUserGroup {
@@ -1063,6 +1075,89 @@ type EntryType {
 
 scalar EnumDescription
 
+type ExploreCountByDateType {
+  date: Date!
+  count: Int!
+}
+
+type ExploreDashboardProjectRegion {
+  id: ID!
+  centroid: PointScalar
+  projectIds: [ID!]
+}
+
+type ExploreDashboardStatType {
+  totalProjects: Int!
+  totalRegisteredUsers: Int!
+  totalLeads: Int!
+  totalEntries: Int!
+  totalEntriesAddedLastWeek: Int!
+  totalActiveUsers: Int!
+  totalAuthors: Int!
+  totalPublishers: Int!
+  topTenAuthors: [ExploreStastOrganizationType!]
+  topTenPublishers: [ExploreStastOrganizationType!]
+  topTenFrameworks: [ExploreDeepStatTopActiveFrameworksType!]
+  topTenProjectsByUsers: [ExploreDeepStatTopProjectType!]
+  topTenProjectsByEntries: [ExploreDeepStatTopProjectLeadEntryType!]
+  topTenProjectsByLeads: [ExploreDeepStatTopProjectLeadEntryType!]
+  leadsCountByMonth: [ExploreCountByDateType!]
+  leadsCountByDay: [ExploreCountByDateType!]
+  entriesCountByMonth: [ExploreCountByDateType!]
+  entriesCountByDay: [ExploreCountByDateType!]
+  entriesCountByRegion: [ExploreDeepStatEntriesCountByCentroidType!]
+  projectsByRegion: [ExploreDashboardProjectRegion]
+  projectsCountByMonth: [ExploreCountByDateType!]
+  projectsCountByDay: [ExploreCountByDateType!]
+}
+
+input ExploreDeepFilterInputType {
+  dateFrom: DateTime!
+  dateTo: DateTime!
+  project: ExploreProjectFilterDataInputType
+}
+
+type ExploreDeepStatEntriesCountByCentroidType {
+  centroid: PointScalar
+  count: Int!
+}
+
+type ExploreDeepStatTopActiveFrameworksType {
+  id: ID!
+  title: String!
+  projectsCount: Int!
+  entriesCount: Int!
+}
+
+type ExploreDeepStatTopProjectLeadEntryType {
+  id: ID!
+  title: String
+  leadsCount: Int!
+  entriesCount: Int!
+}
+
+type ExploreDeepStatTopProjectType {
+  id: ID!
+  title: String
+  usersCount: Int!
+}
+
+input ExploreProjectFilterDataInputType {
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  organizations: [ID!]
+  isTest: Boolean
+  search: String
+  excludeEntryLessThan: Boolean
+  regions: [ID!]
+}
+
 type ExploreProjectStatTopActiveFrameworksType {
   analysisFrameworkId: ID!
   analysisFrameworkTitle: String
@@ -1075,6 +1170,13 @@ type ExploreProjectStatTopActiveProjectsType {
   projectTitle: String
   analysisFrameworkId: ID
   analysisFrameworkTitle: String
+}
+
+type ExploreStastOrganizationType {
+  id: ID!
+  title: String!
+  leadsCount: Int
+  projectsCount: Int
 }
 
 input ExportCreateInputType {
@@ -1159,6 +1261,7 @@ type ExportExtraOptionsType {
 }
 
 enum ExportFormatEnum {
+  CSV
   XLSX
   DOCX
   PDF
@@ -1312,6 +1415,33 @@ type GalleryFileType {
   mimeType: String
   metadata: GenericScalar
   file: FileFieldType
+}
+
+input GenericExportCreateInputType {
+  title: String
+  type: GenericExportDataTypeEnum!
+  format: GenericExportFormatEnum!
+  filters: UserGenericExportFiltersGqlInputType!
+}
+
+enum GenericExportDataTypeEnum {
+  PROJECTS_STATS
+}
+
+enum GenericExportFormatEnum {
+  CSV
+  XLSX
+  DOCX
+  PDF
+  JSON
+}
+
+enum GenericExportStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILURE
+  CANCELED
 }
 
 scalar GenericScalar
@@ -1628,6 +1758,7 @@ input LeadsFilterDataInputType {
 }
 
 type LeadsFilterDataType {
+  entriesFilterData: EntriesFilterDataType
   createdBy: [ID!]
   modifiedBy: [ID!]
   ids: [ID!]
@@ -1662,7 +1793,6 @@ type LeadsFilterDataType {
   emmRiskFactors: String
   hasDuplicates: Boolean
   duplicatesOf: ID
-  entriesFilterData: EntriesFilterDataType
 }
 
 type Login {
@@ -1716,6 +1846,8 @@ type MissingPredictionReviewType {
 }
 
 type Mutation {
+  genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
+  genericExportCancel(id: ID!): CancelUserGenericExport
   notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
   projectCreate(data: ProjectCreateInputType!): CreateProject
   joinProject(data: ProjectJoinRequestInputType!): CreateProjectJoin
@@ -2256,6 +2388,28 @@ type ProjectVizDataType {
   publicUrl: String
 }
 
+input ProjectsFilterDataInputType {
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  ids: [ID!]
+  excludeIds: [ID!]
+  status: ProjectStatusEnum
+  organizations: [ID!]
+  analysisFrameworks: [ID!]
+  regions: [ID!]
+  search: String
+  isCurrentUserMember: Boolean
+  hasPermissionAccess: ProjectPermission
+  ordering: [ProjectOrderingEnum!]
+  isTest: Boolean
+}
+
 type PublicAnalysisFramework {
   id: ID!
   title: String!
@@ -2266,6 +2420,27 @@ type PublicAnalysisFrameworkListType {
   totalCount: Int
   page: Int
   pageSize: Int
+}
+
+enum PublicExploreSnapshotGlobalTypeEnum {
+  FULL
+  TIME_SERIES
+}
+
+type PublicExploreSnapshotType {
+  id: ID!
+  startDate: Date!
+  endDate: Date!
+  year: Int
+  type: PublicExploreSnapshotTypeEnum!
+  globalType: PublicExploreSnapshotGlobalTypeEnum
+  file: FileFieldType
+  downloadFile: FileFieldType
+}
+
+enum PublicExploreSnapshotTypeEnum {
+  GLOBAL
+  YEARLY_SNAPSHOT
 }
 
 type PublicGalleryFileType {
@@ -2356,6 +2531,10 @@ type PublicProjectWithMembershipData {
 }
 
 type Query {
+  deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
+  publicDeepExploreYearlySnapshots: [PublicExploreSnapshotType!]
+  publicDeepExploreGlobalSnapshots: [PublicExploreSnapshotType!]
+  genericExport(id: ID!): UserGenericExportType
   rssFields(url: String): [RssFieldType!]
   atomFeedFields(url: String): [AtomFeedFieldType!]
   publicLead(uuid: UUID!): PublicLeadMetaType
@@ -2697,16 +2876,15 @@ type UserExportListType {
 
 type UserExportType {
   id: ID!
-  project: ID
-  isPreview: Boolean!
   title: String!
   exportedBy: UserType!
   exportedAt: DateTime!
   startedAt: DateTime
   endedAt: DateTime
-  extraOptions: ExportExtraOptionsType!
   mimeType: String!
-  pending: Boolean!
+  project: ID
+  extraOptions: ExportExtraOptionsType!
+  isPreview: Boolean!
   isArchived: Boolean!
   analysis: AnalysisType
   format: ExportFormatEnum!
@@ -2723,6 +2901,29 @@ type UserFeatureAccessType {
   key: FeatureKey!
   title: String!
   featureType: FeatureFeatureType!
+}
+
+input UserGenericExportFiltersGqlInputType {
+  lead: LeadsFilterDataInputType
+  entry: EntriesFilterDataInputType
+  project: ProjectsFilterDataInputType
+  deepExplore: ExploreDeepFilterInputType
+}
+
+type UserGenericExportType {
+  id: ID!
+  title: String!
+  exportedBy: UserType!
+  exportedAt: DateTime!
+  startedAt: DateTime
+  endedAt: DateTime
+  mimeType: String!
+  format: GenericExportFormatEnum!
+  type: GenericExportDataTypeEnum!
+  status: GenericExportStatusEnum!
+  filters: GenericScalar
+  file: FileFieldType
+  fileDownloadUrl: String
 }
 
 input UserGroupInputType {

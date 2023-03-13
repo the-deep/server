@@ -2,15 +2,18 @@ import datetime
 
 from unittest.mock import patch
 
-from utils.graphene.tests import GraphQLTestCase
+from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
 
 from user.factories import UserFactory
 from project.factories import ProjectFactory
 from export.factories import ExportFactory
 from analysis.factories import AnalysisFactory
+from analysis_framework.factories import AnalysisFrameworkFactory
+from lead.factories import LeadFactory
+from entry.factories import EntryFactory
 
 from lead.models import Lead
-from export.models import Export
+from export.models import Export, GenericExport, export_upload_to
 from export.tasks import get_export_filename
 from export.serializers import UserExportCreateGqlSerializer
 
@@ -27,7 +30,6 @@ class TestExportMutationSchema(GraphQLTestCase):
                 title
                 type
                 status
-                pending
                 mimeType
                 isPreview
                 isArchived
@@ -139,7 +141,6 @@ class TestExportMutationSchema(GraphQLTestCase):
                 title
                 type
                 status
-                pending
                 mimeType
                 isPreview
                 isArchived
@@ -251,7 +252,6 @@ class TestExportMutationSchema(GraphQLTestCase):
                 title
                 type
                 status
-                pending
                 mimeType
                 isPreview
                 isArchived
@@ -359,7 +359,6 @@ class TestExportMutationSchema(GraphQLTestCase):
                 title
                 type
                 status
-                pending
                 mimeType
                 isPreview
                 isArchived
@@ -761,6 +760,92 @@ class TestExportMutationSchema(GraphQLTestCase):
         self.assertEqual(content['id'], str(export1.id), content)
 
 
+class TestGenericExportMutationSchema(GraphQLSnapShotTestCase):
+    factories_used = [AnalysisFrameworkFactory, ProjectFactory, LeadFactory, UserFactory]
+    ENABLE_NOW_PATCHER = True
+
+    CREATE_GENERIC_EXPORT_QUERY = '''
+        mutation MyMutation ($input: GenericExportCreateInputType!) {
+            genericExportCreate(data: $input) {
+              ok
+              errors
+              result {
+                id
+                title
+                type
+                status
+                mimeType
+                format
+                filters
+                file {
+                  name
+                  url
+                }
+                exportedAt
+                exportedBy {
+                  id
+                  displayName
+                }
+              }
+            }
+        }
+    '''
+
+    def setUp(self):
+        super().setUp()
+        # TODO: Add more fixture here.
+        self.af = AnalysisFrameworkFactory.create()
+        self.project, *_ = ProjectFactory.create_batch(2, analysis_framework=self.af)
+        self.lead = LeadFactory.create(project=self.project)
+        EntryFactory.create_batch(10, lead=self.lead, project=self.project, analysis_framework=self.af)
+        # User with role
+        self.user = UserFactory.create()
+        # -- Some other data which shouldn't be visible in exports
+        # Private project
+        ProjectFactory.create(analysis_framework=self.af, is_private=True)
+        # Project created around the filter
+        self.update_obj(
+            ProjectFactory.create(analysis_framework=self.af),
+            created_at=self.PATCHER_NOW_VALUE - datetime.timedelta(days=11),
+        )
+        self.update_obj(
+            ProjectFactory.create(analysis_framework=self.af),
+            created_at=self.PATCHER_NOW_VALUE + datetime.timedelta(days=11),
+        )
+
+    def test_project_stats(self):
+        def _query_check(minput, **kwargs):
+            return self.query_check(
+                self.CREATE_GENERIC_EXPORT_QUERY,
+                minput=minput,
+                **kwargs
+            )
+
+        minput = dict(
+            format=self.genum(GenericExport.Format.CSV),
+            type=self.genum(GenericExport.DataType.PROJECTS_STATS),
+            filters={
+                "deepExplore": {
+                    "dateFrom": self.get_datetime_str(self.PATCHER_NOW_VALUE - datetime.timedelta(days=10)),
+                    "dateTo": self.get_datetime_str(self.PATCHER_NOW_VALUE + datetime.timedelta(days=10)),
+                }
+            },
+        )
+        # -- Without login
+        _query_check(minput, assert_for_error=True)
+
+        # --- with login
+        self.force_login(self.user)
+
+        with self.captureOnCommitCallbacks(execute=True):
+            response = _query_check(minput, okay=True)['data']
+        self.assertNotEqual(response['genericExportCreate']['result'], None, response)
+        generic_export = GenericExport.objects.get(pk=response['genericExportCreate']['result']['id'])
+        self.assertEqual(generic_export.status, GenericExport.Status.SUCCESS, response)
+        self.assertNotEqual(generic_export.file.name, None, response)
+        self.assertMatchSnapshot(generic_export.file.read().decode('utf-8'), 'generic-export-csv')
+
+
 class GeneraltestCase(GraphQLTestCase):
     def test_export_path_generation(self):
         MOCK_TIME_STR = '20211205'
@@ -773,7 +858,7 @@ class GeneraltestCase(GraphQLTestCase):
             'project': project,
         }
         with \
-                patch('export.tasks.get_random_string') as get_random_string_mock, \
+                patch('export.models.get_random_string') as get_random_string_mock, \
                 patch('export.models.timezone') as timezone_mock:
             get_random_string_mock.return_value = MOCK_RANDOM_STRING
             timezone_mock.now.return_value.strftime.return_value = MOCK_TIME_STR
@@ -816,6 +901,6 @@ class GeneraltestCase(GraphQLTestCase):
                 export.save()
                 # generated_title = Export.generate_title(export.type, export.format)
                 # export.title = export.title or generated_title  # This is automatically done on export save (mocking here)
-                generated_filename = get_export_filename(export)
+                generated_filename = export_upload_to(export, get_export_filename(export))
                 self.assertEqual(export.title, expected_title, _type)
-                self.assertEqual(generated_filename, f'{MOCK_RANDOM_STRING}/{expected_filename}', _type)
+                self.assertEqual(generated_filename, f'export/{MOCK_RANDOM_STRING}/{expected_filename}', _type)

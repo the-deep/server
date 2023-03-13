@@ -11,9 +11,13 @@ from deep.serializers import (
     GraphqlSupportDrfSerializerJSONField,
 )
 from lead.filter_set import LeadGQFilterSet, LeadsFilterDataInputType
+from entry.filter_set import EntryGQFilterSet, EntriesFilterDataInputType
+from project.filter_set import ProjectGqlFilterSet, ProjectsFilterDataInputType
+from deep_explore.schema import ExploreDeepFilterInputType
+from deep_explore.filter_set import ExploreProjectFilterSet
 from analysis_framework.models import Widget, Exportable
-from .tasks import export_task
-from .models import Export
+from .tasks import export_task, generic_export_task
+from .models import Export, GenericExport
 
 
 class ExportSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer):
@@ -342,4 +346,91 @@ class UserExportUpdateGqlSerializer(UserExportBaseGqlMixin, serializers.ModelSer
         )
 
     def create(self, _):
+        raise serializers.ValidationError('Not allowed using this serializer.')
+
+
+class UserGenericExportFiltersGqlSerializer(serializers.Serializer):
+    lead = generate_serializer_field_class(LeadsFilterDataInputType, GraphqlSupportDrfSerializerJSONField)(required=False)
+    entry = generate_serializer_field_class(EntriesFilterDataInputType, GraphqlSupportDrfSerializerJSONField)(required=False)
+    project = generate_serializer_field_class(
+        ProjectsFilterDataInputType,
+        GraphqlSupportDrfSerializerJSONField,
+    )(required=False)
+    deep_explore = generate_serializer_field_class(
+        ExploreDeepFilterInputType,
+        GraphqlSupportDrfSerializerJSONField,
+    )(required=False)
+
+
+class UserGenericExportCreateGqlSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=False)
+
+    class Meta:
+        model = GenericExport
+        fields = (
+            'title',
+            'type',  # Data type
+            'format',  # csv, xlsx, docx, pdf, ...
+            'filters',
+        )
+
+    filters = UserGenericExportFiltersGqlSerializer()
+
+    def validate_filters(self, filters):
+        def _validate_filterset(filter_data, filter_key, filter_set):
+            filter_data = filter_data.get(filter_key)
+            if not filter_data:
+                return
+            filter_set = filter_set(data=filter_data, request=self.context['request'])
+            if not filter_set.is_valid():
+                return filter_set.errors
+
+        # Validate each data
+        errors = {}
+        for filter_key, FilterSet in [
+            ('project', ProjectGqlFilterSet),
+            ('lead', LeadGQFilterSet),
+            ('entry', EntryGQFilterSet),
+            ('deep_explore', None),
+        ]:
+            if filter_key == 'deep_explore':
+                filter_data = filters.get(filter_key) or {}
+                if filterset_errors := _validate_filterset(
+                    filter_data,
+                    'project',
+                    ExploreProjectFilterSet,
+                ):
+                    errors[filter_key] = {
+                        'project': filterset_errors
+                    }
+                continue
+            # Generic
+            if filterset_errors := _validate_filterset(
+                filters,
+                filter_key,
+                FilterSet,
+            ):
+                errors[filter_key] = filterset_errors
+        if errors:
+            raise serializers.ValidationError(errors)
+        return filters
+
+    def validate(self, data):
+        # Validate type, export_type and format
+        data_type = data['type']
+        _format = data['format']
+        if (data_type, _format) not in GenericExport.DEFAULT_TITLE_LABEL:
+            raise serializers.ValidationError(f'Unsupported Export request: {(data_type, _format)}')
+        return data
+
+    def create(self, data):
+        data['title'] = data.get('title') or GenericExport.generate_title(data['type'], data['format'])
+        data['exported_by'] = self.context['request'].user
+        export = super().create(data)
+        transaction.on_commit(
+            lambda: export.set_task_id(generic_export_task.delay(export.id).id)
+        )
+        return export
+
+    def update(self, _):
         raise serializers.ValidationError('Not allowed using this serializer.')

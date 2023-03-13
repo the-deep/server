@@ -13,6 +13,7 @@ from typing import Union, Optional
 from collections import Counter
 from functools import reduce
 
+from django.core.cache import cache
 from django.utils.hashable import make_hashable
 from django.utils.encoding import force_str
 from django.core.files.storage import FileSystemStorage, get_storage_class
@@ -545,3 +546,24 @@ def batched(iterable, batch_size=100):
     if batches:
         yield batches
     return
+
+
+def graphene_cache(cache_key, cache_key_gen=None, timeout=60):
+    """
+    Default Lock lifetime 4 hours
+    """
+    def _dec(func):
+        def _caller(*args, **kwargs):
+            if cache_key_gen:
+                _cache_key = cache_key.format(cache_key_gen(*args, **kwargs))
+            else:
+                _cache_key = cache_key
+            return cache.get_or_set(
+                _cache_key,
+                lambda: func(*args, **kwargs),
+                timeout,
+            )
+        _caller.__name__ = func.__name__
+        _caller.__module__ = func.__module__
+        return _caller
+    return _dec

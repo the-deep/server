@@ -50,33 +50,35 @@ def get_enum_name_from_django_field(
         if hasattr(_field, 'parent'):
             return type(_field.parent).__name__
 
-    if field_name is None and model_name is None:
+    if field_name is None or model_name is None:
+        if type(field) == models.query_utils.DeferredAttribute:
+            return get_enum_name_from_django_field(
+                field.field,
+                field_name=field_name,
+                model_name=model_name,
+                serializer_name=serializer_name,
+            )
         if type(field) == serializers.ChoiceField:
             if type(field.parent) == serializers.ListField:
                 if _have_model(field.parent.parent):
-                    model_name = field.parent.parent.Meta.model.__name__
+                    model_name = model_name or field.parent.parent.Meta.model.__name__
                 serializer_name = _get_serializer_name(field.parent)
-                field_name = field.parent.field_name
+                field_name = field_name or field.parent.field_name
             else:
                 if _have_model(field.parent):
-                    model_name = field.parent.Meta.model.__name__
+                    model_name = model_name or field.parent.Meta.model.__name__
                 serializer_name = _get_serializer_name(field)
-                field_name = field.field_name
+                field_name = field_name or field.field_name
         elif type(field) == ArrayField:
             if _have_model(field):
-                model_name = field.model.__name__
+                model_name = model_name or field.model.__name__
             serializer_name = _get_serializer_name(field)
-            field_name = field.base_field.name
+            field_name = field_name or field.base_field.name
         elif type(field) in [models.CharField, models.SmallIntegerField, models.IntegerField]:
             if _have_model(field):
-                model_name = field.model.__name__
+                model_name = model_name or field.model.__name__
             serializer_name = _get_serializer_name(field)
-            field_name = field.name
-        elif type(field) == models.query_utils.DeferredAttribute:
-            if _have_model(field.field):
-                model_name = field.field.model.__name__
-            serializer_name = _get_serializer_name(field.field)
-            field_name = field.field.name
+            field_name = field_name or field.name
     if field_name is None:
         raise Exception(f'{field=} should have a name')
     if model_name:
