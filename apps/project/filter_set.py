@@ -7,7 +7,7 @@ from django.db.models.functions import Concat, Lower
 import django_filters
 
 from deep.permissions import ProjectPermissions as PP
-from deep.filter_set import OrderEnumMixin
+from deep.filter_set import OrderEnumMixin, generate_type_for_filter_set
 from utils.graphene.filters import (
     SimpleInputFilter,
     IDListFilter,
@@ -229,3 +229,11 @@ class PublicProjectByRegionGqlFileterSet(ProjectByRegionGqlFilterSet):
             is_test=False,
             is_deleted=False,
         )
+
+
+ProjectsFilterDataType, ProjectsFilterDataInputType = generate_type_for_filter_set(
+    ProjectGqlFilterSet,
+    'project.schema.ProjectListType',
+    'ProjectsFilterDataType',
+    'ProjectsFilterDataInputType',
+)

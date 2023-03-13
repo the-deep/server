@@ -5,6 +5,7 @@ import shutil
 import datetime
 from enum import Enum
 from unittest.mock import patch
+from typing import Union
 
 from factory import random as factory_random
 from snapshottest.django import TestCase as SnapShotTextCase
@@ -13,6 +14,7 @@ from django.core import management
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
+from django.db import models
 # dramatiq test case: setupclass is not properly called
 # from django_dramatiq.test import DramatiqTestCase
 from graphene_django.utils import GraphQLTestCase as BaseGraphQLTestCase
@@ -73,6 +75,7 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
 
     GRAPHQL_SCHEMA = 'deep.schema.schema'
     ENABLE_NOW_PATCHER = False
+    PATCHER_NOW_VALUE = datetime.datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
 
     def _setup_premailer_patcher(self, mock):
         mock.get.return_value.text = ''
@@ -86,7 +89,7 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         self._setup_premailer_patcher(self.premailer_patcher_requests.start())
         if self.ENABLE_NOW_PATCHER:
             self.now_patcher = patch('django.utils.timezone.now')
-            self.now_datetime = datetime.datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+            self.now_datetime = self.PATCHER_NOW_VALUE
             self.now_datetime_str = self.now_datetime.isoformat()
             self.now_patcher.start().return_value = self.now_datetime
 
@@ -103,7 +106,7 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
     def logout(self):
         self.client.logout()
 
-    def genum(self, _enum: Enum):
+    def genum(self, _enum: Union[models.TextChoices, models.IntegerChoices, Enum]):
         """
         Return appropriate enum value.
         """
@@ -316,11 +319,11 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         obj.save()
         return obj
 
-    def get_datetime_str(self, datetime):
-        return datetime.strftime('%Y-%m-%d%z')
+    def get_datetime_str(self, _datetime):
+        return _datetime.isoformat()
 
-    def get_date_str(self, datetime):
-        return datetime.strftime('%Y-%m-%d')
+    def get_date_str(self, _datetime):
+        return _datetime.strftime('%Y-%m-%d')
 
     def get_aware_datetime(self, *args, **kwargs):
         return timezone.make_aware(datetime.datetime(*args, **kwargs))

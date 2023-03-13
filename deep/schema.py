@@ -21,6 +21,9 @@ from geo import schema as geo_schema
 from notification import schema as notification_schema, mutation as notification_mutation
 from assisted_tagging import schema as assisted_tagging_schema
 from unified_connector import schema as unified_connector_schema
+from export import schema as export_schema, mutation as export_mutation
+from deep_explore import schema as deep_explore_schema
+
 from deep.enums import CustomEnum
 
 
@@ -34,6 +37,9 @@ class Query(
     notification_schema.Query,
     lead_public_schema.Query,
     unified_connector_schema.Query,
+    export_schema.Query,
+    deep_explore_schema.Query,
+    # --
     graphene.ObjectType
 ):
     assisted_tagging = graphene.Field(assisted_tagging_schema.AssistedTaggingRootQueryType)
@@ -55,6 +61,8 @@ class Mutation(
     user_group_mutation.Mutation,
     pj_mutation.Mutation,
     notification_mutation.Mutation,
+    export_mutation.Mutation,
+    # --
     graphene.ObjectType
 ):
     pass
