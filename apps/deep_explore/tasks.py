@@ -18,6 +18,7 @@ from deep.schema import schema as gql_schema
 from utils.common import redis_lock
 from entry.models import Entry, Attribute
 from project.models import Project
+from geo.models import GeoArea
 from analysis_framework.models import Widget
 from export.tasks.tasks_projects import generate_projects_stats
 
@@ -249,34 +250,41 @@ def get_update_entries_count_by_geo_area_aggregate_sql():
             entries_count
         )
         (
-            SELECT
-              "{_tb(Entry)}".project_id AS project_id,
-              JSONB_ARRAY_ELEMENTS_TEXT(
-                  ("{_tb(Attribute)}".data->'value')
-              )::int AS geo_area_id,
-              DATE_TRUNC(
-                  'day',
-                  "{_tb(Entry)}".created_at AT TIME ZONE 'UTC'
-              ) AS date,
-              COUNT(DISTINCT "{_tb(Attribute)}".id) AS entries_count
-            FROM
-              "{_tb(Attribute)}"
-              INNER JOIN "{_tb(Widget)}" ON ("{_tb(Attribute)}".widget_id = "{_tb(Widget)}".id)
-              INNER JOIN "{_tb(Entry)}" ON ("{_tb(Attribute)}".entry_id = "{_tb(Entry)}".id)
-            WHERE
-                "{_tb(Widget)}".widget_id = 'geoWidget'
-                AND "{_tb(Entry)}".created_at >= %(from_date)s
-                AND "{_tb(Entry)}".created_at < %(until_date)s
-            GROUP BY
-              JSONB_ARRAY_ELEMENTS_TEXT(
-                  ("{_tb(Attribute)}".data->'value')
-              ),
-              DATE_TRUNC(
-                  'day',
-                  "{_tb(Entry)}".created_at AT TIME ZONE 'UTC'
-              ),
-              "{_tb(Entry)}".project_id
-            ORDER BY date, project_id
+            WITH entry_geo_data as (
+                SELECT
+                  "{_tb(Entry)}".project_id AS project_id,
+                  JSONB_ARRAY_ELEMENTS_TEXT(
+                      ("{_tb(Attribute)}".data->'value')
+                  )::int AS geo_area_id,
+                  DATE_TRUNC(
+                      'day',
+                      "{_tb(Entry)}".created_at AT TIME ZONE 'UTC'
+                  ) AS date,
+                  COUNT(DISTINCT "{_tb(Attribute)}".id) AS entries_count
+                FROM
+                  "{_tb(Attribute)}"
+                  INNER JOIN "{_tb(Widget)}" ON ("{_tb(Attribute)}".widget_id = "{_tb(Widget)}".id)
+                  INNER JOIN "{_tb(Entry)}" ON ("{_tb(Attribute)}".entry_id = "{_tb(Entry)}".id)
+                WHERE
+                    "{_tb(Widget)}".widget_id = 'geoWidget'
+                    AND "{_tb(Entry)}".created_at >= %(from_date)s
+                    AND "{_tb(Entry)}".created_at < %(until_date)s
+                GROUP BY
+                  JSONB_ARRAY_ELEMENTS_TEXT(
+                      ("{_tb(Attribute)}".data->'value')
+                  ),
+                  DATE_TRUNC(
+                      'day',
+                      "{_tb(Entry)}".created_at AT TIME ZONE 'UTC'
+                  ),
+                  "{_tb(Entry)}".project_id
+                ORDER BY date, project_id
+            )
+            SELECT * FROM entry_geo_data WHERE EXISTS (
+                SELECT 1 from {_tb(GeoArea)}
+                WHERE id = entry_geo_data.geo_area_id
+                LIMIT 1
+            )
         )
         ON CONFLICT (project_id, geo_area_id, date)
         DO UPDATE SET
