@@ -376,7 +376,7 @@ class UserGenericExportCreateGqlSerializer(serializers.ModelSerializer):
 
     filters = UserGenericExportFiltersGqlSerializer()
 
-    def validate_filters(self, filters):
+    def _validate_filters(self, data_type, filters):
         def _validate_filterset(filter_data, filter_key, filter_set):
             filter_data = filter_data.get(filter_key)
             if not filter_data:
@@ -385,8 +385,9 @@ class UserGenericExportCreateGqlSerializer(serializers.ModelSerializer):
             if not filter_set.is_valid():
                 return filter_set.errors
 
-        # Validate each data
         errors = {}
+
+        # Validate each filter data
         for filter_key, FilterSet in [
             ('project', ProjectGqlFilterSet),
             ('lead', LeadGQFilterSet),
@@ -395,6 +396,9 @@ class UserGenericExportCreateGqlSerializer(serializers.ModelSerializer):
         ]:
             if filter_key == 'deep_explore':
                 filter_data = filters.get(filter_key) or {}
+                if data_type == GenericExport.DataType.PROJECTS_STATS and not filter_data:
+                    errors[filter_key] = [f'This is required for {data_type}']
+                    continue
                 if filterset_errors := _validate_filterset(
                     filter_data,
                     'project',
@@ -412,15 +416,17 @@ class UserGenericExportCreateGqlSerializer(serializers.ModelSerializer):
             ):
                 errors[filter_key] = filterset_errors
         if errors:
-            raise serializers.ValidationError(errors)
-        return filters
+            return errors
 
     def validate(self, data):
         # Validate type, export_type and format
         data_type = data['type']
         _format = data['format']
+        filters = data['filters']
         if (data_type, _format) not in GenericExport.DEFAULT_TITLE_LABEL:
             raise serializers.ValidationError(f'Unsupported Export request: {(data_type, _format)}')
+        if errors := self._validate_filters(data_type, filters):
+            raise serializers.ValidationError({'filters': errors})
         return data
 
     def create(self, data):
