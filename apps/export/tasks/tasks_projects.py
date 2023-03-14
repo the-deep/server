@@ -4,6 +4,7 @@ from io import StringIO
 from django.db import models
 
 from deep.filter_set import get_dummy_request
+from django.core.files.base import ContentFile
 from project.models import ProjectOrganization, ProjectRole, ProjectMembership
 from organization.models import Organization
 from deep_explore.filter_set import ExploreProjectFilterSet
@@ -104,7 +105,8 @@ def generate_projects_stats(filters, user):
             'Entries Count': entries_qs.count(),
             '# of Exports': exports_qs.count(),
         })
-    return file
+    file.seek(0)
+    return ContentFile(file.read().encode('utf-8'))
 
 
 def export_projects_stats(export):
