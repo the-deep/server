@@ -215,6 +215,20 @@ type AnalysisOverviewType {
   authoringOrganizations: [AnalysisOverviewOrganizationType!]
 }
 
+type AnalysisPillarDiscardedEntryListType {
+  results: [AnalysisPillarDiscardedEntryType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalysisPillarDiscardedEntryType {
+  id: ID!
+  analysisPillar: ID
+  entry: EntryType!
+  tag: DiscardedEntryTagTypeEnum!
+}
+
 type AnalysisPillarEntryListType {
   results: [EntryType!]
   totalCount: Int
@@ -235,17 +249,30 @@ type AnalysisPillarType {
   mainStatement: String!
   informationGap: String!
   filters: GenericScalar
-  clientId: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
+  clientId: String!
   assignee: UserType!
   analysis: ID!
   clonedFrom: ID
   analyzedEntriesCount: Int!
   statements: [AnalyticalStatementType!]
+  discardedEntries(tags: [DiscardedEntryTagTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarDiscardedEntryListType
   entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadCreatedBy: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], leadAuthoringOrganizationTypes: [ID!], leadAuthorOrganizations: [ID!], leadSourceOrganizations: [ID!], search: String, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataInputType!], hasComment: Boolean, isVerified: Boolean, discarded: Boolean, excludeEntries: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarEntryListType
+}
+
+input AnalysisPillarUpdateInputType {
+  title: String
+  mainStatement: String
+  informationGap: String
+  filters: GenericScalar
+  assignee: ID
+  analysis: ID
+  clonedFrom: ID
+  statements: [AnalyticalStatementGqlInputType!]
+  clientId: String
 }
 
 type AnalysisPublicationDateType {
@@ -270,12 +297,30 @@ type AnalysisType {
   pillars: [AnalysisPillarType!]
 }
 
+input AnalyticalEntriesGqlInputType {
+  id: Int
+  order: Int!
+  entry: ID!
+  clientId: String
+}
+
 type AnalyticalStatementEntryType {
   id: ID!
   order: Int!
   clientId: String!
-  entry: ID!
+  entry: EntryType!
   analyticalStatement: ID!
+}
+
+input AnalyticalStatementGqlInputType {
+  id: Int
+  statement: String!
+  analysisPillar: ID!
+  includeInReport: Boolean
+  order: Int!
+  clonedFrom: ID
+  entries: [AnalyticalEntriesGqlInputType!]
+  clientId: String
 }
 
 type AnalyticalStatementListType {
@@ -680,6 +725,12 @@ type CreateAnalysisFramework {
   result: AnalysisFrameworkDetailType
 }
 
+type CreateAnalysisPillarDiscardedEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisPillarDiscardedEntryType
+}
+
 type CreateDraftEntry {
   errors: [GenericScalar!]
   ok: Boolean
@@ -767,6 +818,12 @@ scalar DateTime
 
 scalar Decimal
 
+type DeleteAnalysisPillarDiscardedEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisPillarDiscardedEntryType
+}
+
 type DeleteAssessment {
   errors: [GenericScalar!]
   ok: Boolean
@@ -825,6 +882,25 @@ type DeleteWrongPredictionReview {
   errors: [GenericScalar!]
   ok: Boolean
   result: WrongPredictionReviewType
+}
+
+input DiscardedEntryCreateInputType {
+  analysisPillar: ID!
+  entry: ID!
+  tag: DiscardedEntryTagTypeEnum!
+}
+
+enum DiscardedEntryTagTypeEnum {
+  REDUNDANT
+  TOO_OLD
+  ANECDOTAL
+  OUTLIER
+}
+
+input DiscardedEntryUpdateInputType {
+  analysisPillar: ID
+  entry: ID
+  tag: DiscardedEntryTagTypeEnum
 }
 
 type DjangoDebug {
@@ -2227,6 +2303,10 @@ type ProjectMembershipType {
 type ProjectMutationType {
   id: ID!
   title: String!
+  analysisPillarUpdate(data: AnalysisPillarUpdateInputType!, id: ID!): UpdateAnalysisPillar
+  discardedEntryCreate(data: DiscardedEntryCreateInputType!, id: ID!): CreateAnalysisPillarDiscardedEntry
+  discardedEntryUpdate(data: DiscardedEntryUpdateInputType!): UpdateAnalysisPillarDiscardedEntry
+  discardedEntryDelete(id: ID!): DeleteAnalysisPillarDiscardedEntry
   exportCreate(data: ExportCreateInputType!): CreateUserExport
   exportUpdate(data: ExportUpdateInputType!, id: ID!): UpdateUserExport
   exportCancel(id: ID!): CancelUserExport
@@ -2312,6 +2392,7 @@ enum ProjectPermission {
   DELETE_ENTRY
   CREATE_EXPORT
   CAN_QUALITY_CONTROL
+  CREATE_ANALYSIS_MODULE
 }
 
 type ProjectRoleType {
@@ -2825,6 +2906,18 @@ type UpdateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisFrameworkDetailType
+}
+
+type UpdateAnalysisPillar {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisPillarType
+}
+
+type UpdateAnalysisPillarDiscardedEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisPillarDiscardedEntryType
 }
 
 type UpdateConnectorSourceLead {

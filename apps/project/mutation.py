@@ -24,6 +24,7 @@ from entry.mutation import Mutation as EntryMutation
 from quality_assurance.mutation import Mutation as QualityAssuranceMutation
 from ary.mutation import Mutation as AryMutation
 from export.mutation import ProjectMutation as ExportMutation
+from analysis.mutation import Mutation as AnalysisMutation
 from unified_connector.mutation import UnifiedConnectorMutationType
 from assisted_tagging.mutation import AssistedTaggingMutationType
 
@@ -320,6 +321,7 @@ class ProjectMutationType(
     QualityAssuranceMutation,
     AryMutation,
     ExportMutation,
+    AnalysisMutation,
     # --End Project Scoped Mutation
     DjangoObjectType
 ):

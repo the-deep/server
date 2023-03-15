@@ -6,7 +6,7 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from drf_writable_nested import UniqueFieldsMixin, NestedCreateMixin
 
 from deep.writable_nested_serializers import NestedUpdateMixin as CustomNestedUpdateMixin
-from deep.serializers import RemoveNullFieldsMixin
+from deep.serializers import RemoveNullFieldsMixin, TempClientIdMixin
 from user_resource.serializers import UserResourceSerializer
 from user.serializers import NanoUserSerializer
 from entry.serializers import SimpleEntrySerializer
@@ -113,7 +113,7 @@ class AnalysisPillarSerializer(
         analytical_statement = data.get('analyticalstatement_set')
         if analytical_statement and len(analytical_statement) > settings.ANALYTICAL_STATEMENT_COUNT:
             raise serializers.ValidationError(
-                f'Analytical statement count must be less than{settings.ANALYTICAL_STATEMENT_COUNT}'
+                f'Analytical statement count must be less than {settings.ANALYTICAL_STATEMENT_COUNT}'
             )
         return data
 
@@ -220,3 +220,183 @@ class AnalysisPillarSummarySerializer(serializers.ModelSerializer):
             'analytical_statements',
             'analyzed_entries'
         )
+
+
+# ------ GRAPHQL ------------
+
+class AnalyticalEntriesGqlSerializer(TempClientIdMixin, UniqueFieldsMixin, UserResourceSerializer):
+    class Meta:
+        model = AnalyticalStatementEntry
+        fields = (
+            'id',
+            'order',
+            'entry',
+            'client_id',
+        )
+
+    def validate_analytical_statement(self, analytical_statement):
+        if analytical_statement.analysis_pillar.analysis.project != self.context['request'].active_project:
+            raise serializers.ValidationError('Invalid analytical_statement')
+        return analytical_statement
+
+    def validate_entry(self, entry):
+        if entry.project != self.context['request'].active_project:
+            raise serializers.ValidationError('Invalid entry')
+        return entry
+
+    def validate(self, data):
+        analytical_statement = (
+            self.instance.analytical_statement if self.instance
+            else data['analytical_statement']
+        )
+        analysis = analytical_statement.analysis_pillar.analysis
+        analysis_end_date = analysis.end_date
+        entry = data.get('entry')
+        lead_published = entry.lead.published_on
+        if analysis_end_date and lead_published and lead_published > analysis_end_date:
+            raise serializers.ValidationError({
+                'entry': f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis_end_date}',
+            })
+        return data
+
+
+class AnalyticalStatementGqlSerializer(
+    TempClientIdMixin,
+    UserResourceSerializer,
+    NestedCreateMixin,
+    # XXX: This is a custom mixin where we delete first and then create to avoid duplicate key value
+    CustomNestedUpdateMixin,
+):
+    entries = AnalyticalEntriesGqlSerializer(source='analyticalstatemententry_set', many=True, required=False)
+
+    class Meta:
+        model = AnalyticalStatement
+        fields = (
+            'id',
+            'statement',
+            'analysis_pillar',
+            'include_in_report',
+            'order',
+            'cloned_from',
+            # Custom
+            'entries',
+            'client_id',
+        )
+
+    def validate_analysis_pillar(self, analysis_pillar):
+        if analysis_pillar.analysis.project != self.context['request'].active_project:
+            raise serializers.ValidationError('Invalid analysis_pillar')
+        return analysis_pillar
+
+    def validate(self, data):
+        # Validate the analytical_entries
+        entries = data.get('analyticalstatemententry_set')
+        if entries and len(entries) > settings.ANALYTICAL_ENTRIES_COUNT:
+            raise serializers.ValidationError(
+                f'Analytical entires count must be less than {settings.ANALYTICAL_ENTRIES_COUNT}'
+            )
+        return data
+
+
+class AnalysisPillarGqlSerializer(TempClientIdMixin, UserResourceSerializer):
+    statements = AnalyticalStatementGqlSerializer(many=True, source='analyticalstatement_set', required=False)
+
+    class Meta:
+        model = AnalysisPillar
+        fields = (
+            'id',
+            'title',
+            'main_statement',
+            'information_gap',
+            'filters',
+            'assignee',
+            'analysis',
+            'cloned_from',
+            # Custom
+            'statements',
+            'client_id',
+        )
+
+    def validate_analysis(self, analysis):
+        if analysis.project != self.context['request'].active_project:
+            raise serializers.ValidationError('Invalid analysis')
+        return analysis
+
+    def validate(self, data):
+        # validate analysis_statement
+        analytical_statement = data.get('analyticalstatement_set')
+        if analytical_statement and len(analytical_statement) > settings.ANALYTICAL_STATEMENT_COUNT:
+            raise serializers.ValidationError(
+                f'Analytical statement count must be less than {settings.ANALYTICAL_STATEMENT_COUNT}'
+            )
+        return data
+
+
+class DiscardedEntryGqlSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DiscardedEntry
+        fields = (
+            'id',
+            'analysis_pillar',
+            'entry',
+            'tag',
+        )
+
+    def validate_analysis_pillar(self, analysis_pillar):
+        if analysis_pillar.analysis.project != self.context['request'].active_project:
+            raise serializers.ValidationError('Invalid analysis_pillar')
+        return analysis_pillar
+
+    def validate(self, data):
+        # Validate entry data but analysis_pillar is required to do so
+        entry = data.get('entry')
+        if entry:
+            analysis_pillar = (
+                self.instance.analysis_pillar if self.instance
+                else data['analysis_pillar']
+            )
+            if entry.project != analysis_pillar.analysis.project:
+                raise serializers.ValidationError('Analysis pillar project doesnot match Entry project')
+            # validating the entry for the lead published_on greater than analysis end date
+            analysis_end_date = analysis_pillar.analysis.end_date
+            if entry.lead.published_on > analysis_end_date:
+                raise serializers.ValidationError({
+                    'entry': (
+                        f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis_end_date}'
+                    ),
+                })
+        return data
+
+
+class AnalysisGqlSerializer(UserResourceSerializer):
+    analysis_pillar = AnalysisPillarSerializer(many=True, source='analysispillar_set', required=False)
+    start_date = serializers.DateField(required=False, allow_null=True)
+
+    class Meta:
+        model = Analysis
+        fields = (
+            'id',
+            'title',
+            'team_lead',
+            'project',
+            'start_date',
+            'end_date',
+            'cloned_from',
+        )
+
+    def validate_project(self, project):
+        if project != self.context['request'].active_project:
+            raise serializers.ValidationError('Invalid project')
+        return project
+
+    def validate(self, data):
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        if start_date and start_date > end_date:
+            raise serializers.ValidationError(
+                {'end_date': 'End date must occur after start date'}
+            )
+        return data
+
+
+AnalysisCloneGqlSerializer = AnalysisCloneInputSerializer

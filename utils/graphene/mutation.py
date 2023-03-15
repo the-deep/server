@@ -245,6 +245,10 @@ class BaseGrapheneMutation(graphene.Mutation):
         raise Exception('This needs to be implemented in inheritances class')
 
     @classmethod
+    def get_context(cls, context):
+        return context
+
+    @classmethod
     def _save_item(cls, item, info, **kwargs):
         id = kwargs.pop('id', None)
         if id:
@@ -254,13 +258,13 @@ class BaseGrapheneMutation(graphene.Mutation):
             serializer = cls.serializer_class(
                 instance=instance,
                 data=item,
-                context={'request': info.context},
+                context=cls.get_context({'request': info.context}),
                 partial=True,
             )
         else:
             serializer = cls.serializer_class(
                 data=item,
-                context={'request': info.context}
+                context=cls.get_context({'request': info.context}),
             )
         errors = mutation_is_not_valid(serializer)
         if errors:
