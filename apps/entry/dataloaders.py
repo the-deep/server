@@ -17,6 +17,16 @@ from .models import (
 )
 
 
+class EntryLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        entry_qs = Entry.objects.filter(id__in=keys)
+        _map = {
+            entry.id: entry
+            for entry in entry_qs
+        }
+        return Promise.resolve([_map[key] for key in keys])
+
+
 class EntryAttributesLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         attributes_qs = Attribute.objects\
@@ -110,6 +120,10 @@ class EntryVerifiedByCountLoader(DataLoaderWithContext):
 
 
 class DataLoaders(WithContextMixin):
+    @cached_property
+    def entry(self):
+        return EntryLoader(context=self.context)
+
     @cached_property
     def entry_attributes(self):
         return EntryAttributesLoader(context=self.context)

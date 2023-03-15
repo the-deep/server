@@ -825,7 +825,7 @@ if DEBUG and env('DOCKER_HOST_IP') and not TESTING:
     # https://github.com/flavors/django-graphiql-debug-toolbar#installation
     # FIXME: If mutation are triggered twice https://github.com/flavors/django-graphiql-debug-toolbar/pull/12/files
     # FIXME: All request are triggered twice. Creating multiple entries in admin panel as well.
-    # INTERNAL_IPS = [env('DOCKER_HOST_IP')]
+    INTERNAL_IPS = [env('DOCKER_HOST_IP')]
     # # JUST FOR Graphiql
     # INSTALLED_APPS += ['debug_toolbar', 'graphiql_debug_toolbar']
     # MIDDLEWARE = ['graphiql_debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE

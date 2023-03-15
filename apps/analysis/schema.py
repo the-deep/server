@@ -6,12 +6,13 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.common import has_select_related
 from deep.permissions import ProjectPermissions as PP
 from user_resource.schema import UserResourceMixin, resolve_user_field
 
 from lead.models import Lead
 from entry.models import Entry
-from entry.schema import get_entry_qs
+from entry.schema import get_entry_qs, EntryType
 from user.schema import UserType
 
 from .models import (
@@ -21,20 +22,21 @@ from .models import (
     AnalyticalStatementEntry,
     DiscardedEntry,
 )
-# from .enums import DiscardedEntryTagTypeEnum
+from .enums import DiscardedEntryTagTypeEnum
 from .filter_set import (
     AnalysisGQFilterSet,
     AnalysisPillarGQFilterSet,
     AnalysisPillarEntryGQFilterSet,
     AnalyticalStatementGQFilterSet,
+    AnalysisPillarDiscardedEntryGqlFilterSet,
 )
 
 
-def _get_qs(model, info):
-    qs = model.objects.filter(
+def _get_qs(model, info, project_field):
+    qs = model.objects.filter(**{
         # Filter by project
-        project=info.context.active_project,
-    )
+        project_field: info.context.active_project,
+    })
     # Generate queryset according to permission
     if PP.check_permission(info, PP.Permission.VIEW_ENTRY):
         return qs
@@ -42,15 +44,15 @@ def _get_qs(model, info):
 
 
 def get_analysis_qs(info):
-    return _get_qs(Analysis, info)
+    return _get_qs(Analysis, info, 'project')
 
 
 def get_analysis_pillar_qs(info):
-    return _get_qs(AnalysisPillar, info)
+    return _get_qs(AnalysisPillar, info, 'analysis__project')
 
 
 def get_analytical_statement_qs(info):
-    return _get_qs(AnalyticalStatement, info)
+    return _get_qs(AnalyticalStatement, info, 'analysis_pillar__analysis__project')
 
 
 class AnalyticalStatementEntryType(ClientIdMixin, DjangoObjectType):
@@ -61,8 +63,15 @@ class AnalyticalStatementEntryType(ClientIdMixin, DjangoObjectType):
             'order',
         )
 
-    entry = graphene.ID(source='entry_id', required=True)
+    entry = graphene.Field(EntryType, required=True)
     analytical_statement = graphene.ID(source='analytical_statement_id', required=True)
+
+    @staticmethod
+    def resolve_entry(root, info, **_):
+        if has_select_related(root, 'entry'):
+            return getattr(root, 'entry')
+        # Use Dataloader to load the data
+        return info.context.dl.entry.entry.load(root.entry_id)
 
 
 class AnalyticalStatementType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
@@ -94,13 +103,36 @@ class AnalyticalStatementType(UserResourceMixin, ClientIdMixin, DjangoObjectType
         return info.context.dl.analysis.analytical_statement_entries.load(root.id)
 
 
+class AnalysisPillarDiscardedEntryType(DjangoObjectType):
+    class Meta:
+        model = DiscardedEntry
+        only_fields = ('id',)
+
+    analysis_pillar = graphene.ID(source='analysis_pillar_id')
+    entry = graphene.Field(EntryType, required=True)
+    tag = graphene.Field(DiscardedEntryTagTypeEnum, required=True)
+
+    @staticmethod
+    def resolve_entry(root, info, **_):
+        if has_select_related(root, 'entry'):
+            return getattr(root, 'entry')
+        # Use Dataloader to load the data
+        return info.context.dl.entry.entry.load(root.entry_id)
+
+
 class AnalysisPillarEntryListType(CustomDjangoListObjectType):
     class Meta:
         model = Entry
         filterset_class = AnalysisPillarEntryGQFilterSet
 
 
-class AnalysisPillarType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
+class AnalysisPillarDiscardedEntryListType(CustomDjangoListObjectType):
+    class Meta:
+        model = DiscardedEntry
+        filterset_class = AnalysisPillarDiscardedEntryGqlFilterSet
+
+
+class AnalysisPillarType(ClientIdMixin, UserResourceMixin, DjangoObjectType):
     class Meta:
         model = AnalysisPillar
         only_fields = (
@@ -118,7 +150,14 @@ class AnalysisPillarType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
 
     # XXX: N+1 and No pagination
     statements = graphene.List(graphene.NonNull(AnalyticalStatementType))
+    discarded_entries = DjangoPaginatedListObjectField(
+        AnalysisPillarDiscardedEntryListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
 
+    # Generated
     entries = DjangoPaginatedListObjectField(
         AnalysisPillarEntryListType,
         pagination=PageGraphqlPagination(
@@ -141,6 +180,10 @@ class AnalysisPillarType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     @staticmethod
     def resolve_statements(root, info, **_):
         return info.context.dl.analysis.analysis_pillar_analytical_statements.load(root.id)
+
+    @staticmethod
+    def resolve_discarded_entries(root, info, **_):
+        return DiscardedEntry.objects.filter(analysis_pillar=root)
 
     @staticmethod
     def resolve_entries(root, info, **kwargs):
