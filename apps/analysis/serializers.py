@@ -6,7 +6,7 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from drf_writable_nested import UniqueFieldsMixin, NestedCreateMixin
 
 from deep.writable_nested_serializers import NestedUpdateMixin as CustomNestedUpdateMixin
-from deep.serializers import RemoveNullFieldsMixin, TempClientIdMixin
+from deep.serializers import RemoveNullFieldsMixin, TempClientIdMixin, IntegerIDField
 from user_resource.serializers import UserResourceSerializer
 from user.serializers import NanoUserSerializer
 from entry.serializers import SimpleEntrySerializer
@@ -225,6 +225,8 @@ class AnalysisPillarSummarySerializer(serializers.ModelSerializer):
 # ------ GRAPHQL ------------
 
 class AnalyticalEntriesGqlSerializer(TempClientIdMixin, UniqueFieldsMixin, UserResourceSerializer):
+    id = IntegerIDField(required=False)
+
     class Meta:
         model = AnalyticalStatementEntry
         fields = (
@@ -267,6 +269,7 @@ class AnalyticalStatementGqlSerializer(
     # XXX: This is a custom mixin where we delete first and then create to avoid duplicate key value
     CustomNestedUpdateMixin,
 ):
+    id = IntegerIDField(required=False)
     entries = AnalyticalEntriesGqlSerializer(source='analyticalstatemententry_set', many=True, required=False)
 
     class Meta:
@@ -299,6 +302,7 @@ class AnalyticalStatementGqlSerializer(
 
 
 class AnalysisPillarGqlSerializer(TempClientIdMixin, UserResourceSerializer):
+    id = IntegerIDField(required=False)
     statements = AnalyticalStatementGqlSerializer(many=True, source='analyticalstatement_set', required=False)
 
     class Meta:
@@ -333,6 +337,8 @@ class AnalysisPillarGqlSerializer(TempClientIdMixin, UserResourceSerializer):
 
 
 class DiscardedEntryGqlSerializer(serializers.ModelSerializer):
+    id = IntegerIDField(required=False)
+
     class Meta:
         model = DiscardedEntry
         fields = (
@@ -369,6 +375,7 @@ class DiscardedEntryGqlSerializer(serializers.ModelSerializer):
 
 
 class AnalysisGqlSerializer(UserResourceSerializer):
+    id = IntegerIDField(required=False)
     analysis_pillar = AnalysisPillarSerializer(many=True, source='analysispillar_set', required=False)
     start_date = serializers.DateField(required=False, allow_null=True)
 
