@@ -9,6 +9,14 @@ from django.core.serializers.json import DjangoJSONEncoder
 local_cache = caches['local-memory']
 
 
+def clear_cache(prefix):
+    try:
+        cache.delete_many(cache.keys(prefix))
+        return True
+    except Exception:
+        pass
+
+
 class CacheKey:
     # Redis Cache
     URL_CACHED_FILE_FIELD_KEY_FORMAT = 'url_cache_{}'
@@ -23,8 +31,8 @@ class CacheKey:
     TEMP_CUSTOM_CLIENT_ID_KEY_FORMAT = '{prefix}-client-id-mixin-{request_hash}-{instance_type}-{instance_id}'
 
     class ExploreDeep:
-        _PREFIX = 'EXPLORE-DEEP-{}-'
-        _PREFIX_STATIC = 'EXPLORE-DEEP-'
+        BASE = 'EXPLORE-DEEP-'
+        _PREFIX = BASE + '{}-'
         # Dynamic
         TOTAL_PROJECTS_COUNT = _PREFIX + 'TOTAL-PROJECTS'
         TOTAL_REGISTERED_USERS_COUNT = _PREFIX + 'TOTAL-REGISTERED-USERS'
@@ -40,7 +48,11 @@ class CacheKey:
         TOP_TEN_PROJECTS_BY_ENTRIES_LIST = _PREFIX + 'TOP-TEN-PROJECTS-BY-ENTRIES'
         TOP_TEN_PROJECTS_BY_SOURCES_LIST = _PREFIX + 'TOP-TEN-PROJECTS-BY-SOURCES'
         # Static
-        TOTAL_ENTRIES_ADDED_LAST_WEEK_COUNT = _PREFIX_STATIC + 'TOTAL_ENTRIES_ADDED_LAST_WEEK_COUNT'
+        TOTAL_ENTRIES_ADDED_LAST_WEEK_COUNT = BASE + 'TOTAL_ENTRIES_ADDED_LAST_WEEK_COUNT'
+
+        @classmethod
+        def clear_cache(cls):
+            return clear_cache(cls.BASE)
 
 
 class CacheHelper:
