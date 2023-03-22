@@ -86,6 +86,7 @@ def get_top_ten_organizations_list(
         }
         for data in leads_qs.filter(
             **{f'{lead_field}__in': organization_queryset},
+            project__in=project_qs,
         ).annotate(
             org_id=models.functions.Coalesce(
                 models.F(f'{lead_field}__parent'),
@@ -97,9 +98,7 @@ def get_top_ten_organizations_list(
             ),
         ).order_by().values('org_id', 'org_title').annotate(
             leads_count=models.Count('id', distinct=True),
-            projects_count=models.Count(
-                'project', distinct=True, filter=models.Q(project__in=project_qs)
-            ),
+            projects_count=models.Count('project', distinct=True),
         ).order_by('-leads_count', '-projects_count').values(
             'org_id',
             'org_title',
