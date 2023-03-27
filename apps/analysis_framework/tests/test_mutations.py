@@ -318,6 +318,11 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                                             dict(key='sub-column-key-2.2', label='SubColumn Label 2.2'),
                                         ],
                                     ),
+                                    dict(
+                                        key='column-key-3',
+                                        label='Column Label 3',
+                                        subColumns=[],
+                                    ),
                                 ],
                             ),
                         ),
