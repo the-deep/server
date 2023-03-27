@@ -45,7 +45,7 @@ def export_af_to_csv(af, file):
             for row in widget_prop['rows']:
                 for sub_row in row['subRows']:
                     for column in widget_prop['columns']:
-                        for sub_column in column['subColumns']:
+                        for sub_column in column['subColumns'] or [{'label': ''}]:
                             writer.writerow({
                                 ExportColumn.TITLE: w_title,
                                 ExportColumn.PILLAR: row['label'],
