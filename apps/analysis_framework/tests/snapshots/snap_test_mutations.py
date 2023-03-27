@@ -248,6 +248,12 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                                     'label': 'SubColumn Label 2.2'
                                                 }
                                             ]
+                                        },
+                                        {
+                                            'key': 'column-key-3',
+                                            'label': 'Column Label 3',
+                                            'subColumns': [
+                                            ]
                                         }
                                     ],
                                     'rows': [
@@ -333,26 +339,31 @@ Section-Text-102,Row Label 1,SubRow Label 1.1,Column Label 1,SubColumn Label 1.2
 Section-Text-102,Row Label 1,SubRow Label 1.1,Column Label 1,SubColumn Label 1.3
 Section-Text-102,Row Label 1,SubRow Label 1.1,Column Label 2,SubColumn Label 2.1
 Section-Text-102,Row Label 1,SubRow Label 1.1,Column Label 2,SubColumn Label 2.2
+Section-Text-102,Row Label 1,SubRow Label 1.1,Column Label 3,
 Section-Text-102,Row Label 1,SubRow Label 1.2,Column Label 1,SubColumn Label 1.1
 Section-Text-102,Row Label 1,SubRow Label 1.2,Column Label 1,SubColumn Label 1.2
 Section-Text-102,Row Label 1,SubRow Label 1.2,Column Label 1,SubColumn Label 1.3
 Section-Text-102,Row Label 1,SubRow Label 1.2,Column Label 2,SubColumn Label 2.1
 Section-Text-102,Row Label 1,SubRow Label 1.2,Column Label 2,SubColumn Label 2.2
+Section-Text-102,Row Label 1,SubRow Label 1.2,Column Label 3,
 Section-Text-102,Row Label 1,SubRow Label 1.3,Column Label 1,SubColumn Label 1.1
 Section-Text-102,Row Label 1,SubRow Label 1.3,Column Label 1,SubColumn Label 1.2
 Section-Text-102,Row Label 1,SubRow Label 1.3,Column Label 1,SubColumn Label 1.3
 Section-Text-102,Row Label 1,SubRow Label 1.3,Column Label 2,SubColumn Label 2.1
 Section-Text-102,Row Label 1,SubRow Label 1.3,Column Label 2,SubColumn Label 2.2
+Section-Text-102,Row Label 1,SubRow Label 1.3,Column Label 3,
 Section-Text-102,Row Label 2,SubRow Label 2.1,Column Label 1,SubColumn Label 1.1
 Section-Text-102,Row Label 2,SubRow Label 2.1,Column Label 1,SubColumn Label 1.2
 Section-Text-102,Row Label 2,SubRow Label 2.1,Column Label 1,SubColumn Label 1.3
 Section-Text-102,Row Label 2,SubRow Label 2.1,Column Label 2,SubColumn Label 2.1
 Section-Text-102,Row Label 2,SubRow Label 2.1,Column Label 2,SubColumn Label 2.2
+Section-Text-102,Row Label 2,SubRow Label 2.1,Column Label 3,
 Section-Text-102,Row Label 2,SubRow Label 2.2,Column Label 1,SubColumn Label 1.1
 Section-Text-102,Row Label 2,SubRow Label 2.2,Column Label 1,SubColumn Label 1.2
 Section-Text-102,Row Label 2,SubRow Label 2.2,Column Label 1,SubColumn Label 1.3
 Section-Text-102,Row Label 2,SubRow Label 2.2,Column Label 2,SubColumn Label 2.1
 Section-Text-102,Row Label 2,SubRow Label 2.2,Column Label 2,SubColumn Label 2.2
+Section-Text-102,Row Label 2,SubRow Label 2.2,Column Label 3,
 '''
 
 snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framework_membership_bulk try 1'] = {
@@ -609,6 +620,12 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                         'key': 'sub-column-key-2.2',
                                         'label': 'SubColumn Label 2.2'
                                     }
+                                ]
+                            },
+                            {
+                                'key': 'column-key-3',
+                                'label': 'Column Label 3',
+                                'subColumns': [
                                 ]
                             }
                         ],
@@ -941,6 +958,12 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                                         'label': 'SubColumn Label 2.2'
                                                     }
                                                 ]
+                                            },
+                                            {
+                                                'key': 'column-key-3',
+                                                'label': 'Column Label 3',
+                                                'subColumns': [
+                                                ]
                                             }
                                         ],
                                         'rows': [
@@ -1070,26 +1093,31 @@ Section-Text-102,Row Label 1,SubRow Label 1.1,Column Label 1,SubColumn Label 1.2
 Section-Text-102,Row Label 1,SubRow Label 1.1,Column Label 1,SubColumn Label 1.3
 Section-Text-102,Row Label 1,SubRow Label 1.1,Column Label 2,SubColumn Label 2.1
 Section-Text-102,Row Label 1,SubRow Label 1.1,Column Label 2,SubColumn Label 2.2
+Section-Text-102,Row Label 1,SubRow Label 1.1,Column Label 3,
 Section-Text-102,Row Label 1,SubRow Label 1.2,Column Label 1,SubColumn Label 1.1
 Section-Text-102,Row Label 1,SubRow Label 1.2,Column Label 1,SubColumn Label 1.2
 Section-Text-102,Row Label 1,SubRow Label 1.2,Column Label 1,SubColumn Label 1.3
 Section-Text-102,Row Label 1,SubRow Label 1.2,Column Label 2,SubColumn Label 2.1
 Section-Text-102,Row Label 1,SubRow Label 1.2,Column Label 2,SubColumn Label 2.2
+Section-Text-102,Row Label 1,SubRow Label 1.2,Column Label 3,
 Section-Text-102,Row Label 1,SubRow Label 1.3,Column Label 1,SubColumn Label 1.1
 Section-Text-102,Row Label 1,SubRow Label 1.3,Column Label 1,SubColumn Label 1.2
 Section-Text-102,Row Label 1,SubRow Label 1.3,Column Label 1,SubColumn Label 1.3
 Section-Text-102,Row Label 1,SubRow Label 1.3,Column Label 2,SubColumn Label 2.1
 Section-Text-102,Row Label 1,SubRow Label 1.3,Column Label 2,SubColumn Label 2.2
+Section-Text-102,Row Label 1,SubRow Label 1.3,Column Label 3,
 Section-Text-102,Row Label 2,SubRow Label 2.1,Column Label 1,SubColumn Label 1.1
 Section-Text-102,Row Label 2,SubRow Label 2.1,Column Label 1,SubColumn Label 1.2
 Section-Text-102,Row Label 2,SubRow Label 2.1,Column Label 1,SubColumn Label 1.3
 Section-Text-102,Row Label 2,SubRow Label 2.1,Column Label 2,SubColumn Label 2.1
 Section-Text-102,Row Label 2,SubRow Label 2.1,Column Label 2,SubColumn Label 2.2
+Section-Text-102,Row Label 2,SubRow Label 2.1,Column Label 3,
 Section-Text-102,Row Label 2,SubRow Label 2.2,Column Label 1,SubColumn Label 1.1
 Section-Text-102,Row Label 2,SubRow Label 2.2,Column Label 1,SubColumn Label 1.2
 Section-Text-102,Row Label 2,SubRow Label 2.2,Column Label 1,SubColumn Label 1.3
 Section-Text-102,Row Label 2,SubRow Label 2.2,Column Label 2,SubColumn Label 2.1
 Section-Text-102,Row Label 2,SubRow Label 2.2,Column Label 2,SubColumn Label 2.2
+Section-Text-102,Row Label 2,SubRow Label 2.2,Column Label 3,
 '''
 
 snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framework_update with-conditionals-add'] = {
@@ -1234,6 +1262,12 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                                         'key': 'sub-column-key-2.2',
                                                         'label': 'SubColumn Label 2.2'
                                                     }
+                                                ]
+                                            },
+                                            {
+                                                'key': 'column-key-3',
+                                                'label': 'Column Label 3',
+                                                'subColumns': [
                                                 ]
                                             }
                                         ],
@@ -1497,6 +1531,12 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                                         'key': 'sub-column-key-2.2',
                                                         'label': 'SubColumn Label 2.2'
                                                     }
+                                                ]
+                                            },
+                                            {
+                                                'key': 'column-key-3',
+                                                'label': 'Column Label 3',
+                                                'subColumns': [
                                                 ]
                                             }
                                         ],
