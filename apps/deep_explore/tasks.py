@@ -1,19 +1,17 @@
 import logging
 import datetime
 import time
-import json
 import pytz
 from typing import Union, Tuple
 from celery import shared_task
 from dateutil.relativedelta import relativedelta
 
 from django.db import connection, models, transaction
-from django.core.serializers.json import DjangoJSONEncoder
-from django.core.files.base import ContentFile
 from django.utils import timezone
 from django.test import override_settings
 from djangorestframework_camel_case.util import underscoreize
 
+from utils.files import generate_json_file_for_upload
 from deep.schema import schema as gql_schema
 from utils.common import redis_lock
 from entry.models import Entry, Attribute
@@ -388,7 +386,7 @@ def generate_public_deep_explore_snapshot():
         if result.errors:
             logger.error(f'Failed to generate: {result.errors}', exc_info=True)
             return
-        file_content = ContentFile(json.dumps(result.data, cls=DjangoJSONEncoder).encode('utf-8'))
+        file_content = generate_json_file_for_upload(result.data)
         # Delete current file
         snapshot.file.delete()
         # Save new file

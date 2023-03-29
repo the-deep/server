@@ -1,10 +1,6 @@
-from django.core.files.base import ContentFile
-from django.core.serializers.json import DjangoJSONEncoder
-
+from utils.files import generate_json_file_for_upload
 from analysis_framework.models import Widget
 from export.models import Export
-
-import json
 
 
 class JsonExporter:
@@ -69,8 +65,8 @@ class JsonExporter:
         """
         Export and return export data
         """
-        json_data = json.dumps(
-            self.data, sort_keys=True, indent=2,
-            cls=DjangoJSONEncoder,
-        ).encode('utf-8')
-        return ContentFile(json_data)
+        return generate_json_file_for_upload(
+            self.data,
+            sort_keys=True,
+            indent=2,
+        )
