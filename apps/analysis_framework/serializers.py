@@ -622,8 +622,10 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
         prediction_tags_mapping = self.initial_data.get('prediction_tags_mapping', None)
         # Create AF
         instance = super().create(validated_data)
-        prediction_tags_mapping and self._save_prediction_tags_mapping(instance, prediction_tags_mapping)
-        secondary_tagging and self._save_secondary_taggings(instance, secondary_tagging)
+        if prediction_tags_mapping:
+            self._save_prediction_tags_mapping(instance, prediction_tags_mapping)
+        if secondary_tagging:
+            self._save_secondary_taggings(instance, secondary_tagging)
         # TODO: Check if there are any recursive conditionals
         # Create a owner role
         owner_role = instance.get_or_create_owner_role()

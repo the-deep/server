@@ -236,23 +236,13 @@ class AnalyticalEntriesGqlSerializer(TempClientIdMixin, UniqueFieldsMixin, UserR
             'client_id',
         )
 
-    def validate_analytical_statement(self, analytical_statement):
-        if analytical_statement.analysis_pillar.analysis.project != self.context['request'].active_project:
-            raise serializers.ValidationError('Invalid analytical_statement')
-        return analytical_statement
-
     def validate_entry(self, entry):
         if entry.project != self.context['request'].active_project:
             raise serializers.ValidationError('Invalid entry')
         return entry
 
     def validate(self, data):
-        analytical_statement = (
-            self.instance.analytical_statement if self.instance
-            else data['analytical_statement']
-        )
-        analysis = analytical_statement.analysis_pillar.analysis
-        analysis_end_date = analysis.end_date
+        analysis_end_date = self.context['analysis_end_date']  # Passed by UpdateAnalysisPillar Mutation
         entry = data.get('entry')
         lead_published = entry.lead.published_on
         if analysis_end_date and lead_published and lead_published > analysis_end_date:
@@ -277,7 +267,6 @@ class AnalyticalStatementGqlSerializer(
         fields = (
             'id',
             'statement',
-            'analysis_pillar',
             'include_in_report',
             'order',
             'cloned_from',
@@ -286,10 +275,13 @@ class AnalyticalStatementGqlSerializer(
             'client_id',
         )
 
-    def validate_analysis_pillar(self, analysis_pillar):
-        if analysis_pillar.analysis.project != self.context['request'].active_project:
-            raise serializers.ValidationError('Invalid analysis_pillar')
-        return analysis_pillar
+    # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
+    # This makes sure only scoped (individual AnalyticalStatement) instances (entries) are updated.
+    # For Secondary tagging
+    def _get_prefetch_related_instances_qs(self, qs):
+        if self.instance:
+            return qs.filter(analytical_statement=self.instance)
+        return qs.none()  # On create throw error if existing id is provided
 
     def validate(self, data):
         # Validate the analytical_entries
@@ -302,13 +294,11 @@ class AnalyticalStatementGqlSerializer(
 
 
 class AnalysisPillarGqlSerializer(TempClientIdMixin, UserResourceSerializer):
-    id = IntegerIDField(required=False)
     statements = AnalyticalStatementGqlSerializer(many=True, source='analyticalstatement_set', required=False)
 
     class Meta:
         model = AnalysisPillar
         fields = (
-            'id',
             'title',
             'main_statement',
             'information_gap',
@@ -320,6 +310,14 @@ class AnalysisPillarGqlSerializer(TempClientIdMixin, UserResourceSerializer):
             'statements',
             'client_id',
         )
+
+    # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
+    # This makes sure only scoped (individual AnalysisPillar) instances (statements) are updated.
+    # For Secondary tagging
+    def _get_prefetch_related_instances_qs(self, qs):
+        if self.instance:
+            return qs.filter(analysis_pillar=self.instance)
+        return qs.none()  # On create throw error if existing id is provided
 
     def validate_analysis(self, analysis):
         if analysis.project != self.context['request'].active_project:
@@ -376,7 +374,7 @@ class DiscardedEntryGqlSerializer(serializers.ModelSerializer):
 
 class AnalysisGqlSerializer(UserResourceSerializer):
     id = IntegerIDField(required=False)
-    analysis_pillar = AnalysisPillarSerializer(many=True, source='analysispillar_set', required=False)
+    analysis_pillar = AnalysisPillarGqlSerializer(many=True, source='analysispillar_set', required=False)
     start_date = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
