@@ -63,6 +63,13 @@ class UpdateAnalysisPillar(AnalysisPillarMutationMixin, PsGrapheneMutation):
     serializer_class = AnalysisPillarGqlSerializer
     result = graphene.Field(AnalysisPillarType)
 
+    @classmethod
+    def get_serializer_context(cls, instance, context):
+        return {
+            **context,
+            'analysis_end_date': instance.analysis.end_date,
+        }
+
 
 class CreateAnalysisPillarDiscardedEntry(DiscardedEntriesMutationMixin, PsGrapheneMutation):
     class Arguments:

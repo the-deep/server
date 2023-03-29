@@ -264,7 +264,6 @@ type AnalysisPillarType {
 }
 
 input AnalysisPillarUpdateInputType {
-  id: ID
   title: String
   mainStatement: String
   informationGap: String
@@ -316,7 +315,6 @@ type AnalyticalStatementEntryType {
 input AnalyticalStatementGqlInputType {
   id: ID
   statement: String!
-  analysisPillar: ID!
   includeInReport: Boolean
   order: Int!
   clonedFrom: ID
