@@ -1,7 +1,4 @@
-import json
-
-from django.core.files.base import ContentFile
-from django.core.serializers.json import DjangoJSONEncoder
+from utils.files import generate_json_file_for_upload
 
 
 DOCX_MIME_TYPE = \
@@ -27,8 +24,8 @@ class JsonExporter(Exporter):
         """
         Export and save in export_entity
         """
-        json_data = json.dumps(
-            self.data, sort_keys=True, indent=2,
-            cls=DjangoJSONEncoder
-        ).encode('utf-8')
-        return ContentFile(json_data)
+        return generate_json_file_for_upload(
+            self.data,
+            sort_keys=True,
+            indent=2,
+        )

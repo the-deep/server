@@ -1,14 +1,13 @@
 import json
 
 from typing import List, Union
-from django.core.files.base import ContentFile
-from django.core.serializers.json import DjangoJSONEncoder
 from django.contrib.gis.db import models
 from django.core.serializers import serialize
 from django.contrib.gis.gdal import Envelope
 from django.contrib.gis.db.models.aggregates import Union as PgUnion
 from django.contrib.gis.db.models.functions import Centroid
 
+from utils.files import generate_json_file_for_upload
 from user_resource.models import UserResource
 from gallery.models import File
 
@@ -229,15 +228,11 @@ class AdminLevel(models.Model):
 
         self.geojson_file.save(
             f'admin-level-{self.pk}.json',
-            ContentFile(
-                json.dumps(geojson, cls=DjangoJSONEncoder).encode('utf-8'),
-            ),
+            generate_json_file_for_upload(geojson),
         )
         self.bounds_file.save(
             f'admin-level-{self.pk}.json',
-            ContentFile(
-                json.dumps({'bounds': bounds}, cls=DjangoJSONEncoder).encode('utf-8'),
-            ),
+            generate_json_file_for_upload({'bounds': bounds}),
         )
         if save:
             self.save()
