@@ -1,9 +1,10 @@
+import requests
+from dataclasses import dataclass, field
 from typing import Union
 
-from dataclasses import dataclass, field
-import requests
-
 from django.core.files.base import ContentFile
+
+from utils.common import sanitize_text
 
 
 def requesthelper_ignore_error(func):
@@ -26,8 +27,7 @@ class RequestHelper:
 
     @staticmethod
     def sanitize_text(text: str):
-        from lead.tasks import _preprocess
-        return _preprocess(text)
+        return sanitize_text(text)
 
     def fetch(self):
         try:

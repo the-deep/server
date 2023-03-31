@@ -1,15 +1,14 @@
+import reversion
+import logging
+from redis_store import redis
 from celery import shared_task
+
+from utils.extractor.file_document import FileDocument
+from utils.common import sanitize_text
 from gallery.models import (
     File,
     FilePreview,
 )
-from lead.tasks import _preprocess
-from utils.extractor.file_document import FileDocument
-
-from redis_store import redis
-import reversion
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +29,7 @@ def _extract_from_file_core(file_preview_id):
                     file.file.name,
                 ).extract()
 
-                text = _preprocess(text)
+                text = sanitize_text(text)
 
                 if i != 0:
                     all_text += '\n\n'

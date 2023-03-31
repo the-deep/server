@@ -155,6 +155,7 @@ LOCAL_APPS = [
     'unified_connector',
     'assisted_tagging',
     'deep_explore',
+    'deepl_integration',
 
     # MISC DEEP APPS
     'bulk_data_migration',
@@ -462,7 +463,7 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(minute=0, hour='*/2'),
     },
     'sync_tag_data_with_deepl': {
-        'task': 'assisted_tagging.tasks.sync_tags_with_deepl',
+        'task': 'assisted_tagging.tasks.sync_tags_with_deepl_task',
         # Every 6 hour
         'schedule': crontab(minute=0, hour='*/6'),
     },
