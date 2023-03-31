@@ -13,7 +13,7 @@ from unified_connector.models import (
     ConnectorSource,
     ConnectorLeadPreviewImage,
 )
-from unified_connector.tasks import UnifiedConnectorTask
+from deepl_integration.handlers import UnifiedConnectorLeadHandler
 from unified_connector.factories import (
     ConnectorLeadFactory,
     ConnectorSourceFactory,
@@ -319,7 +319,7 @@ class TestLeadMutationSchema(GraphQLSnapShotTestCase):
         _query_check(okay=True, mnested=['project', 'unifiedConnector'])
 
     @patch('unified_connector.sources.relief_web.requests')
-    @patch('lead.tasks.requests')
+    @patch('deepl_integration.handlers.requests')
     def test_unified_connector_trigger(self, extractor_response_mock, reliefweb_requests_mock):
         uc = UnifiedConnectorFactory.create(project=self.project)
         ConnectorSourceFactory.create(unified_connector=uc, source=ConnectorSource.Source.RELIEF_WEB)
@@ -470,13 +470,13 @@ class TestLeadMutationSchema(GraphQLSnapShotTestCase):
 
 class UnifiedConnectorCallbackApiTest(TestCase):
 
-    @patch('unified_connector.tasks.RequestHelper')
+    @patch('deepl_integration.handlers.RequestHelper')
     def test_create_connector(self, RequestHelperMock):
         def _check_connector_lead_status(connector_lead, status):
             connector_lead.refresh_from_db()
             self.assertEqual(connector_lead.extraction_status, status)
 
-        url = '/api/v1/callback/connector-lead-extract/'
+        url = '/api/v1/callback/unified-connector-lead-extract/'
         connector_lead1 = ConnectorLeadFactory.create(url='https://example.com/some-random-url-01')
         connector_lead2 = ConnectorLeadFactory.create(url='https://example.com/some-random-url-02')
 
@@ -502,7 +502,7 @@ class UnifiedConnectorCallbackApiTest(TestCase):
         self.assert_400(response)
         _check_connector_lead_status(connector_lead1, ConnectorLead.ExtractionStatus.PENDING)
 
-        data['client_id'] = UnifiedConnectorTask.generate_connector_lead_client_id(connector_lead1)
+        data['client_id'] = UnifiedConnectorLeadHandler.get_client_id(connector_lead1)
         response = self.client.post(url, data)
         self.assert_400(response)
         _check_connector_lead_status(connector_lead1, ConnectorLead.ExtractionStatus.PENDING)
@@ -527,7 +527,7 @@ class UnifiedConnectorCallbackApiTest(TestCase):
         self.assert_400(response)
         _check_connector_lead_status(connector_lead2, ConnectorLead.ExtractionStatus.PENDING)
 
-        data['client_id'] = UnifiedConnectorTask.generate_connector_lead_client_id(connector_lead2)
+        data['client_id'] = UnifiedConnectorLeadHandler.get_client_id(connector_lead2)
         response = self.client.post(url, data)
         self.assert_400(response)
         _check_connector_lead_status(connector_lead2, ConnectorLead.ExtractionStatus.PENDING)

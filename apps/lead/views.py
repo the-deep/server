@@ -60,7 +60,6 @@ from .serializers import (
     LeadOptionsSerializer,
     LeadOptionsBodySerializer,
     LegacyLeadOptionsSerializer,
-    ExtractCallbackSerializer,
 )
 
 
@@ -821,13 +820,3 @@ class LeadCopyView(BaseCopyView):
         ])
 
         return lead
-
-
-class LeadExtractCallbackView(views.APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request, *args, **kwargs):
-        serializer = ExtractCallbackSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return response.Response("Request successfully completed", status=status.HTTP_200_OK)

@@ -19,7 +19,6 @@ from . import converters
 
 # import autofixture
 
-from unified_connector.views import ConnectorLeadExtractCallbackView
 from user.views import (
     UserViewSet,
     PasswordResetView,
@@ -83,7 +82,6 @@ from lead.views import (
     LeadPreviewViewSet,
     LeadOptionsView,
     LeadExtractionTriggerView,
-    LeadExtractCallbackView,
     LeadWebsiteFetch,
     LeadCopyView,
 
@@ -149,7 +147,11 @@ from export.views import (
     ExportTriggerView,
     ExportViewSet,
 )
-from assisted_tagging.views import AssistedTaggingDraftEntryPredictionCallbackView
+from deepl_integration.views import (
+    AssistedTaggingDraftEntryPredictionCallbackView,
+    LeadExtractCallbackView,
+    UnifiedConnectorLeadExtractCallbackView,
+)
 
 from deep.views import (
     AccountActivate,
@@ -550,9 +552,9 @@ urlpatterns = [
         name='lead_extract_callback',
     ),
     re_path(
-        get_api_path(r'callback/connector-lead-extract/$'),
-        ConnectorLeadExtractCallbackView.as_view(),
-        name='connector_lead_extract_callback',
+        get_api_path(r'callback/unified-connector-lead-extract/$'),
+        UnifiedConnectorLeadExtractCallbackView.as_view(),
+        name='unified_connector_lead_extract_callback',
     ),
     re_path(
         get_api_path(r'callback/assisted-tagging-draft-entry-prediction/$'),

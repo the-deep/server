@@ -47,6 +47,19 @@ except ImportError as e:
 StorageClass = get_storage_class()
 
 
+def sanitize_text(_text):
+    text = _text
+    # Remove NUL (0x00) characters
+    text = text.replace('\x00', '')
+    # Tabs and nbsps to space
+    text = re.sub(r'(\t|&nbsp;)', ' ', text)
+    # Multiple spaces to single
+    text = re.sub(r' +', ' ', text)
+    # More than 3 line breaks to just 3 line breaks
+    text = re.sub(r'\n\s*\n\s*(\n\s*)+', '\n\n\n', text)
+    return text.strip()
+
+
 def is_valid_regex(string):
     try:
         re.compile(string)
@@ -363,7 +376,7 @@ def get_redis_lock_ttl(lock):
         pass
 
 
-def redis_lock(lock_key, timeout=60 * 60 * 4):
+def redis_lock(lock_key, timeout: float = 60 * 60 * 4):
     """
     Default Lock lifetime 4 hours
     """

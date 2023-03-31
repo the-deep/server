@@ -25,7 +25,7 @@ from organization.models import (
 from organization.serializers import SimpleOrganizationSerializer
 from lead.filter_set import LeadFilterSet
 from lead.serializers import SimpleLeadGroupSerializer
-from lead.tasks import LeadExtraction
+from deepl_integration.handlers import LeadExtractionHandler
 from entry.models import (
     Entry,
     ProjectEntryLabel,
@@ -1775,8 +1775,8 @@ class TestExtractorCallback(TestCase):
         self.lead = LeadFactory.create()
 
     @mock.patch('lead.serializers.index_lead_and_calculate_duplicates.delay')
-    @mock.patch('lead.tasks.RequestHelper.get_text')
-    @mock.patch('lead.tasks.RequestHelper.get_file')
+    @mock.patch('deepl_integration.handlers.RequestHelper.get_text')
+    @mock.patch('deepl_integration.handlers.RequestHelper.get_file')
     def test_extractor_callback_url(self, get_file_mock, get_text_mock, index_lead_func):
         url = '/api/v1/callback/lead-extract/'
         self.authenticate()
@@ -1794,7 +1794,7 @@ class TestExtractorCallback(TestCase):
         self.assertEqual(images_count, 0)
 
         data = {
-            'client_id': LeadExtraction.generate_lead_client_id(self.lead),
+            'client_id': LeadExtractionHandler.get_client_id(self.lead),
             'images_path': ['http://random.com/image1.jpeg', 'http://random.com/image1.jpeg'],
             'text_path': 'http://random.com/extracted_file.txt',
             'url': 'http://random.com/pdf_file.pdf',
@@ -1831,23 +1831,23 @@ class TestExtractorCallback(TestCase):
         project = self.create_project()
         lead1 = self.create_lead(project=project)
         lead2 = self.create_lead(project=project)
-        lead1_client_id = LeadExtraction.generate_lead_client_id(lead1)
-        lead2_client_id = LeadExtraction.generate_lead_client_id(lead2)
+        lead1_client_id = LeadExtractionHandler.get_client_id(lead1)
+        lead2_client_id = LeadExtractionHandler.get_client_id(lead2)
         lead2.delete()
         for lead, client_id, excepted_exception in [
             (lead1, lead1_client_id, None),
             (
                 lead1,
                 f'{UidBase64Helper.encode(lead1.pk)}-some-random-id',
-                LeadExtraction.Exception.InvalidOrExpiredToken,
+                LeadExtractionHandler.Exception.InvalidOrExpiredToken,
             ),
-            (lead1, '11-some-random-id', LeadExtraction.Exception.InvalidTokenValue),
-            (lead1, 'some-random-id', LeadExtraction.Exception.InvalidTokenValue),
-            (lead2, lead2_client_id, LeadExtraction.Exception.LeadNotFound),
-            (lead2, 'somerandomid', LeadExtraction.Exception.InvalidTokenValue),
+            (lead1, '11-some-random-id', LeadExtractionHandler.Exception.InvalidTokenValue),
+            (lead1, 'some-random-id', LeadExtractionHandler.Exception.InvalidTokenValue),
+            (lead2, lead2_client_id, LeadExtractionHandler.Exception.ObjectNotFound),
+            (lead2, 'somerandomid', LeadExtractionHandler.Exception.InvalidTokenValue),
         ]:
             if excepted_exception:
                 with self.assertRaises(excepted_exception):
-                    LeadExtraction.get_lead_from_client_id(client_id)
+                    LeadExtractionHandler.get_object_using_client_id(client_id)
             else:
-                assert LeadExtraction.get_lead_from_client_id(client_id) == lead
+                assert LeadExtractionHandler.get_object_using_client_id(client_id) == lead
