@@ -318,6 +318,11 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                                             dict(key='sub-column-key-2.2', label='SubColumn Label 2.2'),
                                         ],
                                     ),
+                                    dict(
+                                        key='column-key-3',
+                                        label='Column Label 3',
+                                        subColumns=[],
+                                    ),
                                 ],
                             ),
                         ),
@@ -392,7 +397,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         self.assertMatchSnapshot(response, 'success')
         # Export test
         new_af = AnalysisFramework.objects.get(pk=response['data']['analysisFrameworkCreate']['result']['id'])
-        self.assertMatchSnapshot(new_af.export.file.read(), 'success-af-export')
+        self.assertMatchSnapshot(new_af.export.file.read().decode('utf-8'), 'success-af-export')
 
     def test_analysis_framework_update(self):
         query = '''
@@ -590,7 +595,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
             response = _query_check(new_af_id, new_af_response, okay=True)
         self.assertMatchSnapshot(response, 'success')
         new_af = AnalysisFramework.objects.get(pk=new_af_id)
-        self.assertMatchSnapshot(new_af.export.file.read(), 'success-af-export')
+        self.assertMatchSnapshot(new_af.export.file.read().decode('utf-8'), 'success-af-export')
         # Check with conditionals
         other_af_widget = WidgetFactory.create(analysis_framework=AnalysisFrameworkFactory.create())
         af_widget = Widget.objects.filter(analysis_framework_id=new_af_id).first()
