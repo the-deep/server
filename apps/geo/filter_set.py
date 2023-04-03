@@ -124,3 +124,21 @@ class GeoAreaGqlFilterSet(OrderEnumMixin, django_filters.rest_framework.FilterSe
                 )
             )
         return queryset
+
+
+class RegionGqlFilterSet(RegionFilterSet):
+    search = django_filters.CharFilter(
+        label='Region label search',
+        method='region_search'
+    )
+    exclude_project = IDListFilter(method='exclude_project_region_filter')
+
+    def region_search(self, queryset, _, value):
+        if value:
+            return queryset.filter(title__icontains=value)
+        return queryset
+
+    def exclude_project_region_filter(self, qs, name, value):
+        if value:
+            return qs.exclude(project__in=value).distinct()
+        return qs
