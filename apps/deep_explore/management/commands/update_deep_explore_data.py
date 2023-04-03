@@ -3,6 +3,7 @@ import time
 from django.db import transaction
 from django.core.management.base import BaseCommand
 
+from deep.caches import CacheKey
 from deep_explore.tasks import (
     update_deep_explore_entries_count_by_geo_aggreagate,
     generate_public_deep_explore_snapshot,
@@ -30,6 +31,10 @@ class ShowRunTime():
 class Command(BaseCommand):
     def handle(self, **_):
         start_time = time.time()
+
+        # Try to clear cache
+        with ShowRunTime(self, 'Clear existing memory caches'):
+            print(f'Clear status: {CacheKey.ExploreDeep.clear_cache()}')
 
         # Calculate centroid for geo_areas if not already.
         with ShowRunTime(self, 'GeoCentroid Update'):

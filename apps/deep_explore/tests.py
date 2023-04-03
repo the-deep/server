@@ -9,6 +9,8 @@ from entry.factories import EntryFactory
 
 
 class TestDeepExploreStats(GraphQLSnapShotTestCase):
+
+    @classmethod
     def setUpClass(cls):
         user = UserFactory.create()
         user2, _ = UserFactory.create_batch(2)
