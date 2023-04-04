@@ -1731,6 +1731,7 @@ type LeadDetailType {
   entriesCount: EntriesCountType
   filteredEntriesCount: Int
   duplicateLeadsCount: Int
+  shareViewUrl: String!
   entries: [EntryType!]
 }
 
@@ -1917,6 +1918,7 @@ type LeadType {
   entriesCount: EntriesCountType
   filteredEntriesCount: Int
   duplicateLeadsCount: Int
+  shareViewUrl: String!
 }
 
 input LeadsFilterDataInputType {
