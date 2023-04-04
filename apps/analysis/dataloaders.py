@@ -12,6 +12,7 @@ from .models import (
     AnalyticalStatement,
     AnalyticalStatementEntry,
     DiscardedEntry,
+    TopicModelCluster,
 )
 
 
@@ -128,6 +129,17 @@ class AnalysisStatementAnalyzedEntriesLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key, 0) for key in keys])
 
 
+class AnalysisTopicModelClusterEntryLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = TopicModelCluster.entries.through.objects.filter(
+            topicmodelcluster__in=keys,
+        ).select_related('entry').order_by('topicmodelcluster', 'entry')
+        _map = defaultdict(list)
+        for cluster_entry in qs:
+            _map[cluster_entry.topicmodelcluster_id].append(cluster_entry.entry)
+        return Promise.resolve([_map.get(key, []) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def analysis_publication_date(self):
@@ -150,7 +162,7 @@ class DataLoaders(WithContextMixin):
         return AnalysisPillarsAnalyzedEntriesLoader(context=self.context)
 
     @cached_property
-    def analysis_statement_analyzed_entries(self):
+    def analytical_statement_analyzed_entries(self):
         return AnalysisStatementAnalyzedEntriesLoader(context=self.context)
 
     @cached_property
@@ -160,3 +172,7 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def analytical_statement_entries(self):
         return AnalyticalStatementEntriesLoader(context=self.context)
+
+    @cached_property
+    def topic_model_cluster_entries(self):
+        return AnalysisTopicModelClusterEntryLoader(context=self.context)

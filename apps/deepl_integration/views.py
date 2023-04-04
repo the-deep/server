@@ -11,6 +11,9 @@ from .serializers import (
     AssistedTaggingDraftEntryPredictionCallbackSerializer,
     LeadExtractCallbackSerializer,
     UnifiedConnectorLeadExtractCallbackSerializer,
+    AnalysisTopicModelCallbackSerializer,
+    AnalysisAutomaticSummaryCallbackSerializer,
+    AnalyticalStatementNGramCallbackSerializer,
 )
 
 
@@ -35,3 +38,16 @@ class LeadExtractCallbackView(BaseCallbackView):
 
 class UnifiedConnectorLeadExtractCallbackView(BaseCallbackView):
     serializer = UnifiedConnectorLeadExtractCallbackSerializer
+
+
+# Analysis
+class AnalysisTopicModelCallbackView(BaseCallbackView):
+    serializer = AnalysisTopicModelCallbackSerializer
+
+
+class AnalysisAutomaticSummaryCallbackView(BaseCallbackView):
+    serializer = AnalysisAutomaticSummaryCallbackSerializer
+
+
+class AnalyticalStatementNGramCallbackView(BaseCallbackView):
+    serializer = AnalyticalStatementNGramCallbackSerializer

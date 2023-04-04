@@ -13,6 +13,7 @@ from django.utils.encoding import DjangoUnicodeDecodeError
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.db import transaction, models
+from rest_framework import serializers
 
 from deep.token import DeepTokenGenerator
 from deep.deepl import DeeplServiceEndpoint
@@ -39,8 +40,34 @@ from lead.models import (
     LeadPreviewImage,
 )
 from lead.typings import NlpExtractorUrl
+from analysis.models import (
+    TopicModel,
+    TopicModelCluster,
+    AutomaticSummary,
+    AnalyticalStatementNGram,
+)
 
 logger = logging.getLogger(__name__)
+
+
+def generate_file_url_for_legacy_deepl_server(file):
+    return get_full_media_url(
+        file.url,
+        file_system_domain=settings.DEEPL_SERVICE_CALLBACK_DOMAIN,
+    )
+
+
+def generate_file_url_for_new_deepl_server(file):
+    return get_full_media_url(
+        file.url,
+        file_system_domain=settings.DEEPL_SERVER_CALLBACK_DOMAIN,
+    )
+
+
+def custom_error_handler(exception):
+    if type(exception) == requests.exceptions.ConnectionError:
+        raise serializers.ValidationError('ConnectionError on provided file')
+    raise serializers.ValidationError('Failed to handle the provided file: <error={type(exception)}>')
 
 
 class DefaultClientIdGenerator(DeepTokenGenerator):
@@ -353,7 +380,7 @@ class LeadExtractionHandler(BaseHandler):
         # Get the lead to be extracted
         url_to_extract = None
         if lead.attachment:
-            url_to_extract = get_full_media_url(lead.attachment.url)
+            url_to_extract = generate_file_url_for_legacy_deepl_server(lead.attachment)
         elif lead.url:
             url_to_extract = lead.url
         if url_to_extract:
@@ -563,3 +590,189 @@ class UnifiedConnectorLeadHandler(BaseHandler):
         cls.send_trigger_request_to_extractor(
             ConnectorLead.objects.filter(connectorsourcelead__source__unified_connector=unified_connector)
         )
+
+
+class NewNlpServerBaseHandler(BaseHandler):
+    @classmethod
+    def get_callback_url(cls, **kwargs):
+        return (
+            settings.DEEPL_SERVER_CALLBACK_DOMAIN +
+            reverse(
+                cls.callback_url_name, kwargs={
+                    'version': 'v1',
+                    **kwargs,
+                },
+            )
+        )
+
+
+class AnalysisTopicModelHandler(NewNlpServerBaseHandler):
+    model = TopicModel
+    callback_url_name = 'analysis_topic_model_callback'
+
+    @classmethod
+    def send_trigger_request_to_extractor(cls, topic_model: TopicModel):
+        payload = {
+            'mock': True,   # TODO: Remove - will be handled in NLP side
+            'client_id': cls.get_client_id(topic_model),
+            'entries_url': generate_file_url_for_new_deepl_server(topic_model.entries_file),
+            'cluster_size': settings.ANALYTICAL_ENTRIES_COUNT,
+            'max_clusters_num': settings.ANALYTICAL_STATEMENT_COUNT,
+            'callback_url': cls.get_callback_url(),
+        }
+        try:
+            response = requests.post(
+                DeeplServiceEndpoint.ANALYSIS_TOPIC_MODEL,
+                headers=cls.REQUEST_HEADERS,
+                json=payload,
+            )
+            if response.status_code == 202:
+                topic_model.status = TopicModel.Status.STARTED
+                topic_model.save(update_fields=('status',))
+                return True
+        except Exception:
+            logger.error('Analysis Topic Model send failed, Exception occurred!!', exc_info=True)
+        _response = locals().get('response')
+        logger.error(
+            'Analysis Topic Model send failed!!',
+            extra={
+                'payload': payload,
+                'response': _response.content if _response else None
+            },
+        )
+        topic_model.status = TopicModel.Status.SEND_FAILED
+        topic_model.save(update_fields=('status',))
+
+    @staticmethod
+    def save_data(
+        topic_model: TopicModel,
+        data_url: str,
+    ):
+        entries_data = RequestHelper(url=data_url, custom_error_handler=custom_error_handler).json()
+        # Clear existing
+        TopicModelCluster.objects.filter(topic_model=topic_model).delete()
+        if entries_data:
+            # Create new cluster in bulk
+            new_clusters = TopicModelCluster.objects.bulk_create([
+                TopicModelCluster(topic_model=topic_model)
+                for _ in entries_data.keys()
+            ])
+            # Create new cluster-entry relation in bulk
+            new_cluster_entries = []
+            for cluster, entries_id in zip(new_clusters, entries_data.values()):
+                for entry_id in entries_id:
+                    new_cluster_entries.append(
+                        TopicModelCluster.entries.through(
+                            topicmodelcluster=cluster,
+                            entry_id=entry_id,
+                        )
+                    )
+            TopicModelCluster.entries.through.objects.bulk_create(new_cluster_entries)
+        topic_model.status = TopicModel.Status.SUCCESS
+        topic_model.save()
+        return topic_model
+
+
+class AnalysisAutomaticSummaryHandler(NewNlpServerBaseHandler):
+    model = AutomaticSummary
+    callback_url_name = 'analysis_automatic_summary_callback'
+
+    @classmethod
+    def send_trigger_request_to_extractor(cls, a_summary: AutomaticSummary):
+        payload = {
+            'mock': True,   # TODO: Remove - will be handled in NLP side
+            'client_id': cls.get_client_id(a_summary),
+            'entries_url': generate_file_url_for_new_deepl_server(a_summary.entries_file),
+            'callback_url': cls.get_callback_url(),
+        }
+        try:
+            response = requests.post(
+                DeeplServiceEndpoint.ANALYSIS_AUTOMATIC_SUMMARY,
+                headers=cls.REQUEST_HEADERS,
+                json=payload,
+            )
+            if response.status_code == 202:
+                a_summary.status = AutomaticSummary.Status.STARTED
+                a_summary.save(update_fields=('status',))
+                return True
+        except Exception:
+            logger.error('Analysis Automatic summary send failed, Exception occurred!!', exc_info=True)
+        _response = locals().get('response')
+        logger.error(
+            'Analysis Automatic summary send failed!!',
+            extra={
+                'payload': payload,
+                'response': _response.content if _response else None
+            },
+        )
+        a_summary.status = AutomaticSummary.Status.SEND_FAILED
+        a_summary.save(update_fields=('status',))
+
+    @staticmethod
+    def save_data(
+        a_summary: AutomaticSummary,
+        data_url: str,
+    ):
+        summary_text = RequestHelper(url=data_url, custom_error_handler=custom_error_handler).get_text()
+        a_summary.status = AutomaticSummary.Status.SUCCESS
+        a_summary.summary = summary_text
+        a_summary.save()
+        return a_summary
+
+
+class AnalyticalStatementNGramHandler(NewNlpServerBaseHandler):
+    model = AnalyticalStatementNGram
+    callback_url_name = 'analysis_automatic_ngram_callback'
+
+    @classmethod
+    def send_trigger_request_to_extractor(cls, a_ngram: AnalyticalStatementNGram):
+        payload = {
+            'mock': True,   # TODO: Remove - will be handled in NLP side
+            'client_id': cls.get_client_id(a_ngram),
+            'entries_url': generate_file_url_for_new_deepl_server(a_ngram.entries_file),
+            'callback_url': cls.get_callback_url(),
+            'ngrams_config': {
+                'generate_unigrams': True,
+                'generate_bigrams': True,
+                'generate_trigrams': True,
+                'enable_stopwords': True,
+                'enable_stemming': True,
+                'enable_case_sensitive': True,
+            }
+        }
+        try:
+            response = requests.post(
+                DeeplServiceEndpoint.ANALYSIS_AUTOMATIC_NGRAM,
+                headers=cls.REQUEST_HEADERS,
+                json=payload,
+            )
+            if response.status_code == 202:
+                a_ngram.status = AnalyticalStatementNGram.Status.STARTED
+                a_ngram.save(update_fields=('status',))
+                return True
+        except Exception:
+            logger.error('Analysis Automatic summary send failed, Exception occurred!!', exc_info=True)
+        _response = locals().get('response')
+        logger.error(
+            'Analysis Automatic summary send failed!!',
+            extra={
+                'payload': payload,
+                'response': _response.content if _response else None
+            },
+        )
+        a_ngram.status = AnalyticalStatementNGram.Status.SEND_FAILED
+        a_ngram.save(update_fields=('status',))
+
+    @staticmethod
+    def save_data(
+        a_ngram: AnalyticalStatementNGram,
+        data_url: str,
+    ):
+        ngram_data = RequestHelper(url=data_url, custom_error_handler=custom_error_handler).json()
+        if ngram_data:
+            a_ngram.unigrams = ngram_data.get('unigrams') or {}
+            a_ngram.bigrams = ngram_data.get('bigrams') or {}
+            a_ngram.trigrams = ngram_data.get('trigrams') or {}
+        a_ngram.status = AnalyticalStatementNGram.Status.SUCCESS
+        a_ngram.save()
+        return a_ngram

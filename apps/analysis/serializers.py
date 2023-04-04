@@ -1,22 +1,41 @@
+from typing import Callable
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
 from drf_writable_nested import UniqueFieldsMixin, NestedCreateMixin
+from django.db import transaction
 
+from utils.graphene.fields import generate_serializer_field_class
 from deep.writable_nested_serializers import NestedUpdateMixin as CustomNestedUpdateMixin
-from deep.serializers import RemoveNullFieldsMixin, TempClientIdMixin, IntegerIDField
+from deep.serializers import (
+    RemoveNullFieldsMixin,
+    TempClientIdMixin,
+    IntegerIDField,
+    IdListField,
+    GraphqlSupportDrfSerializerJSONField,
+)
 from user_resource.serializers import UserResourceSerializer
 from user.serializers import NanoUserSerializer
 from entry.serializers import SimpleEntrySerializer
+from entry.filter_set import EntryGQFilterSet, EntriesFilterDataInputType
 
 from .models import (
     Analysis,
     AnalysisPillar,
     AnalyticalStatement,
     AnalyticalStatementEntry,
-    DiscardedEntry
+    DiscardedEntry,
+    TopicModel,
+    EntriesCollectionNlpTriggerBase,
+    AutomaticSummary,
+    AnalyticalStatementNGram,
+)
+from .tasks import (
+    trigger_topic_model,
+    trigger_automatic_summary,
+    trigger_automatic_ngram,
 )
 
 
@@ -277,7 +296,6 @@ class AnalyticalStatementGqlSerializer(
 
     # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
     # This makes sure only scoped (individual AnalyticalStatement) instances (entries) are updated.
-    # For Secondary tagging
     def _get_prefetch_related_instances_qs(self, qs):
         if self.instance:
             return qs.filter(analytical_statement=self.instance)
@@ -405,3 +423,94 @@ class AnalysisGqlSerializer(UserResourceSerializer):
 
 
 AnalysisCloneGqlSerializer = AnalysisCloneInputSerializer
+
+
+class AnalysisTopicModelSerializer(UserResourceSerializer, serializers.ModelSerializer):
+    additional_filters = generate_serializer_field_class(
+        EntriesFilterDataInputType,
+        GraphqlSupportDrfSerializerJSONField,
+    )(required=False)
+
+    class Meta:
+        model = TopicModel
+        fields = (
+            'analysis_pillar',
+            'additional_filters',
+        )
+
+    def validate_analysis_pillar(self, analysis_pillar):
+        if analysis_pillar.analysis.project != self.context['request'].active_project:
+            raise serializers.ValidationError('Invalid analysis pillar')
+        return analysis_pillar
+
+    def validate_additional_filters(self, additional_filters):
+        filter_set = EntryGQFilterSet(data=additional_filters, request=self.context['request'])
+        if not filter_set.is_valid():
+            raise serializers.ValidationError(filter_set.errors)
+        return additional_filters
+
+    def create(self, data):
+        if not TopicModel._get_entries_qs(
+                data['analysis_pillar'],
+                data.get('additional_filters') or {},
+        ).exists():
+            raise serializers.ValidationError('No entries found to process')
+        instance = super().create(data)
+        transaction.on_commit(
+            lambda: trigger_topic_model.delay(instance.pk)
+        )
+        return instance
+
+
+class EntriesCollectionNlpTriggerBaseSerializer(UserResourceSerializer, serializers.ModelSerializer):
+    entries_id = IdListField()
+    trigger_task_func: Callable
+
+    class Meta:
+        model = EntriesCollectionNlpTriggerBase
+        fields = (
+            'entries_id',
+        )
+
+    def validate_entries_id(self, entries_id):
+        entries_id = self.Meta.model.get_valid_entries_id(
+            self.context['request'].active_project.id,
+            entries_id
+        )
+        if not entries_id:
+            raise serializers.ValidationError('No entries found to process')
+        return entries_id
+
+    def create(self, data):
+        data['project'] = self.context['request'].active_project
+        existing_instance = self.Meta.model.get_existing(data['entries_id'])
+        if existing_instance:
+            return existing_instance
+        instance = super().create(data)
+        transaction.on_commit(
+            lambda: self.trigger_task_func.delay(instance.pk)
+        )
+        return instance
+
+    def update(self, _):
+        raise serializers.ValidationError('Not allowed using this serializer.')
+
+
+class AnalysisAutomaticSummarySerializer(EntriesCollectionNlpTriggerBaseSerializer):
+    trigger_task_func = trigger_automatic_summary
+
+    class Meta:
+        model = AutomaticSummary
+        fields = (
+            'entries_id',
+        )
+
+
+class AnalyticalStatementNGramSerializer(EntriesCollectionNlpTriggerBaseSerializer):
+    trigger_task_func = trigger_automatic_ngram
+
+    class Meta:
+        model = AnalyticalStatementNGram
+        fields = (
+            'entries_id',
+        )

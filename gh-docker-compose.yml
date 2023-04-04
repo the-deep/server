@@ -53,6 +53,9 @@ services:
       # DEEPL Service
       DEEPL_SERVICE_DOMAIN: http://extractor:8001
       DEEPL_SERVICE_CALLBACK_DOMAIN: http://web:8000
+      # DEEPL Server
+      DEEPL_SERVER_DOMAIN: http://extractor:8001
+      DEEPL_SERVER_CALLBACK_DOMAIN: http://web:8000
     volumes:
       - ./coverage/:/code/coverage/
       - ./ci-share/:/ci-share/

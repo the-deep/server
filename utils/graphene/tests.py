@@ -339,6 +339,9 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
             mesg = error_resp['errors']
         return self.assertEqual(response.status_code, status_code, mesg)
 
+    def assert_400(self, response):
+        self.assert_http_code(response, status.HTTP_400_BAD_REQUEST)
+
     def assert_403(self, response):
         self.assert_http_code(response, status.HTTP_403_FORBIDDEN)
 

@@ -151,6 +151,9 @@ from deepl_integration.views import (
     AssistedTaggingDraftEntryPredictionCallbackView,
     LeadExtractCallbackView,
     UnifiedConnectorLeadExtractCallbackView,
+    AnalysisTopicModelCallbackView,
+    AnalysisAutomaticSummaryCallbackView,
+    AnalyticalStatementNGramCallbackView,
 )
 
 from deep.views import (
@@ -560,6 +563,22 @@ urlpatterns = [
         get_api_path(r'callback/assisted-tagging-draft-entry-prediction/$'),
         AssistedTaggingDraftEntryPredictionCallbackView.as_view(),
         name='assisted_tagging_draft_entry_prediction_callback',
+    ),
+
+    re_path(
+        get_api_path(r'callback/analysis-topic-model/$'),
+        AnalysisTopicModelCallbackView.as_view(),
+        name='analysis_topic_model_callback',
+    ),
+    re_path(
+        get_api_path(r'callback/analysis-automatic-summary/$'),
+        AnalysisAutomaticSummaryCallbackView.as_view(),
+        name='analysis_automatic_summary_callback',
+    ),
+    re_path(
+        get_api_path(r'callback/analysis-automatic-ngram/$'),
+        AnalyticalStatementNGramCallbackView.as_view(),
+        name='analysis_automatic_ngram_callback',
     ),
 
     # Combined API View

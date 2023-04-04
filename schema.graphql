@@ -19,6 +19,20 @@ type AdminLevelType {
   boundsFile: FileFieldType
 }
 
+input AnalysisAutomaticSummaryCreateInputType {
+  entriesId: [ID!]
+}
+
+type AnalysisAutomaticSummaryType {
+  id: ID!
+  summary: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  status: AutomaticSummaryStatusEnum!
+}
+
 type AnalysisFrameworkDetailType {
   id: ID!
   title: String!
@@ -280,6 +294,28 @@ type AnalysisPublicationDateType {
   endDate: Date!
 }
 
+type AnalysisTopicModelClusterType {
+  id: ID!
+  entries: [EntryType]!
+}
+
+input AnalysisTopicModelCreateInputType {
+  analysisPillar: ID!
+  additionalFilters: EntriesFilterDataInputType
+}
+
+type AnalysisTopicModelType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  status: TopicModelStatusEnum!
+  clusters: [AnalysisTopicModelClusterType]!
+  additionalFilters: EntriesFilterDataType
+  analysisPillar: ID!
+}
+
 type AnalysisType {
   id: ID!
   title: String!
@@ -327,6 +363,35 @@ type AnalyticalStatementListType {
   totalCount: Int
   page: Int
   pageSize: Int
+}
+
+input AnalyticalStatementNGramCreateInputType {
+  entriesId: [ID!]
+}
+
+type AnalyticalStatementNGramDataType {
+  word: String!
+  count: Int!
+}
+
+enum AnalyticalStatementNGramStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILED
+  SEND_FAILED
+}
+
+type AnalyticalStatementNGramType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  status: AnalyticalStatementNGramStatusEnum!
+  unigrams: [AnalyticalStatementNGramDataType]!
+  bigrams: [AnalyticalStatementNGramDataType]!
+  trigrams: [AnalyticalStatementNGramDataType]!
 }
 
 type AnalyticalStatementType {
@@ -463,6 +528,14 @@ type AttributeType {
   widgetType: WidgetWidgetTypeEnum!
   widgetTypeDisplay: EnumDescription!
   geoSelectedOptions: [ProjectGeoAreaType!]
+}
+
+enum AutomaticSummaryStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILED
+  SEND_FAILED
 }
 
 input BulkAnalysisFrameworkMembershipInputType {
@@ -2187,6 +2260,9 @@ type ProjectDetailType {
   analysisPillars(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], analyses: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarListType
   analyticalStatement(id: ID!): AnalyticalStatementType
   analyticalStatements(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalyticalStatementListType
+  analysisTopicModel(id: ID!): AnalysisTopicModelType
+  analysisAutomaticSummary(id: ID!): AnalysisAutomaticSummaryType
+  analysisAutomaticNgram(id: ID!): AnalyticalStatementNGramType
   assessment(id: ID!): AssessmentType
   assessments(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentListType
   reviewComment(id: ID!): EntryReviewCommentDetailType
@@ -2305,9 +2381,12 @@ type ProjectMutationType {
   id: ID!
   title: String!
   analysisPillarUpdate(data: AnalysisPillarUpdateInputType!, id: ID!): UpdateAnalysisPillar
-  discardedEntryCreate(data: DiscardedEntryCreateInputType!, id: ID!): CreateAnalysisPillarDiscardedEntry
-  discardedEntryUpdate(data: DiscardedEntryUpdateInputType!): UpdateAnalysisPillarDiscardedEntry
+  discardedEntryCreate(data: DiscardedEntryCreateInputType!): CreateAnalysisPillarDiscardedEntry
+  discardedEntryUpdate(data: DiscardedEntryUpdateInputType!, id: ID!): UpdateAnalysisPillarDiscardedEntry
   discardedEntryDelete(id: ID!): DeleteAnalysisPillarDiscardedEntry
+  triggerTopicModel(data: AnalysisTopicModelCreateInputType!): TriggerAnalysisTopicModel
+  triggerAutomaticSummary(data: AnalysisAutomaticSummaryCreateInputType!): TriggerAnalysisAutomaticSummary
+  triggerAutomaticNgram(data: AnalyticalStatementNGramCreateInputType!): TriggerAnalysisAnalyticalStatementNGram
   exportCreate(data: ExportCreateInputType!): CreateUserExport
   exportUpdate(data: ExportUpdateInputType!, id: ID!): UpdateUserExport
   exportCancel(id: ID!): CancelUserExport
@@ -2832,6 +2911,32 @@ type SectionType {
   tooltip: String
   clientId: String!
   widgets: [WidgetType!]
+}
+
+enum TopicModelStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILED
+  SEND_FAILED
+}
+
+type TriggerAnalysisAnalyticalStatementNGram {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalyticalStatementNGramType
+}
+
+type TriggerAnalysisAutomaticSummary {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisAutomaticSummaryType
+}
+
+type TriggerAnalysisTopicModel {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisTopicModelType
 }
 
 type TriggerUnifiedConnector {

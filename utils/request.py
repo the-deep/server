@@ -1,6 +1,6 @@
 import requests
 from dataclasses import dataclass, field
-from typing import Union
+from typing import Union, Dict, Callable
 
 from django.core.files.base import ContentFile
 
@@ -19,6 +19,7 @@ def requesthelper_ignore_error(func):
 class RequestHelper:
     url: str
     ignore_error: bool = False
+    custom_error_handler: Union[Callable, None] = None
     response: Union[None, requests.Response] = field(init=False, repr=False)
     error_on_response: Union[bool, None] = field(init=False)
 
@@ -33,10 +34,12 @@ class RequestHelper:
         try:
             self.response = requests.get(self.url)
             self.error_on_response = False
-        except Exception:
+        except Exception as e:
             self.error_on_response = True
+            if self.custom_error_handler:
+                self.custom_error_handler(e)
             if not self.ignore_error:
-                raise
+                raise e
         return self
 
     @requesthelper_ignore_error
@@ -50,3 +53,8 @@ class RequestHelper:
             if sanitize:
                 return self.sanitize_text(self.response.text)
             return self.response.text
+
+    @requesthelper_ignore_error
+    def json(self) -> Union[Dict, None]:
+        if self.response:
+            return self.response.json()

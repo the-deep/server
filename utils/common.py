@@ -521,9 +521,11 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 
-def get_full_media_url(media_path):
+def get_full_media_url(media_path, file_system_domain=None):
     if StorageClass == FileSystemStorage:
-        return f"{settings.HTTP_PROTOCOL}://{settings.DJANGO_API_HOST}{media_path}"
+        if not file_system_domain:
+            return f"{settings.HTTP_PROTOCOL}://{settings.DJANGO_API_HOST}{media_path}"
+        return f"{file_system_domain}{media_path}"
     # With s3 storage
     return media_path
 
@@ -580,3 +582,9 @@ def graphene_cache(cache_key, cache_key_gen=None, timeout=60):
         _caller.__module__ = func.__module__
         return _caller
     return _dec
+
+
+def generate_sha256(text: str):
+    m = hashlib.sha256()
+    m.update(text.encode('utf-8'))
+    return m.hexdigest()
