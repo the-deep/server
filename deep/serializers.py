@@ -114,7 +114,7 @@ class URLCachedFileField(serializers.FileField):
 # required=False List Integer Field
 def IdListField():
     return serializers.ListField(
-        child=serializers.IntegerField(),
+        child=IntegerIDField(),
         default=list,
         allow_empty=True,
     )

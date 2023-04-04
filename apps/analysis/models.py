@@ -1,12 +1,18 @@
 import copy
+import json
+from datetime import timedelta
 
 from django.db import models
 from django.db.models.functions import JSONObject
 from django.db import connection as django_db_connection
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+from django.contrib.postgres.fields import ArrayField
 
-from project.mixins import ProjectEntityMixin
+from utils.common import generate_sha256
 from deep.number_generator import client_id_generator
+from deep.filter_set import get_dummy_request
+from project.mixins import ProjectEntityMixin
 from user.models import User
 from project.models import Project
 from entry.models import Entry
@@ -287,6 +293,19 @@ class AnalysisPillar(UserResource):
     def can_modify(self, user):
         return self.analysis.can_modify(user)
 
+    def get_entries_qs(self, queryset=None, only_discarded=False):
+        _queryset = queryset
+        if _queryset is None:
+            _queryset = Entry.objects.all()
+        _queryset = _queryset.filter(
+            project=self.analysis.project_id,
+            lead__published_on__lte=self.analysis.end_date,
+        )
+        discarded_entries_qs = DiscardedEntry.objects.filter(analysis_pillar=self).values('entry')
+        if only_discarded:
+            return _queryset.filter(id__in=discarded_entries_qs)
+        return _queryset.exclude(id__in=discarded_entries_qs)
+
     @classmethod
     def annotate_for_analysis_pillar_summary(cls, qs):
         analytical_statement_prefech = models.Prefetch(
@@ -413,3 +432,107 @@ class AnalyticalStatementEntry(UserResource):
 
     class Meta:
         ordering = ('order',)
+
+
+# NLP Trigger Model -- Used as cache and tracking async data calculation
+def entries_file_upload_to(instance, filename: str) -> str:
+    return f'analysis/{type(instance).__name__.lower()}/entries/{filename}'
+
+
+class TopicModel(UserResource, models.Model):
+    class Status(models.IntegerChoices):
+        PENDING = 0, 'Pending'
+        STARTED = 1, 'Started'
+        SUCCESS = 2, 'Success'
+        FAILED = 3, 'Failed'
+        SEND_FAILED = 4, 'Send Failed'
+
+    entries_file = models.FileField(upload_to=entries_file_upload_to, max_length=255)
+    status = models.PositiveSmallIntegerField(choices=Status.choices, default=Status.PENDING)
+
+    analysis_pillar = models.ForeignKey(AnalysisPillar, on_delete=models.CASCADE)
+    additional_filters = models.JSONField(default=dict)
+
+    topicmodelcluster_set: models.QuerySet['TopicModelCluster']
+
+    @staticmethod
+    def _get_entries_qs(analysis_pillar, entry_filters):
+        # Loading here to make sure models are loaded before filters
+        from entry.filter_set import EntryGQFilterSet
+        dummy_request = get_dummy_request(active_project=analysis_pillar.analysis.project_id)
+        return EntryGQFilterSet(
+            queryset=analysis_pillar.get_entries_qs(),  # Queryset from AnalysisPillar
+            data=entry_filters,  # User Defined filter
+            request=dummy_request,
+        ).qs
+
+    def get_entries_qs(self):
+        return self._get_entries_qs(self.analysis_pillar, self.additional_filters)
+
+
+class TopicModelCluster(models.Model):
+    id: int
+    topic_model = models.ForeignKey(TopicModel, on_delete=models.CASCADE)
+    entries = models.ManyToManyField(Entry)
+
+
+class EntriesCollectionNlpTriggerBase(UserResource, models.Model):
+    class Status(models.IntegerChoices):
+        PENDING = 0, 'Pending'
+        STARTED = 1, 'Started'
+        SUCCESS = 2, 'Success'
+        FAILED = 3, 'Failed'
+        SEND_FAILED = 4, 'Send Failed'
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    entries_id = ArrayField(models.IntegerField())
+    entries_hash = models.CharField(max_length=256, db_index=True)   # Generated using entries_id
+    entries_file = models.FileField(upload_to=entries_file_upload_to, max_length=255)
+    status = models.PositiveSmallIntegerField(choices=Status.choices, default=Status.PENDING)
+
+    CACHE_THRESHOLD_HOURS = 3
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def get_existing(cls, entries_id):
+        threshold = timezone.now() - timedelta(hours=cls.CACHE_THRESHOLD_HOURS)
+        entries_hash = cls.get_entry_hash(entries_id)
+        return cls.objects.filter(
+            entries_hash=entries_hash,
+            created_at__gte=threshold,
+        ).exclude(
+            status__in=[
+                cls.Status.FAILED,
+                cls.Status.SEND_FAILED,
+            ],
+        ).first()
+
+    @staticmethod
+    def get_valid_entries_id(project_id, entries_id):
+        return list(
+            Entry.objects.filter(
+                project=project_id,
+                id__in=entries_id,
+            ).order_by('id').values_list('id', flat=True)
+        )
+
+    @staticmethod
+    def get_entry_hash(entries_id):
+        return generate_sha256(json.dumps(entries_id))
+
+    def save(self, *args, **kwargs):
+        self.entries_hash = self.get_entry_hash(self.entries_id)
+        return super().save(*args, **kwargs)
+
+
+class AutomaticSummary(EntriesCollectionNlpTriggerBase):
+    summary = models.TextField()
+
+
+class AnalyticalStatementNGram(EntriesCollectionNlpTriggerBase):
+    # Structure: {keyword: count}
+    unigrams = models.JSONField(default=dict)
+    bigrams = models.JSONField(default=dict)
+    trigrams = models.JSONField(default=dict)

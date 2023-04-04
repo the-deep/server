@@ -7,15 +7,27 @@ from utils.graphene.mutation import (
 )
 from deep.permissions import ProjectPermissions as PP
 
-from .models import AnalysisPillar, DiscardedEntry
+from .models import (
+    AnalysisPillar,
+    DiscardedEntry,
+    TopicModel,
+    AutomaticSummary,
+    AnalyticalStatementNGram,
+)
 from .schema import (
     get_analysis_pillar_qs,
     AnalysisPillarType,
     AnalysisPillarDiscardedEntryType,
+    AnalysisTopicModelType,
+    AnalysisAutomaticSummaryType,
+    AnalyticalStatementNGramType,
 )
 from .serializers import (
     AnalysisPillarGqlSerializer,
     DiscardedEntryGqlSerializer,
+    AnalysisTopicModelSerializer,
+    AnalysisAutomaticSummarySerializer,
+    AnalyticalStatementNGramSerializer,
 )
 
 
@@ -34,6 +46,22 @@ DiscardedEntryUpdateInputType = generate_input_type_for_serializer(
     'DiscardedEntryUpdateInputType',
     serializer_class=DiscardedEntryGqlSerializer,
     partial=True,
+)
+
+
+AnalysisTopicModelCreateInputType = generate_input_type_for_serializer(
+    'AnalysisTopicModelCreateInputType',
+    serializer_class=AnalysisTopicModelSerializer,
+)
+
+AnalysisAutomaticSummaryCreateInputType = generate_input_type_for_serializer(
+    'AnalysisAutomaticSummaryCreateInputType',
+    serializer_class=AnalysisAutomaticSummarySerializer,
+)
+
+AnalyticalStatementNGramCreateInputType = generate_input_type_for_serializer(
+    'AnalyticalStatementNGramCreateInputType',
+    serializer_class=AnalyticalStatementNGramSerializer,
 )
 
 
@@ -71,9 +99,8 @@ class UpdateAnalysisPillar(AnalysisPillarMutationMixin, PsGrapheneMutation):
         }
 
 
-class CreateAnalysisPillarDiscardedEntry(DiscardedEntriesMutationMixin, PsGrapheneMutation):
+class CreateAnalysisPillarDiscardedEntry(RequiredPermissionMixin, PsGrapheneMutation):
     class Arguments:
-        id = graphene.ID(required=True)
         data = DiscardedEntryCreateInputType(required=True)
     model = DiscardedEntry
     serializer_class = DiscardedEntryGqlSerializer
@@ -82,6 +109,7 @@ class CreateAnalysisPillarDiscardedEntry(DiscardedEntriesMutationMixin, PsGraphe
 
 class UpdateAnalysisPillarDiscardedEntry(DiscardedEntriesMutationMixin, PsGrapheneMutation):
     class Arguments:
+        id = graphene.ID(required=True)
         data = DiscardedEntryUpdateInputType(required=True)
     model = DiscardedEntry
     serializer_class = DiscardedEntryGqlSerializer
@@ -95,6 +123,31 @@ class DeleteAnalysisPillarDiscardedEntry(DiscardedEntriesMutationMixin, PsDelete
     result = graphene.Field(AnalysisPillarDiscardedEntryType)
 
 
+# NLP Trigger mutations
+class TriggerAnalysisTopicModel(RequiredPermissionMixin, PsGrapheneMutation):
+    class Arguments:
+        data = AnalysisTopicModelCreateInputType(required=True)
+    model = TopicModel
+    serializer_class = AnalysisTopicModelSerializer
+    result = graphene.Field(AnalysisTopicModelType)
+
+
+class TriggerAnalysisAutomaticSummary(RequiredPermissionMixin, PsGrapheneMutation):
+    class Arguments:
+        data = AnalysisAutomaticSummaryCreateInputType(required=True)
+    model = AutomaticSummary
+    serializer_class = AnalysisAutomaticSummarySerializer
+    result = graphene.Field(AnalysisAutomaticSummaryType)
+
+
+class TriggerAnalysisAnalyticalStatementNGram(RequiredPermissionMixin, PsGrapheneMutation):
+    class Arguments:
+        data = AnalyticalStatementNGramCreateInputType(required=True)
+    model = AnalyticalStatementNGram
+    serializer_class = AnalyticalStatementNGramSerializer
+    result = graphene.Field(AnalyticalStatementNGramType)
+
+
 class Mutation():
     # Analysis Pillar
     analysis_pillar_update = UpdateAnalysisPillar.Field()
@@ -102,3 +155,7 @@ class Mutation():
     discarded_entry_create = CreateAnalysisPillarDiscardedEntry.Field()
     discarded_entry_update = UpdateAnalysisPillarDiscardedEntry.Field()
     discarded_entry_delete = DeleteAnalysisPillarDiscardedEntry.Field()
+    # NLP Trigger mutations
+    trigger_topic_model = TriggerAnalysisTopicModel.Field()
+    trigger_automatic_summary = TriggerAnalysisAutomaticSummary.Field()
+    trigger_automatic_ngram = TriggerAnalysisAnalyticalStatementNGram.Field()

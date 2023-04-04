@@ -8,6 +8,9 @@ from deepl_integration.handlers import (
     AssistedTaggingDraftEntryHandler,
     LeadExtractionHandler,
     UnifiedConnectorLeadHandler,
+    AnalysisTopicModelHandler,
+    AnalysisAutomaticSummaryHandler,
+    AnalyticalStatementNGramHandler,
 )
 
 from deduplication.tasks.indexing import index_lead_and_calculate_duplicates
@@ -20,14 +23,14 @@ from lead.models import Lead
 
 
 class BaseCallbackSerializer(serializers.Serializer):
-    NLP_HANDLER: Type[BaseHandler]
+    nlp_handler: Type[BaseHandler]
 
     client_id = serializers.CharField()
 
     def validate(self, data):
         client_id = data['client_id']
         try:
-            data['object'] = self.NLP_HANDLER.get_object_using_client_id(client_id)
+            data['object'] = self.nlp_handler.get_object_using_client_id(client_id)
         except Exception as e:
             raise serializers.ValidationError({
                 'client_id': str(e),
@@ -51,7 +54,7 @@ class LeadExtractCallbackSerializer(BaseCallbackSerializer):
     total_words_count = serializers.IntegerField(required=False, default=0)
     total_pages = serializers.IntegerField(required=False, default=0)
 
-    NLP_HANDLER = LeadExtractionHandler
+    nlp_handler = LeadExtractionHandler
 
     def validate(self, data):
         data = super().validate(data)
@@ -73,7 +76,7 @@ class LeadExtractCallbackSerializer(BaseCallbackSerializer):
         success = data['extraction_status'] == 1
         lead = data['object']   # Added from validate
         if success:
-            lead = LeadExtractionHandler.save_data(
+            lead = self.nlp_handler.save_data(
                 lead,
                 data['text_path'],
                 data.get('images_path', [])[:10],   # TODO: Support for more images, too much image will error.
@@ -103,7 +106,7 @@ class UnifiedConnectorLeadExtractCallbackSerializer(BaseCallbackSerializer):
     total_words_count = serializers.IntegerField(required=False, default=0)
     total_pages = serializers.IntegerField(required=False, default=0)
 
-    NLP_HANDLER = UnifiedConnectorLeadHandler
+    nlp_handler = UnifiedConnectorLeadHandler
 
     def validate(self, data):
         data = super().validate(data)
@@ -124,7 +127,7 @@ class UnifiedConnectorLeadExtractCallbackSerializer(BaseCallbackSerializer):
         success = data['extraction_status'] == 1
         connector_lead = data['object']   # Added from validate
         if success:
-            return UnifiedConnectorLeadHandler.save_data(
+            return self.nlp_handler.save_data(
                 connector_lead,
                 data['text_path'],
                 data.get('images_path', [])[:10],  # TODO: Support for more images, to much image will error.
@@ -173,10 +176,35 @@ class AssistedTaggingModelPredictionCallbackSerializer(serializers.Serializer):
 class AssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializer):
     model_preds = AssistedTaggingModelPredictionCallbackSerializer(many=True)
 
-    NLP_HANDLER = AssistedTaggingDraftEntryHandler
+    nlp_handler = AssistedTaggingDraftEntryHandler
 
     def create(self, validated_data):
         draft_entry = validated_data['object']
         if draft_entry.prediction_status == DraftEntry.PredictionStatus.DONE:
             return draft_entry
-        return AssistedTaggingDraftEntryHandler.save_data(draft_entry, validated_data)
+        return self.nlp_handler.save_data(draft_entry, validated_data)
+
+
+# -- Analysis
+class EntriesCollectionBaseCallbackSerializer(BaseCallbackSerializer):
+    def create(self, validated_data):
+        obj = validated_data['object']
+        return self.nlp_handler.save_data(
+            obj,
+            validated_data['presigned_s3_url'],
+        )
+
+
+class AnalysisTopicModelCallbackSerializer(EntriesCollectionBaseCallbackSerializer):
+    nlp_handler = AnalysisTopicModelHandler
+    presigned_s3_url = serializers.URLField()
+
+
+class AnalysisAutomaticSummaryCallbackSerializer(EntriesCollectionBaseCallbackSerializer):
+    nlp_handler = AnalysisAutomaticSummaryHandler
+    presigned_s3_url = serializers.URLField()
+
+
+class AnalyticalStatementNGramCallbackSerializer(EntriesCollectionBaseCallbackSerializer):
+    nlp_handler = AnalyticalStatementNGramHandler
+    presigned_s3_url = serializers.URLField()

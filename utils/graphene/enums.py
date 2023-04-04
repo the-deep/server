@@ -74,7 +74,12 @@ def get_enum_name_from_django_field(
                 model_name = model_name or field.model.__name__
             serializer_name = _get_serializer_name(field)
             field_name = field_name or field.base_field.name
-        elif type(field) in [models.CharField, models.SmallIntegerField, models.IntegerField]:
+        elif type(field) in [
+            models.CharField,
+            models.SmallIntegerField,
+            models.IntegerField,
+            models.PositiveSmallIntegerField,
+        ]:
             if _have_model(field):
                 model_name = model_name or field.model.__name__
             serializer_name = _get_serializer_name(field)

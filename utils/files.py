@@ -19,4 +19,4 @@ def generate_json_file_for_upload(data: Union[Dict, List, Tuple], **kwargs):
             cls=DjangoJSONEncoder,
             **kwargs,
         ).encode('utf-8'),
-    ),
+    )

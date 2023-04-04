@@ -13,6 +13,7 @@ from user_resource.schema import UserResourceMixin, resolve_user_field
 from lead.models import Lead
 from entry.models import Entry
 from entry.schema import get_entry_qs, EntryType
+from entry.filter_set import EntriesFilterDataType
 from user.schema import UserType
 
 from .models import (
@@ -21,8 +22,17 @@ from .models import (
     AnalyticalStatement,
     AnalyticalStatementEntry,
     DiscardedEntry,
+    TopicModel,
+    TopicModelCluster,
+    AutomaticSummary,
+    AnalyticalStatementNGram,
 )
-from .enums import DiscardedEntryTagTypeEnum
+from .enums import (
+    DiscardedEntryTagTypeEnum,
+    TopicModelStatusEnum,
+    AutomaticSummaryStatusEnum,
+    AnalyticalStatementNGramStatusEnum,
+)
 from .filter_set import (
     AnalysisGQFilterSet,
     AnalysisPillarGQFilterSet,
@@ -40,7 +50,7 @@ def _get_qs(model, info, project_field):
     # Generate queryset according to permission
     if PP.check_permission(info, PP.Permission.VIEW_ENTRY):
         return qs
-    return qs.objects.none()
+    return qs.model.objects.none()
 
 
 def get_analysis_qs(info):
@@ -96,7 +106,7 @@ class AnalyticalStatementType(UserResourceMixin, ClientIdMixin, DjangoObjectType
 
     @staticmethod
     def resolve_entries_count(root, info, **_):
-        return info.context.dl.analysis.analysis_statement_analyzed_entries.load(root.id)
+        return info.context.dl.analysis.analytical_statement_analyzed_entries.load(root.id)
 
     @staticmethod
     def resolve_entries(root, info, **_):
@@ -187,15 +197,12 @@ class AnalysisPillarType(ClientIdMixin, UserResourceMixin, DjangoObjectType):
 
     @staticmethod
     def resolve_entries(root, info, **kwargs):
+        # This is the base queryset using Pillar, additional filters are applied through DjangoPaginatedListObjectField
         # filtering out the entries whose lead published_on date is less than analysis end_date
-        queryset = get_entry_qs(info).filter(
-            project=root.analysis.project_id,
-            lead__published_on__lte=root.analysis.end_date
+        return root.get_entries_qs(
+            queryset=get_entry_qs(info),
+            only_discarded=kwargs.get('discarded'),  # NOTE: From AnalysisPillarEntryGQFilterSet.discarded
         )
-        discarded_entries_qs = DiscardedEntry.objects.filter(analysis_pillar=root).values('entry')
-        if kwargs.get('discarded'):  # NOTE: From AnalysisPillarEntryGQFilterSet.discarded
-            return queryset.filter(id__in=discarded_entries_qs)
-        return queryset.exclude(id__in=discarded_entries_qs)
 
 
 class AnalysisType(UserResourceMixin, DjangoObjectType):
@@ -355,6 +362,99 @@ class AnalyticalStatementListType(CustomDjangoListObjectType):
         filterset_class = AnalyticalStatementGQFilterSet
 
 
+# NLP Trigger queries
+class AnalysisTopicModelClusterType(DjangoObjectType):
+    entries = graphene.List(EntryType, required=True)
+
+    class Meta:
+        model = TopicModelCluster
+        only_fields = (
+            'id',
+        )
+
+    @staticmethod
+    def resolve_entries(root: TopicModelCluster, info, **_):
+        return info.context.dl.analysis.topic_model_cluster_entries.load(root.id)
+
+
+class AnalysisTopicModelType(UserResourceMixin, DjangoObjectType):
+    status = graphene.Field(TopicModelStatusEnum, required=True)
+    clusters = graphene.List(AnalysisTopicModelClusterType, required=True)
+    additional_filters = graphene.Field(EntriesFilterDataType)
+    analysis_pillar = graphene.ID(source='analysis_pillar_id', required=True)
+
+    class Meta:
+        model = TopicModel
+        only_fields = (
+            'id',
+        )
+
+    @staticmethod
+    def get_custom_queryset(queryset, info, **_):
+        return _get_qs(TopicModel, info, 'analysis_pillar__analysis__project')
+
+    @staticmethod
+    def resolve_clusters(root: TopicModel, info, **_):
+        return root.topicmodelcluster_set.all()
+
+
+class AnalysisAutomaticSummaryType(UserResourceMixin, DjangoObjectType):
+    class Meta:
+        model = AutomaticSummary
+        only_fields = (
+            'id',
+            'summary',
+        )
+
+    status = graphene.Field(AutomaticSummaryStatusEnum, required=True)
+
+    @staticmethod
+    def get_custom_queryset(queryset, info, **_):
+        return _get_qs(AutomaticSummary, info, 'project')
+
+
+class AnalyticalStatementNGramType(UserResourceMixin, DjangoObjectType):
+    class Meta:
+        model = AnalyticalStatementNGram
+        only_fields = (
+            'id',
+        )
+
+    class AnalyticalStatementNGramDataType(graphene.ObjectType):
+        word = graphene.String(required=True)
+        count = graphene.Int(required=True)
+
+    status = graphene.Field(AnalyticalStatementNGramStatusEnum, required=True)
+
+    # Ngrams data
+    unigrams = graphene.List(AnalyticalStatementNGramDataType, required=True)
+    bigrams = graphene.List(AnalyticalStatementNGramDataType, required=True)
+    trigrams = graphene.List(AnalyticalStatementNGramDataType, required=True)
+
+    @staticmethod
+    def get_custom_queryset(queryset, info, **_):
+        return _get_qs(AnalyticalStatementNGram, info, 'project')
+
+    @staticmethod
+    def render_grams(dict_value):
+        return [
+            dict(word=word, count=count)
+            for word, count in dict_value.items()
+        ]
+
+    @classmethod
+    def resolve_unigrams(cls, root: AnalyticalStatementNGram, info, **_):
+        return cls.render_grams(root.unigrams)
+
+    @classmethod
+    def resolve_bigrams(cls, root: AnalyticalStatementNGram, info, **_):
+        return cls.render_grams(root.bigrams)
+
+    @classmethod
+    def resolve_trigrams(cls, root: AnalyticalStatementNGram, info, **_):
+        return cls.render_grams(root.trigrams)
+
+
 class Query:
     analysis_overview = graphene.Field(AnalysisOverviewType)
     analysis = DjangoObjectField(AnalysisType)
@@ -382,6 +482,11 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
+
+    # NLP queries
+    analysis_topic_model = DjangoObjectField(AnalysisTopicModelType)
+    analysis_automatic_summary = DjangoObjectField(AnalysisAutomaticSummaryType)
+    analysis_automatic_ngram = DjangoObjectField(AnalyticalStatementNGramType)
 
     @staticmethod
     def resolve_analysis_overview(*_):

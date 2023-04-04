@@ -251,6 +251,10 @@ class BaseGrapheneMutation(graphene.Mutation):
     @classmethod
     def _save_item(cls, item, info, **kwargs):
         id = kwargs.pop('id', None)
+        base_context = {
+            'gql_info': info,
+            'request': info.context,
+        }
         if id:
             instance, errors = cls.get_object(info, id=id, **kwargs)
             if errors:
@@ -258,13 +262,13 @@ class BaseGrapheneMutation(graphene.Mutation):
             serializer = cls.serializer_class(
                 instance=instance,
                 data=item,
-                context=cls.get_serializer_context(instance, {'request': info.context}),
+                context=cls.get_serializer_context(instance, base_context),
                 partial=True,
             )
         else:
             serializer = cls.serializer_class(
                 data=item,
-                context=cls.get_serializer_context(None, {'request': info.context}),
+                context=cls.get_serializer_context(None, base_context),
             )
         errors = mutation_is_not_valid(serializer)
         if errors:
