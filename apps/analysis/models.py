@@ -18,6 +18,7 @@ from project.models import Project
 from entry.models import Entry
 from lead.models import Lead
 from user_resource.models import UserResource
+from deepl_integration.models import DeeplTrackBaseModel
 
 
 class Analysis(UserResource, ProjectEntityMixin):
@@ -439,16 +440,8 @@ def entries_file_upload_to(instance, filename: str) -> str:
     return f'analysis/{type(instance).__name__.lower()}/entries/{filename}'
 
 
-class TopicModel(UserResource, models.Model):
-    class Status(models.IntegerChoices):
-        PENDING = 0, 'Pending'
-        STARTED = 1, 'Started'
-        SUCCESS = 2, 'Success'
-        FAILED = 3, 'Failed'
-        SEND_FAILED = 4, 'Send Failed'
-
+class TopicModel(UserResource, DeeplTrackBaseModel):
     entries_file = models.FileField(upload_to=entries_file_upload_to, max_length=255)
-    status = models.PositiveSmallIntegerField(choices=Status.choices, default=Status.PENDING)
 
     analysis_pillar = models.ForeignKey(AnalysisPillar, on_delete=models.CASCADE)
     additional_filters = models.JSONField(default=dict)
@@ -476,19 +469,11 @@ class TopicModelCluster(models.Model):
     entries = models.ManyToManyField(Entry)
 
 
-class EntriesCollectionNlpTriggerBase(UserResource, models.Model):
-    class Status(models.IntegerChoices):
-        PENDING = 0, 'Pending'
-        STARTED = 1, 'Started'
-        SUCCESS = 2, 'Success'
-        FAILED = 3, 'Failed'
-        SEND_FAILED = 4, 'Send Failed'
-
+class EntriesCollectionNlpTriggerBase(UserResource, DeeplTrackBaseModel):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     entries_id = ArrayField(models.IntegerField())
     entries_hash = models.CharField(max_length=256, db_index=True)   # Generated using entries_id
     entries_file = models.FileField(upload_to=entries_file_upload_to, max_length=255)
-    status = models.PositiveSmallIntegerField(choices=Status.choices, default=Status.PENDING)
 
     CACHE_THRESHOLD_HOURS = 3
 

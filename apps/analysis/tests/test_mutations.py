@@ -3,6 +3,7 @@ from unittest import mock
 from utils.graphene.tests import GraphQLTestCase
 
 from deepl_integration.handlers import AnalysisAutomaticSummaryHandler
+from deepl_integration.serializers import DeeplServerBaseCallbackSerializer
 
 from user.factories import UserFactory
 from project.factories import ProjectFactory
@@ -274,6 +275,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         data = {
             'client_id': 'invalid-id',
             'presigned_s3_url': 'https://random-domain.com/random-url.json',
+            'status': DeeplServerBaseCallbackSerializer.Status.SUCCESS.value,
         }
         response = self.client.post(callback_url, data)
         self.assert_400(response)
@@ -302,6 +304,14 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
             {'entries': [dict(id=str(entry.id), excerpt=entry.excerpt) for entry in lead2_entries[:1]]},
             {'entries': [dict(id=str(entry.id), excerpt=entry.excerpt) for entry in lead2_entries[1:]]},
         ]
+
+        # With failed status
+        data['status'] = DeeplServerBaseCallbackSerializer.Status.FAILED.value
+        response = self.client.post(callback_url, data)
+        self.assert_200(response)
+
+        topic_model.refresh_from_db()
+        assert topic_model.status == TopicModel.Status.FAILED
 
     @mock.patch('deepl_integration.handlers.RequestHelper')
     @mock.patch('deepl_integration.handlers.requests')
@@ -397,6 +407,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         data = {
             'client_id': 'invalid-id',
             'presigned_s3_url': 'https://random-domain.com/random-url.txt',
+            'status': DeeplServerBaseCallbackSerializer.Status.SUCCESS.value,
         }
         response = self.client.post(callback_url, data)
         self.assert_400(response)
@@ -422,6 +433,14 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         response_result = _mutation_check(minput, okay=True)['data']['project']['triggerAutomaticSummary']['result']
         assert response_result['id'] != a_summary_id
         assert response_result['summary'] != SAMPLE_SUMMARY_TEXT
+
+        # With failed status
+        data['status'] = DeeplServerBaseCallbackSerializer.Status.FAILED.value
+        response = self.client.post(callback_url, data)
+        self.assert_200(response)
+
+        a_summary.refresh_from_db()
+        assert a_summary.status == AutomaticSummary.Status.FAILED
 
     @mock.patch('deepl_integration.handlers.RequestHelper')
     @mock.patch('deepl_integration.handlers.requests')
@@ -528,6 +547,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         data = {
             'client_id': 'invalid-id',
             'presigned_s3_url': 'https://random-domain.com/random-url.json',
+            'status': DeeplServerBaseCallbackSerializer.Status.SUCCESS.value,
         }
         response = self.client.post(callback_url, data)
         self.assert_400(response)
@@ -565,3 +585,11 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         assert response_result['unigrams'] == []
         assert response_result['bigrams'] == []
         assert response_result['trigrams'] == []
+
+        # With failed status
+        data['status'] = DeeplServerBaseCallbackSerializer.Status.FAILED.value
+        response = self.client.post(callback_url, data)
+        self.assert_200(response)
+
+        a_ngram.refresh_from_db()
+        assert a_ngram.status == AnalyticalStatementNGram.Status.FAILED

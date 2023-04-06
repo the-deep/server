@@ -635,24 +635,44 @@ if IN_AWS_COPILOT_ECS:
         }
     }
 else:
+    def log_render_extra_context(record):
+        """
+        Append extra->context to logs
+        """
+        if hasattr(record, 'context'):
+            record.context = f' - {str(record.context)}'
+        else:
+            record.context = ''
+        return True
+
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
+        'filters': {
+            'render_extra_context': {
+                '()': 'django.utils.log.CallbackFilter',
+                'callback': log_render_extra_context,
+            }
+        },
         'formatters': {
             'colored_verbose': {
                 '()': 'colorlog.ColoredFormatter',
-                'format': "%(log_color)s%(levelname)-8s%(red)s%(module)-8s%(reset)s %(asctime)s %(blue)s%(message)s"
+                'format': (
+                    "%(log_color)s%(levelname)-8s%(red)s%(module)-8s%(reset)s %(asctime)s %(blue)s%(message)s %(context)s"
+                )
             },
         },
         'handlers': {
             'console': {
                 'level': 'INFO',
                 'class': 'logging.StreamHandler',
+                'filters': ['render_extra_context'],
             },
             'colored_console': {
                 'level': 'INFO',
                 'class': 'logging.StreamHandler',
-                'formatter': 'colored_verbose'
+                'formatter': 'colored_verbose',
+                'filters': ['render_extra_context'],
             },
         },
         'loggers': {
