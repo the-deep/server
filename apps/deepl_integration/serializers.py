@@ -1,7 +1,7 @@
 from typing import Type
 from rest_framework import serializers
 
-from django.db import transaction
+from django.db import transaction, models
 
 from deepl_integration.handlers import (
     BaseHandler,
@@ -20,6 +20,13 @@ from assisted_tagging.models import (
 )
 from unified_connector.models import ConnectorLead
 from lead.models import Lead
+from analysis.models import (
+    TopicModel,
+    AutomaticSummary,
+    AnalyticalStatementNGram,
+)
+
+from .models import DeeplTrackBaseModel
 
 
 class BaseCallbackSerializer(serializers.Serializer):
@@ -182,29 +189,49 @@ class AssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializ
         draft_entry = validated_data['object']
         if draft_entry.prediction_status == DraftEntry.PredictionStatus.DONE:
             return draft_entry
-        return self.nlp_handler.save_data(draft_entry, validated_data)
-
-
-# -- Analysis
-class EntriesCollectionBaseCallbackSerializer(BaseCallbackSerializer):
-    def create(self, validated_data):
-        obj = validated_data['object']
         return self.nlp_handler.save_data(
-            obj,
-            validated_data['presigned_s3_url'],
+            draft_entry,
+            validated_data,
         )
 
 
+# -- Analysis
+class DeeplServerBaseCallbackSerializer(BaseCallbackSerializer):
+    class Status(models.IntegerChoices):
+        # NOTE: Defined by NLP
+        SUCCESS = 2, 'Success'
+        FAILED = 3, 'Failed'
+        INPUT_URL_PROCESS_FAILED = 4, 'Input url process failed'
+
+    status = serializers.ChoiceField(choices=Status.choices)
+
+
+class EntriesCollectionBaseCallbackSerializer(DeeplServerBaseCallbackSerializer):
+    model: Type[DeeplTrackBaseModel]
+
+    def create(self, validated_data):
+        obj = validated_data['object']
+        if validated_data['status'] == self.Status.SUCCESS:
+            self.nlp_handler.save_data(obj, validated_data)
+        else:
+            obj.status = self.model.Status.FAILED
+            obj.save(update_fields=('status',))
+        return obj
+
+
 class AnalysisTopicModelCallbackSerializer(EntriesCollectionBaseCallbackSerializer):
+    model = TopicModel
     nlp_handler = AnalysisTopicModelHandler
     presigned_s3_url = serializers.URLField()
 
 
 class AnalysisAutomaticSummaryCallbackSerializer(EntriesCollectionBaseCallbackSerializer):
+    model = AutomaticSummary
     nlp_handler = AnalysisAutomaticSummaryHandler
     presigned_s3_url = serializers.URLField()
 
 
 class AnalyticalStatementNGramCallbackSerializer(EntriesCollectionBaseCallbackSerializer):
+    model = AnalyticalStatementNGram
     nlp_handler = AnalyticalStatementNGramHandler
     presigned_s3_url = serializers.URLField()

@@ -47,6 +47,9 @@ from analysis.models import (
     AnalyticalStatementNGram,
 )
 
+from .models import DeeplTrackBaseModel
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -263,7 +266,6 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
     @classmethod
     def _process_model_preds(cls, model_version, current_tags_map, draft_entry, model_prediction):
         prediction_status = model_prediction['prediction_status']
-        draft_entry.prediction_status = DraftEntry.PredictionStatus.DONE
         if prediction_status == 0:  # If 0 no tags are provided
             return
 
@@ -327,6 +329,7 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
             for prediction in model_preds:
                 model_version = models_version_map[(prediction['model_info']['id'], prediction['model_info']['version'])]
                 cls._process_model_preds(model_version, current_tags_map, draft_entry, prediction)
+            draft_entry.prediction_status = DraftEntry.PredictionStatus.DONE
             draft_entry.save_geo_data()
             draft_entry.save()
         return draft_entry
@@ -593,6 +596,9 @@ class UnifiedConnectorLeadHandler(BaseHandler):
 
 
 class NewNlpServerBaseHandler(BaseHandler):
+    model: Type[DeeplTrackBaseModel]
+    endpoint: str
+
     @classmethod
     def get_callback_url(cls, **kwargs):
         return (
@@ -605,49 +611,65 @@ class NewNlpServerBaseHandler(BaseHandler):
             )
         )
 
+    @classmethod
+    def get_trigger_payload(cls, _: DeeplTrackBaseModel) -> dict:
+        return {}
+
+    @classmethod
+    def send_trigger_request_to_extractor(cls, obj: DeeplTrackBaseModel):
+        # Base payload attributes
+        payload = {
+            'mock': True,   # TODO: Remove - will be handled in NLP side
+            'client_id': cls.get_client_id(obj),
+            'callback_url': cls.get_callback_url(),
+        }
+        # Additional payload attributes
+        payload.update(
+            cls.get_trigger_payload(obj)
+        )
+
+        try:
+            response = requests.post(cls.endpoint, headers=cls.REQUEST_HEADERS, json=payload)
+            if response.status_code == 202:
+                obj.status = cls.model.Status.STARTED
+                obj.save(update_fields=('status',))
+                return True
+        except Exception:
+            logger.error(f'{cls.model.__name__} send failed, Exception occurred!!', exc_info=True)
+        _response = locals().get('response')
+        logger.error(
+            f'{cls.model.__name__} send failed!!',
+            extra={
+                'context': {
+                    'payload': payload,
+                    'response': _response.content if _response else None,
+                    'response_status_code': _response.status_code if _response else None,
+                }
+            }
+        )
+        obj.status = cls.model.Status.SEND_FAILED
+        obj.save(update_fields=('status',))
+
 
 class AnalysisTopicModelHandler(NewNlpServerBaseHandler):
     model = TopicModel
+    endpoint = DeeplServiceEndpoint.ANALYSIS_TOPIC_MODEL
     callback_url_name = 'analysis_topic_model_callback'
 
     @classmethod
-    def send_trigger_request_to_extractor(cls, topic_model: TopicModel):
-        payload = {
-            'mock': True,   # TODO: Remove - will be handled in NLP side
-            'client_id': cls.get_client_id(topic_model),
-            'entries_url': generate_file_url_for_new_deepl_server(topic_model.entries_file),
+    def get_trigger_payload(cls, obj: TopicModel):
+        return {
+            'entries_url': generate_file_url_for_new_deepl_server(obj.entries_file),
             'cluster_size': settings.ANALYTICAL_ENTRIES_COUNT,
             'max_clusters_num': settings.ANALYTICAL_STATEMENT_COUNT,
-            'callback_url': cls.get_callback_url(),
         }
-        try:
-            response = requests.post(
-                DeeplServiceEndpoint.ANALYSIS_TOPIC_MODEL,
-                headers=cls.REQUEST_HEADERS,
-                json=payload,
-            )
-            if response.status_code == 202:
-                topic_model.status = TopicModel.Status.STARTED
-                topic_model.save(update_fields=('status',))
-                return True
-        except Exception:
-            logger.error('Analysis Topic Model send failed, Exception occurred!!', exc_info=True)
-        _response = locals().get('response')
-        logger.error(
-            'Analysis Topic Model send failed!!',
-            extra={
-                'payload': payload,
-                'response': _response.content if _response else None
-            },
-        )
-        topic_model.status = TopicModel.Status.SEND_FAILED
-        topic_model.save(update_fields=('status',))
 
     @staticmethod
     def save_data(
         topic_model: TopicModel,
-        data_url: str,
+        data: dict,
     ):
+        data_url = data['presigned_s3_url']
         entries_data = RequestHelper(url=data_url, custom_error_handler=custom_error_handler).json()
         # Clear existing
         TopicModelCluster.objects.filter(topic_model=topic_model).delete()
@@ -670,104 +692,48 @@ class AnalysisTopicModelHandler(NewNlpServerBaseHandler):
             TopicModelCluster.entries.through.objects.bulk_create(new_cluster_entries)
         topic_model.status = TopicModel.Status.SUCCESS
         topic_model.save()
-        return topic_model
 
 
 class AnalysisAutomaticSummaryHandler(NewNlpServerBaseHandler):
     model = AutomaticSummary
+    endpoint = DeeplServiceEndpoint.ANALYSIS_AUTOMATIC_SUMMARY
     callback_url_name = 'analysis_automatic_summary_callback'
 
     @classmethod
-    def send_trigger_request_to_extractor(cls, a_summary: AutomaticSummary):
-        payload = {
-            'mock': True,   # TODO: Remove - will be handled in NLP side
-            'client_id': cls.get_client_id(a_summary),
-            'entries_url': generate_file_url_for_new_deepl_server(a_summary.entries_file),
-            'callback_url': cls.get_callback_url(),
+    def get_trigger_payload(cls, obj: AutomaticSummary):
+        return {
+            'entries_url': generate_file_url_for_new_deepl_server(obj.entries_file),
         }
-        try:
-            response = requests.post(
-                DeeplServiceEndpoint.ANALYSIS_AUTOMATIC_SUMMARY,
-                headers=cls.REQUEST_HEADERS,
-                json=payload,
-            )
-            if response.status_code == 202:
-                a_summary.status = AutomaticSummary.Status.STARTED
-                a_summary.save(update_fields=('status',))
-                return True
-        except Exception:
-            logger.error('Analysis Automatic summary send failed, Exception occurred!!', exc_info=True)
-        _response = locals().get('response')
-        logger.error(
-            'Analysis Automatic summary send failed!!',
-            extra={
-                'payload': payload,
-                'response': _response.content if _response else None
-            },
-        )
-        a_summary.status = AutomaticSummary.Status.SEND_FAILED
-        a_summary.save(update_fields=('status',))
 
     @staticmethod
     def save_data(
         a_summary: AutomaticSummary,
-        data_url: str,
+        data: dict,
     ):
+        data_url = data['presigned_s3_url']
         summary_text = RequestHelper(url=data_url, custom_error_handler=custom_error_handler).get_text()
         a_summary.status = AutomaticSummary.Status.SUCCESS
         a_summary.summary = summary_text
         a_summary.save()
-        return a_summary
 
 
 class AnalyticalStatementNGramHandler(NewNlpServerBaseHandler):
     model = AnalyticalStatementNGram
+    endpoint = DeeplServiceEndpoint.ANALYSIS_AUTOMATIC_NGRAM
     callback_url_name = 'analysis_automatic_ngram_callback'
 
     @classmethod
-    def send_trigger_request_to_extractor(cls, a_ngram: AnalyticalStatementNGram):
-        payload = {
-            'mock': True,   # TODO: Remove - will be handled in NLP side
-            'client_id': cls.get_client_id(a_ngram),
-            'entries_url': generate_file_url_for_new_deepl_server(a_ngram.entries_file),
-            'callback_url': cls.get_callback_url(),
-            'ngrams_config': {
-                'generate_unigrams': True,
-                'generate_bigrams': True,
-                'generate_trigrams': True,
-                'enable_stopwords': True,
-                'enable_stemming': True,
-                'enable_case_sensitive': True,
-            }
+    def get_trigger_payload(cls, obj: AnalyticalStatementNGram):
+        return {
+            'entries_url': generate_file_url_for_new_deepl_server(obj.entries_file),
         }
-        try:
-            response = requests.post(
-                DeeplServiceEndpoint.ANALYSIS_AUTOMATIC_NGRAM,
-                headers=cls.REQUEST_HEADERS,
-                json=payload,
-            )
-            if response.status_code == 202:
-                a_ngram.status = AnalyticalStatementNGram.Status.STARTED
-                a_ngram.save(update_fields=('status',))
-                return True
-        except Exception:
-            logger.error('Analysis Automatic summary send failed, Exception occurred!!', exc_info=True)
-        _response = locals().get('response')
-        logger.error(
-            'Analysis Automatic summary send failed!!',
-            extra={
-                'payload': payload,
-                'response': _response.content if _response else None
-            },
-        )
-        a_ngram.status = AnalyticalStatementNGram.Status.SEND_FAILED
-        a_ngram.save(update_fields=('status',))
 
     @staticmethod
     def save_data(
         a_ngram: AnalyticalStatementNGram,
-        data_url: str,
+        data: dict,
     ):
+        data_url = data['presigned_s3_url']
         ngram_data = RequestHelper(url=data_url, custom_error_handler=custom_error_handler).json()
         if ngram_data:
             a_ngram.unigrams = ngram_data.get('unigrams') or {}
@@ -775,4 +741,3 @@ class AnalyticalStatementNGramHandler(NewNlpServerBaseHandler):
             a_ngram.trigrams = ngram_data.get('trigrams') or {}
         a_ngram.status = AnalyticalStatementNGram.Status.SUCCESS
         a_ngram.save()
-        return a_ngram
