@@ -637,14 +637,18 @@ class NewNlpServerBaseHandler(BaseHandler):
         except Exception:
             logger.error(f'{cls.model.__name__} send failed, Exception occurred!!', exc_info=True)
         _response = locals().get('response')
+        error_extra_context = {
+            'payload': payload,
+        }
+        if _response is not None:
+            error_extra_context.update({
+                'response': _response.content,
+                'response_status_code': _response.status_code,
+            })
         logger.error(
             f'{cls.model.__name__} send failed!!',
             extra={
-                'context': {
-                    'payload': payload,
-                    'response': _response.content if _response else None,
-                    'response_status_code': _response.status_code if _response else None,
-                }
+                'context': error_extra_context
             }
         )
         obj.status = cls.model.Status.SEND_FAILED
@@ -726,6 +730,7 @@ class AnalyticalStatementNGramHandler(NewNlpServerBaseHandler):
     def get_trigger_payload(cls, obj: AnalyticalStatementNGram):
         return {
             'entries_url': generate_file_url_for_new_deepl_server(obj.entries_file),
+            'ngrams_config': {},
         }
 
     @staticmethod
