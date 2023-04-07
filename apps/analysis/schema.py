@@ -6,6 +6,7 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.enums import EnumDescription
 from utils.common import has_select_related
 from deep.permissions import ProjectPermissions as PP
 from user_resource.schema import UserResourceMixin, resolve_user_field
@@ -121,6 +122,7 @@ class AnalysisPillarDiscardedEntryType(DjangoObjectType):
     analysis_pillar = graphene.ID(source='analysis_pillar_id')
     entry = graphene.Field(EntryType, required=True)
     tag = graphene.Field(DiscardedEntryTagTypeEnum, required=True)
+    tag_display = EnumDescription(source='get_tag_display', required=True)
 
     @staticmethod
     def resolve_entry(root, info, **_):

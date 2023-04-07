@@ -241,6 +241,7 @@ type AnalysisPillarDiscardedEntryType {
   analysisPillar: ID
   entry: EntryType!
   tag: DiscardedEntryTagTypeEnum!
+  tagDisplay: EnumDescription!
 }
 
 type AnalysisPillarEntryListType {
