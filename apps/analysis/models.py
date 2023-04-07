@@ -452,7 +452,7 @@ class TopicModel(UserResource, DeeplTrackBaseModel):
     def _get_entries_qs(analysis_pillar, entry_filters):
         # Loading here to make sure models are loaded before filters
         from entry.filter_set import EntryGQFilterSet
-        dummy_request = get_dummy_request(active_project=analysis_pillar.analysis.project_id)
+        dummy_request = get_dummy_request(active_project=analysis_pillar.analysis.project)
         return EntryGQFilterSet(
             queryset=analysis_pillar.get_entries_qs(),  # Queryset from AnalysisPillar
             data=entry_filters,  # User Defined filter
