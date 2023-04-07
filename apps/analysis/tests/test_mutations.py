@@ -213,7 +213,14 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
 
         minput = dict(
             analysisPillar='0',  # Non existing ID
-            # additional_filters={},
+            additionalFilters=dict(
+                filterableData=[
+                    dict(
+                        filterKey='random-key',
+                        value='random-value',
+                    )
+                ],
+            ),
         )
 
         # -- Without login
