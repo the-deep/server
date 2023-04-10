@@ -7,7 +7,7 @@ class DeeplTrackBaseModel(models.Model):
     """
     class Status(models.IntegerChoices):
         PENDING = 0, 'Pending'
-        STARTED = 1, 'Started'
+        STARTED = 1, 'Started'  # INITIATED in deepl side
         SUCCESS = 2, 'Success'
         FAILED = 3, 'Failed'
         SEND_FAILED = 4, 'Send Failed'

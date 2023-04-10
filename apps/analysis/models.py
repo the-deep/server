@@ -376,6 +376,9 @@ class DiscardedEntry(models.Model):
     def can_modify(self, user):
         return self.analysis_pillar.can_modify(user)
 
+    def can_delete(self, user):
+        return self.can_modify(user)
+
     def __str__(self):
         return f'{self.analysis_pillar} - {self.entry}'
 
