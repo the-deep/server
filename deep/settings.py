@@ -74,6 +74,7 @@ env = environ.Env(
     # DEEPL
     DEEPL_SERVICE_DOMAIN=str,  # http://extractor:8001
     DEEPL_SERVICE_CALLBACK_DOMAIN=str,  # http://web:8000
+    DEEPL_SERVER_TOKEN=str,
     DEEPL_SERVER_DOMAIN=str,  # http://nlp.example.com  -> https://github.com/the-deep-nlp/core-server
     DEEPL_SERVER_CALLBACK_DOMAIN=str,  # http://deep.example.com -> Should be accessible by deepl server
     # Pytest
@@ -899,6 +900,7 @@ DEEPL_SERVICE_DOMAIN = env('DEEPL_SERVICE_DOMAIN')
 DEEPL_SERVICE_CALLBACK_DOMAIN = env('DEEPL_SERVICE_CALLBACK_DOMAIN')
 
 # DEEPL Server Config (New)
+DEEPL_SERVER_TOKEN = env('DEEPL_SERVER_TOKEN')
 DEEPL_SERVER_DOMAIN = env('DEEPL_SERVER_DOMAIN')
 DEEPL_SERVER_CALLBACK_DOMAIN = env('DEEPL_SERVER_CALLBACK_DOMAIN')
 

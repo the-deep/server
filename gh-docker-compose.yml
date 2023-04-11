@@ -54,6 +54,7 @@ services:
       DEEPL_SERVICE_DOMAIN: http://extractor:8001
       DEEPL_SERVICE_CALLBACK_DOMAIN: http://web:8000
       # DEEPL Server
+      DEEPL_SERVER_TOKEN: dummy-deepl-server-token
       DEEPL_SERVER_DOMAIN: http://extractor:8001
       DEEPL_SERVER_CALLBACK_DOMAIN: http://web:8000
     volumes:
