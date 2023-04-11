@@ -286,6 +286,8 @@ class AnalyticalStatementGqlSerializer(
         fields = (
             'id',
             'statement',
+            'report_text',
+            'information_gaps',
             'include_in_report',
             'order',
             'cloned_from',

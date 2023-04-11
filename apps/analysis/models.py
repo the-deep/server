@@ -397,6 +397,8 @@ class AnalyticalStatement(UserResource):
     )
     include_in_report = models.BooleanField(default=False)
     order = models.IntegerField()
+    report_text = models.TextField(blank=True)
+    information_gaps = models.TextField(blank=True)
     # added to keep the track of cloned analysisstatement
     cloned_from = models.ForeignKey(
         'AnalyticalStatement',

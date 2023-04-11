@@ -91,6 +91,8 @@ class AnalyticalStatementType(UserResourceMixin, ClientIdMixin, DjangoObjectType
         only_fields = (
             'id',
             'statement',
+            'report_text',
+            'information_gaps',
             'include_in_report',
             'order',
         )
