@@ -352,6 +352,8 @@ type AnalyticalStatementEntryType {
 input AnalyticalStatementGqlInputType {
   id: ID
   statement: String!
+  reportText: String
+  informationGaps: String
   includeInReport: Boolean
   order: Int!
   clonedFrom: ID
@@ -400,6 +402,8 @@ type AnalyticalStatementType {
   statement: String!
   includeInReport: Boolean!
   order: Int!
+  reportText: String!
+  informationGaps: String!
   clientId: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
