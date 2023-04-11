@@ -81,7 +81,10 @@ class DefaultClientIdGenerator(DeepTokenGenerator):
 
 
 class BaseHandler:
-    REQUEST_HEADERS = {'Content-Type': 'application/json'}
+    REQUEST_HEADERS = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Token {settings.DEEPL_SERVER_TOKEN}',
+    }
 
     # --- Override
     # Optional
@@ -629,7 +632,11 @@ class NewNlpServerBaseHandler(BaseHandler):
         )
 
         try:
-            response = requests.post(cls.endpoint, headers=cls.REQUEST_HEADERS, json=payload)
+            response = requests.post(
+                DeeplServiceEndpoint.ANALYSIS_AUTOMATIC_SUMMARY,
+                headers=cls.REQUEST_HEADERS,
+                json=payload,
+            )
             if response.status_code == 202:
                 obj.status = cls.model.Status.STARTED
                 obj.save(update_fields=('status',))
