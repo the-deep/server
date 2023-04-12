@@ -622,7 +622,7 @@ class NewNlpServerBaseHandler(BaseHandler):
     def send_trigger_request_to_extractor(cls, obj: DeeplTrackBaseModel):
         # Base payload attributes
         payload = {
-            'mock': True,   # TODO: Remove - will be handled in NLP side
+            'mock': settings.DEEPL_SERVER_AS_MOCK,
             'client_id': cls.get_client_id(obj),
             'callback_url': cls.get_callback_url(),
         }
