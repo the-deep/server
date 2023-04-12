@@ -1,4 +1,5 @@
 import requests
+import json
 from dataclasses import dataclass, field
 from typing import Union, Dict, Callable
 
@@ -37,7 +38,7 @@ class RequestHelper:
         except Exception as e:
             self.error_on_response = True
             if self.custom_error_handler:
-                self.custom_error_handler(e)
+                self.custom_error_handler(e, url=self.url)
             if not self.ignore_error:
                 raise e
         return self
@@ -57,4 +58,9 @@ class RequestHelper:
     @requesthelper_ignore_error
     def json(self) -> Union[Dict, None]:
         if self.response:
-            return self.response.json()
+            try:
+                return self.response.json()
+            except json.decoder.JSONDecodeError as e:
+                if self.custom_error_handler is None:
+                    raise e
+                self.custom_error_handler(e, url=self.url)
