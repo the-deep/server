@@ -67,10 +67,12 @@ def generate_file_url_for_new_deepl_server(file):
     )
 
 
-def custom_error_handler(exception):
+def custom_error_handler(exception, url=None):
     if type(exception) == requests.exceptions.ConnectionError:
-        raise serializers.ValidationError('ConnectionError on provided file')
-    raise serializers.ValidationError('Failed to handle the provided file: <error={type(exception)}>')
+        raise serializers.ValidationError(f'ConnectionError on provided file: {url}')
+    if type(exception) == json.decoder.JSONDecodeError:
+        raise serializers.ValidationError(f'Failed to parse provided json file: {url}')
+    raise serializers.ValidationError(f'Failed to handle the provided file: <error={type(exception)}>: {url}')
 
 
 class DefaultClientIdGenerator(DeepTokenGenerator):
@@ -633,7 +635,7 @@ class NewNlpServerBaseHandler(BaseHandler):
 
         try:
             response = requests.post(
-                DeeplServiceEndpoint.ANALYSIS_AUTOMATIC_SUMMARY,
+                cls.endpoint,
                 headers=cls.REQUEST_HEADERS,
                 json=payload,
             )
@@ -682,9 +684,9 @@ class AnalysisTopicModelHandler(NewNlpServerBaseHandler):
     ):
         data_url = data['presigned_s3_url']
         entries_data = RequestHelper(url=data_url, custom_error_handler=custom_error_handler).json()
-        # Clear existing
-        TopicModelCluster.objects.filter(topic_model=topic_model).delete()
         if entries_data:
+            # Clear existing
+            TopicModelCluster.objects.filter(topic_model=topic_model).delete()
             # Create new cluster in bulk
             new_clusters = TopicModelCluster.objects.bulk_create([
                 TopicModelCluster(topic_model=topic_model)
@@ -700,7 +702,7 @@ class AnalysisTopicModelHandler(NewNlpServerBaseHandler):
                             entry_id=entry_id,
                         )
                     )
-            TopicModelCluster.entries.through.objects.bulk_create(new_cluster_entries)
+            TopicModelCluster.entries.through.objects.bulk_create(new_cluster_entries, ignore_conflicts=True)
         topic_model.status = TopicModel.Status.SUCCESS
         topic_model.save()
 
