@@ -240,6 +240,7 @@ type AnalysisPillarDiscardedEntryType {
   id: ID!
   analysisPillar: ID
   entry: EntryType!
+  entryId: ID!
   tag: DiscardedEntryTagTypeEnum!
   tagDisplay: EnumDescription!
 }
@@ -341,12 +342,58 @@ input AnalyticalEntriesGqlInputType {
   clientId: String
 }
 
+type AnalyticalStatementEntryGeoDataType {
+  ent: String
+  offsetStart: Int
+  offsetEnd: Int
+  geoids: [AnalyticalStatementEntryGeoIDsDataType!]
+}
+
+type AnalyticalStatementEntryGeoIDsDataType {
+  match: String
+  geonameid: Int
+  latitude: Float
+  longitude: Float
+  featurecode: String
+  countrycode: String
+}
+
+type AnalyticalStatementEntryGeoType {
+  id: ID!
+  entry: EntryType!
+  entryId: ID!
+  data: [AnalyticalStatementEntryGeoDataType!]
+}
+
 type AnalyticalStatementEntryType {
   id: ID!
   order: Int!
   clientId: String!
   entry: EntryType!
+  entryId: ID!
   analyticalStatement: ID!
+}
+
+input AnalyticalStatementGeoTaskInputType {
+  entriesId: [ID!]
+}
+
+enum AnalyticalStatementGeoTaskStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILED
+  SEND_FAILED
+}
+
+type AnalyticalStatementGeoTaskType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  status: AnalyticalStatementGeoTaskStatusEnum!
+  entryGeo: [AnalyticalStatementEntryGeoType]!
 }
 
 input AnalyticalStatementGqlInputType {
@@ -2270,6 +2317,7 @@ type ProjectDetailType {
   analysisTopicModel(id: ID!): AnalysisTopicModelType
   analysisAutomaticSummary(id: ID!): AnalysisAutomaticSummaryType
   analysisAutomaticNgram(id: ID!): AnalyticalStatementNGramType
+  analysisGeoTask(id: ID!): AnalyticalStatementGeoTaskType
   assessment(id: ID!): AssessmentType
   assessments(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentListType
   reviewComment(id: ID!): EntryReviewCommentDetailType
@@ -2391,9 +2439,10 @@ type ProjectMutationType {
   discardedEntryCreate(data: DiscardedEntryCreateInputType!): CreateAnalysisPillarDiscardedEntry
   discardedEntryUpdate(data: DiscardedEntryUpdateInputType!, id: ID!): UpdateAnalysisPillarDiscardedEntry
   discardedEntryDelete(id: ID!): DeleteAnalysisPillarDiscardedEntry
-  triggerTopicModel(data: AnalysisTopicModelCreateInputType!): TriggerAnalysisTopicModel
-  triggerAutomaticSummary(data: AnalysisAutomaticSummaryCreateInputType!): TriggerAnalysisAutomaticSummary
-  triggerAutomaticNgram(data: AnalyticalStatementNGramCreateInputType!): TriggerAnalysisAnalyticalStatementNGram
+  triggerAnalysisTopicModel(data: AnalysisTopicModelCreateInputType!): TriggerAnalysisTopicModel
+  triggerAnalysisAutomaticSummary(data: AnalysisAutomaticSummaryCreateInputType!): TriggerAnalysisAutomaticSummary
+  triggerAnalysisAutomaticNgram(data: AnalyticalStatementNGramCreateInputType!): TriggerAnalysisAnalyticalStatementNGram
+  triggerAnalysisGeoLocation(data: AnalyticalStatementGeoTaskInputType!): TriggerAnalysisAnalyticalGeoTask
   exportCreate(data: ExportCreateInputType!): CreateUserExport
   exportUpdate(data: ExportUpdateInputType!, id: ID!): UpdateUserExport
   exportCancel(id: ID!): CancelUserExport
@@ -2926,6 +2975,12 @@ enum TopicModelStatusEnum {
   SUCCESS
   FAILED
   SEND_FAILED
+}
+
+type TriggerAnalysisAnalyticalGeoTask {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalyticalStatementGeoTaskType
 }
 
 type TriggerAnalysisAnalyticalStatementNGram {

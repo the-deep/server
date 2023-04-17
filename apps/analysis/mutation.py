@@ -13,6 +13,7 @@ from .models import (
     TopicModel,
     AutomaticSummary,
     AnalyticalStatementNGram,
+    AnalyticalStatementGeoTask,
 )
 from .schema import (
     get_analysis_pillar_qs,
@@ -21,6 +22,7 @@ from .schema import (
     AnalysisTopicModelType,
     AnalysisAutomaticSummaryType,
     AnalyticalStatementNGramType,
+    AnalyticalStatementGeoTaskType,
 )
 from .serializers import (
     AnalysisPillarGqlSerializer,
@@ -28,6 +30,7 @@ from .serializers import (
     AnalysisTopicModelSerializer,
     AnalysisAutomaticSummarySerializer,
     AnalyticalStatementNGramSerializer,
+    AnalyticalStatementGeoTaskSerializer,
 )
 
 
@@ -62,6 +65,11 @@ AnalysisAutomaticSummaryCreateInputType = generate_input_type_for_serializer(
 AnalyticalStatementNGramCreateInputType = generate_input_type_for_serializer(
     'AnalyticalStatementNGramCreateInputType',
     serializer_class=AnalyticalStatementNGramSerializer,
+)
+
+AnalyticalStatementGeoTaskInputType = generate_input_type_for_serializer(
+    'AnalyticalStatementGeoTaskInputType',
+    serializer_class=AnalyticalStatementGeoTaskSerializer,
 )
 
 
@@ -148,6 +156,14 @@ class TriggerAnalysisAnalyticalStatementNGram(RequiredPermissionMixin, PsGraphen
     result = graphene.Field(AnalyticalStatementNGramType)
 
 
+class TriggerAnalysisAnalyticalGeoTask(RequiredPermissionMixin, PsGrapheneMutation):
+    class Arguments:
+        data = AnalyticalStatementGeoTaskInputType(required=True)
+    model = AnalyticalStatementGeoTask
+    serializer_class = AnalyticalStatementGeoTaskSerializer
+    result = graphene.Field(AnalyticalStatementGeoTaskType)
+
+
 class Mutation():
     # Analysis Pillar
     analysis_pillar_update = UpdateAnalysisPillar.Field()
@@ -156,6 +172,7 @@ class Mutation():
     discarded_entry_update = UpdateAnalysisPillarDiscardedEntry.Field()
     discarded_entry_delete = DeleteAnalysisPillarDiscardedEntry.Field()
     # NLP Trigger mutations
-    trigger_topic_model = TriggerAnalysisTopicModel.Field()
-    trigger_automatic_summary = TriggerAnalysisAutomaticSummary.Field()
-    trigger_automatic_ngram = TriggerAnalysisAnalyticalStatementNGram.Field()
+    trigger_analysis_topic_model = TriggerAnalysisTopicModel.Field()
+    trigger_analysis_automatic_summary = TriggerAnalysisAutomaticSummary.Field()
+    trigger_analysis_automatic_ngram = TriggerAnalysisAnalyticalStatementNGram.Field()
+    trigger_analysis_geo_location = TriggerAnalysisAnalyticalGeoTask.Field()

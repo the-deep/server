@@ -40,11 +40,14 @@ from lead.models import (
     LeadPreviewImage,
 )
 from lead.typings import NlpExtractorUrl
+from entry.models import Entry
 from analysis.models import (
     TopicModel,
     TopicModelCluster,
     AutomaticSummary,
     AnalyticalStatementNGram,
+    AnalyticalStatementGeoTask,
+    AnalyticalStatementGeoEntry,
 )
 
 from .models import DeeplTrackBaseModel
@@ -755,3 +758,53 @@ class AnalyticalStatementNGramHandler(NewNlpServerBaseHandler):
             a_ngram.trigrams = ngram_data.get('trigrams') or {}
         a_ngram.status = AnalyticalStatementNGram.Status.SUCCESS
         a_ngram.save()
+
+
+class AnalyticalStatementGeoHandler(NewNlpServerBaseHandler):
+    model = AnalyticalStatementGeoTask
+    endpoint = DeeplServiceEndpoint.ANALYSIS_GEO
+    callback_url_name = 'analysis_geo_callback'
+
+    @classmethod
+    def get_trigger_payload(cls, obj: AnalyticalStatementNGram):
+        return {
+            'entries_url': generate_file_url_for_new_deepl_server(obj.entries_file),
+        }
+
+    @staticmethod
+    def save_data(
+        geo_task: AnalyticalStatementGeoTask,
+        data: dict,
+    ):
+        data_url = data['presigned_s3_url']
+        geo_data = RequestHelper(url=data_url, custom_error_handler=custom_error_handler).json()
+        if geo_data is not None:
+            geo_entry_objs = []
+            # Clear out existing
+            AnalyticalStatementGeoEntry.objects.filter().delete()
+            existing_entries_id = set(
+                Entry.objects.filter(
+                    project=geo_task.project,
+                    id__in=[
+                        int(entry_geo_data['entry_id'])
+                        for entry_geo_data in geo_data
+                    ]
+                ).values_list('id', flat=True)
+            )
+            for entry_geo_data in geo_data:
+                entry_id = int(entry_geo_data['entry_id'])
+                data = entry_geo_data['entities']
+                if data and entry_id in existing_entries_id:
+                    geo_entry_objs.append(
+                        AnalyticalStatementGeoEntry(
+                            task=geo_task,
+                            entry_id=entry_id,
+                            data=data,
+                        )
+                    )
+            # Save all in bulk
+            AnalyticalStatementGeoEntry.objects.bulk_create(geo_entry_objs, ignore_conflicts=True)
+            geo_task.status = AnalyticalStatementGeoTask.Status.SUCCESS
+        else:
+            geo_task.status = AnalyticalStatementGeoTask.Status.FAILED
+        geo_task.save()

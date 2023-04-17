@@ -27,12 +27,15 @@ from .models import (
     TopicModelCluster,
     AutomaticSummary,
     AnalyticalStatementNGram,
+    AnalyticalStatementGeoTask,
+    AnalyticalStatementGeoEntry,
 )
 from .enums import (
     DiscardedEntryTagTypeEnum,
     TopicModelStatusEnum,
     AutomaticSummaryStatusEnum,
     AnalyticalStatementNGramStatusEnum,
+    AnalyticalStatementGeoTaskStatusEnum,
 )
 from .filter_set import (
     AnalysisGQFilterSet,
@@ -75,6 +78,7 @@ class AnalyticalStatementEntryType(ClientIdMixin, DjangoObjectType):
         )
 
     entry = graphene.Field(EntryType, required=True)
+    entry_id = graphene.ID(required=True)
     analytical_statement = graphene.ID(source='analytical_statement_id', required=True)
 
     @staticmethod
@@ -123,6 +127,7 @@ class AnalysisPillarDiscardedEntryType(DjangoObjectType):
 
     analysis_pillar = graphene.ID(source='analysis_pillar_id')
     entry = graphene.Field(EntryType, required=True)
+    entry_id = graphene.ID(required=True)
     tag = graphene.Field(DiscardedEntryTagTypeEnum, required=True)
     tag_display = EnumDescription(source='get_tag_display', required=True)
 
@@ -459,6 +464,60 @@ class AnalyticalStatementNGramType(UserResourceMixin, DjangoObjectType):
         return cls.render_grams(root.trigrams)
 
 
+class AnalyticalStatementEntryGeoType(DjangoObjectType):
+    class Meta:
+        model = AnalyticalStatementGeoEntry
+        only_fields = (
+            'id',
+        )
+
+    entry = graphene.Field(EntryType, required=True)
+    entry_id = graphene.ID(required=True)
+    data = graphene.List(graphene.NonNull(
+        type('AnalyticalStatementEntryGeoDataType', (graphene.ObjectType,), {
+            'ent': graphene.String(),
+            'offset_start': graphene.Int(),
+            'offset_end': graphene.Int(),
+            'geoids': graphene.List(graphene.NonNull(
+                type('AnalyticalStatementEntryGeoIDsDataType', (graphene.ObjectType,), {
+                    'match': graphene.String(),
+                    'geonameid': graphene.Int(),
+                    'latitude': graphene.Float(),
+                    'longitude': graphene.Float(),
+                    'featurecode': graphene.String(),
+                    'countrycode': graphene.String(),
+                })
+            ))
+        })
+    ))
+
+    @staticmethod
+    def resolve_entry(root, info, **_):
+        if has_select_related(root, 'entry'):
+            return getattr(root, 'entry')
+        # Use Dataloader to load the data
+        return info.context.dl.entry.entry.load(root.entry_id)
+
+
+class AnalyticalStatementGeoTaskType(UserResourceMixin, DjangoObjectType):
+    class Meta:
+        model = AnalyticalStatementGeoTask
+        only_fields = (
+            'id',
+        )
+
+    status = graphene.Field(AnalyticalStatementGeoTaskStatusEnum, required=True)
+    entry_geo = graphene.List(AnalyticalStatementEntryGeoType, required=True)
+
+    @staticmethod
+    def get_custom_queryset(queryset, info, **_):
+        return _get_qs(AnalyticalStatementGeoTask, info, 'project')
+
+    @staticmethod
+    def resolve_entry_geo(root, info, **_):
+        return root.entry_geos.all()
+
+
 class Query:
     analysis_overview = graphene.Field(AnalysisOverviewType)
     analysis = DjangoObjectField(AnalysisType)
@@ -491,6 +550,7 @@ class Query:
     analysis_topic_model = DjangoObjectField(AnalysisTopicModelType)
     analysis_automatic_summary = DjangoObjectField(AnalysisAutomaticSummaryType)
     analysis_automatic_ngram = DjangoObjectField(AnalyticalStatementNGramType)
+    analysis_geo_task = DjangoObjectField(AnalyticalStatementGeoTaskType)
 
     @staticmethod
     def resolve_analysis_overview(*_):

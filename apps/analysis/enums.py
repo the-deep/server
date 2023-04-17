@@ -8,6 +8,7 @@ from .models import (
     TopicModel,
     AutomaticSummary,
     AnalyticalStatementNGram,
+    AnalyticalStatementGeoTask,
 )
 
 DiscardedEntryTagTypeEnum = convert_enum_to_graphene_enum(DiscardedEntry.TagType, name='DiscardedEntryTagTypeEnum')
@@ -17,6 +18,8 @@ TopicModelStatusEnum = convert_enum_to_graphene_enum(TopicModel.Status, name='To
 AutomaticSummaryStatusEnum = convert_enum_to_graphene_enum(AutomaticSummary.Status, name='AutomaticSummaryStatusEnum')
 AnalyticalStatementNGramStatusEnum = convert_enum_to_graphene_enum(
     AnalyticalStatementNGram.Status, name='AnalyticalStatementNGramStatusEnum')
+AnalyticalStatementGeoTaskStatusEnum = convert_enum_to_graphene_enum(
+    AnalyticalStatementGeoTask.Status, name='AnalyticalStatementGeoTaskStatusEnum')
 
 enum_map = {
     # Need to pass model with abstract base class
@@ -26,5 +29,6 @@ enum_map = {
         (TopicModel, TopicModel.status, TopicModelStatusEnum),
         (AutomaticSummary, AutomaticSummary.status, AutomaticSummaryStatusEnum),
         (AnalyticalStatementNGram, AnalyticalStatementNGram.status, AnalyticalStatementNGramStatusEnum),
+        (AnalyticalStatementGeoTask, AnalyticalStatementGeoTask.status, AnalyticalStatementGeoTaskStatusEnum),
     )
 }

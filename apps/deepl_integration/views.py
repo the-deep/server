@@ -14,6 +14,7 @@ from .serializers import (
     AnalysisTopicModelCallbackSerializer,
     AnalysisAutomaticSummaryCallbackSerializer,
     AnalyticalStatementNGramCallbackSerializer,
+    AnalyticalStatementGeoCallbackSerializer,
 )
 
 
@@ -51,3 +52,7 @@ class AnalysisAutomaticSummaryCallbackView(BaseCallbackView):
 
 class AnalyticalStatementNGramCallbackView(BaseCallbackView):
     serializer = AnalyticalStatementNGramCallbackSerializer
+
+
+class AnalyticalStatementGeoCallbackView(BaseCallbackView):
+    serializer = AnalyticalStatementGeoCallbackSerializer

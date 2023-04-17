@@ -494,6 +494,7 @@ class EntriesCollectionNlpTriggerBase(UserResource, DeeplTrackBaseModel):
             created_at__gte=threshold,
         ).exclude(
             status__in=[
+                cls.Status.STARTED,
                 cls.Status.FAILED,
                 cls.Status.SEND_FAILED,
             ],
@@ -526,3 +527,17 @@ class AnalyticalStatementNGram(EntriesCollectionNlpTriggerBase):
     unigrams = models.JSONField(default=dict)
     bigrams = models.JSONField(default=dict)
     trigrams = models.JSONField(default=dict)
+
+
+class AnalyticalStatementGeoTask(EntriesCollectionNlpTriggerBase):
+    pass
+
+
+class AnalyticalStatementGeoEntry(models.Model):
+    task = models.ForeignKey(
+        AnalyticalStatementGeoTask,
+        on_delete=models.CASCADE,
+        related_name='entry_geos',
+    )
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name="+")
+    data = models.JSONField(default=list)

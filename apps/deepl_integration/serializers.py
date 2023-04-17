@@ -11,6 +11,7 @@ from deepl_integration.handlers import (
     AnalysisTopicModelHandler,
     AnalysisAutomaticSummaryHandler,
     AnalyticalStatementNGramHandler,
+    AnalyticalStatementGeoHandler,
 )
 
 from deduplication.tasks.indexing import index_lead_and_calculate_duplicates
@@ -24,6 +25,7 @@ from analysis.models import (
     TopicModel,
     AutomaticSummary,
     AnalyticalStatementNGram,
+    AnalyticalStatementGeoTask,
 )
 
 from .models import DeeplTrackBaseModel
@@ -208,6 +210,7 @@ class DeeplServerBaseCallbackSerializer(BaseCallbackSerializer):
 
 class EntriesCollectionBaseCallbackSerializer(DeeplServerBaseCallbackSerializer):
     model: Type[DeeplTrackBaseModel]
+    presigned_s3_url = serializers.URLField()
 
     def create(self, validated_data):
         obj = validated_data['object']
@@ -222,16 +225,18 @@ class EntriesCollectionBaseCallbackSerializer(DeeplServerBaseCallbackSerializer)
 class AnalysisTopicModelCallbackSerializer(EntriesCollectionBaseCallbackSerializer):
     model = TopicModel
     nlp_handler = AnalysisTopicModelHandler
-    presigned_s3_url = serializers.URLField()
 
 
 class AnalysisAutomaticSummaryCallbackSerializer(EntriesCollectionBaseCallbackSerializer):
     model = AutomaticSummary
     nlp_handler = AnalysisAutomaticSummaryHandler
-    presigned_s3_url = serializers.URLField()
 
 
 class AnalyticalStatementNGramCallbackSerializer(EntriesCollectionBaseCallbackSerializer):
     model = AnalyticalStatementNGram
     nlp_handler = AnalyticalStatementNGramHandler
-    presigned_s3_url = serializers.URLField()
+
+
+class AnalyticalStatementGeoCallbackSerializer(EntriesCollectionBaseCallbackSerializer):
+    model = AnalyticalStatementGeoTask
+    nlp_handler = AnalyticalStatementGeoHandler
