@@ -31,11 +31,13 @@ from .models import (
     EntriesCollectionNlpTriggerBase,
     AutomaticSummary,
     AnalyticalStatementNGram,
+    AnalyticalStatementGeoTask,
 )
 from .tasks import (
     trigger_topic_model,
     trigger_automatic_summary,
     trigger_automatic_ngram,
+    trigger_geo_location,
 )
 
 
@@ -513,6 +515,16 @@ class AnalyticalStatementNGramSerializer(EntriesCollectionNlpTriggerBaseSerializ
 
     class Meta:
         model = AnalyticalStatementNGram
+        fields = (
+            'entries_id',
+        )
+
+
+class AnalyticalStatementGeoTaskSerializer(EntriesCollectionNlpTriggerBaseSerializer):
+    trigger_task_func = trigger_geo_location
+
+    class Meta:
+        model = AnalyticalStatementGeoTask
         fields = (
             'entries_id',
         )

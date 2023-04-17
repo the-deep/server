@@ -17,3 +17,4 @@ class DeeplServiceEndpoint():
     ANALYSIS_TOPIC_MODEL = f'{DEEPL_SERVER_DOMAIN}/api/v1/topicmodel/'
     ANALYSIS_AUTOMATIC_SUMMARY = f'{DEEPL_SERVER_DOMAIN}/api/v1/summarization/'
     ANALYSIS_AUTOMATIC_NGRAM = f'{DEEPL_SERVER_DOMAIN}/api/v1/ngrams/'
+    ANALYSIS_GEO = f'{DEEPL_SERVER_DOMAIN}/api/v1/geolocation/'

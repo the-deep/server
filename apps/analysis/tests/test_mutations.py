@@ -17,6 +17,7 @@ from analysis.models import (
     TopicModelCluster,
     AutomaticSummary,
     AnalyticalStatementNGram,
+    AnalyticalStatementGeoTask,
 )
 
 
@@ -34,7 +35,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
     TRIGGER_TOPIC_MODEL = '''
         mutation MyMutation ($projectId: ID!, $input: AnalysisTopicModelCreateInputType!) {
           project(id: $projectId) {
-            triggerTopicModel(data: $input) {
+            triggerAnalysisTopicModel(data: $input) {
               ok
               errors
               result {
@@ -73,7 +74,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
     TRIGGER_AUTOMATIC_SUMMARY = '''
         mutation MyMutation ($projectId: ID!, $input: AnalysisAutomaticSummaryCreateInputType!) {
           project(id: $projectId) {
-            triggerAutomaticSummary(data: $input) {
+            triggerAnalysisAutomaticSummary(data: $input) {
               ok
               errors
               result {
@@ -101,7 +102,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
     TRIGGER_AUTOMATIC_NGRAM = '''
         mutation MyMutation ($projectId: ID!, $input: AnalyticalStatementNGramCreateInputType!) {
           project(id: $projectId) {
-            triggerAutomaticNgram(data: $input) {
+            triggerAnalysisAutomaticNgram(data: $input) {
               ok
               errors
               result {
@@ -142,6 +143,64 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
               trigrams {
                 word
                 count
+              }
+            }
+          }
+        }
+    '''
+
+    TRIGGER_GEOLOCATION = '''
+        mutation MyMutation ($projectId: ID!, $input: AnalyticalStatementGeoTaskInputType!) {
+          project(id: $projectId) {
+            triggerAnalysisGeoLocation(data: $input) {
+              errors
+              ok
+              result {
+                id
+                status
+                entryGeo {
+                  entryId
+                  data {
+                    geoids {
+                      countrycode
+                      featurecode
+                      geonameid
+                      latitude
+                      longitude
+                      match
+                    }
+                    ent
+                    offsetStart
+                    offsetEnd
+                  }
+                }
+              }
+            }
+          }
+        }
+    '''
+
+    QUERY_GEOLOCATION = '''
+        query MyQuery ($projectId: ID!, $ID: ID!) {
+          project(id: $projectId) {
+            analysisGeoTask(id: $ID) {
+              id
+              status
+              entryGeo {
+                entryId
+                data {
+                  geoids {
+                    countrycode
+                    featurecode
+                    geonameid
+                    latitude
+                    longitude
+                    match
+                  }
+                  ent
+                  offsetStart
+                  offsetEnd
+                }
               }
             }
           }
@@ -244,7 +303,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         # --- member user (All good)
         with self.captureOnCommitCallbacks(execute=True):
             response = _mutation_check(minput, okay=True)
-            a_summary_id = response['data']['project']['triggerTopicModel']['result']['id']
+            a_summary_id = response['data']['project']['triggerAnalysisTopicModel']['result']['id']
         assert _query_check(a_summary_id)['data']['project']['analysisTopicModel']['status'] ==\
             self.genum(TopicModel.Status.STARTED)
 
@@ -253,7 +312,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
 
         with self.captureOnCommitCallbacks(execute=True):
             response = _mutation_check(minput, okay=True)
-            a_summary_id = response['data']['project']['triggerTopicModel']['result']['id']
+            a_summary_id = response['data']['project']['triggerAnalysisTopicModel']['result']['id']
         assert _query_check(a_summary_id)['data']['project']['analysisTopicModel']['status'] ==\
             self.genum(TopicModel.Status.SEND_FAILED)
 
@@ -378,7 +437,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         # --- member user (All good)
         with self.captureOnCommitCallbacks(execute=True):
             response = _mutation_check(minput, okay=True)
-            a_summary_id = response['data']['project']['triggerAutomaticSummary']['result']['id']
+            a_summary_id = response['data']['project']['triggerAnalysisAutomaticSummary']['result']['id']
         assert _query_check(a_summary_id)['data']['project']['analysisAutomaticSummary']['status'] ==\
             self.genum(AutomaticSummary.Status.STARTED)
 
@@ -390,7 +449,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
 
         with self.captureOnCommitCallbacks(execute=True):
             response = _mutation_check(minput, okay=True)
-            a_summary_id = response['data']['project']['triggerAutomaticSummary']['result']['id']
+            a_summary_id = response['data']['project']['triggerAnalysisAutomaticSummary']['result']['id']
         assert _query_check(a_summary_id)['data']['project']['analysisAutomaticSummary']['status'] ==\
             self.genum(AutomaticSummary.Status.SEND_FAILED)
 
@@ -429,7 +488,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         assert a_summary.summary == SAMPLE_SUMMARY_TEXT
 
         # -- Check existing instance if provided until threshold is over
-        response_result = _mutation_check(minput, okay=True)['data']['project']['triggerAutomaticSummary']['result']
+        response_result = _mutation_check(minput, okay=True)['data']['project']['triggerAnalysisAutomaticSummary']['result']
         assert response_result['id'] == a_summary_id
         assert response_result['summary'] == SAMPLE_SUMMARY_TEXT
 
@@ -437,7 +496,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
             datetime.timedelta(hours=AutomaticSummary.CACHE_THRESHOLD_HOURS + 1)
         a_summary.save()
 
-        response_result = _mutation_check(minput, okay=True)['data']['project']['triggerAutomaticSummary']['result']
+        response_result = _mutation_check(minput, okay=True)['data']['project']['triggerAnalysisAutomaticSummary']['result']
         assert response_result['id'] != a_summary_id
         assert response_result['summary'] != SAMPLE_SUMMARY_TEXT
 
@@ -507,7 +566,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         # --- member user (All good)
         with self.captureOnCommitCallbacks(execute=True):
             response = _mutation_check(minput, okay=True)
-            a_ngram_id = response['data']['project']['triggerAutomaticNgram']['result']['id']
+            a_ngram_id = response['data']['project']['triggerAnalysisAutomaticNgram']['result']['id']
         assert _query_check(a_ngram_id)['data']['project']['analysisAutomaticNgram']['status'] ==\
             self.genum(AnalyticalStatementNGram.Status.STARTED)
 
@@ -519,7 +578,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
 
         with self.captureOnCommitCallbacks(execute=True):
             response = _mutation_check(minput, okay=True)
-            a_ngram_id = response['data']['project']['triggerAutomaticNgram']['result']['id']
+            a_ngram_id = response['data']['project']['triggerAnalysisAutomaticNgram']['result']['id']
         assert _query_check(a_ngram_id)['data']['project']['analysisAutomaticNgram']['status'] ==\
             self.genum(AnalyticalStatementNGram.Status.SEND_FAILED)
 
@@ -571,7 +630,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         assert a_ngram.trigrams == {}
 
         # -- Check existing instance if provided until threshold is over
-        response_result = _mutation_check(minput, okay=True)['data']['project']['triggerAutomaticNgram']['result']
+        response_result = _mutation_check(minput, okay=True)['data']['project']['triggerAnalysisAutomaticNgram']['result']
         assert response_result['id'] == a_ngram_id
         assert response_result['unigrams'] == [
             dict(word=word, count=count)
@@ -587,7 +646,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
             datetime.timedelta(hours=AnalyticalStatementNGram.CACHE_THRESHOLD_HOURS + 1)
         a_ngram.save()
 
-        response_result = _mutation_check(minput, okay=True)['data']['project']['triggerAutomaticNgram']['result']
+        response_result = _mutation_check(minput, okay=True)['data']['project']['triggerAnalysisAutomaticNgram']['result']
         assert response_result['id'] != a_ngram_id
         assert response_result['unigrams'] == []
         assert response_result['bigrams'] == []
@@ -600,3 +659,179 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
 
         a_ngram.refresh_from_db()
         assert a_ngram.status == AnalyticalStatementNGram.Status.FAILED
+
+    @mock.patch('deepl_integration.handlers.RequestHelper')
+    @mock.patch('deepl_integration.handlers.requests')
+    def test_geo_location(self, trigger_results_mock, RequestHelperMock):
+        lead1 = LeadFactory.create(project=self.project)
+        lead2 = LeadFactory.create(project=self.project)
+        another_lead = LeadFactory.create(project=self.another_project)
+        lead1_entries = EntryFactory.create_batch(3, analysis_framework=self.af, lead=lead1)
+        lead2_entries = EntryFactory.create_batch(4, analysis_framework=self.af, lead=lead2)
+        another_lead_entries = EntryFactory.create_batch(4, analysis_framework=self.af, lead=another_lead)
+
+        trigger_results_mock.post.return_value.status_code = 202
+
+        def _mutation_check(minput, **kwargs):
+            return self.query_check(
+                self.TRIGGER_GEOLOCATION,
+                minput=minput,
+                mnested=['project'],
+                variables={'projectId': self.project.id},
+                **kwargs
+            )
+
+        def _query_check(_id):
+            return self.query_check(
+                self.QUERY_GEOLOCATION,
+                minput=minput,
+                variables={'projectId': self.project.id, 'ID': _id},
+            )
+
+        minput = dict(entriesId=[])
+
+        # -- Without login
+        _mutation_check(minput, assert_for_error=True)
+
+        # -- With login (non-member)
+        self.force_login(self.non_member_user)
+        _mutation_check(minput, assert_for_error=True)
+
+        # --- member user (read-only)
+        self.force_login(self.readonly_member_user)
+        _mutation_check(minput, assert_for_error=True)
+
+        # --- member user (error since input is empty)
+        self.force_login(self.member_user)
+        _mutation_check(minput, okay=False)
+
+        minput['entriesId'] = [
+            str(entry.id)
+            for entries in [
+                lead1_entries,
+                lead2_entries,
+                another_lead_entries
+            ]
+            for entry in entries
+        ]
+
+        # --- member user (All good)
+        with self.captureOnCommitCallbacks(execute=True):
+            response = _mutation_check(minput, okay=True)
+            geo_task_id = response['data']['project']['triggerAnalysisGeoLocation']['result']['id']
+        assert _query_check(geo_task_id)['data']['project']['analysisGeoTask']['status'] ==\
+            self.genum(AnalyticalStatementGeoTask.Status.STARTED)
+
+        # Clear out
+        AnalyticalStatementGeoTask.objects.get(pk=geo_task_id).delete()
+
+        # -- Bad status code from NLP on trigger request
+        trigger_results_mock.post.return_value.status_code = 500
+
+        with self.captureOnCommitCallbacks(execute=True):
+            response = _mutation_check(minput, okay=True)
+            geo_task_id = response['data']['project']['triggerAnalysisGeoLocation']['result']['id']
+        assert _query_check(geo_task_id)['data']['project']['analysisGeoTask']['status'] ==\
+            self.genum(AnalyticalStatementGeoTask.Status.SEND_FAILED)
+
+        geo_task = AnalyticalStatementGeoTask.objects.get(pk=geo_task_id)
+        # Check if generated entries are within the project
+        assert geo_task.entries_id == [
+            entry.id
+            for entries in [
+                lead1_entries,
+                lead2_entries,
+            ]
+            for entry in entries
+        ]
+
+        # -- Callback test (Mocking NLP part)
+        CALLBACK_ENTRIES = lead1_entries
+        SAMPLE_GEO_DATA_RESPONSE = [
+            {
+                'entry_id': str(entry.id),
+                'entities': [
+                    {
+                        'ent': 'test',
+                        'offset_start': 0,
+                        'offset_end': 3,
+                        'geoids': [
+                            {
+                                'match': 'tes',
+                                'geonameid': 11,
+                                'latitude': 11,
+                                'longitude': 11,
+                                'featurecode': 'NLP',
+                                'countrycode': 'Nepal',
+                            }
+                        ],
+                    }
+                ]
+            }
+            for entry in [
+                *CALLBACK_ENTRIES,
+                *another_lead_entries,  # Invalid entries
+            ]
+        ]
+
+        RequestHelperMock.return_value.json.return_value = SAMPLE_GEO_DATA_RESPONSE
+
+        callback_url = '/api/v1/callback/analysis-geo/'
+
+        data = {
+            'client_id': 'invalid-id',
+            'presigned_s3_url': 'https://random-domain.com/random-url.json',
+            'status': DeeplServerBaseCallbackSerializer.Status.SUCCESS.value,
+        }
+        response = self.client.post(callback_url, data)
+        self.assert_400(response)
+
+        # With valid client_id
+        data['client_id'] = AnalysisAutomaticSummaryHandler.get_client_id(geo_task)
+        response = self.client.post(callback_url, data)
+        self.assert_200(response)
+
+        geo_task.refresh_from_db()
+        assert geo_task.status == AnalyticalStatementGeoTask.Status.SUCCESS.value
+        assert _query_check(geo_task.id)['data']['project']['analysisGeoTask']['entryGeo'] == [
+            {
+                'data': [
+                    {
+                        'ent': 'test',
+                        'geoids': [
+                            {
+                                'countrycode': 'Nepal',
+                                'featurecode': 'NLP',
+                                'geonameid': 11,
+                                'latitude': 11.0,
+                                'longitude': 11.0,
+                                'match': 'tes',
+                            },
+                        ],
+                        'offsetEnd': 3,
+                        'offsetStart': 0,
+                    },
+                ],
+                'entryId': str(entry.id),
+            }
+            for entry in CALLBACK_ENTRIES
+        ]
+
+        # -- Check existing instance if provided until threshold is over (CACHE check)
+        response_result = _mutation_check(minput, okay=True)['data']['project']['triggerAnalysisGeoLocation']['result']
+        assert response_result['id'] == geo_task_id
+
+        geo_task.created_at = self.PATCHER_NOW_VALUE -\
+            datetime.timedelta(hours=AnalyticalStatementGeoTask.CACHE_THRESHOLD_HOURS + 1)
+        geo_task.save()
+
+        response_result = _mutation_check(minput, okay=True)['data']['project']['triggerAnalysisGeoLocation']['result']
+        assert response_result['id'] != geo_task_id
+
+        # With failed status
+        data['status'] = DeeplServerBaseCallbackSerializer.Status.FAILED.value
+        response = self.client.post(callback_url, data)
+        self.assert_200(response)
+
+        geo_task.refresh_from_db()
+        assert geo_task.status == AnalyticalStatementGeoTask.Status.FAILED

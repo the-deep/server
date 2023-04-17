@@ -154,6 +154,7 @@ from deepl_integration.views import (
     AnalysisTopicModelCallbackView,
     AnalysisAutomaticSummaryCallbackView,
     AnalyticalStatementNGramCallbackView,
+    AnalyticalStatementGeoCallbackView,
 )
 
 from deep.views import (
@@ -579,6 +580,11 @@ urlpatterns = [
         get_api_path(r'callback/analysis-automatic-ngram/$'),
         AnalyticalStatementNGramCallbackView.as_view(),
         name='analysis_automatic_ngram_callback',
+    ),
+    re_path(
+        get_api_path(r'callback/analysis-geo/$'),
+        AnalyticalStatementGeoCallbackView.as_view(),
+        name='analysis_geo_callback',
     ),
 
     # Combined API View

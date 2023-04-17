@@ -8,6 +8,7 @@ from deepl_integration.handlers import (
     AnalysisTopicModelHandler,
     AnalysisAutomaticSummaryHandler,
     AnalyticalStatementNGramHandler,
+    AnalyticalStatementGeoHandler,
 )
 
 from entry.models import Entry
@@ -15,6 +16,7 @@ from .models import (
     TopicModel,
     AutomaticSummary,
     AnalyticalStatementNGram,
+    AnalyticalStatementGeoTask,
 )
 
 logger = logging.getLogger(__name__)
@@ -72,3 +74,19 @@ def trigger_automatic_ngram(_id):
         generate_json_file_for_upload(entries_data),
     )
     AnalyticalStatementNGramHandler.send_trigger_request_to_extractor(a_ngram)
+
+
+@shared_task
+def trigger_geo_location(_id):
+    geo_location_task = AnalyticalStatementGeoTask.objects.get(pk=_id)
+    entries_data = list(
+        Entry.objects.filter(
+            project=geo_location_task.project,
+            id__in=geo_location_task.entries_id,
+        ).values('excerpt', entry_id=models.F('id'))
+    )
+    geo_location_task.entries_file.save(
+        f'{geo_location_task.id}.json',
+        generate_json_file_for_upload(entries_data),
+    )
+    AnalyticalStatementGeoHandler.send_trigger_request_to_extractor(geo_location_task)
