@@ -6,9 +6,10 @@ from django.db import models
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
-from geo.schema import get_geo_area_queryset_for_project_geo_area_type
 from analysis_framework.models import Widget
 from quality_assurance.models import EntryReviewComment
+
+from geo.schema import get_geo_area_queryset_for_project_geo_area_type
 
 from .models import (
     Entry,

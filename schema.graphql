@@ -1196,6 +1196,11 @@ type EntryFilterDataType {
   includeSubRegions: Boolean
 }
 
+type EntryGeoCentroidData {
+  centroid: PointScalar!
+  count: Int!
+}
+
 type EntryGroupLabelType {
   labelId: ID!
   labelTitle: String!
@@ -2314,6 +2319,7 @@ type ProjectDetailType {
   analysisPillars(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], analyses: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarListType
   analyticalStatement(id: ID!): AnalyticalStatementType
   analyticalStatements(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalyticalStatementListType
+  entriesGeoData(entriesId: [ID!]!): [EntryGeoCentroidData!]
   analysisTopicModel(id: ID!): AnalysisTopicModelType
   analysisAutomaticSummary(id: ID!): AnalysisAutomaticSummaryType
   analysisAutomaticNgram(id: ID!): AnalyticalStatementNGramType
