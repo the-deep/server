@@ -1,18 +1,23 @@
 import graphene
 
 from django.db import models
+from django.db.models.functions import Cast
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from utils.graphene.enums import EnumDescription
+from utils.graphene.geo_scalars import PointScalar
 from utils.common import has_select_related
+from utils.db.functions import IsEmpty
 from deep.permissions import ProjectPermissions as PP
 from user_resource.schema import UserResourceMixin, resolve_user_field
 
 from lead.models import Lead
-from entry.models import Entry
+from analysis_framework.models import Widget
+from geo.models import GeoArea
+from entry.models import Entry, Attribute
 from entry.schema import get_entry_qs, EntryType
 from entry.filter_set import EntriesFilterDataType
 from user.schema import UserType
@@ -518,6 +523,11 @@ class AnalyticalStatementGeoTaskType(UserResourceMixin, DjangoObjectType):
         return root.entry_geos.all()
 
 
+class EntryGeoCentroidData(graphene.ObjectType):
+    centroid = PointScalar(required=True)
+    count = graphene.Int(required=True)
+
+
 class Query:
     analysis_overview = graphene.Field(AnalysisOverviewType)
     analysis = DjangoObjectField(AnalysisType)
@@ -546,6 +556,15 @@ class Query:
         )
     )
 
+    # Custom entry nodes
+    entries_geo_data = graphene.Field(
+        graphene.List(
+            graphene.NonNull(EntryGeoCentroidData),
+            required=True,
+        ),
+        entries_id=graphene.List(graphene.NonNull(graphene.ID), required=True),
+    )
+
     # NLP queries
     analysis_topic_model = DjangoObjectField(AnalysisTopicModelType)
     analysis_automatic_summary = DjangoObjectField(AnalysisAutomaticSummaryType)
@@ -567,3 +586,39 @@ class Query:
     @staticmethod
     def resolve_analytical_statements(root, info, **kwargs) -> models.QuerySet:
         return get_analytical_statement_qs(info)
+
+    @staticmethod
+    def resolve_entries_geo_data(_, info, entries_id):
+        entry_qs = get_entry_qs(info).filter(id__in=entries_id)
+        entry_geo_area_id_qs = Attribute.objects.filter(
+            entry__in=entry_qs,
+            widget__widget_id=Widget.WidgetType.GEO,
+        ).values(
+            geo_area_id=Cast(
+                models.Func(
+                    models.F('data__value'),
+                    function='jsonb_array_elements_text',
+                ),
+                output_field=models.IntegerField(),
+            )
+        )
+        geo_area_centroids_map = {
+            geo_area_id: centroid
+            for geo_area_id, centroid in GeoArea.objects.filter(
+                id__in=entry_geo_area_id_qs.values('geo_area_id')
+            ).exclude(IsEmpty('centroid')).values_list('id', 'centroid')
+            if centroid is not None
+        }
+        return [
+            dict(
+                centroid=geo_area_centroids_map[geo_area_id],
+                count=count,
+            )
+            for geo_area_id, count in (
+                entry_geo_area_id_qs
+                .order_by().values('geo_area_id')
+                .annotate(count=models.Count('*'))
+                .values_list('geo_area_id', 'count')
+            )
+            if geo_area_id in geo_area_centroids_map
+        ]
