@@ -288,7 +288,7 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
         for category_tag, tags in tags.items():
             for tag, prediction_data in tags.items():
                 prediction_value = prediction_data.get('prediction')
-                threshold_value = prediction_data.get('prediction')
+                threshold_value = prediction_data.get('threshold')
                 is_selected = prediction_data.get('is_selected', False)
                 new_predictions.append(
                     AssistedTaggingPrediction(
@@ -557,6 +557,8 @@ class UnifiedConnectorLeadHandler(BaseHandler):
         )
         processed = 0
         while True:
+            # Why use 1?
+            # As we are updating ConnectorLead, we need to stay at page 1 to get the next set of data
             page = paginator.page(1)
             connector_leads: List[ConnectorLead] = list(page.object_list)
             if not connector_leads:  # Nothing to process anymore
