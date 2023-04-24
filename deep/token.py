@@ -19,7 +19,7 @@ class DeepTokenGenerator(PasswordResetTokenGenerator):
     class Meta:
         abstract = True
 
-    def make_token(self, instance: models.Model):
+    def make_token(self, instance: models.Model) -> str:
         return super().make_token(instance)
 
     def check_token(self, model, token):
