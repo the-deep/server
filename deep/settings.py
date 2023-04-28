@@ -144,6 +144,7 @@ LOCAL_APPS = [
     'analysis',
     'analysis_framework',
     'ary',
+    'assessment_registry',
     'category_editor',
     'connector',
     'deep_migration',
