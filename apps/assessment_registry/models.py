@@ -8,7 +8,7 @@ from gallery.models import File
 
 
 class AssessmentRegistry(UserResource):
-    class CrisisType(models.IntegerChoices):  # NOTE: Here the values are selected as per the pk value in deep data to make it easier during data migration
+    class CrisisType(models.IntegerChoices):
         EARTH_QUAKE = 1, 'Earth Quake'
         GROUND_SHAKING = 2, 'Ground Shaking'
         TSUNAMI = 3, 'Tsunami'
@@ -19,88 +19,75 @@ class AssessmentRegistry(UserResource):
         AVALANCE = 8, 'Avalance'
         LANDSLIDE = 9, 'Landslide'
         SUBSIDENCE = 10, 'Subsidence'
-        # EXTRA_TROPICAL_CYCLONE = 11, 'Extra Tropical Cyclone'
+        EXTRA_TROPICAL_CYCLONE = 11, 'Extra Tropical Cyclone'
         TROPICAL_CYCLONE = 12, 'Tropical Cyclone'
         LOCAL_STROM = 13, 'Local/Convective Strom'
-        EXTRA_TROPICAL_CYCLONE = 14, 'Extra Tropical Cyclone'
-        FLOOD_RAIN = 15, 'Flood/Rain'
-        GENERAL_RIVER_FLOOD = 16, 'General River Flood'
-        FLASH_FLOOD = 17, 'Flash flood'
-        STROM_SURGE_FLOOD = 18, 'Strom Surge/Coastal Flood'
-        MASS_MOVEMENT_WET = 19, 'Mass Movement (Wet)'
-        EXTREME_TEMPERATURE = 20, 'Extreme Temperature'
-        HEAT_WAVE = 21, 'Heat Wave'
-        COLD_WAVE = 22, 'Cold Wave'
-        EXTREME_WEATHER_CONDITION = 23, 'Extreme Weather Condition'
-        DROUGHT = 24, 'Drought'
-        WILDFIRE = 25, 'Wildfire'
-        POPULATION_DISPLACEMENT = 112, 'Population Displacement'
-        CONFLICT = 79, 'Conflict'
+        FLOOD_RAIN = 14, 'Flood/Rain'
+        GENERAL_RIVER_FLOOD = 15, 'General River Flood'
+        FLASH_FLOOD = 16, 'Flash flood'
+        STROM_SURGE_FLOOD = 17, 'Strom Surge/Coastal Flood'
+        MASS_MOVEMENT_WET = 18, 'Mass Movement (Wet)'
+        EXTREME_TEMPERATURE = 19, 'Extreme Temperature'
+        HEAT_WAVE = 20, 'Heat Wave'
+        COLD_WAVE = 21, 'Cold Wave'
+        EXTREME_WEATHER_CONDITION = 22, 'Extreme Weather Condition'
+        DROUGHT = 23, 'Drought'
+        WILDFIRE = 24, 'Wildfire'
+        POPULATION_DISPLACEMENT = 25, 'Population Displacement'
+        CONFLICT = 26, 'Conflict'
 
     class PreparednessType(models.IntegerChoices):
-        WITH_PREPAREDNESS = 26, 'With Preparedness'
-        WITHOUT_PREPAREDNESS = 27, 'Without Preparedness'
+        WITH_PREPAREDNESS = 0, 'With Preparedness'
+        WITHOUT_PREPAREDNESS = 1, 'Without Preparedness'
 
     class ExternalSupportType(models.IntegerChoices):
-        EXTERNAL_SUPPORT_RECIEVED = 29, 'External Support Received'
-        NO_EXTERNAL_SUPPORT_RECEIVED = 30, 'No External Support Received'
+        EXTERNAL_SUPPORT_RECIEVED = 0, 'External Support Received'
+        NO_EXTERNAL_SUPPORT_RECEIVED = 1, 'No External Support Received'
 
     class CoordinationType(models.IntegerChoices):
-        COORDINATED = 37, 'Coordinated Joint'
-        HARMONIZED = 38, 'Coordinated Harmonized'
-        UNCOORDINATED = 39, 'Uncoordinated'
+        COORDINATED = 0, 'Coordinated Joint'
+        HARMONIZED = 1, 'Coordinated Harmonized'
+        UNCOORDINATED = 2, 'Uncoordinated'
 
     class Type(models.IntegerChoices):
-        INITIAL = 67, 'Initial'
-        RAPID = 65, 'Rapid'
-        IN_DEPTH = 64, 'In depth'
-        MONITORING = 68, 'Monitoring'
-        OTHER = 72, 'Other'
+        INITIAL = 0, 'Initial'
+        RAPID = 1, 'Rapid'
+        IN_DEPTH = 2, 'In depth'
+        MONITORING = 3, 'Monitoring'
+        OTHER = 4, 'Other'
 
     class FamilyType(models.IntegerChoices):
-        DISPLACEMENT_TRAKING_MATRIX = 74, 'Displacement Traking Matrix'
-        MULTI_CLUSTER_INITIAL_AND_RAPID_ASSESSMENT = 75, 'Multi Cluster Initial and Rapid Assessment (MIRA)'
-        MULTI_SECTORIAL_NEEDS_ASSESSMENT = 76, 'Multi sectorial Needs Assessment (MSNA)'
-        EMERGENCY_FOOD_SECURITY_ASSESSMENT = 77, 'Emergency Food Security Assessment (EFSA)'
+        DISPLACEMENT_TRAKING_MATRIX = 0, 'Displacement Traking Matrix'
+        MULTI_CLUSTER_INITIAL_AND_RAPID_ASSESSMENT = 1, 'Multi Cluster Initial and Rapid Assessment (MIRA)'
+        MULTI_SECTORIAL_NEEDS_ASSESSMENT = 2, 'Multi sectorial Needs Assessment (MSNA)'
+        EMERGENCY_FOOD_SECURITY_ASSESSMENT = 3, 'Emergency Food Security Assessment (EFSA)'
         COMPREHENSIVE_FOOD_SECURITY_AND_VULNERABILITY_ANALYSIS = \
-            78, 'Comprehensive Food Security and Vulnerability Analysis(CFSVA)'
-        PROTECTION_MONITORING = 113, 'Protection Monitoring'
-        HUMANITARIAN_NEEDS_OVERVIEW = 145, 'Humanitarian Needs Overview (HNO)'
-        BRIEFING_NOTE = 147, 'Briefing note'
-        REGISTRATION = 149, 'Registration'
-        IDP_PROFILING_EXERCISE = 178, 'IDPs profiling exercise'
-        CENSUS = 179, 'Census'
-        REFUGEE_AND_MIGRANT_RESPONSE_PLAN = 212, 'Refugee and Migrant Response Plan (RMRP)'
-        RUFUGEE_RESPONSE_PLAN = 213, 'Refugee Response Plan (RRP)'
-        SMART_NUTRITION_SURVEY = 214, 'Smart Nutrition Survey'
-        OTHER = 277, 'Other'
+            4, 'Comprehensive Food Security and Vulnerability Analysis(CFSVA)'
+        PROTECTION_MONITORING = 5, 'Protection Monitoring'
+        HUMANITARIAN_NEEDS_OVERVIEW = 6, 'Humanitarian Needs Overview (HNO)'
+        BRIEFING_NOTE = 7, 'Briefing note'
+        REGISTRATION = 8, 'Registration'
+        IDP_PROFILING_EXERCISE = 9, 'IDPs profiling exercise'
+        CENSUS = 10, 'Census'
+        REFUGEE_AND_MIGRANT_RESPONSE_PLAN = 11, 'Refugee and Migrant Response Plan (RMRP)'
+        RUFUGEE_RESPONSE_PLAN = 12, 'Refugee Response Plan (RRP)'
+        SMART_NUTRITION_SURVEY = 13, 'Smart Nutrition Survey'
+        OTHER = 14, 'Other'
 
     class FrequencyType(models.IntegerChoices):
-        ONE_OFF = 56, 'One off'
-        REGULAR = 57, 'Regular'
+        ONE_OFF = 0, 'One off'
+        REGULAR = 1, 'Regular'
 
     class ConfidentialityType(models.IntegerChoices):
-        UNPROTECTED = 58, 'Unprotected'
-        CONFIDENTIAL = 73, 'Confidential'
+        UNPROTECTED = 0, 'Unprotected'
+        CONFIDENTIAL = 1, 'Confidential'
 
     class Language(models.IntegerChoices):
-        ENGLISH = 61, 'English'
-        FRENCH = 62, 'French'
-        SPANISH = 63, 'Spanish'
-        PORTUGESE = 146, 'Portugese'
-        ARABIC = 66, 'Arabic'
-
-    class FocusType(models.IntegerChoices):
-        CONTEXT = 74, 'Context'
-        SHOCK_EVENT = 75, 'Shock/Event'
-        DISPLACEMENT = 42, 'Displacement'
-        HUMANITERIAN_ACCESS = 8, 'Humaniterian Access'
-        INFORMATION_AND_COMMUNICATION = 41, 'Information and Communication'
-        IMPACT = 9, 'Impact (Scope and Scale)'
-        HUMANITARIAN_CONDITIONS = 10, 'Humanitarian Conditions'
-        RESPONSE_AND_CAPACITIES = 11, 'Response and Capacities'
-        CURRENT_AND_FORECASTED_PRIORITIES = 76, 'Current and Forecasted Priorities'
-        COVID_19_CONTAINMENT_MEASURES = 107, 'Covid 19 Conntainment Measures'
+        ENGLISH = 0, 'English'
+        FRENCH = 1, 'French'
+        SPANISH = 2, 'Spanish'
+        PORTUGESE = 3, 'Portugese'
+        ARABIC = 4, 'Arabic'
 
     # Metadata Group
     # Background Fields
@@ -132,21 +119,81 @@ class AssessmentRegistry(UserResource):
     national_partners = models.ManyToManyField(Organization, related_name='national_partner_assessment_reg')
     government = models.ManyToManyField(Organization, related_name='gov_assessment_reg')
 
-    # Focus
-    # Focus Sectors
-    # focuses = models.IntegerField(choices=FocusType.choices)
-    # sectors = models.IntegerField(choices=SectorType.choices)
-    # protection_info_mgmt = models.IntegerField(choices=ProtectionInfoType.choices)
-    # affected_group = models.IntegerField(choices=AffectedGroupType.choices)
-    location = models.ManyToManyField(Region, related_name='focus_location_assessment_reg')
+    # Methodology
+    objectives = models.TextField(blank=True, null=True)
+    data_collection_technique = models.TextField(blank=True, null=True)
+    sampling = models.TextField(blank=True, null=True)
+    limitation = models.TextField(blank=True, null=True)
+
+
+class MethodologyAttribute(UserResource):
+    class CollectionTechniqueType(models.IntegerChoices):
+        SECONDARY_DATA_REVIEW = 0, 'Secondary Data Review'
+        KEY_INFORMAT_INTERVIEW = 1, 'Key Informant Interview'
+        DIRECT_OBSERVATION = 2, 'Direct Observation'
+        COMMUNITY_GROUP_DISCUSSION = 3, 'Community Group Discussion'
+        FOCUS_GROUP_DISCUSSION = 4, 'Focus Group Discussion'
+        HOUSEHOLD_INTERVIEW = 5, 'Household Interview'
+        INDIVIDUAL_INTERVIEW = 6, 'Individual Interview'
+        SATELLITE_IMAGERY = 7, 'Satellite Imagery'
+
+    class SamplingApproachType(models.IntegerChoices):
+        NON_RANDOM_SELECTION = 0, 'Non-Random Selection'
+        RANDOM_SELECTION = 1, 'Random Selection'
+        FULL_ENUMERATION = 2, 'Full Enumeration'
+
+    class ProximityType(models.IntegerChoices):
+        FACE_TO_FACE = 0, 'Face-to-Face'
+        REMOTE = 1, 'Remote'
+        MIXED = 2, 'Mixed'
+
+    class UnitOfAnalysisType(models.IntegerChoices):
+        CRISIS = 0, 'Crisis'
+        COUNTRY = 1, 'Country'
+        REGION = 2, 'Region'
+        PROVINCE_GOV_PREFECTURE = 3, 'Province/governorate/prefecture'
+        DEPARTMENT_DISTRICT = 4, 'Department/District'
+        SUB_DISTRICT_COUNTRY = 5, 'Sub-District/Country'
+        MUNICIPALITY = 6, 'Municipality'
+        NEIGHBORHOOD_QUARTIER = 7, 'Neighborhood/Quartier'
+        COMMUNITY_SITE = 8, 'Community/Site'
+        AFFECTED_GROUP = 9, 'Affected group'
+        HOUSEHOLD = 10, 'Household'
+        INDIVIDUAL = 11, 'Individual'
+
+    class UnitOfReportingType(models.IntegerChoices):
+        CRISIS = 0, 'Crisis'
+        COUNTRY = 1, 'Country'
+        REGION = 2, 'Region'
+        PROVINCE_GOV_PREFECTURE = 3, 'Province/governorate/prefecture'
+        DEPARTMENT_DISTRICT = 4, 'Department/District'
+        SUB_DISTRICT_COUNTRY = 5, 'Sub-District/Country'
+        MUNICIPALITY = 6, 'Municipality'
+        NEIGHBORHOOD_QUARTIER = 7, 'Neighborhood/Quartier'
+        COMMUNITY_SITE = 8, 'Community/Site'
+        AFFECTED_GROUP = 9, 'Affected group'
+        HOUSEHOLD = 10, 'Household'
+        INDIVIDUAL = 11, 'Individual'
+
+    assessment_registry = models.ForeignKey(
+        AssessmentRegistry,
+        on_delete=models.CASCADE,
+        related_name='assessment_reg_methodology_attr',
+    )
+    data_collection_technique = models.IntegerField(choices=CollectionTechniqueType.choices, null=True, blank=True)
+    sampling_approach = models.IntegerField(choices=SamplingApproachType.choices, null=True, blank=True)
+    sampling_size = models.IntegerField(blank=True, null=True)
+    proximity = models.IntegerField(choices=ProximityType.choices, null=True, blank=True)
+    unit_of_analysis = models.IntegerField(choices=UnitOfAnalysisType.choices, null=True, blank=True)
+    unit_of_reporting = models.IntegerField(choices=UnitOfReportingType.choices, null=True, blank=True)
 
 
 class AdditionalDocument(UserResource):
     class DocumentType(models.IntegerChoices):
-        EXECUTIVE_SUMMARY = 1000, 'Executive summary'
-        ASSESSMENT_DATABASE = 1001, 'Assessment database'
-        QUESTIONAIRE = 1002, 'Questionaire'
-        MISCELLANESOUS = 1003, 'Miscellaneous'
+        EXECUTIVE_SUMMARY = 0, 'Executive summary'
+        ASSESSMENT_DATABASE = 1, 'Assessment database'
+        QUESTIONAIRE = 2, 'Questionaire'
+        MISCELLANESOUS = 3, 'Miscellaneous'
 
     assessment_registry = models.ForeignKey(
         AssessmentRegistry,
@@ -161,5 +208,3 @@ class AdditionalDocument(UserResource):
         null=True, blank=True
     )
     external_link = models.TextField(blank=True)
-
-
