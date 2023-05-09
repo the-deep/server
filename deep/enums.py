@@ -16,6 +16,7 @@ from ary.enums import (
     AssessmentMethodologyProtectionInfoEnum,
     enum_map as ary_enum_map,
 )
+from assessment_registry.enums import enum_map as assessment_reg_enum_map
 
 ENUM_TO_GRAPHENE_ENUM_MAP = {
     **user_enum_map,
@@ -31,6 +32,7 @@ ENUM_TO_GRAPHENE_ENUM_MAP = {
     **unified_connector_enum_map,
     **assisted_tagging_enum_map,
     **ary_enum_map,
+    **assessment_reg_enum_map,
 }
 
 
