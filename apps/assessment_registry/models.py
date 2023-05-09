@@ -152,6 +152,15 @@ class AssessmentRegistry(UserResource):
         Lead, on_delete=models.CASCADE,
     )
 
+    lead = models.OneToOneField(
+        Lead, default=None, blank=True, null=True, on_delete=models.CASCADE,
+    )
+    project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
+    lead_group = models.OneToOneField(
+        LeadGroup, on_delete=models.CASCADE,
+        default=None, blank=True, null=True,
+    )
+
     # Metadata Group
     # -- Background Fields
     bg_countries = models.ManyToManyField(Region)
