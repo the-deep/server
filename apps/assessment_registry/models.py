@@ -5,6 +5,7 @@ from user_resource.models import UserResource
 from geo.models import Region
 from organization.models import Organization
 from gallery.models import File
+from lead.models import Lead, LeadGroup
 
 
 class AssessmentRegistry(UserResource):
@@ -140,6 +141,15 @@ class AssessmentRegistry(UserResource):
         ALL_AFFECTED_NOT_DISPLACED_NO_HOST = 15, 'All/Affected/Not Displaced/No Host'
         ALL_AFFECTED_NOT_DISPLACED_HOST = 16, 'All/Affected/Not Displaced/Host'
 
+    lead = models.OneToOneField(
+        Lead, default=None, blank=True, null=True, on_delete=models.CASCADE,
+    )
+    project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
+    lead_group = models.OneToOneField(
+        LeadGroup, on_delete=models.CASCADE,
+        default=None, blank=True, null=True,
+    )
+
     # Metadata Group
     # -- Background Fields
     bg_countries = models.ManyToManyField(Region)
@@ -151,7 +161,7 @@ class AssessmentRegistry(UserResource):
     cost_estimates_usd = models.IntegerField(null=True, blank=True)
 
     # -- Details Field
-    detials_type = models.IntegerField(choices=Type.choices)
+    details_type = models.IntegerField(choices=Type.choices)
     family = models.IntegerField(choices=FamilyType.choices)
     frequency = models.IntegerField(choices=FrequencyType.choices)
     confidentiality = models.IntegerField(choices=ConfidentialityType.choices)
@@ -161,7 +171,7 @@ class AssessmentRegistry(UserResource):
     # -- Dates
     data_collection_start_date = models.DateField(null=True, blank=True)
     data_collection_end_date = models.DateField(null=True, blank=True)
-    publishcation_date = models.DateField(null=True, blank=True)
+    publication_date = models.DateField(null=True, blank=True)
 
     # -- Stakeholders
     lead_organizations = models.ManyToManyField(Organization, related_name='lead_org_assessment_reg')
