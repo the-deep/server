@@ -23,7 +23,6 @@ from assisted_tagging import schema as assisted_tagging_schema
 from unified_connector import schema as unified_connector_schema
 from export import schema as export_schema, mutation as export_mutation
 from deep_explore import schema as deep_explore_schema
-
 from deep.enums import CustomEnum
 
 
