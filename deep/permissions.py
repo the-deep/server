@@ -267,6 +267,9 @@ class ProjectPermissions(BasePermissions):
         # ---------------------- Analysis Module
         CREATE_ANALYSIS_MODULE = auto()
 
+        # ---------------------AssessmentRegistry
+        CREATE_ASSESSMENT_REGISTRY = auto()
+
     Permission.__name__ = 'ProjectPermission'
 
     __error_message__ = {
@@ -312,6 +315,7 @@ class ProjectPermissions(BasePermissions):
         Permission.CREATE_UNIFIED_CONNECTOR,
         Permission.UPDATE_UNIFIED_CONNECTOR,
         Permission.CREATE_ANALYSIS_MODULE,
+        Permission.CREATE_ASSESSMENT_REGISTRY,
     ]
     ADMIN = [
         *MEMBER,
