@@ -31,6 +31,24 @@ type AnalysisAutomaticSummaryType {
   createdBy: UserType
   modifiedBy: UserType
   status: AutomaticSummaryStatusEnum!
+enum AffectedGroupTypeEnum {
+  ALL
+  ALL_AFFECTED
+  ALL_NOT_AFFECTED
+  ALL_AFFECTED_NOT_DISPLACED
+  ALL_AFFECTED_DISPLACED
+  ALL_AFFECTED_DISPLACED_IN_TRANSIT
+  ALL_AFFECTED_DISPLACED_MIGRANTS
+  ALL_AFFECTED_DISPLACED_IDPS
+  ALL_AFFECTED_DISPLACED_ASYLUM_SEEKER
+  ALL_AFFECTED_DISPLACED_OTHER_OF_CONCERN
+  ALL_AFFECTED_DISPLACED_RETURNEES
+  ALL_AFFECTED_DISPLACED_REFUGEES
+  ALL_AFFECTED_DISPLACED_MIGRANTS_IN_TRANSIT
+  ALL_AFFECTED_DISPLACED_MIGRANTS_PERMANENTS
+  ALL_AFFECTED_DISPLACED_MIGRANTS_PENDULAR
+  ALL_AFFECTED_NOT_DISPLACED_NO_HOST
+  ALL_AFFECTED_NOT_DISPLACED_HOST
 }
 
 type AnalysisFrameworkDetailType {
@@ -481,6 +499,91 @@ enum AssessmentMethodologyProtectionInfoEnum {
   SECTORAL_SYSTEMS_OR_OTHER
 }
 
+input AssessmentRegistryCreateInputType {
+  lead: ID
+  leadGroup: ID
+  bgCountries: [ID!]!
+  bgCrisisStartDate: Date!
+  costEstimatesUsd: Int
+  noOfPages: Int
+  dataCollectionStartDate: Date
+  dataCollectionEndDate: Date
+  publicationDate: Date
+  leadOrganizations: [ID!]!
+  internationalPartners: [ID!]!
+  donors: [ID!]!
+  nationalPartners: [ID!]!
+  governments: [ID!]!
+  objectives: String
+  dataCollectionTechniques: String
+  sampling: String
+  limitations: String
+  locations: [ID!]!
+  bgCrisisType: CrisisTypeEnum!
+  bgPreparedness: PreparednessTypeEnum!
+  externalSupport: ExternalTypeEnum!
+  coordinatedJoint: CoordinationTypeEnum!
+  detailsType: DetailTypeEnum!
+  family: FamilyTypeEnum!
+  frequency: FrequencyTypeEnum!
+  confidentiality: ConfidentialityTypeEnum!
+  language: [LanguageTypeEnum!]!
+  focuses: [FocusTypeEnum!]!
+  sectors: [SectorTypeEnum!]!
+  protectionInfoMgmts: [ProtectionInfoTypeEnum!]!
+  affectedGroups: AffectedGroupTypeEnum
+}
+
+type AssessmentRegistryType {
+  id: ID!
+  lead: LeadType
+  project: ProjectType!
+  leadGroup: LeadGroupType
+  bgCountries: [RegionWithProject!]!
+  bgCrisisStartDate: Date!
+  costEstimatesUsd: Int
+  noOfPages: Int
+  dataCollectionStartDate: Date
+  dataCollectionEndDate: Date
+  publicationDate: Date
+  leadOrganizations: [OrganizationType!]!
+  internationalPartners: [OrganizationType!]!
+  donors: [OrganizationType!]!
+  nationalPartners: [OrganizationType!]!
+  governments: [OrganizationType!]!
+  objectives: String
+  dataCollectionTechniques: String
+  sampling: String
+  limitations: String
+  locations: [RegionWithProject!]!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  bgCrisisType: CrisisTypeEnum!
+  bgCrisisTypeDisplay: EnumDescription!
+  bgPreparedness: PreparednessTypeEnum!
+  bgPreparednessDisplay: EnumDescription!
+  externalSupport: ExternalTypeEnum!
+  externalSupportDisplay: EnumDescription!
+  coordinatedJoint: CoordinationTypeEnum!
+  coordinatedJointDisplay: EnumDescription!
+  detailsType: DetailTypeEnum!
+  detailsTypeDisplay: EnumDescription!
+  family: FamilyTypeEnum!
+  familyDisplay: EnumDescription!
+  frequency: FrequencyTypeEnum!
+  frequencyDisplay: EnumDescription!
+  confidentiality: ConfidentialityTypeEnum!
+  confidentialityDisplay: EnumDescription!
+  language: [LanguageTypeEnum!]!
+  focuses: [FocusTypeEnum!]!
+  sectors: [SectorTypeEnum!]!
+  protectionInfoMgmts: [ProtectionInfoTypeEnum!]!
+  affectedGroups: AffectedGroupTypeEnum!
+  affectedGroupsDisplay: EnumDescription!
+}
+
 type AssessmentType {
   id: ID!
   lead: LeadType
@@ -722,6 +825,11 @@ type ChangeUserPassword {
   ok: Boolean
 }
 
+enum ConfidentialityTypeEnum {
+  UNPROTECTED
+  CONFIDENTIAL
+}
+
 enum ConnectorLeadExtractionStatusEnum {
   PENDING
   RETRYING
@@ -845,6 +953,12 @@ type ConnectorSourceType {
   statusDisplay: EnumDescription!
 }
 
+enum CoordinationTypeEnum {
+  COORDINATED
+  HARMONIZED
+  UNCOORDINATED
+}
+
 type CreateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
@@ -855,6 +969,10 @@ type CreateAnalysisPillarDiscardedEntry {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisPillarDiscardedEntryType
+type CreateAssessmentRegistry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssessmentRegistryType
 }
 
 type CreateDraftEntry {
@@ -927,6 +1045,35 @@ type CreateWrongPredictionReview {
   errors: [GenericScalar!]
   ok: Boolean
   result: MissingPredictionReviewType
+}
+
+enum CrisisTypeEnum {
+  EARTH_QUAKE
+  GROUND_SHAKING
+  TSUNAMI
+  VOLCANO
+  VOLCANIC_ERUPTION
+  MASS_MOMENT_DRY
+  ROCK_FALL
+  AVALANCE
+  LANDSLIDE
+  SUBSIDENCE
+  EXTRA_TROPICAL_CYCLONE
+  TROPICAL_CYCLONE
+  LOCAL_STROM
+  FLOOD_RAIN
+  GENERAL_RIVER_FLOOD
+  FLASH_FLOOD
+  STROM_SURGE_FLOOD
+  MASS_MOVEMENT_WET
+  EXTREME_TEMPERATURE
+  HEAT_WAVE
+  COLD_WAVE
+  EXTREME_WEATHER_CONDITION
+  DROUGHT
+  WILDFIRE
+  POPULATION_DISPLACEMENT
+  CONFLICT
 }
 
 type CustomEnum {
@@ -1029,6 +1176,12 @@ input DiscardedEntryUpdateInputType {
   analysisPillar: ID
   entry: ID
   tag: DiscardedEntryTagTypeEnum
+enum DetailTypeEnum {
+  INITIAL
+  RAPID
+  IN_DEPTH
+  MONITORING
+  OTHER
 }
 
 type DjangoDebug {
@@ -1643,6 +1796,29 @@ input ExportUpdateInputType {
   title: String
 }
 
+enum ExternalTypeEnum {
+  EXTERNAL_SUPPORT_RECIEVED
+  NO_EXTERNAL_SUPPORT_RECEIVED
+}
+
+enum FamilyTypeEnum {
+  DISPLACEMENT_TRAKING_MATRIX
+  MULTI_CLUSTER_INITIAL_AND_RAPID_ASSESSMENT
+  MULTI_SECTORIAL_NEEDS_ASSESSMENT
+  EMERGENCY_FOOD_SECURITY_ASSESSMENT
+  COMPREHENSIVE_FOOD_SECURITY_AND_VULNERABILITY_ANALYSIS
+  PROTECTION_MONITORING
+  HUMANITARIAN_NEEDS_OVERVIEW
+  BRIEFING_NOTE
+  REGISTRATION
+  IDP_PROFILING_EXERCISE
+  CENSUS
+  REFUGEE_AND_MIGRANT_RESPONSE_PLAN
+  RUFUGEE_RESPONSE_PLAN
+  SMART_NUTRITION_SURVEY
+  OTHER
+}
+
 enum FeatureFeatureType {
   GENERAL_ACCESS
   EXPERIMENTAL
@@ -1666,6 +1842,24 @@ enum FeatureKey {
 type FileFieldType {
   name: String
   url: String
+}
+
+enum FocusTypeEnum {
+  CONTEXT
+  SHOCK_EVENT
+  DISPLACEMENT
+  HUMANITERIAN_ACCESS
+  INFORMATION_AND_COMMUNICATION
+  IMPACT
+  HUMANITARIAN_CONDITIONS
+  RESPONSE_AND_CAPACITIES
+  CURRENT_AND_FORECASTED_PRIORITIES
+  COVID_19_CONTAINMENT_MEASURES
+}
+
+enum FrequencyTypeEnum {
+  ONE_OFF
+  REGULAR
 }
 
 type GalleryFileType {
@@ -1737,6 +1931,14 @@ input HIDLoginInputType {
 type JwtTokenType {
   accessToken: String
   expiresIn: String
+}
+
+enum LanguageTypeEnum {
+  ENGLISH
+  FRENCH
+  SPANISH
+  PORTUGESE
+  ARABIC
 }
 
 enum LeadConfidentialityEnum {
@@ -2244,6 +2446,11 @@ input PredictionTagAnalysisFrameworkMapInputType {
   clientId: String
 }
 
+enum PreparednessTypeEnum {
+  WITH_PREPAREDNESS
+  WITHOUT_PREPAREDNESS
+}
+
 type ProjectAcceptReject {
   errors: [GenericScalar!]
   ok: Boolean
@@ -2451,6 +2658,7 @@ type ProjectMutationType {
   triggerAnalysisAutomaticSummary(data: AnalysisAutomaticSummaryCreateInputType!): TriggerAnalysisAutomaticSummary
   triggerAnalysisAutomaticNgram(data: AnalyticalStatementNGramCreateInputType!): TriggerAnalysisAnalyticalStatementNGram
   triggerAnalysisGeoLocation(data: AnalyticalStatementGeoTaskInputType!): TriggerAnalysisAnalyticalGeoTask
+  createAssessmentRegistry(data: AssessmentRegistryCreateInputType!): CreateAssessmentRegistry
   exportCreate(data: ExportCreateInputType!): CreateUserExport
   exportUpdate(data: ExportUpdateInputType!, id: ID!): UpdateUserExport
   exportCancel(id: ID!): CancelUserExport
@@ -2537,6 +2745,7 @@ enum ProjectPermission {
   CREATE_EXPORT
   CAN_QUALITY_CONTROL
   CREATE_ANALYSIS_MODULE
+  CREATE_ASSESSMENT_REGISTRY
 }
 
 type ProjectRoleType {
@@ -2686,6 +2895,17 @@ input ProjectsFilterDataInputType {
   hasPermissionAccess: ProjectPermission
   ordering: [ProjectOrderingEnum!]
   isTest: Boolean
+}
+
+enum ProtectionInfoTypeEnum {
+  PROTECTION_MONITORING
+  PROTECTION_NEEDS_ASSESSMENT
+  CASE_MANAGEMENT
+  POPULATION_DATA
+  PROTECTION_RESPONSE_M_E
+  COMMUNICATING_WITH_IN_AFFECTED_COMMUNITIES
+  SECURITY_AND_SITUATIONAL_AWARENESS
+  SECTORAL_SYSTEM_OTHER
 }
 
 type PublicAnalysisFramework {
@@ -3007,6 +3227,15 @@ type TriggerAnalysisTopicModel {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisTopicModelType
+enum SectorTypeEnum {
+  F00D
+  HEALTH
+  SHELTER
+  WASH
+  PROTECTION
+  NUTRITION
+  LIVELIHOOD
+  EDUCATION
 }
 
 type TriggerUnifiedConnector {
