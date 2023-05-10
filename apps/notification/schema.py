@@ -7,6 +7,7 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from utils.graphene.enums import EnumDescription
 from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
+from deep.trackers import track_user
 
 from .models import Notification
 from .filter_set import NotificationGqlFilterSet
@@ -17,6 +18,7 @@ from .enums import (
 
 
 def get_user_notification_qs(info):
+    track_user(info.context.request.user.profile)
     return Notification.objects.filter(
         receiver=info.context.request.user,
     )

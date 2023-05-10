@@ -16,6 +16,7 @@ from utils.graphene.mutation import (
 from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
 
 from deep.permissions import ProjectPermissions as PP
+from deep.trackers import TrackerAction, track_project
 
 from geo.models import Region
 from geo.schema import RegionDetailType
@@ -348,6 +349,7 @@ class ProjectMutationType(
         try:
             project = Project.get_for_gq(info.context.user, only_member=True).get(pk=id)
             info.context.set_active_project(project)
+            track_project(project, action=TrackerAction.Project.WRITE)
             return project
         except Project.DoesNotExist:
             raise PermissionDenied()

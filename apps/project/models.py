@@ -109,6 +109,10 @@ class Project(UserResource):
     is_deleted = models.BooleanField(default=False)
     deleted_at = models.DateField(null=True, blank=True)
 
+    # Latest activity tracking (Using graphql nodes. Updated by any nested node)
+    last_read_access = models.DateTimeField(null=True, blank=True)
+    last_write_access = models.DateTimeField(null=True, blank=True)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.analysis_framework_id: int

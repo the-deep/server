@@ -1,9 +1,11 @@
+import pytz
 from unittest import mock
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from django.conf import settings
 from django.utils import timezone
 
+from deep.trackers import schedule_tracker_data_handler
 from utils.graphene.tests import GraphQLTestCase
 
 from gallery.factories import FileFactory
@@ -909,3 +911,59 @@ class TestUserSchema(GraphQLTestCase):
         """
         with self.assertExtraNumQueries(4):
             self.query_check(QUERY_ALL_USERS)
+
+    def test_user_last_active(self):
+        QUERY_NOTIFICATIONS = '''
+            query MyQuery {
+                notifications {
+                    results {
+                      id
+                    }
+                }
+            }
+        '''
+
+        def assert_user_last_activity(user, last_active_date, is_active):
+            user.refresh_from_db()
+            assert user.profile.last_active == last_active_date
+            assert user.profile.is_active is is_active
+
+        user3, *users = UserFactory.create_batch(3)
+
+        self.now_datetime = timezone_now = datetime(2022, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+        with self.captureOnCommitCallbacks(execute=True):
+            schedule_tracker_data_handler()
+        # Normal run without calling notifications endpoint
+        for user in users:
+            self.force_login(user, refresh_from_db=True)
+            assert_user_last_activity(user, None, False)
+            with self.captureOnCommitCallbacks(execute=True):
+                schedule_tracker_data_handler()
+            assert_user_last_activity(user, None, False)
+        assert_user_last_activity(user3, None, False)
+
+        # Now calling notifications endpoint
+        for user in users:
+            self.force_login(user, refresh_from_db=True)
+            assert_user_last_activity(user, None, False)
+            self.query_check(QUERY_NOTIFICATIONS)
+            assert_user_last_activity(user, None, False)
+            with self.captureOnCommitCallbacks(execute=True):
+                schedule_tracker_data_handler()
+            assert_user_last_activity(user, timezone_now, True)
+        assert_user_last_activity(user3, None, False)
+
+        # Now calling notifications endpoint again (But now == 6 months ahead)
+        self.now_datetime = new_timezone_now = datetime(2022, 7, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+        with self.captureOnCommitCallbacks(execute=True):
+            schedule_tracker_data_handler()
+        for user in users:
+            self.force_login(user, refresh_from_db=True)
+            assert_user_last_activity(user, timezone_now, False)
+            self.query_check(QUERY_NOTIFICATIONS)
+            assert_user_last_activity(user, timezone_now, False)
+            with self.captureOnCommitCallbacks(execute=True):
+                schedule_tracker_data_handler()
+            user.refresh_from_db()
+            assert_user_last_activity(user, new_timezone_now, True)
+        assert_user_last_activity(user3, None, False)

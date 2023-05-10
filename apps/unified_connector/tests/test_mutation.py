@@ -2,7 +2,8 @@ from unittest.mock import patch
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 
-from utils.graphene.tests import GraphQLSnapShotTestCase, DUMMY_TEST_CACHES
+from utils.graphene.tests import GraphQLSnapShotTestCase
+from deep.tests.test_case import DUMMY_TEST_CACHES
 
 from project.factories import ProjectFactory
 from user.factories import UserFactory
