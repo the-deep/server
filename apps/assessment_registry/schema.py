@@ -29,7 +29,6 @@ class AssessmentRegistryType(DjangoObjectType, UserResourceMixin):
             "cost_estimates_usd", "no_of_pages", "data_collection_start_date", "data_collection_end_date",
             "publication_date", "lead_organizations", "international_partners", "donors", "national_partners",
             "governments", "objectives", "data_collection_techniques", "sampling", "limitations", "locations",
-            "bg_crisis_type",
         )
 
     bg_crisis_type = graphene.Field(CrisisTypeEnum, required=True)
@@ -48,16 +47,13 @@ class AssessmentRegistryType(DjangoObjectType, UserResourceMixin):
     frequency_display = EnumDescription(source='get_frequency_display', required=True)
     confidentiality = graphene.Field(ConfidentialityTypeEnum, required=True)
     confidentiality_display = EnumDescription(source='get_confidentiality_display', required=True)
-    language = graphene.Field(LanguageTypeEnum, required=True)
-    language_display = EnumDescription(source='get_language_display', required=True)
-    focuses = graphene.Field(FocusTypeEnum, required=True)
-    focuses_display = EnumDescription(source='get_focuses_display', required=True)
-    sectors = graphene.Field(SectorTypeEnum, required=True)
-    sectors_display = EnumDescription(source='get_sectors_display', required=True)
-    protection_info_mgmts = graphene.Field(ProtectionInfoTypeEnum, required=True)
-    protection_info_mgmts_display = EnumDescription(source='get_protection_info_mgmts_display', required=True)
+    language = graphene.List(graphene.NonNull(LanguageTypeEnum), required=True)
+    focuses = graphene.List(graphene.NonNull(FocusTypeEnum), required=True)
+    sectors = graphene.List(graphene.NonNull(SectorTypeEnum), required=True)
+    protection_info_mgmts = graphene.List(graphene.NonNull(ProtectionInfoTypeEnum), required=True)
     affected_groups = graphene.Field(AffectedGroupTypeEnum, required=True)
     affected_groups_display = EnumDescription(source='get_affected_groups_display', required=True)
+
 
 #class MethodologyAttributeType(DjangoObjectType, UserResourceMixin):
 #    class Meta:
