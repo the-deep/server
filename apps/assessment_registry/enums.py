@@ -17,6 +17,7 @@ from .models import (
     AssessmentRegistryOrganization,
 )
 
+
 AssessmentRegistryCrisisTypeEnum = convert_enum_to_graphene_enum(
     AssessmentRegistry.CrisisType, name='AssessmentRegistryCrisisTypeEnum'
 )
