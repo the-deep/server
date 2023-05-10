@@ -19,7 +19,9 @@ FamilyTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.FamilyType, na
 
 FrequencyTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.FrequencyType, name='FrequencyTypeEnum')
 
-ConfidentialityTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.ConfidentialityType, name='ConfidentialityTypeEnum')
+ConfidentialityTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.ConfidentialityType, name='ConfidentialityTypeEnum'
+)
 
 LanguageTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.Language, name='LanguageTypeEnum')
 
