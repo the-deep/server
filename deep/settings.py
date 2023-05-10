@@ -42,8 +42,11 @@ env = environ.Env(
     S3_AWS_ACCESS_KEY_ID=(str, None),
     S3_AWS_SECRET_ACCESS_KEY=(str, None),
     S3_AWS_ENDPOINT_URL=(str, None),
+    # Redis
     CELERY_REDIS_URL=str,
     DJANGO_CACHE_REDIS_URL=str,
+    # -- For running test (Optional)
+    TEST_DJANGO_CACHE_REDIS_URL=(str, None),
     # HID
     HID_CLIENT_ID=str,
     HID_CLIENT_REDIRECT_URL=str,
@@ -453,6 +456,7 @@ else:
     CELERY_REDIS_URL = env('CELERY_REDIS_URL')
     DJANGO_CACHE_REDIS_URL = env('DJANGO_CACHE_REDIS_URL')
 
+TEST_DJANGO_CACHE_REDIS_URL = env('TEST_DJANGO_CACHE_REDIS_URL')
 # CELERY CONFIG "redis://:{password}@{host}:{port}/{db}"
 
 CELERY_BROKER_URL = CELERY_REDIS_URL
@@ -533,6 +537,11 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'deep_explore.tasks.update_public_deep_explore_snapshot',
         # Every day at 01:00
         'schedule': crontab(minute=0, hour=1),
+    },
+    'schedule_tracker_data_handler': {
+        'task': 'deep.trackers.schedule_tracker_data_handler',
+        # Every 6 hours
+        'schedule': crontab(hour="*/6"),
     },
 }
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'

@@ -1,4 +1,7 @@
+import pytz
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from unittest.mock import patch
 
 from django.utils import timezone
 from django.contrib.gis.geos import Point
@@ -11,9 +14,11 @@ from project.models import (
     ProjectMembership,
     ProjectUserGroupMembership,
     ProjectStats,
+    Project,
 )
 from deep.permissions import ProjectPermissions as PP
 from deep.caches import CacheKey
+from deep.trackers import schedule_tracker_data_handler
 
 from user.factories import UserFactory
 from user_group.factories import UserGroupFactory
@@ -865,6 +870,134 @@ class TestProjectSchema(GraphQLTestCase):
             content = _query_check(filters=filters)['data']['project']['stats']
             self.assertEqual(_expected_response(*_expected), content, index)
 
+    def test_project_last_read_access(self):
+        QUERY = '''
+            query MyQuery ($projectId: ID!) {
+              project(id: $projectId) {
+                  id
+                }
+            }
+        '''
+
+        user = UserFactory.create()
+        projects = ProjectFactory.create_batch(2)
+        projects.extend(ProjectFactory.create_batch(2, is_private=True))
+
+        project_with_access = [projects[0], projects[2]]
+
+        for project in project_with_access:
+            project.add_member(user, role=self.project_role_member)
+
+        def _query_check(project_id):
+            return self.query_check(QUERY, variables={'projectId': project_id})
+
+        self.force_login(user)
+
+        with patch('deep.trackers.timezone.now') as timezone_now_mock:
+            timezone_now_mock.return_value = timezone_now = datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+            # Normal run without calling notifications endpoint
+            for project in projects:
+                assert project.last_read_access is None
+                _query_check(project.id)['data']['project']
+                with self.captureOnCommitCallbacks(execute=True):
+                    schedule_tracker_data_handler()
+                if project in project_with_access:
+                    project.refresh_from_db()
+                    assert project.last_read_access == timezone_now
+                else:
+                    assert project.last_read_access is None
+
+            timezone_now_mock.return_value = new_timezone_now = datetime(2022, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+            # Normal run without calling notifications endpoint
+            for project in projects:
+                if project in project_with_access:
+                    assert project.last_read_access == timezone_now
+                else:
+                    assert project.last_read_access is None
+                _query_check(project.id)['data']['project']
+                with self.captureOnCommitCallbacks(execute=True):
+                    schedule_tracker_data_handler()
+                if project in project_with_access:
+                    project.refresh_from_db()
+                    assert project.last_read_access == new_timezone_now
+                else:
+                    assert project.last_read_access is None
+
+    def test_project_last_write_access(self):
+        MUTATION = '''
+            mutation MyMutation ($projectId: ID!) {
+              project(id: $projectId) {
+                  id
+                }
+            }
+        '''
+
+        user = UserFactory.create()
+        projects = ProjectFactory.create_batch(2)
+        projects.extend(
+            ProjectFactory.create_batch(2, is_private=True)
+        )
+
+        project_with_access = [projects[0], projects[2]]
+
+        for project in project_with_access:
+            project.add_member(user, role=self.project_role_member)
+
+        def _query_check(project_id, **kwargs):
+            return self.query_check(MUTATION, variables={'projectId': project_id}, **kwargs)
+
+        self.force_login(user)
+
+        with patch('deep.trackers.timezone.now') as timezone_now_mock:
+            timezone_now_mock.return_value = timezone_now = datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+            # Normal run without calling notifications endpoint
+            for project in projects:
+                project.refresh_from_db()
+                assert project.last_write_access is None
+                if project in project_with_access:
+                    _query_check(project.id)['data']['project']
+                    with self.captureOnCommitCallbacks(execute=True):
+                        schedule_tracker_data_handler()
+                    project.refresh_from_db()
+                    assert project.last_write_access == timezone_now
+                    assert project.status == Project.Status.ACTIVE
+                else:
+                    _query_check(project.id, assert_for_error=True)
+                    with self.captureOnCommitCallbacks(execute=True):
+                        schedule_tracker_data_handler()
+                    project.refresh_from_db()
+                    assert project.last_write_access is None
+                    assert project.status == Project.Status.INACTIVE
+
+            timezone_now_mock.return_value = new_timezone_now = datetime(2022, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+            # Normal run without calling notifications endpoint
+            for project in projects:
+                project.refresh_from_db()
+                if project in project_with_access:
+                    assert project.last_write_access == timezone_now
+                    _query_check(project.id)['data']['project']
+                    with self.captureOnCommitCallbacks(execute=True):
+                        schedule_tracker_data_handler()
+                    project.refresh_from_db()
+                    assert project.last_write_access == new_timezone_now
+                    assert project.status == Project.Status.ACTIVE
+                else:
+                    assert project.last_write_access is None
+                    _query_check(project.id, assert_for_error=True)
+                    with self.captureOnCommitCallbacks(execute=True):
+                        schedule_tracker_data_handler()
+                    project.refresh_from_db()
+                    assert project.last_write_access is None
+                    assert project.status == Project.Status.INACTIVE
+
+            # Check for auto status change
+            timezone_now_mock.return_value = new_timezone_now = datetime(2023, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+            with self.captureOnCommitCallbacks(execute=True):
+                schedule_tracker_data_handler()
+            for project in projects:
+                project.refresh_from_db()
+                assert project.status == Project.Status.INACTIVE
+
 
 class TestProjectViz(GraphQLTestCase):
     ENABLE_NOW_PATCHER = True
@@ -954,7 +1087,7 @@ class TestProjectViz(GraphQLTestCase):
             content['data']['project']['vizData'],
             {
                 'dataUrl': '',
-                'modifiedAt': self.now_datetime_str,
+                'modifiedAt': self.now_datetime_str(),
                 'publicShare': False,
                 'publicUrl': None,
                 'status': self.genum(ProjectStats.Status.PENDING),
@@ -973,7 +1106,7 @@ class TestProjectViz(GraphQLTestCase):
             content['data']['project']['vizData'],
             {
                 'dataUrl': '',
-                'modifiedAt': self.now_datetime_str,
+                'modifiedAt': self.now_datetime_str(),
                 'publicShare': True,
                 'publicUrl': 'http://testserver' + project_stats.get_public_url(),
                 'status': self.genum(ProjectStats.Status.PENDING),

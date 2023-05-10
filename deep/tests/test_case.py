@@ -26,16 +26,25 @@ TEST_EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 TEST_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 TEST_CACHES = {
     'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': settings.TEST_DJANGO_CACHE_REDIS_URL,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        'KEY_PREFIX': 'test_dj_cache-',
+    },
+    'local-memory': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake-rest',
     }
 }
+
 DUMMY_TEST_CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-        'LOCATION': 'unique-snowflake-rest',
+        'LOCATION': 'unique-snowflake',
     }
 }
+
 TEST_AUTH_PASSWORD_VALIDATORS = []
 
 

@@ -22,6 +22,7 @@ from utils.graphene.fields import (
 )
 from deep.permissions import ProjectPermissions as PP
 from deep.serializers import URLCachedFileField
+from deep.trackers import TrackerAction, track_project
 from user_resource.schema import UserResourceMixin
 
 from user.models import User
@@ -257,6 +258,7 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
         try:
             project = Project.get_for_gq(info.context.user).get(pk=id)
             info.context.set_active_project(project)
+            track_project(project, action=TrackerAction.Project.READ)
             return project
         except Project.DoesNotExist:
             return None
