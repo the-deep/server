@@ -3,6 +3,7 @@ from user_resource.serializers import UserResourceSerializer
 from deep.serializers import ProjectPropertySerializerMixin
 from rest_framework import serializers
 
+
 class MethodologyAttributeSerializer(serializers.ModelSerializer):
     class Meta:
         model = MethodologyAttribute
@@ -22,6 +23,9 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
     methodology_attributes = MethodologyAttributeSerializer(
         source='assessment_reg_methodology_attr', many=True, required=False
     )
+    additional_documents = AdditionalDocumentSerializer(
+        source='assessment_reg_add_document', many=True, required=False
+    )
 
     class Meta:
         model = AssessmentRegistry
@@ -32,7 +36,7 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             "governments", "objectives", "data_collection_techniques", "sampling", "limitations", "locations",
             "bg_crisis_type", "bg_preparedness", "external_support", "coordinated_joint", "details_type",
             "family", "frequency", "confidentiality", "language", "focuses", "sectors", "protection_info_mgmts",
-            "affected_groups", "methodology_attributes",
+            "affected_groups", "methodology_attributes", "additional_documents",
         )
 
     def validate(self, data):
