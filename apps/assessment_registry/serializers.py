@@ -1,9 +1,28 @@
-from .models import AssessmentRegistry
+from .models import AssessmentRegistry, MethodologyAttribute, AdditionalDocument
 from user_resource.serializers import UserResourceSerializer
 from deep.serializers import ProjectPropertySerializerMixin
+from rest_framework import serializers
+
+class MethodologyAttributeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MethodologyAttribute
+        fields = (
+            "id", "data_collection_technique", "sampling_approach", "sampling_size",
+            "proximity", "unit_of_analysis", "unit_of_reporting",
+        )
+
+
+class AdditionalDocumentSerializer(UserResourceSerializer):
+    class Meta:
+        model = AdditionalDocument
+        fields = ("id", "document_type", "file", "external_link",)
 
 
 class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerializerMixin):
+    methodology_attributes = MethodologyAttributeSerializer(
+        source='assessment_reg_methodology_attr', many=True, required=False
+    )
+
     class Meta:
         model = AssessmentRegistry
         fields = (
@@ -13,7 +32,7 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             "governments", "objectives", "data_collection_techniques", "sampling", "limitations", "locations",
             "bg_crisis_type", "bg_preparedness", "external_support", "coordinated_joint", "details_type",
             "family", "frequency", "confidentiality", "language", "focuses", "sectors", "protection_info_mgmts",
-            "affected_groups",
+            "affected_groups", "methodology_attributes",
         )
 
     def validate(self, data):
