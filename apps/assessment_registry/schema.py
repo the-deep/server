@@ -43,6 +43,15 @@ class MethodologyAttributeType(DjangoObjectType, UserResourceMixin):
     unit_of_reporting_display = EnumDescription(source='get_unit_of_reporting_display', required=True)
 
 
+class AdditionalDocumentType(DjangoObjectType, UserResourceMixin):
+    class Meta:
+        model = AdditionalDocument
+        fields = ("id", "assessment_registry", "file", "external_link")
+
+    document_type = graphene.Field(DocumentTypeEnum, required=True)
+    document_type_display = EnumDescription(source='get_document_type_display', required=True)
+
+
 class AssessmentRegistryType(
         DjangoObjectType,
         UserResourceMixin
@@ -80,12 +89,4 @@ class AssessmentRegistryType(
     affected_groups = graphene.Field(AffectedGroupTypeEnum, required=True)
     affected_groups_display = EnumDescription(source='get_affected_groups_display', required=True)
     methodology_attributes = graphene.List(graphene.NonNull(MethodologyAttributeType), required=False)
-
-
-class AdditionalDocumentType(DjangoObjectType, UserResourceMixin):
-    class Meta:
-        model = AdditionalDocument
-        fields = ("id", "assessment_registry", "file", "external_link")
-
-    document_type = graphene.Field(DocumentTypeEnum, required=True)
-    document_type_display = EnumDescription(source='get_document_type_display', required=True)
+    additional_documents = graphene.List(graphene.NonNull(AdditionalDocumentType), required=False)
