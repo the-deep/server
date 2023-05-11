@@ -188,6 +188,9 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
     summary_sub_dimension_issue = SummarySubDimensionSerializer(
         source="summary_focus_subsector_issue_ary", many=True, required=False
     )
+    additional_documents = AdditionalDocumentSerializer(
+        source='assessment_reg_add_document', many=True, required=False
+    )
 
     class Meta:
         model = AssessmentRegistry
