@@ -3,7 +3,7 @@ from utils.graphene.enums import (
     get_enum_name_from_django_field,
 )
 
-from .models import AssessmentRegistry
+from .models import AssessmentRegistry, MethodologyAttribute, AdditionalDocument
 
 CrisisTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.CrisisType, name='CrisisTypeEnum')
 
@@ -33,6 +33,26 @@ ProtectionInfoTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.Protec
 
 AffectedGroupTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.AffectedGroupType, name='AffectedGroupTypeEnum')
 
+DataCollectionTechniqueTypeEnum = convert_enum_to_graphene_enum(
+    MethodologyAttribute.CollectionTechniqueType, name='DataCollectionTechniqueTypeEnum'
+)
+
+SamplingApproachTypeEnum = convert_enum_to_graphene_enum(
+    MethodologyAttribute.SamplingApproachType, name='SamplingApproachTypeEnum'
+)
+ProximityTypeEnum = convert_enum_to_graphene_enum(MethodologyAttribute.ProximityType, name='ProximityTypeEnum')
+
+UnitOfAnalysisTypeEnum = convert_enum_to_graphene_enum(
+    MethodologyAttribute.UnitOfAnalysisType, name='UnitOfAnalysisTypeEnum'
+)
+
+UnitOfReportingTypeEnum = convert_enum_to_graphene_enum(
+    MethodologyAttribute.UnitOfReportingType, name='UnitOfReportingTypeEnum'
+)
+DocumentTypeEnum = convert_enum_to_graphene_enum(
+    AdditionalDocument.DocumentType, name='DocumentTypeEnum'
+)
+
 enum_map = {
     get_enum_name_from_django_field(field): enum
     for field, enum in (
@@ -49,5 +69,11 @@ enum_map = {
         (AssessmentRegistry.sectors, SectorTypeEnum),
         (AssessmentRegistry.protection_info_mgmts, ProtectionInfoTypeEnum),
         (AssessmentRegistry.affected_groups, AffectedGroupTypeEnum),
+        (MethodologyAttribute.data_collection_technique, DataCollectionTechniqueTypeEnum),
+        (MethodologyAttribute.sampling_approach, SamplingApproachTypeEnum),
+        (MethodologyAttribute.proximity, ProximityTypeEnum),
+        (MethodologyAttribute.unit_of_analysis, UnitOfAnalysisTypeEnum),
+        (MethodologyAttribute.unit_of_reporting, UnitOfReportingTypeEnum),
+        (AdditionalDocument.document_type, DocumentTypeEnum),
     )
 }
