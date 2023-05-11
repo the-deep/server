@@ -3,6 +3,26 @@ schema {
   mutation: Mutation
 }
 
+input AdditionalDocumentInputType {
+  id: Int
+  documentType: DocumentTypeEnum!
+  file: ID
+  externalLink: String
+}
+
+type AdditionalDocumentType {
+  id: ID!
+  assessmentRegistry: AssessmentRegistryType!
+  file: GalleryFileType
+  externalLink: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  documentType: DocumentTypeEnum!
+  documentTypeDisplay: EnumDescription!
+}
+
 type AdminLevelType {
   id: ID!
   title: String!
@@ -532,6 +552,8 @@ input AssessmentRegistryCreateInputType {
   sectors: [SectorTypeEnum!]!
   protectionInfoMgmts: [ProtectionInfoTypeEnum!]!
   affectedGroups: AffectedGroupTypeEnum
+  methodologyAttributes: [MethodologyAttributeInputType!]
+  additionalDocuments: [AdditionalDocumentInputType!]
 }
 
 type AssessmentRegistryType {
@@ -582,6 +604,8 @@ type AssessmentRegistryType {
   protectionInfoMgmts: [ProtectionInfoTypeEnum!]!
   affectedGroups: AffectedGroupTypeEnum!
   affectedGroupsDisplay: EnumDescription!
+  methodologyAttributes: [MethodologyAttributeType!]
+  additionalDocuments: [AdditionalDocumentType!]
 }
 
 type AssessmentType {
@@ -1080,6 +1104,17 @@ type CustomEnum {
   aryPimEnum: AssessmentMethodologyProtectionInfoEnum
 }
 
+enum DataCollectionTechniqueTypeEnum {
+  SECONDARY_DATA_REVIEW
+  KEY_INFORMAT_INTERVIEW
+  DIRECT_OBSERVATION
+  COMMUNITY_GROUP_DISCUSSION
+  FOCUS_GROUP_DISCUSSION
+  HOUSEHOLD_INTERVIEW
+  INDIVIDUAL_INTERVIEW
+  SATELLITE_IMAGERY
+}
+
 scalar Date
 
 type DateCountType {
@@ -1203,6 +1238,13 @@ type DjangoDebugSQL {
   transStatus: String
   isoLevel: String
   encoding: String
+}
+
+enum DocumentTypeEnum {
+  EXECUTIVE_SUMMARY
+  ASSESSMENT_DATABASE
+  QUESTIONNAIRE
+  MISCELLANEOUS
 }
 
 input DraftEntryInputType {
@@ -2299,6 +2341,34 @@ type MergedAsOrganizationType {
   verified: Boolean!
 }
 
+input MethodologyAttributeInputType {
+  id: Int
+  dataCollectionTechnique: DataCollectionTechniqueTypeEnum
+  samplingApproach: SamplingApproachTypeEnum
+  samplingSize: Int
+  proximity: ProximityTypeEnum
+  unitOfAnalysis: UnitOfAnalysisTypeEnum
+  unitOfReporting: UnitOfReportingTypeEnum
+}
+
+type MethodologyAttributeType {
+  id: ID!
+  proximity: ProximityTypeEnum!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  dataCollectionTechnique: DataCollectionTechniqueTypeEnum!
+  dataCollectionTechniqueDisplay: EnumDescription!
+  samplingApproach: SamplingApproachTypeEnum!
+  samplingAppraochDisplay: EnumDescription!
+  proximityDisplay: EnumDescription!
+  unitOfAnanlysis: UnitOfAnalysisTypeEnum!
+  unitOfAnalysisDisplay: EnumDescription!
+  unitOfReporting: UnitOfReportingTypeEnum!
+  unitOfReportingDisplay: EnumDescription!
+}
+
 input MissingPredictionReviewInputType {
   draftEntry: ID!
   tag: ID!
@@ -2919,6 +2989,12 @@ enum ProtectionInfoTypeEnum {
   SECTORAL_SYSTEM_OTHER
 }
 
+enum ProximityTypeEnum {
+  FACE_TO_FACE
+  REMOTE
+  MIXED
+}
+
 type PublicAnalysisFramework {
   id: ID!
   title: String!
@@ -3184,6 +3260,12 @@ type RssFieldType {
   label: String
 }
 
+enum SamplingApproachTypeEnum {
+  NON_RANDOM_SELECTION
+  RANDOM_SELECTION
+  FULL_ENUMERATION
+}
+
 type SaveUserSavedLeadFilter {
   errors: [GenericScalar!]
   ok: Boolean
@@ -3316,6 +3398,36 @@ input UnifiedConnectorWithSourceInputType {
   isActive: Boolean
   clientId: String
   sources: [ConnectorSourceGqInputType!]
+}
+
+enum UnitOfAnalysisTypeEnum {
+  CRISIS
+  COUNTRY
+  REGION
+  PROVINCE_GOV_PREFECTURE
+  DEPARTMENT_DISTRICT
+  SUB_DISTRICT_COUNTRY
+  MUNICIPALITY
+  NEIGHBORHOOD_QUARTIER
+  COMMUNITY_SITE
+  AFFECTED_GROUP
+  HOUSEHOLD
+  INDIVIDUAL
+}
+
+enum UnitOfReportingTypeEnum {
+  CRISIS
+  COUNTRY
+  REGION
+  PROVINCE_GOV_PREFECTURE
+  DEPARTMENT_DISTRICT
+  SUB_DISTRICT_COUNTRY
+  MUNICIPALITY
+  NEIGHBORHOOD_QUARTIER
+  COMMUNITY_SITE
+  AFFECTED_GROUP
+  HOUSEHOLD
+  INDIVIDUAL
 }
 
 type UpdateAnalysisFramework {
