@@ -17,10 +17,36 @@ from .enums import (
     SectorTypeEnum,
     ProtectionInfoTypeEnum,
     AffectedGroupTypeEnum,
+    DataCollectionTechniqueTypeEnum,
+    SamplingApproachTypeEnum,
+    ProximityTypeEnum,
+    UnitOfAnalysisTypeEnum,
+    UnitOfReportingTypeEnum,
+    DocumentTypeEnum,
 )
 
 
-class AssessmentRegistryType(DjangoObjectType, UserResourceMixin):
+class MethodologyAttributeType(DjangoObjectType, UserResourceMixin):
+    class Meta:
+        model = MethodologyAttribute
+        fields = ("id", "proximity",)
+
+    data_collection_technique = graphene.Field(DataCollectionTechniqueTypeEnum, required=True)
+    data_collection_technique_display = EnumDescription(source='get_affected_groups_display', required=True)
+    sampling_approach = graphene.Field(SamplingApproachTypeEnum, required=True)
+    sampling_appraoch_display = EnumDescription(source='get_affected_groups_display', required=True)
+    proximity = graphene.Field(ProximityTypeEnum, required=True)
+    proximity_display = EnumDescription(source='get_proximity_display', required=True)
+    unit_of_ananlysis = graphene.Field(UnitOfAnalysisTypeEnum, required=True)
+    unit_of_analysis_display = EnumDescription(source='get_affected_groups_display', required=True)
+    unit_of_reporting = graphene.Field(UnitOfReportingTypeEnum, required=True)
+    unit_of_reporting_display = EnumDescription(source='get_unit_of_reporting_display', required=True)
+
+
+class AssessmentRegistryType(
+        DjangoObjectType,
+        UserResourceMixin
+):
 
     class Meta:
         model = AssessmentRegistry
@@ -53,29 +79,13 @@ class AssessmentRegistryType(DjangoObjectType, UserResourceMixin):
     protection_info_mgmts = graphene.List(graphene.NonNull(ProtectionInfoTypeEnum), required=True)
     affected_groups = graphene.Field(AffectedGroupTypeEnum, required=True)
     affected_groups_display = EnumDescription(source='get_affected_groups_display', required=True)
+    methodology_attributes = graphene.List(graphene.NonNull(MethodologyAttributeType), required=False)
 
 
-#class MethodologyAttributeType(DjangoObjectType, UserResourceMixin):
-#    class Meta:
-#        model = MethodologyAttribute
-#        fields = ("id", "sampling_approach")
-#
-#    data_collection_technique = graphene.Field(DataCollectionTypeEnum, required=True)
-#    data_collection_technique_display = EnumDescription(source='get_affected_groups_display', required=True)
-#    sampling_approach = graphene.Field(SamplingApproachTypeEnum, required=True)
-#    sampling_appraoch_display = EnumDescription(source='get_affected_groups_display', required=True)
-#    proximity = graphene.Field(ProximityTypeEnum, required=True)
-#    proximity_display = EnumDescription(source='get_proximity_display', required=True)
-#    unit_of_ananlysis = graphene.Field(UnitOfAnalysisTypeEnum, required=True)
-#    unit_of_analysis_display = EnumDescription(source='get_affected_groups_display', required=True)
-#    unit_of_reporting = graphene.Field(UnitOfReportingTypeEnum, required=True)
-#    unit_of_reporting_display = EnumDescription(source='get_unit_of_reporting_display', required=True)
-#
-#
-#class AdditionalDocumentType(DjangoObjectType, UserResourceMixin):
-#    class Meta:
-#        model = AdditionalDocument
-#        fields = ("id", "assessment_registry", "file", "external_link")
-#
-#    document_type = graphene.Field(DocumentTypeEnum, required=True)
-#    document_type_display = EnumDescription(source='get_document_type_display', required=True)
+class AdditionalDocumentType(DjangoObjectType, UserResourceMixin):
+    class Meta:
+        model = AdditionalDocument
+        fields = ("id", "assessment_registry", "file", "external_link")
+
+    document_type = graphene.Field(DocumentTypeEnum, required=True)
+    document_type_display = EnumDescription(source='get_document_type_display', required=True)
