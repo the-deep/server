@@ -252,6 +252,7 @@ class ProjectPermissions(BasePermissions):
         # ---------------------- Lead
         CREATE_LEAD = auto()
         VIEW_ONLY_UNPROTECTED_LEAD = auto()
+        VIEW_ONLY_UNPROTECTED_ASSESSMENT_REGISTRY = auto()
         VIEW_ALL_LEAD = auto()
         VIEW_ASSESSMENT_REGISTRY = auto()
         UPDATE_LEAD = auto()
@@ -279,6 +280,7 @@ class ProjectPermissions(BasePermissions):
         Permission.CAN_ADD_MEMBER: "You don't have permission to add member to project",
         Permission.CREATE_LEAD: "You don't have permission to create lead",
         Permission.VIEW_ONLY_UNPROTECTED_LEAD: "You don't have permission to view lead",
+        Permission.VIEW_ONLY_UNPROTECTED_ASSESSMENT_REGISTRY: "You don't have permission to view assessment registry",
         Permission.VIEW_ALL_LEAD: "You don't have permission to view confidential lead",
         Permission.VIEW_ASSESSMENT_REGISTRY: "You don't have permission to view confidential assessment registry",
         Permission.UPDATE_LEAD: "You don't have permission to update lead",
@@ -299,6 +301,7 @@ class ProjectPermissions(BasePermissions):
         Permission.BASE_ACCESS,
         Permission.VIEW_ENTRY,
         Permission.VIEW_ONLY_UNPROTECTED_LEAD,
+        Permission.VIEW_ONLY_UNPROTECTED_ASSESSMENT_REGISTRY,
         Permission.CREATE_EXPORT,
     ]
     READER = [

@@ -30,8 +30,6 @@ from analysis.mutation import Mutation as AnalysisMutation
 from unified_connector.mutation import UnifiedConnectorMutationType
 from assisted_tagging.mutation import AssistedTaggingMutationType
 
-# from apps.assessment_registry.mutation import CreateAssessmentRegistry
-
 from .models import (
     Project,
     ProjectStats,
