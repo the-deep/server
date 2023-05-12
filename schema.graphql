@@ -4,22 +4,22 @@ schema {
 }
 
 input AdditionalDocumentInputType {
-  id: Int
-  documentType: DocumentTypeEnum!
+  clientId: String
+  documentType: AssessmentRegistryDocumentTypeEnum!
   file: ID
   externalLink: String
 }
 
 type AdditionalDocumentType {
   id: ID!
-  assessmentRegistry: AssessmentRegistryType!
+  clientId: String
   file: GalleryFileType
   externalLink: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  documentType: DocumentTypeEnum!
+  documentType: AssessmentRegistryDocumentTypeEnum!
   documentTypeDisplay: EnumDescription!
 }
 
@@ -1397,6 +1397,37 @@ enum AssessmentMethodologyProtectionInfoEnum {
   SECTORAL_SYSTEMS_OR_OTHER
 }
 
+enum AssessmentRegistryAffectedGroupTypeEnum {
+  ALL
+  ALL_AFFECTED
+  ALL_NOT_AFFECTED
+  ALL_AFFECTED_NOT_DISPLACED
+  ALL_AFFECTED_DISPLACED
+  ALL_AFFECTED_DISPLACED_IN_TRANSIT
+  ALL_AFFECTED_DISPLACED_MIGRANTS
+  ALL_AFFECTED_DISPLACED_IDPS
+  ALL_AFFECTED_DISPLACED_ASYLUM_SEEKER
+  ALL_AFFECTED_DISPLACED_OTHER_OF_CONCERN
+  ALL_AFFECTED_DISPLACED_RETURNEES
+  ALL_AFFECTED_DISPLACED_REFUGEES
+  ALL_AFFECTED_DISPLACED_MIGRANTS_IN_TRANSIT
+  ALL_AFFECTED_DISPLACED_MIGRANTS_PERMANENTS
+  ALL_AFFECTED_DISPLACED_MIGRANTS_PENDULAR
+  ALL_AFFECTED_NOT_DISPLACED_NO_HOST
+  ALL_AFFECTED_NOT_DISPLACED_HOST
+}
+
+enum AssessmentRegistryConfidentialityTypeEnum {
+  UNPROTECTED
+  CONFIDENTIAL
+}
+
+enum AssessmentRegistryCoordinationTypeEnum {
+  COORDINATED
+  HARMONIZED
+  UNCOORDINATED
+}
+
 input AssessmentRegistryCreateInputType {
   lead: ID
   leadGroup: ID
@@ -1417,27 +1448,179 @@ input AssessmentRegistryCreateInputType {
   sampling: String
   limitations: String
   locations: [ID!]!
-  bgCrisisType: CrisisTypeEnum!
-  bgPreparedness: PreparednessTypeEnum!
-  externalSupport: ExternalTypeEnum!
-  coordinatedJoint: CoordinationTypeEnum!
-  detailsType: DetailTypeEnum!
-  family: FamilyTypeEnum!
-  frequency: FrequencyTypeEnum!
-  confidentiality: ConfidentialityTypeEnum!
-  language: [LanguageTypeEnum!]!
-  focuses: [FocusTypeEnum!]!
-  sectors: [SectorTypeEnum!]!
-  protectionInfoMgmts: [ProtectionInfoTypeEnum!]!
-  affectedGroups: AffectedGroupTypeEnum
+  bgCrisisType: AssessmentRegistryCrisisTypeEnum!
+  bgPreparedness: AssessmentRegistryPreparednessTypeEnum!
+  externalSupport: AssessmentRegistryExternalTypeEnum!
+  coordinatedJoint: AssessmentRegistryCoordinationTypeEnum!
+  detailsType: AssessmentRegistryDetailTypeEnum!
+  family: AssessmentRegistryFamilyTypeEnum!
+  frequency: AssessmentRegistryFrequencyTypeEnum!
+  confidentiality: AssessmentRegistryConfidentialityTypeEnum!
+  language: [AssessmentRegistryLanguageTypeEnum!]!
+  focuses: [AssessmentRegistryFocusTypeEnum!]!
+  sectors: [AssessmentRegistrySectorTypeEnum!]!
+  protectionInfoMgmts: [AssessmentRegistryProtectionInfoTypeEnum!]!
+  affectedGroups: AssessmentRegistryAffectedGroupTypeEnum
   methodologyAttributes: [MethodologyAttributeInputType!]
   additionalDocuments: [AdditionalDocumentInputType!]
 }
 
+enum AssessmentRegistryCrisisTypeEnum {
+  EARTH_QUAKE
+  GROUND_SHAKING
+  TSUNAMI
+  VOLCANO
+  VOLCANIC_ERUPTION
+  MASS_MOMENT_DRY
+  ROCK_FALL
+  AVALANCE
+  LANDSLIDE
+  SUBSIDENCE
+  EXTRA_TROPICAL_CYCLONE
+  TROPICAL_CYCLONE
+  LOCAL_STROM
+  FLOOD_RAIN
+  GENERAL_RIVER_FLOOD
+  FLASH_FLOOD
+  STROM_SURGE_FLOOD
+  MASS_MOVEMENT_WET
+  EXTREME_TEMPERATURE
+  HEAT_WAVE
+  COLD_WAVE
+  EXTREME_WEATHER_CONDITION
+  DROUGHT
+  WILDFIRE
+  POPULATION_DISPLACEMENT
+  CONFLICT
+}
+
+enum AssessmentRegistryDataCollectionTechniqueTypeEnum {
+  SECONDARY_DATA_REVIEW
+  KEY_INFORMAT_INTERVIEW
+  DIRECT_OBSERVATION
+  COMMUNITY_GROUP_DISCUSSION
+  FOCUS_GROUP_DISCUSSION
+  HOUSEHOLD_INTERVIEW
+  INDIVIDUAL_INTERVIEW
+  SATELLITE_IMAGERY
+}
+
+enum AssessmentRegistryDetailTypeEnum {
+  INITIAL
+  RAPID
+  IN_DEPTH
+  MONITORING
+  OTHER
+}
+
+enum AssessmentRegistryDocumentTypeEnum {
+  EXECUTIVE_SUMMARY
+  ASSESSMENT_DATABASE
+  QUESTIONNAIRE
+  MISCELLANEOUS
+}
+
+enum AssessmentRegistryExternalTypeEnum {
+  EXTERNAL_SUPPORT_RECIEVED
+  NO_EXTERNAL_SUPPORT_RECEIVED
+}
+
+enum AssessmentRegistryFamilyTypeEnum {
+  DISPLACEMENT_TRAKING_MATRIX
+  MULTI_CLUSTER_INITIAL_AND_RAPID_ASSESSMENT
+  MULTI_SECTORIAL_NEEDS_ASSESSMENT
+  EMERGENCY_FOOD_SECURITY_ASSESSMENT
+  COMPREHENSIVE_FOOD_SECURITY_AND_VULNERABILITY_ANALYSIS
+  PROTECTION_MONITORING
+  HUMANITARIAN_NEEDS_OVERVIEW
+  BRIEFING_NOTE
+  REGISTRATION
+  IDP_PROFILING_EXERCISE
+  CENSUS
+  REFUGEE_AND_MIGRANT_RESPONSE_PLAN
+  RUFUGEE_RESPONSE_PLAN
+  SMART_NUTRITION_SURVEY
+  OTHER
+}
+
+enum AssessmentRegistryFocusTypeEnum {
+  CONTEXT
+  SHOCK_EVENT
+  DISPLACEMENT
+  HUMANITERIAN_ACCESS
+  INFORMATION_AND_COMMUNICATION
+  IMPACT
+  HUMANITARIAN_CONDITIONS
+  RESPONSE_AND_CAPACITIES
+  CURRENT_AND_FORECASTED_PRIORITIES
+  COVID_19_CONTAINMENT_MEASURES
+}
+
+enum AssessmentRegistryFrequencyTypeEnum {
+  ONE_OFF
+  REGULAR
+}
+
+enum AssessmentRegistryLanguageTypeEnum {
+  ENGLISH
+  FRENCH
+  SPANISH
+  PORTUGESE
+  ARABIC
+}
+
+type AssessmentRegistryListType {
+  results: [AssessmentRegistryType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum AssessmentRegistryPreparednessTypeEnum {
+  WITH_PREPAREDNESS
+  WITHOUT_PREPAREDNESS
+}
+
+enum AssessmentRegistryProtectionInfoTypeEnum {
+  PROTECTION_MONITORING
+  PROTECTION_NEEDS_ASSESSMENT
+  CASE_MANAGEMENT
+  POPULATION_DATA
+  PROTECTION_RESPONSE_M_E
+  COMMUNICATING_WITH_IN_AFFECTED_COMMUNITIES
+  SECURITY_AND_SITUATIONAL_AWARENESS
+  SECTORAL_SYSTEM_OTHER
+}
+
+enum AssessmentRegistryProximityTypeEnum {
+  FACE_TO_FACE
+  REMOTE
+  MIXED
+}
+
+enum AssessmentRegistrySamplingApproachTypeEnum {
+  NON_RANDOM_SELECTION
+  RANDOM_SELECTION
+  FULL_ENUMERATION
+}
+
+enum AssessmentRegistrySectorTypeEnum {
+  F00D
+  HEALTH
+  SHELTER
+  WASH
+  PROTECTION
+  NUTRITION
+  LIVELIHOOD
+  EDUCATION
+  CHILD_PROTECTION
+  GENDER_BASED_VIOLENCE
+}
+
 type AssessmentRegistryType {
   id: ID!
-  lead: LeadType
   project: ProjectType!
+  lead: LeadType
   leadGroup: LeadGroupType
   bgCountries: [RegionWithProject!]!
   bgCrisisStartDate: Date!
@@ -1456,34 +1639,65 @@ type AssessmentRegistryType {
   sampling: String
   limitations: String
   locations: [RegionWithProject!]!
+  clientId: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  bgCrisisType: CrisisTypeEnum!
+  bgCrisisType: AssessmentRegistryCrisisTypeEnum!
   bgCrisisTypeDisplay: EnumDescription!
-  bgPreparedness: PreparednessTypeEnum!
+  bgPreparedness: AssessmentRegistryPreparednessTypeEnum!
   bgPreparednessDisplay: EnumDescription!
-  externalSupport: ExternalTypeEnum!
+  externalSupport: AssessmentRegistryExternalTypeEnum!
   externalSupportDisplay: EnumDescription!
-  coordinatedJoint: CoordinationTypeEnum!
+  coordinatedJoint: AssessmentRegistryCoordinationTypeEnum!
   coordinatedJointDisplay: EnumDescription!
-  detailsType: DetailTypeEnum!
+  detailsType: AssessmentRegistryDetailTypeEnum!
   detailsTypeDisplay: EnumDescription!
-  family: FamilyTypeEnum!
+  family: AssessmentRegistryFamilyTypeEnum!
   familyDisplay: EnumDescription!
-  frequency: FrequencyTypeEnum!
+  frequency: AssessmentRegistryFrequencyTypeEnum!
   frequencyDisplay: EnumDescription!
-  confidentiality: ConfidentialityTypeEnum!
+  confidentiality: AssessmentRegistryConfidentialityTypeEnum!
   confidentialityDisplay: EnumDescription!
-  language: [LanguageTypeEnum!]!
-  focuses: [FocusTypeEnum!]!
-  sectors: [SectorTypeEnum!]!
-  protectionInfoMgmts: [ProtectionInfoTypeEnum!]!
-  affectedGroups: AffectedGroupTypeEnum!
+  language: [AssessmentRegistryLanguageTypeEnum!]!
+  focuses: [AssessmentRegistryFocusTypeEnum!]!
+  sectors: [AssessmentRegistrySectorTypeEnum!]!
+  protectionInfoMgmts: [AssessmentRegistryProtectionInfoTypeEnum!]!
+  affectedGroups: AssessmentRegistryAffectedGroupTypeEnum!
   affectedGroupsDisplay: EnumDescription!
   methodologyAttributes: [MethodologyAttributeType!]
   additionalDocuments: [AdditionalDocumentType!]
+}
+
+enum AssessmentRegistryUnitOfAnalysisTypeEnum {
+  CRISIS
+  COUNTRY
+  REGION
+  PROVINCE_GOV_PREFECTURE
+  DEPARTMENT_DISTRICT
+  SUB_DISTRICT_COUNTRY
+  MUNICIPALITY
+  NEIGHBORHOOD_QUARTIER
+  COMMUNITY_SITE
+  AFFECTED_GROUP
+  HOUSEHOLD
+  INDIVIDUAL
+}
+
+enum AssessmentRegistryUnitOfReportingTypeEnum {
+  CRISIS
+  COUNTRY
+  REGION
+  PROVINCE_GOV_PREFECTURE
+  DEPARTMENT_DISTRICT
+  SUB_DISTRICT_COUNTRY
+  MUNICIPALITY
+  NEIGHBORHOOD_QUARTIER
+  COMMUNITY_SITE
+  AFFECTED_GROUP
+  HOUSEHOLD
+  INDIVIDUAL
 }
 
 type AssessmentType {
@@ -1730,11 +1944,6 @@ type ChangeUserPassword {
   ok: Boolean
 }
 
-enum ConfidentialityTypeEnum {
-  UNPROTECTED
-  CONFIDENTIAL
-}
-
 enum ConnectorLeadExtractionStatusEnum {
   PENDING
   RETRYING
@@ -1858,12 +2067,6 @@ type ConnectorSourceType {
   statusDisplay: EnumDescription!
 }
 
-enum CoordinationTypeEnum {
-  COORDINATED
-  HARMONIZED
-  UNCOORDINATED
-}
-
 type CreateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
@@ -1970,48 +2173,8 @@ type CreateWrongPredictionReview {
   result: MissingPredictionReviewType
 }
 
-enum CrisisTypeEnum {
-  EARTH_QUAKE
-  GROUND_SHAKING
-  TSUNAMI
-  VOLCANO
-  VOLCANIC_ERUPTION
-  MASS_MOMENT_DRY
-  ROCK_FALL
-  AVALANCE
-  LANDSLIDE
-  SUBSIDENCE
-  EXTRA_TROPICAL_CYCLONE
-  TROPICAL_CYCLONE
-  LOCAL_STROM
-  FLOOD_RAIN
-  GENERAL_RIVER_FLOOD
-  FLASH_FLOOD
-  STROM_SURGE_FLOOD
-  MASS_MOVEMENT_WET
-  EXTREME_TEMPERATURE
-  HEAT_WAVE
-  COLD_WAVE
-  EXTREME_WEATHER_CONDITION
-  DROUGHT
-  WILDFIRE
-  POPULATION_DISPLACEMENT
-  CONFLICT
-}
-
 type CustomEnum {
   aryPimEnum: AssessmentMethodologyProtectionInfoEnum
-}
-
-enum DataCollectionTechniqueTypeEnum {
-  SECONDARY_DATA_REVIEW
-  KEY_INFORMAT_INTERVIEW
-  DIRECT_OBSERVATION
-  COMMUNITY_GROUP_DISCUSSION
-  FOCUS_GROUP_DISCUSSION
-  HOUSEHOLD_INTERVIEW
-  INDIVIDUAL_INTERVIEW
-  SATELLITE_IMAGERY
 }
 
 scalar Date
@@ -2780,29 +2943,6 @@ input ExportUpdateInputType {
   title: String
 }
 
-enum ExternalTypeEnum {
-  EXTERNAL_SUPPORT_RECIEVED
-  NO_EXTERNAL_SUPPORT_RECEIVED
-}
-
-enum FamilyTypeEnum {
-  DISPLACEMENT_TRAKING_MATRIX
-  MULTI_CLUSTER_INITIAL_AND_RAPID_ASSESSMENT
-  MULTI_SECTORIAL_NEEDS_ASSESSMENT
-  EMERGENCY_FOOD_SECURITY_ASSESSMENT
-  COMPREHENSIVE_FOOD_SECURITY_AND_VULNERABILITY_ANALYSIS
-  PROTECTION_MONITORING
-  HUMANITARIAN_NEEDS_OVERVIEW
-  BRIEFING_NOTE
-  REGISTRATION
-  IDP_PROFILING_EXERCISE
-  CENSUS
-  REFUGEE_AND_MIGRANT_RESPONSE_PLAN
-  RUFUGEE_RESPONSE_PLAN
-  SMART_NUTRITION_SURVEY
-  OTHER
-}
-
 enum FeatureFeatureType {
   GENERAL_ACCESS
   EXPERIMENTAL
@@ -3296,30 +3436,31 @@ type MergedAsOrganizationType {
 }
 
 input MethodologyAttributeInputType {
-  id: Int
-  dataCollectionTechnique: DataCollectionTechniqueTypeEnum
-  samplingApproach: SamplingApproachTypeEnum
+  clientId: String
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
+  samplingApproach: AssessmentRegistrySamplingApproachTypeEnum
   samplingSize: Int
-  proximity: ProximityTypeEnum
-  unitOfAnalysis: UnitOfAnalysisTypeEnum
-  unitOfReporting: UnitOfReportingTypeEnum
+  proximity: AssessmentRegistryProximityTypeEnum
+  unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum
+  unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum
 }
 
 type MethodologyAttributeType {
   id: ID!
-  proximity: ProximityTypeEnum!
+  clientId: String
+  proximity: AssessmentRegistryProximityTypeEnum!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  dataCollectionTechnique: DataCollectionTechniqueTypeEnum!
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
   dataCollectionTechniqueDisplay: EnumDescription!
-  samplingApproach: SamplingApproachTypeEnum!
+  samplingApproach: AssessmentRegistrySamplingApproachTypeEnum!
   samplingAppraochDisplay: EnumDescription!
   proximityDisplay: EnumDescription!
-  unitOfAnanlysis: UnitOfAnalysisTypeEnum!
+  unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum!
   unitOfAnalysisDisplay: EnumDescription!
-  unitOfReporting: UnitOfReportingTypeEnum!
+  unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum!
   unitOfReportingDisplay: EnumDescription!
 }
 
@@ -3479,11 +3620,6 @@ input PredictionTagAnalysisFrameworkMapInputType {
   clientId: String
 }
 
-enum PreparednessTypeEnum {
-  WITH_PREPAREDNESS
-  WITHOUT_PREPAREDNESS
-}
-
 type ProjectAcceptReject {
   errors: [GenericScalar!]
   ok: Boolean
@@ -3557,6 +3693,8 @@ type ProjectDetailType {
   hasAnalysisFramework: Boolean!
   hasAssessmentTemplate: Boolean!
   analysisOverview: AnalysisOverviewType
+  assessmentRegistry(id: ID!): AssessmentRegistryType
+  assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], leadGroup: [ID], search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
   analysis(id: ID!): AnalysisType
   analyses(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisListType
   analysisPillar(id: ID!): AnalysisPillarType
@@ -3784,7 +3922,9 @@ enum ProjectPermission {
   DELETE_UNIFIED_CONNECTOR
   CREATE_LEAD
   VIEW_ONLY_UNPROTECTED_LEAD
+  VIEW_ONLY_UNPROTECTED_ASSESSMENT_REGISTRY
   VIEW_ALL_LEAD
+  VIEW_ALL_ASSESSMENT_REGISTRY
   UPDATE_LEAD
   DELETE_LEAD
   CREATE_ENTRY
@@ -3952,23 +4092,6 @@ input ProjectsFilterDataInputType {
   hasPermissionAccess: ProjectPermission
   ordering: [ProjectOrderingEnum!]
   isTest: Boolean
-}
-
-enum ProtectionInfoTypeEnum {
-  PROTECTION_MONITORING
-  PROTECTION_NEEDS_ASSESSMENT
-  CASE_MANAGEMENT
-  POPULATION_DATA
-  PROTECTION_RESPONSE_M_E
-  COMMUNICATING_WITH_IN_AFFECTED_COMMUNITIES
-  SECURITY_AND_SITUATIONAL_AWARENESS
-  SECTORAL_SYSTEM_OTHER
-}
-
-enum ProximityTypeEnum {
-  FACE_TO_FACE
-  REMOTE
-  MIXED
 }
 
 type PublicAnalysisFramework {
@@ -4238,12 +4361,6 @@ type RssFieldType {
   label: String
 }
 
-enum SamplingApproachTypeEnum {
-  NON_RANDOM_SELECTION
-  RANDOM_SELECTION
-  FULL_ENUMERATION
-}
-
 type SaveUserSavedLeadFilter {
   errors: [GenericScalar!]
   ok: Boolean
@@ -4385,36 +4502,6 @@ input UnifiedConnectorWithSourceInputType {
   isActive: Boolean
   clientId: String
   sources: [ConnectorSourceGqInputType!]
-}
-
-enum UnitOfAnalysisTypeEnum {
-  CRISIS
-  COUNTRY
-  REGION
-  PROVINCE_GOV_PREFECTURE
-  DEPARTMENT_DISTRICT
-  SUB_DISTRICT_COUNTRY
-  MUNICIPALITY
-  NEIGHBORHOOD_QUARTIER
-  COMMUNITY_SITE
-  AFFECTED_GROUP
-  HOUSEHOLD
-  INDIVIDUAL
-}
-
-enum UnitOfReportingTypeEnum {
-  CRISIS
-  COUNTRY
-  REGION
-  PROVINCE_GOV_PREFECTURE
-  DEPARTMENT_DISTRICT
-  SUB_DISTRICT_COUNTRY
-  MUNICIPALITY
-  NEIGHBORHOOD_QUARTIER
-  COMMUNITY_SITE
-  AFFECTED_GROUP
-  HOUSEHOLD
-  INDIVIDUAL
 }
 
 type UpdateAnalysisFramework {

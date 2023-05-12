@@ -5,75 +5,85 @@ from utils.graphene.enums import (
 
 from .models import AssessmentRegistry, MethodologyAttribute, AdditionalDocument
 
-CrisisTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.CrisisType, name='CrisisTypeEnum')
-
-PreparednessTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.PreparednessType, name='PreparednessTypeEnum')
-
-ExternalSupportTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.ExternalSupportType, name='ExternalTypeEnum')
-
-CoordinationTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.CoordinationType, name='CoordinationTypeEnum')
-
-DetailTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.Type, name='DetailTypeEnum')
-
-FamilyTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.FamilyType, name='FamilyTypeEnum')
-
-FrequencyTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.FrequencyType, name='FrequencyTypeEnum')
-
-ConfidentialityTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.ConfidentialityType, name='ConfidentialityTypeEnum'
+AssessmentRegistryCrisisTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.CrisisType, name='AssessmentRegistryCrisisTypeEnum'
 )
-
-LanguageTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.Language, name='LanguageTypeEnum')
-
-FocusTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.FocusType, name='FocusTypeEnum')
-
-SectorTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.SectorType, name='SectorTypeEnum')
-
-ProtectionInfoTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.ProtectionInfoType, name='ProtectionInfoTypeEnum')
-
-AffectedGroupTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.AffectedGroupType, name='AffectedGroupTypeEnum')
-
-DataCollectionTechniqueTypeEnum = convert_enum_to_graphene_enum(
-    MethodologyAttribute.CollectionTechniqueType, name='DataCollectionTechniqueTypeEnum'
+AssessmentRegistryPreparednessTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.PreparednessType, name='AssessmentRegistryPreparednessTypeEnum'
 )
-
-SamplingApproachTypeEnum = convert_enum_to_graphene_enum(
-    MethodologyAttribute.SamplingApproachType, name='SamplingApproachTypeEnum'
+AssessmentRegistryExternalSupportTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.ExternalSupportType, name='AssessmentRegistryExternalTypeEnum'
 )
-ProximityTypeEnum = convert_enum_to_graphene_enum(MethodologyAttribute.ProximityType, name='ProximityTypeEnum')
-
-UnitOfAnalysisTypeEnum = convert_enum_to_graphene_enum(
-    MethodologyAttribute.UnitOfAnalysisType, name='UnitOfAnalysisTypeEnum'
+AssessmentRegistryCoordinationTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.CoordinationType, name='AssessmentRegistryCoordinationTypeEnum'
 )
-
-UnitOfReportingTypeEnum = convert_enum_to_graphene_enum(
-    MethodologyAttribute.UnitOfReportingType, name='UnitOfReportingTypeEnum'
+AssessmentRegistryDetailTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.Type, name='AssessmentRegistryDetailTypeEnum'
 )
-DocumentTypeEnum = convert_enum_to_graphene_enum(
-    AdditionalDocument.DocumentType, name='DocumentTypeEnum'
+AssessmentRegistryFamilyTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.FamilyType, name='AssessmentRegistryFamilyTypeEnum'
+)
+AssessmentRegistryFrequencyTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.FrequencyType, name='AssessmentRegistryFrequencyTypeEnum'
+)
+AssessmentRegistryConfidentialityTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.ConfidentialityType, name='AssessmentRegistryConfidentialityTypeEnum'
+)
+AssessmentRegistryLanguageTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.Language, name='AssessmentRegistryLanguageTypeEnum'
+)
+AssessmentRegistryFocusTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.FocusType, name='AssessmentRegistryFocusTypeEnum'
+)
+AssessmentRegistrySectorTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.SectorType, name='AssessmentRegistrySectorTypeEnum'
+)
+AssessmentRegistryProtectionInfoTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.ProtectionInfoType, name='AssessmentRegistryProtectionInfoTypeEnum'
+)
+AssessmentRegistryAffectedGroupTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.AffectedGroupType, name='AssessmentRegistryAffectedGroupTypeEnum'
+)
+AssessmentRegistryDataCollectionTechniqueTypeEnum = convert_enum_to_graphene_enum(
+    MethodologyAttribute.CollectionTechniqueType, name='AssessmentRegistryDataCollectionTechniqueTypeEnum'
+)
+AssessmentRegistrySamplingApproachTypeEnum = convert_enum_to_graphene_enum(
+    MethodologyAttribute.SamplingApproachType, name='AssessmentRegistrySamplingApproachTypeEnum'
+)
+AssessmentRegistryProximityTypeEnum = convert_enum_to_graphene_enum(
+    MethodologyAttribute.ProximityType, name='AssessmentRegistryProximityTypeEnum'
+)
+AssessmentRegistryUnitOfAnalysisTypeEnum = convert_enum_to_graphene_enum(
+    MethodologyAttribute.UnitOfAnalysisType, name='AssessmentRegistryUnitOfAnalysisTypeEnum'
+)
+AssessmentRegistryUnitOfReportingTypeEnum = convert_enum_to_graphene_enum(
+    MethodologyAttribute.UnitOfReportingType, name='AssessmentRegistryUnitOfReportingTypeEnum'
+)
+AssessmentRegistryDocumentTypeEnum = convert_enum_to_graphene_enum(
+    AdditionalDocument.DocumentType, name='AssessmentRegistryDocumentTypeEnum'
 )
 
 enum_map = {
     get_enum_name_from_django_field(field): enum
     for field, enum in (
-        (AssessmentRegistry.bg_crisis_type, CrisisTypeEnum),
-        (AssessmentRegistry.bg_preparedness, PreparednessTypeEnum),
-        (AssessmentRegistry.external_support, ExternalSupportTypeEnum),
-        (AssessmentRegistry.coordinated_joint, CoordinationTypeEnum),
-        (AssessmentRegistry.details_type, DetailTypeEnum),
-        (AssessmentRegistry.family, FamilyTypeEnum),
-        (AssessmentRegistry.frequency, FrequencyTypeEnum),
-        (AssessmentRegistry.confidentiality, ConfidentialityTypeEnum),
-        (AssessmentRegistry.language, LanguageTypeEnum),
-        (AssessmentRegistry.focuses, FocusTypeEnum),
-        (AssessmentRegistry.sectors, SectorTypeEnum),
-        (AssessmentRegistry.protection_info_mgmts, ProtectionInfoTypeEnum),
-        (AssessmentRegistry.affected_groups, AffectedGroupTypeEnum),
-        (MethodologyAttribute.data_collection_technique, DataCollectionTechniqueTypeEnum),
-        (MethodologyAttribute.sampling_approach, SamplingApproachTypeEnum),
-        (MethodologyAttribute.proximity, ProximityTypeEnum),
-        (MethodologyAttribute.unit_of_analysis, UnitOfAnalysisTypeEnum),
-        (MethodologyAttribute.unit_of_reporting, UnitOfReportingTypeEnum),
-        (AdditionalDocument.document_type, DocumentTypeEnum),
+        (AssessmentRegistry.bg_crisis_type, AssessmentRegistryCrisisTypeEnum),
+        (AssessmentRegistry.bg_preparedness, AssessmentRegistryPreparednessTypeEnum),
+        (AssessmentRegistry.external_support, AssessmentRegistryExternalSupportTypeEnum),
+        (AssessmentRegistry.coordinated_joint, AssessmentRegistryCoordinationTypeEnum),
+        (AssessmentRegistry.details_type, AssessmentRegistryDetailTypeEnum),
+        (AssessmentRegistry.family, AssessmentRegistryFamilyTypeEnum),
+        (AssessmentRegistry.frequency, AssessmentRegistryFrequencyTypeEnum),
+        (AssessmentRegistry.confidentiality, AssessmentRegistryConfidentialityTypeEnum),
+        (AssessmentRegistry.language, AssessmentRegistryLanguageTypeEnum),
+        (AssessmentRegistry.focuses, AssessmentRegistryFocusTypeEnum),
+        (AssessmentRegistry.sectors, AssessmentRegistrySectorTypeEnum),
+        (AssessmentRegistry.protection_info_mgmts, AssessmentRegistryProtectionInfoTypeEnum),
+        (AssessmentRegistry.affected_groups, AssessmentRegistryAffectedGroupTypeEnum),
+        (MethodologyAttribute.data_collection_technique, AssessmentRegistryDataCollectionTechniqueTypeEnum),
+        (MethodologyAttribute.sampling_approach, AssessmentRegistrySamplingApproachTypeEnum),
+        (MethodologyAttribute.proximity, AssessmentRegistryProximityTypeEnum),
+        (MethodologyAttribute.unit_of_analysis, AssessmentRegistryUnitOfAnalysisTypeEnum),
+        (MethodologyAttribute.unit_of_reporting, AssessmentRegistryUnitOfReportingTypeEnum),
+        (AdditionalDocument.document_type, AssessmentRegistryDocumentTypeEnum),
     )
 }
