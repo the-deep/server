@@ -1,60 +1,79 @@
 import graphene
-from user_resource.schema import UserResourceMixin
 from graphene_django import DjangoObjectType
+from graphene_django_extras import DjangoObjectField
+
+from utils.graphene.types import ClientIdMixin, CustomDjangoListObjectType
+from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.enums import EnumDescription
+from deep.permissions import ProjectPermissions as PP
+from user_resource.schema import UserResourceMixin
+
 from .models import AssessmentRegistry, MethodologyAttribute, AdditionalDocument
+from .filters import AssessmentRegistryGQFilterSet
 from .enums import (
-    CrisisTypeEnum,
-    PreparednessTypeEnum,
-    ExternalSupportTypeEnum,
-    CoordinationTypeEnum,
-    DetailTypeEnum,
-    FamilyTypeEnum,
-    FrequencyTypeEnum,
-    ConfidentialityTypeEnum,
-    LanguageTypeEnum,
-    FocusTypeEnum,
-    SectorTypeEnum,
-    ProtectionInfoTypeEnum,
-    AffectedGroupTypeEnum,
-    DataCollectionTechniqueTypeEnum,
-    SamplingApproachTypeEnum,
-    ProximityTypeEnum,
-    UnitOfAnalysisTypeEnum,
-    UnitOfReportingTypeEnum,
-    DocumentTypeEnum,
+    AssessmentRegistryCrisisTypeEnum,
+    AssessmentRegistryPreparednessTypeEnum,
+    AssessmentRegistryExternalSupportTypeEnum,
+    AssessmentRegistryCoordinationTypeEnum,
+    AssessmentRegistryDetailTypeEnum,
+    AssessmentRegistryFamilyTypeEnum,
+    AssessmentRegistryFrequencyTypeEnum,
+    AssessmentRegistryConfidentialityTypeEnum,
+    AssessmentRegistryLanguageTypeEnum,
+    AssessmentRegistryFocusTypeEnum,
+    AssessmentRegistrySectorTypeEnum,
+    AssessmentRegistryProtectionInfoTypeEnum,
+    AssessmentRegistryAffectedGroupTypeEnum,
+    AssessmentRegistryDataCollectionTechniqueTypeEnum,
+    AssessmentRegistrySamplingApproachTypeEnum,
+    AssessmentRegistryProximityTypeEnum,
+    AssessmentRegistryUnitOfAnalysisTypeEnum,
+    AssessmentRegistryUnitOfReportingTypeEnum,
+    AssessmentRegistryDocumentTypeEnum,
 )
+
+
+def get_assessment_registry_qs(info):
+    assessment_registry_qs = AssessmentRegistry.objects.filter(project=info.context.active_project)
+    # Generate queryset according to permission
+    if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
+        return assessment_registry_qs
+    elif PP.check_permission(info, PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD):
+        return assessment_registry_qs.filter(confidentiality=AssessmentRegistry.Confidentiality.UNPROTECTED)
+    return AssessmentRegistry.objects.none()
 
 
 class MethodologyAttributeType(DjangoObjectType, UserResourceMixin):
     class Meta:
         model = MethodologyAttribute
-        fields = ("id", "proximity",)
+        fields = ("id", "client_id", "proximity",)
 
-    data_collection_technique = graphene.Field(DataCollectionTechniqueTypeEnum, required=True)
-    data_collection_technique_display = EnumDescription(source='get_affected_groups_display', required=True)
-    sampling_approach = graphene.Field(SamplingApproachTypeEnum, required=True)
-    sampling_appraoch_display = EnumDescription(source='get_affected_groups_display', required=True)
-    proximity = graphene.Field(ProximityTypeEnum, required=True)
+    data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum, required=True)
+    data_collection_technique_display = EnumDescription(source='get_data_collection_technique_display', required=True)
+    sampling_approach = graphene.Field(AssessmentRegistrySamplingApproachTypeEnum, required=True)
+    sampling_appraoch_display = EnumDescription(source='get_sampling_approach_display', required=True)
+    proximity = graphene.Field(AssessmentRegistryProximityTypeEnum, required=True)
     proximity_display = EnumDescription(source='get_proximity_display', required=True)
-    unit_of_ananlysis = graphene.Field(UnitOfAnalysisTypeEnum, required=True)
-    unit_of_analysis_display = EnumDescription(source='get_affected_groups_display', required=True)
-    unit_of_reporting = graphene.Field(UnitOfReportingTypeEnum, required=True)
+    unit_of_analysis = graphene.Field(AssessmentRegistryUnitOfAnalysisTypeEnum, required=True)
+    unit_of_analysis_display = EnumDescription(source='get_unit_of_analysis_display', required=True)
+    unit_of_reporting = graphene.Field(AssessmentRegistryUnitOfReportingTypeEnum, required=True)
     unit_of_reporting_display = EnumDescription(source='get_unit_of_reporting_display', required=True)
 
 
 class AdditionalDocumentType(DjangoObjectType, UserResourceMixin):
     class Meta:
         model = AdditionalDocument
-        fields = ("id", "assessment_registry", "file", "external_link")
+        fields = ("id", "client_id", "file", "external_link")
 
-    document_type = graphene.Field(DocumentTypeEnum, required=True)
+    document_type = graphene.Field(AssessmentRegistryDocumentTypeEnum, required=True)
     document_type_display = EnumDescription(source='get_document_type_display', required=True)
 
 
 class AssessmentRegistryType(
         DjangoObjectType,
-        UserResourceMixin
+        UserResourceMixin,
+        ClientIdMixin,
 ):
 
     class Meta:
@@ -66,27 +85,55 @@ class AssessmentRegistryType(
             "governments", "objectives", "data_collection_techniques", "sampling", "limitations", "locations",
         )
 
-    bg_crisis_type = graphene.Field(CrisisTypeEnum, required=True)
+    bg_crisis_type = graphene.Field(AssessmentRegistryCrisisTypeEnum, required=True)
     bg_crisis_type_display = EnumDescription(source='get_bg_crisis_type_display', required=True)
-    bg_preparedness = graphene.Field(PreparednessTypeEnum, required=True)
+    bg_preparedness = graphene.Field(AssessmentRegistryPreparednessTypeEnum, required=True)
     bg_preparedness_display = EnumDescription(source='get_bg_preparedness_display', required=True)
-    external_support = graphene.Field(ExternalSupportTypeEnum, required=True)
+    external_support = graphene.Field(AssessmentRegistryExternalSupportTypeEnum, required=True)
     external_support_display = EnumDescription(source='get_external_support_display', required=True)
-    coordinated_joint = graphene.Field(CoordinationTypeEnum, required=True)
+    coordinated_joint = graphene.Field(AssessmentRegistryCoordinationTypeEnum, required=True)
     coordinated_joint_display = EnumDescription(source='get_coordinated_joint_display', required=True)
-    details_type = graphene.Field(DetailTypeEnum, required=True)
+    details_type = graphene.Field(AssessmentRegistryDetailTypeEnum, required=True)
     details_type_display = EnumDescription(source='get_details_type_display', required=True)
-    family = graphene.Field(FamilyTypeEnum, required=True)
+    family = graphene.Field(AssessmentRegistryFamilyTypeEnum, required=True)
     family_display = EnumDescription(source='get_family_display', required=True)
-    frequency = graphene.Field(FrequencyTypeEnum, required=True)
+    frequency = graphene.Field(AssessmentRegistryFrequencyTypeEnum, required=True)
     frequency_display = EnumDescription(source='get_frequency_display', required=True)
-    confidentiality = graphene.Field(ConfidentialityTypeEnum, required=True)
+    confidentiality = graphene.Field(AssessmentRegistryConfidentialityTypeEnum, required=True)
     confidentiality_display = EnumDescription(source='get_confidentiality_display', required=True)
-    language = graphene.List(graphene.NonNull(LanguageTypeEnum), required=True)
-    focuses = graphene.List(graphene.NonNull(FocusTypeEnum), required=True)
-    sectors = graphene.List(graphene.NonNull(SectorTypeEnum), required=True)
-    protection_info_mgmts = graphene.List(graphene.NonNull(ProtectionInfoTypeEnum), required=True)
-    affected_groups = graphene.Field(AffectedGroupTypeEnum, required=True)
+    language = graphene.List(graphene.NonNull(AssessmentRegistryLanguageTypeEnum), required=True)
+    focuses = graphene.List(graphene.NonNull(AssessmentRegistryFocusTypeEnum), required=True)
+    sectors = graphene.List(graphene.NonNull(AssessmentRegistrySectorTypeEnum), required=True)
+    protection_info_mgmts = graphene.List(graphene.NonNull(AssessmentRegistryProtectionInfoTypeEnum), required=True)
+    affected_groups = graphene.Field(AssessmentRegistryAffectedGroupTypeEnum, required=True)
     affected_groups_display = EnumDescription(source='get_affected_groups_display', required=True)
     methodology_attributes = graphene.List(graphene.NonNull(MethodologyAttributeType), required=False)
     additional_documents = graphene.List(graphene.NonNull(AdditionalDocumentType), required=False)
+
+    @staticmethod
+    def get_custom_queryset(queryset, info, **kwargs):
+        return get_assessment_registry_qs(info)
+
+    @staticmethod
+    def resolve_methodology_attributes(root, info, **kwargs):
+        return MethodologyAttribute.objects.filter(assessment_registry=root)
+
+    @staticmethod
+    def resolve_additional_documents(root, info, **kwargs):
+        return AdditionalDocument.objects.filter(assessment_registry=root)
+
+
+class AssessmentRegistryListType(CustomDjangoListObjectType):
+    class Meta:
+        model = AssessmentRegistry
+        filterset_class = AssessmentRegistryGQFilterSet
+
+
+class Query:
+    assessment_registry = DjangoObjectField(AssessmentRegistryType)
+    assessment_registries = DjangoPaginatedListObjectField(
+        AssessmentRegistryListType,
+        pagination=NoOrderingPageGraphqlPagination(
+            page_size_query_param='pageSize',
+        )
+    )
