@@ -1,16 +1,18 @@
 import graphene
-from .serializers import (
-    AssessmentRegistrySerializer
-)
+
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
     PsGrapheneMutation,
 )
-from .models import AssessmentRegistry
-from .schema import AssessmentRegistryType
 from deep.permissions import ProjectPermissions as PP
 
-AssessmentCreateInputType = generate_input_type_for_serializer(
+from .models import AssessmentRegistry
+from .schema import AssessmentRegistryType
+from .serializers import (
+    AssessmentRegistrySerializer
+)
+
+AssessmentRegistryCreateInputType = generate_input_type_for_serializer(
     'AssessmentRegistryCreateInputType',
     serializer_class=AssessmentRegistrySerializer
 )
@@ -18,7 +20,7 @@ AssessmentCreateInputType = generate_input_type_for_serializer(
 
 class CreateAssessmentRegistry(PsGrapheneMutation):
     class Arguments:
-        data = AssessmentCreateInputType(required=True)
+        data = AssessmentRegistryCreateInputType(required=True)
 
     result = graphene.Field(AssessmentRegistryType)
     serializer_class = AssessmentRegistrySerializer
