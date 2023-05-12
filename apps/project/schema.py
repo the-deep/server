@@ -34,6 +34,7 @@ from geo.schema import RegionDetailType, ProjectScopeQuery as GeoQuery
 from quality_assurance.schema import Query as QualityAssuranceQuery
 from ary.schema import Query as AryQuery
 from analysis.schema import Query as AnalysisQuery
+from assessment_registry.schema import Query as AssessmentRegistryQuery
 from unified_connector.schema import UnifiedConnectorQueryType
 from assisted_tagging.schema import AssistedTaggingQueryType
 
@@ -73,6 +74,8 @@ from .filter_set import (
 from .activity import project_activity_log
 from .tasks import generate_viz_stats, get_project_stats
 from .public_schema import PublicProjectListType
+
+from assessment_registry.models import AssessmentRegistry
 
 
 def get_recent_active_users(project, max_users=3):
@@ -396,6 +399,7 @@ class ProjectDetailType(
     QualityAssuranceQuery,
     AryQuery,
     AnalysisQuery,
+    AssessmentRegistryQuery,
     # --  End  --Project scopped entities
     ProjectType,
 ):
