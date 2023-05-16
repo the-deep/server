@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from user_resource.models import UserResource
 from geo.models import Region
@@ -196,6 +197,10 @@ class AssessmentRegistry(UserResource):
     affected_groups = models.IntegerField(choices=AffectedGroupType.choices, null=True, blank=True)
     locations = models.ManyToManyField(Region, related_name='focus_location_assessment_reg')
 
+    # Score Fields
+    matrix_score = models.IntegerField(default=0)
+    final_score = models.IntegerField(default=0)
+
 
 class MethodologyAttribute(UserResource):
     class CollectionTechniqueType(models.IntegerChoices):
@@ -279,3 +284,53 @@ class AdditionalDocument(UserResource):
         null=True, blank=True
     )
     external_link = models.TextField(blank=True)
+
+
+class ScoreRating(UserResource):
+    class ScoreType(models.IntegerChoices):
+        RELEVANCE = 0, "Fit for purpose -> Relevance"
+        COMPREHENSIVENESS = 1, "Fit for purpose -> Comprehensiveness"
+        TIMELINESS = 2, "Fit for purpose -> Timeliness"
+        GRANULARITY = 3, "Fit for purpose -> Granularity"
+        COMPARABILITY = 4, "Fit for purpose -> Comparability"
+        SOURCE_REABILITY = 5, "Trustworthiness -> Source reability"
+        METHODS = 6, "Trustworthiness -> Methods"
+        TRIANGULATION = 7, "Trustworthiness -> Triangulation"
+        PLAUSIBILITY = 8, "Trustworthiness -> Plausibility"
+        INCLUSIVENESS = 9, "Trustworthiness - Inclusiveness"
+        ASSUMPTIONS = 10, "Analytical rigor -> Assumptions"
+        CORROBORATION = 11, "Analytical rigor -> Corroboration"
+        STRUCTURED_ANALYTICAL_TECHNIQUE = 12, "Analytical rigor -> Structured Ananlytical Technique"
+        CONSENSUS = 13, "Analytical rigor > Consensus"
+        REPRODUCIBILITY = 14, "Analytical rigor -> Reproducibility"
+        CLEARLY_ARTICULATED_RESULT = 15, "Analytical Writing -> Clearly Articulated Result"
+        LEVEL_OF_CONFIDENCE = 16, "Analytical writing -> Level Of Confidence"
+        ILLUSTRATION = 17, "Analytical writing -> Illustration"
+        SOURCED_DATA_EVIDENCE = 18, "Analytical writing -> Sourced data and evidence"
+        CLEARLY_STATED_OUTLIERS = 19, "Analytical writing -> Clearly stated outliers"
+
+    class RatingType(models.IntegerChoices):
+        VERY_POOR = 1, "Very poor"
+        POOR = 2, "Poor"
+        FAIR = 3, "Fair"
+        GOOD = 4, "Good"
+        VERY_GOOD = 5, "Very Good"
+
+    assessment_registry = models.ForeignKey(
+        AssessmentRegistry,
+        on_delete=models.CASCADE,
+        related_name='assessment_registry',
+    )
+    score_type = models.IntegerField(choices=ScoreType.choices)
+    rating = models.IntegerField(choices=RatingType.choices)
+    reason = models.TextField(blank=True, null=True)
+
+
+class ScoreAnalyticalDensity(UserResource):
+    assessment_registry = models.ForeignKey(
+        AssessmentRegistry,
+        on_delete=models.CASCADE,
+        related_name='analytical_density'
+    )
+    sector = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
+    value = models.IntegerField(validators=[MaxValueValidator(49), MinValueValidator(1)])
