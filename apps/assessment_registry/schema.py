@@ -9,7 +9,11 @@ from utils.graphene.enums import EnumDescription
 from deep.permissions import ProjectPermissions as PP
 from user_resource.schema import UserResourceMixin
 
-from .models import AssessmentRegistry, MethodologyAttribute, AdditionalDocument
+from .models import (
+    AssessmentRegistry,
+    MethodologyAttribute,
+    AdditionalDocument,
+)
 from .filters import AssessmentRegistryGQFilterSet
 from .enums import (
     AssessmentRegistryCrisisTypeEnum,
@@ -83,6 +87,7 @@ class AssessmentRegistryType(
             "cost_estimates_usd", "no_of_pages", "data_collection_start_date", "data_collection_end_date",
             "publication_date", "lead_organizations", "international_partners", "donors", "national_partners",
             "governments", "objectives", "data_collection_techniques", "sampling", "limitations", "locations",
+            "matrix_score", "final_score",
         )
 
     bg_crisis_type = graphene.Field(AssessmentRegistryCrisisTypeEnum, required=True)
