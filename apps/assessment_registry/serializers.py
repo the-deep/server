@@ -1,7 +1,13 @@
-from .models import AssessmentRegistry, MethodologyAttribute, AdditionalDocument
+from rest_framework import serializers
+
 from user_resource.serializers import UserResourceSerializer
 from deep.serializers import ProjectPropertySerializerMixin, TempClientIdMixin
-from rest_framework import serializers
+
+from .models import (
+    AssessmentRegistry,
+    MethodologyAttribute,
+    AdditionalDocument
+)
 
 
 class MethodologyAttributeSerializer(serializers.ModelSerializer):
