@@ -1639,6 +1639,8 @@ type AssessmentRegistryType {
   sampling: String
   limitations: String
   locations: [RegionWithProject!]!
+  matrixScore: Int!
+  finalScore: Int!
   clientId: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
