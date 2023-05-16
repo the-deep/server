@@ -75,8 +75,6 @@ from .activity import project_activity_log
 from .tasks import generate_viz_stats, get_project_stats
 from .public_schema import PublicProjectListType
 
-from assessment_registry.models import AssessmentRegistry
-
 
 def get_recent_active_users(project, max_users=3):
     # id, date
