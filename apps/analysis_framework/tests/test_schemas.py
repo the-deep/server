@@ -94,6 +94,7 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
                 description
                 isPrivate
                 title
+                clonedFrom
               }
             }
         '''
@@ -101,7 +102,7 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
         user = UserFactory.create()
         private_af = AnalysisFrameworkFactory.create(is_private=True)
         normal_af = AnalysisFrameworkFactory.create()
-        member_af = AnalysisFrameworkFactory.create()
+        member_af = AnalysisFrameworkFactory.create(cloned_from=normal_af)
         member_af.add_member(user)
         # Without login
         self.query_check(query, assert_for_error=True, variables={'id': normal_af.pk})
@@ -117,6 +118,8 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
         response = self.query_check(query, variables={'id': member_af.pk})['data']['analysisFramework']
         self.assertIdEqual(response['id'], member_af.id, response)
         self.assertEqual(response['isPrivate'], False, response)
+        self.assertEqual(response['clonedFrom'], str(normal_af.id), response)
+
         # Shouldn't work for non-member private AF
         response = self.query_check(query, variables={'id': private_af.pk})['data']['analysisFramework']
         self.assertEqual(response, None, response)
