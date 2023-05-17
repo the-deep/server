@@ -13,6 +13,8 @@ from .models import (
     AssessmentRegistry,
     MethodologyAttribute,
     AdditionalDocument,
+    ScoreRating,
+    ScoreAnalyticalDensity,
 )
 from .filters import AssessmentRegistryGQFilterSet
 from .enums import (
@@ -35,7 +37,29 @@ from .enums import (
     AssessmentRegistryUnitOfAnalysisTypeEnum,
     AssessmentRegistryUnitOfReportingTypeEnum,
     AssessmentRegistryDocumentTypeEnum,
+    AssessmentRegistryScoreTypeEnum,
+    AssessmentRegistryRatingTypeEnum,
 )
+
+
+class ScoreRatingType(DjangoObjectType, UserResourceMixin):
+    class Meta:
+        model = ScoreRating
+        fields = ("id", "client_id", "score_type", "rating", "reason",)
+
+    score_type = graphene.Field(AssessmentRegistryScoreTypeEnum, required=True)
+    score_type_display = EnumDescription(source='get_score_type_display', required=True)
+    rating = graphene.Field(AssessmentRegistryRatingTypeEnum, required=True)
+    rating_display = EnumDescription(source='get_rating_display', required=True)
+
+
+class ScoreAnalyticalDensityType(DjangoObjectType, UserResourceMixin):
+    class Meta:
+        model = ScoreAnalyticalDensity
+        fields = ("id", "client_id", "sector", "value")
+
+    sector = graphene.Field(AssessmentRegistrySectorTypeEnum, required=True)
+    sector_display = EnumDescription(source='get_sector_display', required=True)
 
 
 def get_assessment_registry_qs(info):
@@ -114,6 +138,8 @@ class AssessmentRegistryType(
     affected_groups_display = EnumDescription(source='get_affected_groups_display', required=True)
     methodology_attributes = graphene.List(graphene.NonNull(MethodologyAttributeType), required=False)
     additional_documents = graphene.List(graphene.NonNull(AdditionalDocumentType), required=False)
+    score_ratings = graphene.List(graphene.NonNull(ScoreRatingType), required=True)
+    score_analytical_density = graphene.List(graphene.NonNull(ScoreAnalyticalDensityType), required=True)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -126,6 +152,14 @@ class AssessmentRegistryType(
     @staticmethod
     def resolve_additional_documents(root, info, **kwargs):
         return AdditionalDocument.objects.filter(assessment_registry=root)
+
+    @staticmethod
+    def resolve_score_ratings(root, info, **kwargs):
+        return ScoreRating.objects.filter(assessment_registry=root)
+
+    @staticmethod
+    def resolve_score_analytical_density(root, info, **kwargs):
+        return ScoreAnalyticalDensity.objects.filter(assessment_registry=root)
 
 
 class AssessmentRegistryListType(CustomDjangoListObjectType):
