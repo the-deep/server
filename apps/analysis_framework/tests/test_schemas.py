@@ -27,6 +27,7 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
                   title
                   description
                   isPrivate
+                  clonedFrom
                 }
               }
             }
@@ -179,10 +180,6 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
                     title
                   }
                 }
-                visibleProjects {
-                    id
-                    title
-                }
               }
             }
         '''
@@ -191,8 +188,6 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
         another_user = UserFactory.create()
         af = AnalysisFrameworkFactory.create()
         af.add_member(another_user)
-        project = ProjectFactory.create(analysis_framework=af, is_private=False)
-        private_project = ProjectFactory.create(analysis_framework=af, is_private=True)
 
         def _query_check(**kwargs):
             return self.query_check(query, variables={'id': af.pk}, **kwargs)
@@ -207,21 +202,7 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
         response = _query_check()['data']['analysisFramework']
         self.assertEqual(len(response['secondaryTagging']), 0, response)
         self.assertEqual(len(response['primaryTagging']), 0, response)
-        self.assertEqual(len(response['visibleProjects']), 1, response)
-        self.assertListIds(
-            response['visibleProjects'],
-            [project],
-            response
-        )
-        # lets add member to the private_project
-        private_project.add_member(user)
-        response = _query_check()['data']['analysisFramework']
-        self.assertEqual(len(response['visibleProjects']), 2, response)
-        self.assertListIds(
-            response['visibleProjects'],
-            [project, private_project],
-            response
-        )
+
         # Let's add some widgets and sections
         sequence = factory.Sequence(lambda n: n)
         rsequence = factory.Sequence(lambda n: 20 - n)

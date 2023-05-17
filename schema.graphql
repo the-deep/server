@@ -48,6 +48,7 @@ type AnalysisFrameworkDetailType {
   previewImage: FileFieldType
   export: FileFieldType
   allowedPermissions: [AnalysisFrameworkPermission!]!
+  clonedFrom: ID!
   primaryTagging: [SectionType!]
   secondaryTagging: [WidgetType!]
   members: [AnalysisFrameworkMembershipType!]
@@ -200,6 +201,7 @@ type AnalysisFrameworkType {
   previewImage: FileFieldType
   export: FileFieldType
   allowedPermissions: [AnalysisFrameworkPermission!]!
+  clonedFrom: ID!
 }
 
 type AnalysisFrameworkVisibleProjectType {
