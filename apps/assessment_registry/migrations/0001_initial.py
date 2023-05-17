@@ -12,6 +12,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('gallery', '0020_merge_0019_auto_20210120_0443_0019_auto_20210503_0431'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('geo', '0041_geoarea_centroid'),
         ('organization', '0012_organization_popularity'),

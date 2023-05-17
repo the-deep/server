@@ -52,24 +52,6 @@ type AnalysisAutomaticSummaryType {
   createdBy: UserType
   modifiedBy: UserType
   status: AutomaticSummaryStatusEnum!
-enum AffectedGroupTypeEnum {
-  ALL
-  ALL_AFFECTED
-  ALL_NOT_AFFECTED
-  ALL_AFFECTED_NOT_DISPLACED
-  ALL_AFFECTED_DISPLACED
-  ALL_AFFECTED_DISPLACED_IN_TRANSIT
-  ALL_AFFECTED_DISPLACED_MIGRANTS
-  ALL_AFFECTED_DISPLACED_IDPS
-  ALL_AFFECTED_DISPLACED_ASYLUM_SEEKER
-  ALL_AFFECTED_DISPLACED_OTHER_OF_CONCERN
-  ALL_AFFECTED_DISPLACED_RETURNEES
-  ALL_AFFECTED_DISPLACED_REFUGEES
-  ALL_AFFECTED_DISPLACED_MIGRANTS_IN_TRANSIT
-  ALL_AFFECTED_DISPLACED_MIGRANTS_PERMANENTS
-  ALL_AFFECTED_DISPLACED_MIGRANTS_PENDULAR
-  ALL_AFFECTED_NOT_DISPLACED_NO_HOST
-  ALL_AFFECTED_NOT_DISPLACED_HOST
 }
 
 type AnalysisFrameworkDetailType {
@@ -2368,6 +2350,8 @@ type CreateAnalysisPillarDiscardedEntry {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisPillarDiscardedEntryType
+}
+
 type CreateAssessmentRegistry {
   errors: [GenericScalar!]
   ok: Boolean
@@ -2617,12 +2601,6 @@ input DiscardedEntryUpdateInputType {
   analysisPillar: ID
   entry: ID
   tag: DiscardedEntryTagTypeEnum
-enum DetailTypeEnum {
-  INITIAL
-  RAPID
-  IN_DEPTH
-  MONITORING
-  OTHER
 }
 
 type DjangoDebug {
@@ -4985,15 +4963,6 @@ type TriggerAnalysisTopicModel {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisTopicModelType
-enum SectorTypeEnum {
-  F00D
-  HEALTH
-  SHELTER
-  WASH
-  PROTECTION
-  NUTRITION
-  LIVELIHOOD
-  EDUCATION
 }
 
 type TriggerAutoDraftEntry {
