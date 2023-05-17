@@ -51,24 +51,6 @@ type AnalysisAutomaticSummaryType {
   createdBy: UserType
   modifiedBy: UserType
   status: AutomaticSummaryStatusEnum!
-enum AffectedGroupTypeEnum {
-  ALL
-  ALL_AFFECTED
-  ALL_NOT_AFFECTED
-  ALL_AFFECTED_NOT_DISPLACED
-  ALL_AFFECTED_DISPLACED
-  ALL_AFFECTED_DISPLACED_IN_TRANSIT
-  ALL_AFFECTED_DISPLACED_MIGRANTS
-  ALL_AFFECTED_DISPLACED_IDPS
-  ALL_AFFECTED_DISPLACED_ASYLUM_SEEKER
-  ALL_AFFECTED_DISPLACED_OTHER_OF_CONCERN
-  ALL_AFFECTED_DISPLACED_RETURNEES
-  ALL_AFFECTED_DISPLACED_REFUGEES
-  ALL_AFFECTED_DISPLACED_MIGRANTS_IN_TRANSIT
-  ALL_AFFECTED_DISPLACED_MIGRANTS_PERMANENTS
-  ALL_AFFECTED_DISPLACED_MIGRANTS_PENDULAR
-  ALL_AFFECTED_NOT_DISPLACED_NO_HOST
-  ALL_AFFECTED_NOT_DISPLACED_HOST
 }
 
 type AnalysisFrameworkDetailType {
@@ -1456,6 +1438,10 @@ input AssessmentRegistryCreateInputType {
   affectedGroups: AssessmentRegistryAffectedGroupTypeEnum
   methodologyAttributes: [MethodologyAttributeInputType!]
   additionalDocuments: [AdditionalDocumentInputType!]
+  scoreRatings: [ScoreRatingInputType!]
+  matrixScore: Int
+  finalScore: Int
+  scoreAnalyticalDensity: [ScoreAnalyticalDensityInputType!]
 }
 
 enum AssessmentRegistryCrisisTypeEnum {
@@ -1591,10 +1577,41 @@ enum AssessmentRegistryProximityTypeEnum {
   MIXED
 }
 
+enum AssessmentRegistryRatingType {
+  VERY_POOR
+  POOR
+  FAIR
+  GOOD
+  VERY_GOOD
+}
+
 enum AssessmentRegistrySamplingApproachTypeEnum {
   NON_RANDOM_SELECTION
   RANDOM_SELECTION
   FULL_ENUMERATION
+}
+
+enum AssessmentRegistryScoreTypeEnum {
+  RELEVANCE
+  COMPREHENSIVENESS
+  TIMELINESS
+  GRANULARITY
+  COMPARABILITY
+  SOURCE_REABILITY
+  METHODS
+  TRIANGULATION
+  PLAUSIBILITY
+  INCLUSIVENESS
+  ASSUMPTIONS
+  CORROBORATION
+  STRUCTURED_ANALYTICAL_TECHNIQUE
+  CONSENSUS
+  REPRODUCIBILITY
+  CLEARLY_ARTICULATED_RESULT
+  LEVEL_OF_CONFIDENCE
+  ILLUSTRATION
+  SOURCED_DATA_EVIDENCE
+  CLEARLY_STATED_OUTLIERS
 }
 
 enum AssessmentRegistrySectorTypeEnum {
@@ -1663,6 +1680,8 @@ type AssessmentRegistryType {
   affectedGroupsDisplay: EnumDescription!
   methodologyAttributes: [MethodologyAttributeType!]
   additionalDocuments: [AdditionalDocumentType!]
+  scoreRatings: [ScoreRatingType!]!
+  scoreAnalyticalDensity: [ScoreAnalyticalDensityType!]!
 }
 
 enum AssessmentRegistryUnitOfAnalysisTypeEnum {
@@ -2072,6 +2091,8 @@ type CreateAnalysisPillarDiscardedEntry {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisPillarDiscardedEntryType
+}
+
 type CreateAssessmentRegistry {
   errors: [GenericScalar!]
   ok: Boolean
@@ -2280,12 +2301,6 @@ input DiscardedEntryUpdateInputType {
   analysisPillar: ID
   entry: ID
   tag: DiscardedEntryTagTypeEnum
-enum DetailTypeEnum {
-  INITIAL
-  RAPID
-  IN_DEPTH
-  MONITORING
-  OTHER
 }
 
 type DjangoDebug {
@@ -3687,9 +3702,9 @@ type ProjectDetailType {
   organizations: [ProjectOrganizationType!]
   hasAnalysisFramework: Boolean!
   hasAssessmentTemplate: Boolean!
-  analysisOverview: AnalysisOverviewType
   assessmentRegistry(id: ID!): AssessmentRegistryType
   assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], leadGroup: [ID], search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
+  analysisOverview: AnalysisOverviewType
   analysis(id: ID!): AnalysisType
   analyses(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisListType
   analysisPillar(id: ID!): AnalysisPillarType
@@ -3826,6 +3841,7 @@ type ProjectMembershipType {
 type ProjectMutationType {
   id: ID!
   title: String!
+  createAssessmentRegistry(data: AssessmentRegistryCreateInputType!): CreateAssessmentRegistry
   analysisPillarUpdate(data: AnalysisPillarUpdateInputType!, id: ID!): UpdateAnalysisPillar
   discardedEntryCreate(data: DiscardedEntryCreateInputType!): CreateAnalysisPillarDiscardedEntry
   discardedEntryUpdate(data: DiscardedEntryUpdateInputType!, id: ID!): UpdateAnalysisPillarDiscardedEntry
@@ -4362,6 +4378,45 @@ type SaveUserSavedLeadFilter {
   result: UserSavedLeadFilterType
 }
 
+input ScoreAnalyticalDensityInputType {
+  clientId: String
+  sector: AssessmentRegistrySectorTypeEnum!
+  value: Int!
+}
+
+type ScoreAnalyticalDensityType {
+  id: ID!
+  clientId: String
+  sector: AssessmentRegistrySectorTypeEnum!
+  value: Int!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  sectorDisplay: EnumDescription!
+}
+
+input ScoreRatingInputType {
+  clientId: String
+  scoreType: AssessmentRegistryScoreTypeEnum!
+  rating: AssessmentRegistryRatingType!
+  reason: String
+}
+
+type ScoreRatingType {
+  id: ID!
+  clientId: String
+  scoreType: AssessmentRegistryScoreTypeEnum!
+  rating: AssessmentRegistryRatingType!
+  reason: String
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  scoreTypeDisplay: EnumDescription!
+  ratingDisplay: EnumDescription!
+}
+
 input SectionGqlInputType {
   id: ID
   title: String!
@@ -4410,15 +4465,6 @@ type TriggerAnalysisTopicModel {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisTopicModelType
-enum SectorTypeEnum {
-  F00D
-  HEALTH
-  SHELTER
-  WASH
-  PROTECTION
-  NUTRITION
-  LIVELIHOOD
-  EDUCATION
 }
 
 type TriggerAutoDraftEntry {
