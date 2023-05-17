@@ -19,6 +19,20 @@ type AdminLevelType {
   boundsFile: FileFieldType
 }
 
+input AnalysisAutomaticSummaryCreateInputType {
+  entriesId: [ID!]
+}
+
+type AnalysisAutomaticSummaryType {
+  id: ID!
+  summary: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  status: AutomaticSummaryStatusEnum!
+}
+
 type AnalysisFrameworkDetailType {
   id: ID!
   title: String!
@@ -201,17 +215,34 @@ type AnalysisListType {
   pageSize: Int
 }
 
-type AnalysisPillarDetailType {
+type AnalysisOverviewOrganizationType {
   id: ID!
   title: String!
-  mainStatement: String!
-  informationGap: String!
-  filters: GenericScalar
-  assignee: UserType!
-  clientId: String!
-  analysis: ID!
-  clonedFrom: ID!
-  entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadCreatedBy: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], leadAuthoringOrganizationTypes: [ID!], leadAuthorOrganizations: [ID!], leadSourceOrganizations: [ID!], search: String, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataInputType!], hasComment: Boolean, isVerified: Boolean, discarded: Boolean, excludeEntries: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarEntryListType
+  count: Int!
+}
+
+type AnalysisOverviewType {
+  totalEntriesCount: Int!
+  totalLeadsCount: Int!
+  analyzedEntriesCount: Int!
+  analyzedLeadsCount: Int!
+  authoringOrganizations: [AnalysisOverviewOrganizationType!]
+}
+
+type AnalysisPillarDiscardedEntryListType {
+  results: [AnalysisPillarDiscardedEntryType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalysisPillarDiscardedEntryType {
+  id: ID!
+  analysisPillar: ID
+  entry: EntryType!
+  entryId: ID!
+  tag: DiscardedEntryTagTypeEnum!
+  tagDisplay: EnumDescription!
 }
 
 type AnalysisPillarEntryListType {
@@ -234,10 +265,57 @@ type AnalysisPillarType {
   mainStatement: String!
   informationGap: String!
   filters: GenericScalar
-  assignee: UserType!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
   clientId: String!
+  assignee: UserType!
   analysis: ID!
-  clonedFrom: ID!
+  clonedFrom: ID
+  analyzedEntriesCount: Int!
+  statements: [AnalyticalStatementType!]
+  discardedEntries(tags: [DiscardedEntryTagTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarDiscardedEntryListType
+  entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadCreatedBy: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], leadAuthoringOrganizationTypes: [ID!], leadAuthorOrganizations: [ID!], leadSourceOrganizations: [ID!], search: String, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataInputType!], hasComment: Boolean, isVerified: Boolean, discarded: Boolean, excludeEntries: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarEntryListType
+}
+
+input AnalysisPillarUpdateInputType {
+  title: String
+  mainStatement: String
+  informationGap: String
+  filters: GenericScalar
+  assignee: ID
+  analysis: ID
+  clonedFrom: ID
+  statements: [AnalyticalStatementGqlInputType!]
+  clientId: String
+}
+
+type AnalysisPublicationDateType {
+  startDate: Date!
+  endDate: Date!
+}
+
+type AnalysisTopicModelClusterType {
+  id: ID!
+  entries: [EntryType]!
+}
+
+input AnalysisTopicModelCreateInputType {
+  analysisPillar: ID!
+  additionalFilters: EntriesFilterDataInputType
+}
+
+type AnalysisTopicModelType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  status: TopicModelStatusEnum!
+  clusters: [AnalysisTopicModelClusterType]!
+  additionalFilters: EntriesFilterDataType
+  analysisPillar: ID!
 }
 
 type AnalysisType {
@@ -245,9 +323,142 @@ type AnalysisType {
   title: String!
   startDate: Date
   endDate: Date!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  clonedFrom: ID
+  teamLead: UserType!
+  publicationDate: AnalysisPublicationDateType
+  analyzedEntriesCount: Int!
+  analyzedLeadsCount: Int!
+  pillars: [AnalysisPillarType!]
+}
+
+input AnalyticalEntriesGqlInputType {
+  id: ID
+  order: Int!
+  entry: ID!
+  clientId: String
+}
+
+type AnalyticalStatementEntryGeoDataType {
+  ent: String
+  offsetStart: Int
+  offsetEnd: Int
+  geoids: [AnalyticalStatementEntryGeoIDsDataType!]
+}
+
+type AnalyticalStatementEntryGeoIDsDataType {
+  match: String
+  geonameid: Int
+  latitude: Float
+  longitude: Float
+  featurecode: String
+  countrycode: String
+}
+
+type AnalyticalStatementEntryGeoType {
+  id: ID!
+  entry: EntryType!
+  entryId: ID!
+  data: [AnalyticalStatementEntryGeoDataType!]
+}
+
+type AnalyticalStatementEntryType {
+  id: ID!
+  order: Int!
   clientId: String!
-  teamLead: ID!
-  clonedFrom: ID!
+  entry: EntryType!
+  entryId: ID!
+  analyticalStatement: ID!
+}
+
+input AnalyticalStatementGeoTaskInputType {
+  entriesId: [ID!]
+}
+
+enum AnalyticalStatementGeoTaskStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILED
+  SEND_FAILED
+}
+
+type AnalyticalStatementGeoTaskType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  status: AnalyticalStatementGeoTaskStatusEnum!
+  entryGeo: [AnalyticalStatementEntryGeoType]!
+}
+
+input AnalyticalStatementGqlInputType {
+  id: ID
+  statement: String!
+  reportText: String
+  informationGaps: String
+  includeInReport: Boolean
+  order: Int!
+  clonedFrom: ID
+  entries: [AnalyticalEntriesGqlInputType!]
+  clientId: String
+}
+
+type AnalyticalStatementListType {
+  results: [AnalyticalStatementType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+input AnalyticalStatementNGramCreateInputType {
+  entriesId: [ID!]
+}
+
+type AnalyticalStatementNGramDataType {
+  word: String!
+  count: Int!
+}
+
+enum AnalyticalStatementNGramStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILED
+  SEND_FAILED
+}
+
+type AnalyticalStatementNGramType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  status: AnalyticalStatementNGramStatusEnum!
+  unigrams: [AnalyticalStatementNGramDataType]!
+  bigrams: [AnalyticalStatementNGramDataType]!
+  trigrams: [AnalyticalStatementNGramDataType]!
+}
+
+type AnalyticalStatementType {
+  id: ID!
+  statement: String!
+  includeInReport: Boolean!
+  order: Int!
+  reportText: String!
+  informationGaps: String!
+  clientId: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  clonedFrom: ID
+  entriesCount: Int!
+  entries: [AnalyticalStatementEntryType!]
 }
 
 type AssessmentListType {
@@ -369,6 +580,14 @@ type AttributeType {
   widgetType: WidgetWidgetTypeEnum!
   widgetTypeDisplay: EnumDescription!
   geoSelectedOptions: [ProjectGeoAreaType!]
+}
+
+enum AutomaticSummaryStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILED
+  SEND_FAILED
 }
 
 input BulkAnalysisFrameworkMembershipInputType {
@@ -630,6 +849,12 @@ type CreateAnalysisFramework {
   result: AnalysisFrameworkDetailType
 }
 
+type CreateAnalysisPillarDiscardedEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisPillarDiscardedEntryType
+}
+
 type CreateDraftEntry {
   errors: [GenericScalar!]
   ok: Boolean
@@ -717,6 +942,12 @@ scalar DateTime
 
 scalar Decimal
 
+type DeleteAnalysisPillarDiscardedEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisPillarDiscardedEntryType
+}
+
 type DeleteAssessment {
   errors: [GenericScalar!]
   ok: Boolean
@@ -775,6 +1006,27 @@ type DeleteWrongPredictionReview {
   errors: [GenericScalar!]
   ok: Boolean
   result: WrongPredictionReviewType
+}
+
+input DiscardedEntryCreateInputType {
+  id: ID
+  analysisPillar: ID!
+  entry: ID!
+  tag: DiscardedEntryTagTypeEnum!
+}
+
+enum DiscardedEntryTagTypeEnum {
+  REDUNDANT
+  TOO_OLD
+  ANECDOTAL
+  OUTLIER
+}
+
+input DiscardedEntryUpdateInputType {
+  id: ID
+  analysisPillar: ID
+  entry: ID
+  tag: DiscardedEntryTagTypeEnum
 }
 
 type DjangoDebug {
@@ -942,6 +1194,11 @@ type EntryFilterDataType {
   useExclude: Boolean
   useAndOperator: Boolean
   includeSubRegions: Boolean
+}
+
+type EntryGeoCentroidData {
+  centroid: PointScalar!
+  count: Int!
 }
 
 type EntryGroupLabelType {
@@ -1531,6 +1788,7 @@ type LeadDetailType {
   entriesCount: EntriesCountType
   filteredEntriesCount: Int
   duplicateLeadsCount: Int
+  shareViewUrl: String!
   entries: [EntryType!]
 }
 
@@ -1717,6 +1975,7 @@ type LeadType {
   entriesCount: EntriesCountType
   filteredEntriesCount: Int
   duplicateLeadsCount: Int
+  shareViewUrl: String!
 }
 
 input LeadsFilterDataInputType {
@@ -2053,10 +2312,18 @@ type ProjectDetailType {
   organizations: [ProjectOrganizationType!]
   hasAnalysisFramework: Boolean!
   hasAssessmentTemplate: Boolean!
+  analysisOverview: AnalysisOverviewType
   analysis(id: ID!): AnalysisType
   analyses(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisListType
-  analysisPillar(id: ID!): AnalysisPillarDetailType
+  analysisPillar(id: ID!): AnalysisPillarType
   analysisPillars(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], analyses: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarListType
+  analyticalStatement(id: ID!): AnalyticalStatementType
+  analyticalStatements(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalyticalStatementListType
+  entriesGeoData(entriesId: [ID!]!): [EntryGeoCentroidData!]
+  analysisTopicModel(id: ID!): AnalysisTopicModelType
+  analysisAutomaticSummary(id: ID!): AnalysisAutomaticSummaryType
+  analysisAutomaticNgram(id: ID!): AnalyticalStatementNGramType
+  analysisGeoTask(id: ID!): AnalyticalStatementGeoTaskType
   assessment(id: ID!): AssessmentType
   assessments(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentListType
   reviewComment(id: ID!): EntryReviewCommentDetailType
@@ -2174,6 +2441,14 @@ type ProjectMembershipType {
 type ProjectMutationType {
   id: ID!
   title: String!
+  analysisPillarUpdate(data: AnalysisPillarUpdateInputType!, id: ID!): UpdateAnalysisPillar
+  discardedEntryCreate(data: DiscardedEntryCreateInputType!): CreateAnalysisPillarDiscardedEntry
+  discardedEntryUpdate(data: DiscardedEntryUpdateInputType!, id: ID!): UpdateAnalysisPillarDiscardedEntry
+  discardedEntryDelete(id: ID!): DeleteAnalysisPillarDiscardedEntry
+  triggerAnalysisTopicModel(data: AnalysisTopicModelCreateInputType!): TriggerAnalysisTopicModel
+  triggerAnalysisAutomaticSummary(data: AnalysisAutomaticSummaryCreateInputType!): TriggerAnalysisAutomaticSummary
+  triggerAnalysisAutomaticNgram(data: AnalyticalStatementNGramCreateInputType!): TriggerAnalysisAnalyticalStatementNGram
+  triggerAnalysisGeoLocation(data: AnalyticalStatementGeoTaskInputType!): TriggerAnalysisAnalyticalGeoTask
   exportCreate(data: ExportCreateInputType!): CreateUserExport
   exportUpdate(data: ExportUpdateInputType!, id: ID!): UpdateUserExport
   exportCancel(id: ID!): CancelUserExport
@@ -2259,6 +2534,7 @@ enum ProjectPermission {
   DELETE_ENTRY
   CREATE_EXPORT
   CAN_QUALITY_CONTROL
+  CREATE_ANALYSIS_MODULE
 }
 
 type ProjectRoleType {
@@ -2699,6 +2975,38 @@ type SectionType {
   widgets: [WidgetType!]
 }
 
+enum TopicModelStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILED
+  SEND_FAILED
+}
+
+type TriggerAnalysisAnalyticalGeoTask {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalyticalStatementGeoTaskType
+}
+
+type TriggerAnalysisAnalyticalStatementNGram {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalyticalStatementNGramType
+}
+
+type TriggerAnalysisAutomaticSummary {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisAutomaticSummaryType
+}
+
+type TriggerAnalysisTopicModel {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisTopicModelType
+}
+
 type TriggerUnifiedConnector {
   errors: [GenericScalar!]
   ok: Boolean
@@ -2772,6 +3080,18 @@ type UpdateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisFrameworkDetailType
+}
+
+type UpdateAnalysisPillar {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisPillarType
+}
+
+type UpdateAnalysisPillarDiscardedEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisPillarDiscardedEntryType
 }
 
 type UpdateConnectorSourceLead {

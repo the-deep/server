@@ -108,30 +108,30 @@ class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     # tabular_field TODO:
 
     @staticmethod
-    def get_custom_queryset(queryset, info, **kwargs):
+    def get_custom_queryset(queryset, info, **_):
         return get_entry_qs(info)
 
     @staticmethod
-    def resolve_project_labels(root, info, **kwargs):
+    def resolve_project_labels(root, info, **_):
         return info.context.dl.entry.entry_project_labels.load(root.pk)
 
     @staticmethod
-    def resolve_attributes(root, info, **kwargs):
+    def resolve_attributes(root, info, **_):
         return info.context.dl.entry.entry_attributes.load(root.pk)
 
     @staticmethod
-    def resolve_review_comments_count(root, info, **kwargs):
+    def resolve_review_comments_count(root, info, **_):
         return info.context.dl.entry.review_comments_count.load(root.pk)
 
     @staticmethod
-    def resolve_verified_by(root, info, **kwargs):
+    def resolve_verified_by(root, info, **_):
         # Use cache if available
         if has_prefetched(root, 'verified_by'):
             return root.verified_by.all()
         return info.context.dl.entry.verified_by.load(root.pk)
 
     @staticmethod
-    def resolve_verified_by_count(root, info, **kwargs):
+    def resolve_verified_by_count(root, info, **_):
         # Use cache if available
         if has_prefetched(root, 'verified_by'):
             return len(root.verified_by.all())
@@ -154,5 +154,5 @@ class Query:
     )
 
     @staticmethod
-    def resolve_entries(root, info, **kwargs) -> QuerySet:
+    def resolve_entries(root, info, **_) -> QuerySet:
         return get_entry_qs(info)

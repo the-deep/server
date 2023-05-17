@@ -8,7 +8,8 @@ from assisted_tagging.models import (
     AssistedTaggingPrediction,
 )
 
-from assisted_tagging.tasks import AsssistedTaggingTask, _sync_tags_with_deepl
+from deepl_integration.handlers import AssistedTaggingDraftEntryHandler
+from assisted_tagging.tasks import sync_tags_with_deepl
 from assisted_tagging.models import (
     AssistedTaggingModel,
     AssistedTaggingModelVersion,
@@ -1688,7 +1689,7 @@ class AssistedTaggingCallbackApiTest(TestCase, SnapShotTextCase):
         # ----- Valid entry_id
         data = {
             **self.DEEPL_CALLBACK_MOCK_DATA,
-            'client_id': AsssistedTaggingTask.generate_draft_entry_client_id(draft_entry1),
+            'client_id': AssistedTaggingDraftEntryHandler.get_client_id(draft_entry1),
         }
 
         self.maxDiff = None
@@ -1710,7 +1711,7 @@ class AssistedTaggingCallbackApiTest(TestCase, SnapShotTextCase):
         # ----- Valid entry_id send with same type of data
         data = {
             **self.DEEPL_CALLBACK_MOCK_DATA,
-            'client_id': AsssistedTaggingTask.generate_draft_entry_client_id(draft_entry2),
+            'client_id': AssistedTaggingDraftEntryHandler.get_client_id(draft_entry2),
         }
 
         current_model_stats = _get_current_model_stats()
@@ -1743,7 +1744,7 @@ class AssistedTaggingCallbackApiTest(TestCase, SnapShotTextCase):
         sync_request_mock.get.return_value.status_code = 200
         sync_request_mock.get.return_value.json.return_value = self.DEEPL_TAGS_MOCK_RESPONSE
         self.assertEqual(len(_get_current_tags()), 0)
-        _sync_tags_with_deepl()
+        sync_tags_with_deepl()
         self.assertNotEqual(len(_get_current_tags()), 0)
         self.assertMatchSnapshot(_get_current_tags(), 'sync-tags')
 

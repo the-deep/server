@@ -1,8 +1,10 @@
 from promise import Promise
+from collections import defaultdict
 from django.utils.functional import cached_property
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
+from user.models import User
 from .models import Profile
 
 
@@ -23,7 +25,23 @@ class UserProfileLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key) for key in keys])
 
 
+class UserLoader(DataLoaderWithContext):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def batch_load_fn(self, keys):
+        users_qs = User.objects.filter(id__in=keys)
+        _map = defaultdict()
+        for user in users_qs:
+            _map[user.id] = user
+        return Promise.resolve([_map.get(key) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def profile(self):
         return UserProfileLoader(context=self.context)
+
+    @cached_property
+    def users(self):
+        return UserLoader(context=self.context)

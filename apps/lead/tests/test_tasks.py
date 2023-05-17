@@ -1,19 +1,15 @@
+import os
+import logging
 from parameterized import parameterized
 from django.conf import settings
 
 from deep.tests import TestCase
-
-from lead.tasks import (
-    extract_from_lead,
-    _preprocess,
-)
-from lead.models import Lead
-
-from utils.common import get_or_write_file, makedirs
+from utils.common import get_or_write_file, makedirs, sanitize_text
 from utils.extractor.tests.test_web_document import HTML_URL, REDHUM_URL
 
-import os
-import logging
+from lead.tasks import extract_from_lead
+from lead.models import Lead
+
 logger = logging.getLogger(__name__)
 
 
@@ -63,7 +59,7 @@ class ExtractFromLeadTaskTest(TestCase):
             extracted = get_or_write_file(path + '.txt', lead_preview.text_extract)
             self.assertEqual(
                 ' '.join(lead_preview.text_extract.split()),
-                _preprocess(' '.join(extracted.read().split())),
+                sanitize_text(' '.join(extracted.read().split())),
             )
         except Exception:
             logger.warning('LEAD EXTRACTION ERROR:', exc_info=True)

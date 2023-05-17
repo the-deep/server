@@ -264,6 +264,8 @@ class ProjectPermissions(BasePermissions):
         CREATE_EXPORT = auto()
         # ---------------------- QA
         CAN_QUALITY_CONTROL = auto()
+        # ---------------------- Analysis Module
+        CREATE_ANALYSIS_MODULE = auto()
 
     Permission.__name__ = 'ProjectPermission'
 
@@ -281,6 +283,7 @@ class ProjectPermissions(BasePermissions):
         Permission.DELETE_ENTRY: "You don't have permission to delete entry",
         Permission.CREATE_EXPORT: "You don't have permission to create exports",
         Permission.CAN_QUALITY_CONTROL: "You don't have permission to Quality Control",
+        Permission.CREATE_ANALYSIS_MODULE: "You don't have permission to Analysis Module",
     }
 
     # NOTE: If we need to have delete permission as well make sure to update queryset in schema and mutations.
@@ -308,6 +311,7 @@ class ProjectPermissions(BasePermissions):
         Permission.VIEW_UNIFIED_CONNECTOR,
         Permission.CREATE_UNIFIED_CONNECTOR,
         Permission.UPDATE_UNIFIED_CONNECTOR,
+        Permission.CREATE_ANALYSIS_MODULE,
     ]
     ADMIN = [
         *MEMBER,

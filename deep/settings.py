@@ -71,9 +71,14 @@ env = environ.Env(
     SESSION_COOKIE_DOMAIN=str,
     CSRF_COOKIE_DOMAIN=str,
     DOCKER_HOST_IP=(str, None),
-    # DEEPL
+    # DEEPL (Legacy)
     DEEPL_SERVICE_DOMAIN=str,  # http://extractor:8001
     DEEPL_SERVICE_CALLBACK_DOMAIN=str,  # http://web:8000
+    # DEEPL (New)
+    DEEPL_SERVER_TOKEN=str,
+    DEEPL_SERVER_AS_MOCK=(bool, False),
+    DEEPL_SERVER_DOMAIN=str,  # http://nlp.example.com  -> https://github.com/the-deep-nlp/core-server
+    DEEPL_SERVER_CALLBACK_DOMAIN=str,  # http://deep.example.com -> Should be accessible by deepl server
     # Pytest
     PYTEST_XDIST_WORKER=(str, None),
     PROFILE=(bool, False),
@@ -155,6 +160,7 @@ LOCAL_APPS = [
     'unified_connector',
     'assisted_tagging',
     'deep_explore',
+    'deepl_integration',
 
     # MISC DEEP APPS
     'bulk_data_migration',
@@ -462,7 +468,7 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(minute=0, hour='*/2'),
     },
     'sync_tag_data_with_deepl': {
-        'task': 'assisted_tagging.tasks.sync_tags_with_deepl',
+        'task': 'assisted_tagging.tasks.sync_tags_with_deepl_task',
         # Every 6 hour
         'schedule': crontab(minute=0, hour='*/6'),
     },
@@ -632,24 +638,44 @@ if IN_AWS_COPILOT_ECS:
         }
     }
 else:
+    def log_render_extra_context(record):
+        """
+        Append extra->context to logs
+        """
+        if hasattr(record, 'context'):
+            record.context = f' - {str(record.context)}'
+        else:
+            record.context = ''
+        return True
+
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,
+        'filters': {
+            'render_extra_context': {
+                '()': 'django.utils.log.CallbackFilter',
+                'callback': log_render_extra_context,
+            }
+        },
         'formatters': {
             'colored_verbose': {
                 '()': 'colorlog.ColoredFormatter',
-                'format': "%(log_color)s%(levelname)-8s%(red)s%(module)-8s%(reset)s %(asctime)s %(blue)s%(message)s"
+                'format': (
+                    "%(log_color)s%(levelname)-8s%(red)s%(module)-8s%(reset)s %(asctime)s %(blue)s%(message)s %(context)s"
+                )
             },
         },
         'handlers': {
             'console': {
                 'level': 'INFO',
                 'class': 'logging.StreamHandler',
+                'filters': ['render_extra_context'],
             },
             'colored_console': {
                 'level': 'INFO',
                 'class': 'logging.StreamHandler',
-                'formatter': 'colored_verbose'
+                'formatter': 'colored_verbose',
+                'filters': ['render_extra_context'],
             },
         },
         'loggers': {
@@ -825,7 +851,7 @@ if DEBUG and env('DOCKER_HOST_IP') and not TESTING:
     # https://github.com/flavors/django-graphiql-debug-toolbar#installation
     # FIXME: If mutation are triggered twice https://github.com/flavors/django-graphiql-debug-toolbar/pull/12/files
     # FIXME: All request are triggered twice. Creating multiple entries in admin panel as well.
-    # INTERNAL_IPS = [env('DOCKER_HOST_IP')]
+    INTERNAL_IPS = [env('DOCKER_HOST_IP')]
     # # JUST FOR Graphiql
     # INSTALLED_APPS += ['debug_toolbar', 'graphiql_debug_toolbar']
     # MIDDLEWARE = ['graphiql_debug_toolbar.middleware.DebugToolbarMiddleware'] + MIDDLEWARE
@@ -871,9 +897,15 @@ SESSION_COOKIE_DOMAIN = env('SESSION_COOKIE_DOMAIN')
 # https://docs.djangoproject.com/en/3.2/ref/settings/#csrf-cookie-domain
 CSRF_COOKIE_DOMAIN = env('CSRF_COOKIE_DOMAIN')
 
-# DEEPL Config
+# DEEPL Service Config (Existing/Legacy)
 DEEPL_SERVICE_DOMAIN = env('DEEPL_SERVICE_DOMAIN')
 DEEPL_SERVICE_CALLBACK_DOMAIN = env('DEEPL_SERVICE_CALLBACK_DOMAIN')
+
+# DEEPL Server Config (New)
+DEEPL_SERVER_TOKEN = env('DEEPL_SERVER_TOKEN')
+DEEPL_SERVER_DOMAIN = env('DEEPL_SERVER_DOMAIN')
+DEEPL_SERVER_AS_MOCK = env('DEEPL_SERVER_AS_MOCK')
+DEEPL_SERVER_CALLBACK_DOMAIN = env('DEEPL_SERVER_CALLBACK_DOMAIN')
 
 
 # Graphene configs

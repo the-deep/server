@@ -1,9 +1,11 @@
-from typing import Union
-
-from dataclasses import dataclass, field
 import requests
+import json
+from dataclasses import dataclass, field
+from typing import Union, Dict, Callable
 
 from django.core.files.base import ContentFile
+
+from utils.common import sanitize_text
 
 
 def requesthelper_ignore_error(func):
@@ -18,6 +20,7 @@ def requesthelper_ignore_error(func):
 class RequestHelper:
     url: str
     ignore_error: bool = False
+    custom_error_handler: Union[Callable, None] = None
     response: Union[None, requests.Response] = field(init=False, repr=False)
     error_on_response: Union[bool, None] = field(init=False)
 
@@ -26,17 +29,18 @@ class RequestHelper:
 
     @staticmethod
     def sanitize_text(text: str):
-        from lead.tasks import _preprocess
-        return _preprocess(text)
+        return sanitize_text(text)
 
     def fetch(self):
         try:
             self.response = requests.get(self.url)
             self.error_on_response = False
-        except Exception:
+        except Exception as e:
             self.error_on_response = True
+            if self.custom_error_handler:
+                self.custom_error_handler(e, url=self.url)
             if not self.ignore_error:
-                raise
+                raise e
         return self
 
     @requesthelper_ignore_error
@@ -50,3 +54,13 @@ class RequestHelper:
             if sanitize:
                 return self.sanitize_text(self.response.text)
             return self.response.text
+
+    @requesthelper_ignore_error
+    def json(self) -> Union[Dict, None]:
+        if self.response:
+            try:
+                return self.response.json()
+            except json.decoder.JSONDecodeError as e:
+                if self.custom_error_handler is None:
+                    raise e
+                self.custom_error_handler(e, url=self.url)

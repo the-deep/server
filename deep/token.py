@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.conf import settings
+from django.db import models
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.crypto import constant_time_compare
 from django.utils.http import base36_to_int
@@ -17,6 +18,9 @@ class DeepTokenGenerator(PasswordResetTokenGenerator):
 
     class Meta:
         abstract = True
+
+    def make_token(self, instance: models.Model) -> str:
+        return super().make_token(instance)
 
     def check_token(self, model, token):
         """

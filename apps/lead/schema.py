@@ -18,6 +18,7 @@ from analysis_framework.models import Filter as AfFilter, Widget
 
 from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
+from deep.permalinks import Permalink
 from organization.schema import OrganizationType, OrganizationTypeType
 from user.schema import UserType
 from geo.schema import ProjectGeoAreaType
@@ -363,6 +364,9 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     # Duplicate leads
     duplicate_leads_count = graphene.Int()
 
+    # For external accessible link
+    share_view_url = graphene.String(required=True)
+
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
         return get_lead_qs(info)
@@ -395,6 +399,10 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     def resolve_filtered_entries_count(root, info, **kwargs):
         # filtered_entry_count is from LeadFilterSet
         return getattr(root, 'filtered_entry_count', None)
+
+    @staticmethod
+    def resolve_share_view_url(root: Lead, info, **kwargs):
+        return Permalink.lead_share_view(root.uuid)
 
 
 class LeadDetailType(LeadType):

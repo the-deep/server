@@ -19,7 +19,6 @@ from . import converters
 
 # import autofixture
 
-from unified_connector.views import ConnectorLeadExtractCallbackView
 from user.views import (
     UserViewSet,
     PasswordResetView,
@@ -83,7 +82,6 @@ from lead.views import (
     LeadPreviewViewSet,
     LeadOptionsView,
     LeadExtractionTriggerView,
-    LeadExtractCallbackView,
     LeadWebsiteFetch,
     LeadCopyView,
 
@@ -149,7 +147,15 @@ from export.views import (
     ExportTriggerView,
     ExportViewSet,
 )
-from assisted_tagging.views import AssistedTaggingDraftEntryPredictionCallbackView
+from deepl_integration.views import (
+    AssistedTaggingDraftEntryPredictionCallbackView,
+    LeadExtractCallbackView,
+    UnifiedConnectorLeadExtractCallbackView,
+    AnalysisTopicModelCallbackView,
+    AnalysisAutomaticSummaryCallbackView,
+    AnalyticalStatementNGramCallbackView,
+    AnalyticalStatementGeoCallbackView,
+)
 
 from deep.views import (
     AccountActivate,
@@ -550,14 +556,35 @@ urlpatterns = [
         name='lead_extract_callback',
     ),
     re_path(
-        get_api_path(r'callback/connector-lead-extract/$'),
-        ConnectorLeadExtractCallbackView.as_view(),
-        name='connector_lead_extract_callback',
+        get_api_path(r'callback/unified-connector-lead-extract/$'),
+        UnifiedConnectorLeadExtractCallbackView.as_view(),
+        name='unified_connector_lead_extract_callback',
     ),
     re_path(
         get_api_path(r'callback/assisted-tagging-draft-entry-prediction/$'),
         AssistedTaggingDraftEntryPredictionCallbackView.as_view(),
         name='assisted_tagging_draft_entry_prediction_callback',
+    ),
+
+    re_path(
+        get_api_path(r'callback/analysis-topic-model/$'),
+        AnalysisTopicModelCallbackView.as_view(),
+        name='analysis_topic_model_callback',
+    ),
+    re_path(
+        get_api_path(r'callback/analysis-automatic-summary/$'),
+        AnalysisAutomaticSummaryCallbackView.as_view(),
+        name='analysis_automatic_summary_callback',
+    ),
+    re_path(
+        get_api_path(r'callback/analysis-automatic-ngram/$'),
+        AnalyticalStatementNGramCallbackView.as_view(),
+        name='analysis_automatic_ngram_callback',
+    ),
+    re_path(
+        get_api_path(r'callback/analysis-geo/$'),
+        AnalyticalStatementGeoCallbackView.as_view(),
+        name='analysis_geo_callback',
     ),
 
     # Combined API View

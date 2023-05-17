@@ -6,69 +6,12 @@ from deep.serializers import ProjectPropertySerializerMixin, TempClientIdMixin
 from analysis_framework.models import Widget
 
 from .models import (
-    AssistedTaggingPrediction,
     DraftEntry,
     MissingPredictionReview,
     PredictionTagAnalysisFrameworkWidgetMapping,
     WrongPredictionReview,
 )
-from .tasks import AsssistedTaggingTask, trigger_request_for_draft_entry
-
-
-# --- Callback Serializers
-class ModelPredictionCallbackSerializer(serializers.Serializer):
-    class ModelInfoCallbackSerializer(serializers.Serializer):
-        id = serializers.CharField()
-        version = serializers.CharField()
-
-    class ModelPredictionCallbackSerializerTagValue(serializers.Serializer):
-        prediction = serializers.DecimalField(
-            # From apps/assisted_tagging/models.py::AssistedTaggingPrediction::prediction
-            max_digits=AssistedTaggingPrediction.prediction.field.max_digits,
-            decimal_places=AssistedTaggingPrediction.prediction.field.decimal_places,
-            required=False,
-        )
-        threshold = serializers.DecimalField(
-            # From apps/assisted_tagging/models.py::AssistedTaggingPrediction::threshold
-            max_digits=AssistedTaggingPrediction.threshold.field.max_digits,
-            decimal_places=AssistedTaggingPrediction.threshold.field.decimal_places,
-            required=False,
-        )
-        is_selected = serializers.BooleanField()
-
-    model_info = ModelInfoCallbackSerializer()
-    values = serializers.ListSerializer(
-        child=serializers.CharField(),
-        required=False,
-    )
-    tags = serializers.DictField(
-        child=serializers.DictField(
-            child=ModelPredictionCallbackSerializerTagValue(),
-        ),
-        required=False,
-    )
-    prediction_status = serializers.IntegerField()  # 0 -> Failure, 1 -> Success
-
-
-class AssistedTaggingDraftEntryPredictionCallbackSerializer(serializers.Serializer):
-    client_id = serializers.CharField()
-    model_preds = ModelPredictionCallbackSerializer(many=True)
-
-    def validate(self, data):
-        client_id = data['client_id']
-        try:
-            data['draft_entry'] = AsssistedTaggingTask.get_draft_entry_from_client_id(client_id)
-        except Exception as e:
-            raise serializers.ValidationError({
-                'client_id': str(e)
-            })
-        return data
-
-    def create(self, validated_data):
-        draft_entry = validated_data['draft_entry']
-        if draft_entry.prediction_status == DraftEntry.PredictionStatus.DONE:
-            return draft_entry
-        return AsssistedTaggingTask.save_entry_draft_data(draft_entry, validated_data)
+from .tasks import trigger_request_for_draft_entry_task
 
 
 # ---------- Graphql ---------------------------
@@ -108,7 +51,7 @@ class DraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCreate
         # Create new one and send trigger to deepl.
         instance = super().create(data)
         transaction.on_commit(
-            lambda: trigger_request_for_draft_entry.delay(instance.pk)
+            lambda: trigger_request_for_draft_entry_task.delay(instance.pk)
         )
         return instance
 

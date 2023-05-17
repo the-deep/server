@@ -1,14 +1,16 @@
 import django_filters
 
-from utils.graphene.filters import IDListFilter
+from utils.graphene.filters import IDListFilter, MultipleInputFilter
 from user_resource.filters import UserResourceGqlFilterSet
 from entry.filter_set import EntryGQFilterSet
 
 from .models import (
     Analysis,
     AnalysisPillar,
-    DiscardedEntry
+    DiscardedEntry,
+    AnalyticalStatement,
 )
+from .enums import DiscardedEntryTagTypeEnum
 
 
 class AnalysisFilterSet(django_filters.FilterSet):
@@ -69,7 +71,7 @@ class AnalysisPillarEntryGQFilterSet(EntryGQFilterSet):
     discarded = django_filters.BooleanFilter(method='filter_discarded')
     exclude_entries = IDListFilter(method='filter_exclude_entries')
 
-    def filter_discarded(self, queryset, _, value):
+    def filter_discarded(self, queryset, *_):
         # NOTE: This is only for argument, filter is done in AnalysisPillarType.resolve_entries
         return queryset
 
@@ -77,3 +79,17 @@ class AnalysisPillarEntryGQFilterSet(EntryGQFilterSet):
         if value:
             return queryset.exclude(id__in=value)
         return queryset
+
+
+class AnalyticalStatementGQFilterSet(UserResourceGqlFilterSet):
+    class Meta:
+        model = AnalyticalStatement
+        fields = ()
+
+
+class AnalysisPillarDiscardedEntryGqlFilterSet(django_filters.FilterSet):
+    tags = MultipleInputFilter(DiscardedEntryTagTypeEnum, field_name='tag')
+
+    class Meta:
+        model = DiscardedEntry
+        fields = []

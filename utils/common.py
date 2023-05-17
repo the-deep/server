@@ -47,6 +47,19 @@ except ImportError as e:
 StorageClass = get_storage_class()
 
 
+def sanitize_text(_text):
+    text = _text
+    # Remove NUL (0x00) characters
+    text = text.replace('\x00', '')
+    # Tabs and nbsps to space
+    text = re.sub(r'(\t|&nbsp;)', ' ', text)
+    # Multiple spaces to single
+    text = re.sub(r' +', ' ', text)
+    # More than 3 line breaks to just 3 line breaks
+    text = re.sub(r'\n\s*\n\s*(\n\s*)+', '\n\n\n', text)
+    return text.strip()
+
+
 def is_valid_regex(string):
     try:
         re.compile(string)
@@ -363,7 +376,7 @@ def get_redis_lock_ttl(lock):
         pass
 
 
-def redis_lock(lock_key, timeout=60 * 60 * 4):
+def redis_lock(lock_key, timeout: float = 60 * 60 * 4):
     """
     Default Lock lifetime 4 hours
     """
@@ -508,9 +521,11 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 
-def get_full_media_url(media_path):
+def get_full_media_url(media_path, file_system_domain=None):
     if StorageClass == FileSystemStorage:
-        return f"{settings.HTTP_PROTOCOL}://{settings.DJANGO_API_HOST}{media_path}"
+        if not file_system_domain:
+            return f"{settings.HTTP_PROTOCOL}://{settings.DJANGO_API_HOST}{media_path}"
+        return f"{file_system_domain}{media_path}"
     # With s3 storage
     return media_path
 
@@ -567,3 +582,9 @@ def graphene_cache(cache_key, cache_key_gen=None, timeout=60):
         _caller.__module__ = func.__module__
         return _caller
     return _dec
+
+
+def generate_sha256(text: str):
+    m = hashlib.sha256()
+    m.update(text.encode('utf-8'))
+    return m.hexdigest()

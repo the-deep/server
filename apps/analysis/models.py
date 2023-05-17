@@ -1,17 +1,24 @@
 import copy
+import json
+from datetime import timedelta
 
 from django.db import models
 from django.db.models.functions import JSONObject
 from django.db import connection as django_db_connection
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+from django.contrib.postgres.fields import ArrayField
 
-from project.mixins import ProjectEntityMixin
+from utils.common import generate_sha256
 from deep.number_generator import client_id_generator
+from deep.filter_set import get_dummy_request
+from project.mixins import ProjectEntityMixin
 from user.models import User
 from project.models import Project
 from entry.models import Entry
 from lead.models import Lead
 from user_resource.models import UserResource
+from deepl_integration.models import DeeplTrackBaseModel
 
 
 class Analysis(UserResource, ProjectEntityMixin):
@@ -287,6 +294,19 @@ class AnalysisPillar(UserResource):
     def can_modify(self, user):
         return self.analysis.can_modify(user)
 
+    def get_entries_qs(self, queryset=None, only_discarded=False):
+        _queryset = queryset
+        if _queryset is None:
+            _queryset = Entry.objects.all()
+        _queryset = _queryset.filter(
+            project=self.analysis.project_id,
+            lead__published_on__lte=self.analysis.end_date,
+        )
+        discarded_entries_qs = DiscardedEntry.objects.filter(analysis_pillar=self).values('entry')
+        if only_discarded:
+            return _queryset.filter(id__in=discarded_entries_qs)
+        return _queryset.exclude(id__in=discarded_entries_qs)
+
     @classmethod
     def annotate_for_analysis_pillar_summary(cls, qs):
         analytical_statement_prefech = models.Prefetch(
@@ -356,6 +376,9 @@ class DiscardedEntry(models.Model):
     def can_modify(self, user):
         return self.analysis_pillar.can_modify(user)
 
+    def can_delete(self, user):
+        return self.can_modify(user)
+
     def __str__(self):
         return f'{self.analysis_pillar} - {self.entry}'
 
@@ -374,6 +397,8 @@ class AnalyticalStatement(UserResource):
     )
     include_in_report = models.BooleanField(default=False)
     order = models.IntegerField()
+    report_text = models.TextField(blank=True)
+    information_gaps = models.TextField(blank=True)
     # added to keep the track of cloned analysisstatement
     cloned_from = models.ForeignKey(
         'AnalyticalStatement',
@@ -413,3 +438,106 @@ class AnalyticalStatementEntry(UserResource):
 
     class Meta:
         ordering = ('order',)
+
+
+# NLP Trigger Model -- Used as cache and tracking async data calculation
+def entries_file_upload_to(instance, filename: str) -> str:
+    return f'analysis/{type(instance).__name__.lower()}/entries/{filename}'
+
+
+class TopicModel(UserResource, DeeplTrackBaseModel):
+    entries_file = models.FileField(upload_to=entries_file_upload_to, max_length=255)
+
+    analysis_pillar = models.ForeignKey(AnalysisPillar, on_delete=models.CASCADE)
+    additional_filters = models.JSONField(default=dict)
+
+    topicmodelcluster_set: models.QuerySet['TopicModelCluster']
+
+    @staticmethod
+    def _get_entries_qs(analysis_pillar, entry_filters):
+        # Loading here to make sure models are loaded before filters
+        from entry.filter_set import EntryGQFilterSet
+        dummy_request = get_dummy_request(active_project=analysis_pillar.analysis.project)
+        return EntryGQFilterSet(
+            queryset=analysis_pillar.get_entries_qs(),  # Queryset from AnalysisPillar
+            data=entry_filters,  # User Defined filter
+            request=dummy_request,
+        ).qs
+
+    def get_entries_qs(self):
+        return self._get_entries_qs(self.analysis_pillar, self.additional_filters)
+
+
+class TopicModelCluster(models.Model):
+    id: int
+    topic_model = models.ForeignKey(TopicModel, on_delete=models.CASCADE)
+    entries = models.ManyToManyField(Entry)
+
+
+class EntriesCollectionNlpTriggerBase(UserResource, DeeplTrackBaseModel):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    entries_id = ArrayField(models.IntegerField())
+    entries_hash = models.CharField(max_length=256, db_index=True)   # Generated using entries_id
+    entries_file = models.FileField(upload_to=entries_file_upload_to, max_length=255)
+
+    CACHE_THRESHOLD_HOURS = 3
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def get_existing(cls, entries_id):
+        threshold = timezone.now() - timedelta(hours=cls.CACHE_THRESHOLD_HOURS)
+        entries_hash = cls.get_entry_hash(entries_id)
+        return cls.objects.filter(
+            entries_hash=entries_hash,
+            created_at__gte=threshold,
+        ).exclude(
+            status__in=[
+                cls.Status.STARTED,
+                cls.Status.FAILED,
+                cls.Status.SEND_FAILED,
+            ],
+        ).first()
+
+    @staticmethod
+    def get_valid_entries_id(project_id, entries_id):
+        return list(
+            Entry.objects.filter(
+                project=project_id,
+                id__in=entries_id,
+            ).order_by('id').values_list('id', flat=True)
+        )
+
+    @staticmethod
+    def get_entry_hash(entries_id):
+        return generate_sha256(json.dumps(entries_id))
+
+    def save(self, *args, **kwargs):
+        self.entries_hash = self.get_entry_hash(self.entries_id)
+        return super().save(*args, **kwargs)
+
+
+class AutomaticSummary(EntriesCollectionNlpTriggerBase):
+    summary = models.TextField()
+
+
+class AnalyticalStatementNGram(EntriesCollectionNlpTriggerBase):
+    # Structure: {keyword: count}
+    unigrams = models.JSONField(default=dict)
+    bigrams = models.JSONField(default=dict)
+    trigrams = models.JSONField(default=dict)
+
+
+class AnalyticalStatementGeoTask(EntriesCollectionNlpTriggerBase):
+    pass
+
+
+class AnalyticalStatementGeoEntry(models.Model):
+    task = models.ForeignKey(
+        AnalyticalStatementGeoTask,
+        on_delete=models.CASCADE,
+        related_name='entry_geos',
+    )
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name="+")
+    data = models.JSONField(default=list)
