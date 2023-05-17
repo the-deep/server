@@ -185,17 +185,6 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                 }
             ],
             'title': 'AF-0',
-            'visibleProjects': [
-                {
-                    'id': '2',
-                    'title': 'Project-1'
-                },
-                {
-                    'id': '1',
-                    'title': 'Project-0'
-                }
-            ],
-            'title': 'AF-0'
         }
     }
 }
@@ -352,17 +341,6 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                 }
             ],
             'title': 'AF-0',
-            'visibleProjects': [
-                {
-                    'id': '2',
-                    'title': 'Project-1'
-                },
-                {
-                    'id': '1',
-                    'title': 'Project-0'
-                }
-            ],
-            'title': 'AF-0'
         }
     }
 }

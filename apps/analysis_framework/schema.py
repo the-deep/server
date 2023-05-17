@@ -101,7 +101,7 @@ class AnalysisFrameworkType(DjangoObjectType):
             graphene.Enum.from_enum(AfP.Permission),
         ), required=True
     )
-    cloned_from = graphene.ID(source='cloned_from_id', required=True)
+    cloned_from = graphene.ID(source='cloned_from_id')
 
     @staticmethod
     def get_custom_node(_, info, id):
