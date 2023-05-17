@@ -37,6 +37,12 @@ class AnalysisFramework(UserResource):
         upload_to='af-preview-image/', max_length=255, null=True, blank=True, default=None,
     )
     export = models.FileField(upload_to='af-exports/', max_length=255, null=True, blank=True, default=None)
+    # added to keep the track of cloned analysisframework
+    cloned_from = models.ForeignKey(
+        'AnalysisFramework',
+        on_delete=models.SET_NULL,
+        null=True, blank=True
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -62,6 +68,7 @@ class AnalysisFramework(UserResource):
         )
         clone_analysis_framework.created_by = user
         clone_analysis_framework.modified_by = user
+        clone_analysis_framework.cloned_from = self
         clone_analysis_framework.save()
 
         old_new_sections_map = {}
