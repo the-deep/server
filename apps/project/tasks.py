@@ -1,17 +1,16 @@
-import json
 import logging
 from collections import defaultdict
 from datetime import timedelta
 
 from celery import shared_task
 from django.core.files.base import ContentFile
-from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
 from django.db import models
 from redis_store import redis
 from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from django.conf import settings
 
+from utils.files import generate_json_file_for_upload
 from ary.stats import get_project_ary_entry_stats
 from lead.models import Lead
 from entry.models import Entry
@@ -41,8 +40,8 @@ def _generate_project_viz_stats(project_id):
         stats, stats_confidential = get_project_ary_entry_stats(project)
         project_stats.status = ProjectStats.Status.SUCCESS
         project_stats.modified_at = timezone.now()
-        stats_content = ContentFile(json.dumps(stats, cls=DjangoJSONEncoder).encode('utf-8'))
-        confidential_stats_content = ContentFile(json.dumps(stats_confidential, cls=DjangoJSONEncoder).encode('utf-8'))
+        stats_content = generate_json_file_for_upload(stats)
+        confidential_stats_content = generate_json_file_for_upload(stats_confidential)
         # Delete current file
         project_stats.file.delete()
         project_stats.confidential_file.delete()

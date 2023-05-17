@@ -6,15 +6,26 @@ from django.db import models
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
-from geo.schema import get_geo_area_queryset_for_project_geo_area_type
 from analysis_framework.models import Widget
 from quality_assurance.models import EntryReviewComment
+
+from geo.schema import get_geo_area_queryset_for_project_geo_area_type
 
 from .models import (
     Entry,
     Attribute,
     EntryGroupLabel,
 )
+
+
+class EntryLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        entry_qs = Entry.objects.filter(id__in=keys)
+        _map = {
+            entry.id: entry
+            for entry in entry_qs
+        }
+        return Promise.resolve([_map[key] for key in keys])
 
 
 class EntryAttributesLoader(DataLoaderWithContext):
@@ -110,6 +121,10 @@ class EntryVerifiedByCountLoader(DataLoaderWithContext):
 
 
 class DataLoaders(WithContextMixin):
+    @cached_property
+    def entry(self):
+        return EntryLoader(context=self.context)
+
     @cached_property
     def entry_attributes(self):
         return EntryAttributesLoader(context=self.context)

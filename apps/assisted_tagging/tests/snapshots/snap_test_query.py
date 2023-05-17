@@ -603,7 +603,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00131315333064554660')"),
             'tag__tag_id': '101',
-            'threshold': GenericRepr("Decimal('0.00131315333064554660')"),
+            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
             'value': ''
         },
         {
@@ -614,7 +614,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00301082416073135700')"),
             'tag__tag_id': '103',
-            'threshold': GenericRepr("Decimal('0.00301082416073135700')"),
+            'threshold': GenericRepr("Decimal('0.46000000000000000000')"),
             'value': ''
         },
         {
@@ -625,7 +625,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00256628797311956700')"),
             'tag__tag_id': '104',
-            'threshold': GenericRepr("Decimal('0.00256628797311956700')"),
+            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
             'value': ''
         },
         {
@@ -636,7 +636,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('2.67795523007710800000')"),
             'tag__tag_id': '105',
-            'threshold': GenericRepr("Decimal('2.67795523007710800000')"),
+            'threshold': GenericRepr("Decimal('0.36000000000000000000')"),
             'value': ''
         },
         {
@@ -647,7 +647,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.01722483797685096000')"),
             'tag__tag_id': '106',
-            'threshold': GenericRepr("Decimal('0.01722483797685096000')"),
+            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
             'value': ''
         },
         {
@@ -658,7 +658,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00367074832320213300')"),
             'tag__tag_id': '107',
-            'threshold': GenericRepr("Decimal('0.00367074832320213300')"),
+            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
             'value': ''
         },
         {
@@ -669,7 +669,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00410134124816680450')"),
             'tag__tag_id': '108',
-            'threshold': GenericRepr("Decimal('0.00410134124816680450')"),
+            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
             'value': ''
         },
         {
@@ -680,7 +680,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.02810047168670029600')"),
             'tag__tag_id': '109',
-            'threshold': GenericRepr("Decimal('0.02810047168670029600')"),
+            'threshold': GenericRepr("Decimal('0.58000000000000000000')"),
             'value': ''
         },
         {
@@ -691,7 +691,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00356446807494475730')"),
             'tag__tag_id': '110',
-            'threshold': GenericRepr("Decimal('0.00356446807494475730')"),
+            'threshold': GenericRepr("Decimal('0.42000000000000000000')"),
             'value': ''
         },
         {
@@ -702,7 +702,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00885658950175879000')"),
             'tag__tag_id': '111',
-            'threshold': GenericRepr("Decimal('0.00885658950175879000')"),
+            'threshold': GenericRepr("Decimal('0.53000000000000000000')"),
             'value': ''
         },
         {
@@ -713,7 +713,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00161047546977275300')"),
             'tag__tag_id': '201',
-            'threshold': GenericRepr("Decimal('0.00161047546977275300')"),
+            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
             'value': ''
         },
         {
@@ -724,7 +724,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00249261039939215920')"),
             'tag__tag_id': '202',
-            'threshold': GenericRepr("Decimal('0.00249261039939215920')"),
+            'threshold': GenericRepr("Decimal('0.17000000000000000000')"),
             'value': ''
         },
         {
@@ -735,7 +735,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00276056816801428800')"),
             'tag__tag_id': '203',
-            'threshold': GenericRepr("Decimal('0.00276056816801428800')"),
+            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
             'value': ''
         },
         {
@@ -746,7 +746,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.01951472795739466000')"),
             'tag__tag_id': '204',
-            'threshold': GenericRepr("Decimal('0.01951472795739466000')"),
+            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
             'value': ''
         },
         {
@@ -757,7 +757,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00284144639848701430')"),
             'tag__tag_id': '205',
-            'threshold': GenericRepr("Decimal('0.00284144639848701430')"),
+            'threshold': GenericRepr("Decimal('0.31000000000000000000')"),
             'value': ''
         },
         {
@@ -768,7 +768,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00284233643800358870')"),
             'tag__tag_id': '206',
-            'threshold': GenericRepr("Decimal('0.00284233643800358870')"),
+            'threshold': GenericRepr("Decimal('0.44000000000000000000')"),
             'value': ''
         },
         {
@@ -779,7 +779,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00300193069657931750')"),
             'tag__tag_id': '207',
-            'threshold': GenericRepr("Decimal('0.00300193069657931750')"),
+            'threshold': GenericRepr("Decimal('0.30000000000000000000')"),
             'value': ''
         },
         {
@@ -790,7 +790,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00357941840775311000')"),
             'tag__tag_id': '208',
-            'threshold': GenericRepr("Decimal('0.00357941840775311000')"),
+            'threshold': GenericRepr("Decimal('0.20000000000000000000')"),
             'value': ''
         },
         {
@@ -801,7 +801,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00632169711239197600')"),
             'tag__tag_id': '209',
-            'threshold': GenericRepr("Decimal('0.00632169711239197600')"),
+            'threshold': GenericRepr("Decimal('0.17000000000000000000')"),
             'value': ''
         },
         {
@@ -812,7 +812,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00697963860938730400')"),
             'tag__tag_id': '210',
-            'threshold': GenericRepr("Decimal('0.00697963860938730400')"),
+            'threshold': GenericRepr("Decimal('0.23000000000000000000')"),
             'value': ''
         },
         {
@@ -823,7 +823,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.01237871689035704300')"),
             'tag__tag_id': '212',
-            'threshold': GenericRepr("Decimal('0.01237871689035704300')"),
+            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
             'value': ''
         },
         {
@@ -834,7 +834,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00024467206802345010')"),
             'tag__tag_id': '213',
-            'threshold': GenericRepr("Decimal('0.00024467206802345010')"),
+            'threshold': GenericRepr("Decimal('0.37000000000000000000')"),
             'value': ''
         },
         {
@@ -845,7 +845,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00036748812096354010')"),
             'tag__tag_id': '214',
-            'threshold': GenericRepr("Decimal('0.00036748812096354010')"),
+            'threshold': GenericRepr("Decimal('0.29000000000000000000')"),
             'value': ''
         },
         {
@@ -856,7 +856,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00047817865331461160')"),
             'tag__tag_id': '215',
-            'threshold': GenericRepr("Decimal('0.00047817865331461160')"),
+            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
             'value': ''
         },
         {
@@ -867,7 +867,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00696396781131625200')"),
             'tag__tag_id': '216',
-            'threshold': GenericRepr("Decimal('0.00696396781131625200')"),
+            'threshold': GenericRepr("Decimal('0.25000000000000000000')"),
             'value': ''
         },
         {
@@ -878,7 +878,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00091310044249089870')"),
             'tag__tag_id': '217',
-            'threshold': GenericRepr("Decimal('0.00091310044249089870')"),
+            'threshold': GenericRepr("Decimal('0.13000000000000000000')"),
             'value': ''
         },
         {
@@ -889,7 +889,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00106291823053302660')"),
             'tag__tag_id': '218',
-            'threshold': GenericRepr("Decimal('0.00106291823053302660')"),
+            'threshold': GenericRepr("Decimal('0.13000000000000000000')"),
             'value': ''
         },
         {
@@ -900,7 +900,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00187798162057463590')"),
             'tag__tag_id': '219',
-            'threshold': GenericRepr("Decimal('0.00187798162057463590')"),
+            'threshold': GenericRepr("Decimal('0.28000000000000000000')"),
             'value': ''
         },
         {
@@ -911,7 +911,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.01125925638038536600')"),
             'tag__tag_id': '220',
-            'threshold': GenericRepr("Decimal('0.01125925638038536600')"),
+            'threshold': GenericRepr("Decimal('0.29000000000000000000')"),
             'value': ''
         },
         {
@@ -922,7 +922,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00166666776701611900')"),
             'tag__tag_id': '221',
-            'threshold': GenericRepr("Decimal('0.00166666776701611900')"),
+            'threshold': GenericRepr("Decimal('0.19000000000000000000')"),
             'value': ''
         },
         {
@@ -933,7 +933,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00146527563629206270')"),
             'tag__tag_id': '222',
-            'threshold': GenericRepr("Decimal('0.00146527563629206270')"),
+            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
             'value': ''
         },
         {
@@ -944,7 +944,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00115551359139065800')"),
             'tag__tag_id': '223',
-            'threshold': GenericRepr("Decimal('0.00115551359139065800')"),
+            'threshold': GenericRepr("Decimal('0.47000000000000003000')"),
             'value': ''
         },
         {
@@ -955,7 +955,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00758105556347540500')"),
             'tag__tag_id': '224',
-            'threshold': GenericRepr("Decimal('0.00758105556347540500')"),
+            'threshold': GenericRepr("Decimal('0.21000000000000000000')"),
             'value': ''
         },
         {
@@ -966,7 +966,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00033728324827582890')"),
             'tag__tag_id': '225',
-            'threshold': GenericRepr("Decimal('0.00033728324827582890')"),
+            'threshold': GenericRepr("Decimal('0.15000000000000000000')"),
             'value': ''
         },
         {
@@ -977,7 +977,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00077029108069837090')"),
             'tag__tag_id': '226',
-            'threshold': GenericRepr("Decimal('0.00077029108069837090')"),
+            'threshold': GenericRepr("Decimal('0.18000000000000000000')"),
             'value': ''
         },
         {
@@ -988,7 +988,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00090097592975426880')"),
             'tag__tag_id': '227',
-            'threshold': GenericRepr("Decimal('0.00090097592975426880')"),
+            'threshold': GenericRepr("Decimal('0.18000000000000000000')"),
             'value': ''
         },
         {
@@ -999,7 +999,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00497279979754239300')"),
             'tag__tag_id': '228',
-            'threshold': GenericRepr("Decimal('0.00497279979754239300')"),
+            'threshold': GenericRepr("Decimal('0.80000000000000000000')"),
             'value': ''
         },
         {
@@ -1010,7 +1010,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00032880847216941987')"),
             'tag__tag_id': '229',
-            'threshold': GenericRepr("Decimal('0.00032880847216941987')"),
+            'threshold': GenericRepr("Decimal('0.39000000000000000000')"),
             'value': ''
         },
         {
@@ -1021,7 +1021,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00116735643615233300')"),
             'tag__tag_id': '230',
-            'threshold': GenericRepr("Decimal('0.00116735643615233300')"),
+            'threshold': GenericRepr("Decimal('0.81000000000000000000')"),
             'value': ''
         },
         {
@@ -1032,7 +1032,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00244935224877624970')"),
             'tag__tag_id': '231',
-            'threshold': GenericRepr("Decimal('0.00244935224877624970')"),
+            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
             'value': ''
         },
         {
@@ -1043,7 +1043,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00542857805671899200')"),
             'tag__tag_id': '232',
-            'threshold': GenericRepr("Decimal('0.00542857805671899200')"),
+            'threshold': GenericRepr("Decimal('0.46000000000000000000')"),
             'value': ''
         },
         {
@@ -1054,7 +1054,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00188743645513925370')"),
             'tag__tag_id': '233',
-            'threshold': GenericRepr("Decimal('0.00188743645513925370')"),
+            'threshold': GenericRepr("Decimal('0.79000000000000000000')"),
             'value': ''
         },
         {
@@ -1065,7 +1065,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00117788418989490570')"),
             'tag__tag_id': '234',
-            'threshold': GenericRepr("Decimal('0.00117788418989490570')"),
+            'threshold': GenericRepr("Decimal('0.54000000000000000000')"),
             'value': ''
         },
         {
@@ -1076,7 +1076,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00023104241032948875')"),
             'tag__tag_id': '301',
-            'threshold': GenericRepr("Decimal('0.00023104241032948875')"),
+            'threshold': GenericRepr("Decimal('0.12000000000000000000')"),
             'value': ''
         },
         {
@@ -1087,7 +1087,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00684022131126101400')"),
             'tag__tag_id': '302',
-            'threshold': GenericRepr("Decimal('0.00684022131126101400')"),
+            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
             'value': ''
         },
         {
@@ -1098,7 +1098,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('1.51390548675291000000')"),
             'tag__tag_id': '303',
-            'threshold': GenericRepr("Decimal('1.51390548675291000000')"),
+            'threshold': GenericRepr("Decimal('0.62000000000000000000')"),
             'value': ''
         },
         {
@@ -1109,7 +1109,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00246191542828455570')"),
             'tag__tag_id': '304',
-            'threshold': GenericRepr("Decimal('0.00246191542828455570')"),
+            'threshold': GenericRepr("Decimal('0.10000000000000000000')"),
             'value': ''
         },
         {
@@ -1120,7 +1120,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.19748103480006374000')"),
             'tag__tag_id': '305',
-            'threshold': GenericRepr("Decimal('0.19748103480006374000')"),
+            'threshold': GenericRepr("Decimal('0.43000000000000000000')"),
             'value': ''
         },
         {
@@ -1131,7 +1131,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.13266879380965720000')"),
             'tag__tag_id': '306',
-            'threshold': GenericRepr("Decimal('0.13266879380965720000')"),
+            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
             'value': ''
         },
         {
@@ -1142,7 +1142,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00847395147300428900')"),
             'tag__tag_id': '307',
-            'threshold': GenericRepr("Decimal('0.00847395147300428900')"),
+            'threshold': GenericRepr("Decimal('0.36000000000000000000')"),
             'value': ''
         },
         {
@@ -1153,7 +1153,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.01439434579677051900')"),
             'tag__tag_id': '308',
-            'threshold': GenericRepr("Decimal('0.01439434579677051900')"),
+            'threshold': GenericRepr("Decimal('0.45000000000000000000')"),
             'value': ''
         },
         {
@@ -1164,7 +1164,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00275349894147967100')"),
             'tag__tag_id': '309',
-            'threshold': GenericRepr("Decimal('0.00275349894147967100')"),
+            'threshold': GenericRepr("Decimal('0.31000000000000000000')"),
             'value': ''
         },
         {
@@ -1175,7 +1175,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.02261752535293742000')"),
             'tag__tag_id': '310',
-            'threshold': GenericRepr("Decimal('0.02261752535293742000')"),
+            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
             'value': ''
         },
         {
@@ -1186,7 +1186,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00280699276022220930')"),
             'tag__tag_id': '311',
-            'threshold': GenericRepr("Decimal('0.00280699276022220930')"),
+            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
             'value': ''
         },
         {
@@ -1197,7 +1197,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00353863737969235940')"),
             'tag__tag_id': '312',
-            'threshold': GenericRepr("Decimal('0.00353863737969235940')"),
+            'threshold': GenericRepr("Decimal('0.33000000000000000000')"),
             'value': ''
         },
         {
@@ -1208,7 +1208,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00474455507679118000')"),
             'tag__tag_id': '313',
-            'threshold': GenericRepr("Decimal('0.00474455507679118000')"),
+            'threshold': GenericRepr("Decimal('0.45000000000000000000')"),
             'value': ''
         },
         {
@@ -1219,7 +1219,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00243518249286959600')"),
             'tag__tag_id': '314',
-            'threshold': GenericRepr("Decimal('0.00243518249286959600')"),
+            'threshold': GenericRepr("Decimal('0.24000000000000000000')"),
             'value': ''
         },
         {
@@ -1230,7 +1230,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00498411668972535500')"),
             'tag__tag_id': '315',
-            'threshold': GenericRepr("Decimal('0.00498411668972535500')"),
+            'threshold': GenericRepr("Decimal('0.55000000000000000000')"),
             'value': ''
         },
         {
@@ -1241,7 +1241,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00342778279446065430')"),
             'tag__tag_id': '316',
-            'threshold': GenericRepr("Decimal('0.00342778279446065430')"),
+            'threshold': GenericRepr("Decimal('0.15000000000000000000')"),
             'value': ''
         },
         {
@@ -1252,7 +1252,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00183609818729261560')"),
             'tag__tag_id': '317',
-            'threshold': GenericRepr("Decimal('0.00183609818729261560')"),
+            'threshold': GenericRepr("Decimal('0.30000000000000000000')"),
             'value': ''
         },
         {
@@ -1263,7 +1263,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00765169737860560400')"),
             'tag__tag_id': '318',
-            'threshold': GenericRepr("Decimal('0.00765169737860560400')"),
+            'threshold': GenericRepr("Decimal('0.25000000000000000000')"),
             'value': ''
         },
         {
@@ -1274,7 +1274,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00020814205345232040')"),
             'tag__tag_id': '401',
-            'threshold': GenericRepr("Decimal('0.00020814205345232040')"),
+            'threshold': GenericRepr("Decimal('0.25000000000000000000')"),
             'value': ''
         },
         {
@@ -1285,7 +1285,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00299776057263129780')"),
             'tag__tag_id': '402',
-            'threshold': GenericRepr("Decimal('0.00299776057263129780')"),
+            'threshold': GenericRepr("Decimal('0.58000000000000000000')"),
             'value': ''
         },
         {
@@ -1296,7 +1296,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00299218206367056270')"),
             'tag__tag_id': '403',
-            'threshold': GenericRepr("Decimal('0.00299218206367056270')"),
+            'threshold': GenericRepr("Decimal('0.14000000000000000000')"),
             'value': ''
         },
         {
@@ -1307,7 +1307,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00241597760274695900')"),
             'tag__tag_id': '404',
-            'threshold': GenericRepr("Decimal('0.00241597760274695900')"),
+            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
             'value': ''
         },
         {
@@ -1318,7 +1318,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.02053049989999868700')"),
             'tag__tag_id': '405',
-            'threshold': GenericRepr("Decimal('0.02053049989999868700')"),
+            'threshold': GenericRepr("Decimal('0.78000000000000000000')"),
             'value': ''
         },
         {
@@ -1329,7 +1329,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00281014967745599850')"),
             'tag__tag_id': '406',
-            'threshold': GenericRepr("Decimal('0.00281014967745599850')"),
+            'threshold': GenericRepr("Decimal('0.13000000000000000000')"),
             'value': ''
         },
         {
@@ -1340,7 +1340,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00022843408415366598')"),
             'tag__tag_id': '407',
-            'threshold': GenericRepr("Decimal('0.00022843408415366598')"),
+            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
             'value': ''
         },
         {
@@ -1351,7 +1351,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00943289911848003600')"),
             'tag__tag_id': '408',
-            'threshold': GenericRepr("Decimal('0.00943289911848003600')"),
+            'threshold': GenericRepr("Decimal('0.59000000000000000000')"),
             'value': ''
         },
         {
@@ -1362,7 +1362,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00091892403101415500')"),
             'tag__tag_id': '409',
-            'threshold': GenericRepr("Decimal('0.00091892403101415500')"),
+            'threshold': GenericRepr("Decimal('0.56000000000000000000')"),
             'value': ''
         },
         {
@@ -1373,7 +1373,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('2.03979988487399360000')"),
             'tag__tag_id': '410',
-            'threshold': GenericRepr("Decimal('2.03979988487399360000')"),
+            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
             'value': ''
         },
         {
@@ -1384,7 +1384,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00750677951145917200')"),
             'tag__tag_id': '411',
-            'threshold': GenericRepr("Decimal('0.00750677951145917200')"),
+            'threshold': GenericRepr("Decimal('0.20000000000000000000')"),
             'value': ''
         },
         {
@@ -1395,7 +1395,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00019092757914525768')"),
             'tag__tag_id': '412',
-            'threshold': GenericRepr("Decimal('0.00019092757914525768')"),
+            'threshold': GenericRepr("Decimal('0.60000000000000000000')"),
             'value': ''
         },
         {
@@ -1406,7 +1406,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('1.40336945023335200000')"),
             'tag__tag_id': '501',
-            'threshold': GenericRepr("Decimal('1.40336945023335200000')"),
+            'threshold': GenericRepr("Decimal('0.71000000000000000000')"),
             'value': ''
         },
         {
@@ -1417,7 +1417,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00778131599707359600')"),
             'tag__tag_id': '502',
-            'threshold': GenericRepr("Decimal('0.00778131599707359600')"),
+            'threshold': GenericRepr("Decimal('0.44000000000000000000')"),
             'value': ''
         },
         {
@@ -1428,7 +1428,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.04068703080217044000')"),
             'tag__tag_id': '601',
-            'threshold': GenericRepr("Decimal('0.04068703080217044000')"),
+            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
             'value': ''
         },
         {
@@ -1439,7 +1439,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.02458783670921217300')"),
             'tag__tag_id': '602',
-            'threshold': GenericRepr("Decimal('0.02458783670921217300')"),
+            'threshold': GenericRepr("Decimal('0.44000000000000000000')"),
             'value': ''
         },
         {
@@ -1450,7 +1450,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.04259871318936348000')"),
             'tag__tag_id': '603',
-            'threshold': GenericRepr("Decimal('0.04259871318936348000')"),
+            'threshold': GenericRepr("Decimal('0.40000000000000000000')"),
             'value': ''
         },
         {
@@ -1461,7 +1461,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00641449491997234200')"),
             'tag__tag_id': '604',
-            'threshold': GenericRepr("Decimal('0.00641449491997234200')"),
+            'threshold': GenericRepr("Decimal('0.61000000000000000000')"),
             'value': ''
         },
         {
@@ -1472,7 +1472,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00027582379877694870')"),
             'tag__tag_id': '801',
-            'threshold': GenericRepr("Decimal('0.00027582379877694870')"),
+            'threshold': GenericRepr("Decimal('0.73000000000000000000')"),
             'value': ''
         },
         {
@@ -1483,7 +1483,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00997524285181002000')"),
             'tag__tag_id': '802',
-            'threshold': GenericRepr("Decimal('0.00997524285181002000')"),
+            'threshold': GenericRepr("Decimal('0.55000000000000000000')"),
             'value': ''
         },
         {
@@ -1494,7 +1494,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00476177378710526100')"),
             'tag__tag_id': '803',
-            'threshold': GenericRepr("Decimal('0.00476177378710526100')"),
+            'threshold': GenericRepr("Decimal('0.67000000000000000000')"),
             'value': ''
         },
         {
@@ -1505,7 +1505,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00084620605533321700')"),
             'tag__tag_id': '804',
-            'threshold': GenericRepr("Decimal('0.00084620605533321700')"),
+            'threshold': GenericRepr("Decimal('0.75000000000000000000')"),
             'value': ''
         },
         {
@@ -1516,7 +1516,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00070480359681823760')"),
             'tag__tag_id': '805',
-            'threshold': GenericRepr("Decimal('0.00070480359681823760')"),
+            'threshold': GenericRepr("Decimal('0.64000000000000000000')"),
             'value': ''
         },
         {
@@ -1527,7 +1527,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00703320267416958500')"),
             'tag__tag_id': '806',
-            'threshold': GenericRepr("Decimal('0.00703320267416958500')"),
+            'threshold': GenericRepr("Decimal('0.53000000000000000000')"),
             'value': ''
         },
         {
@@ -1604,7 +1604,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00131315333064554660')"),
             'tag__tag_id': '101',
-            'threshold': GenericRepr("Decimal('0.00131315333064554660')"),
+            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
             'value': ''
         },
         {
@@ -1615,7 +1615,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00301082416073135700')"),
             'tag__tag_id': '103',
-            'threshold': GenericRepr("Decimal('0.00301082416073135700')"),
+            'threshold': GenericRepr("Decimal('0.46000000000000000000')"),
             'value': ''
         },
         {
@@ -1626,7 +1626,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00256628797311956700')"),
             'tag__tag_id': '104',
-            'threshold': GenericRepr("Decimal('0.00256628797311956700')"),
+            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
             'value': ''
         },
         {
@@ -1637,7 +1637,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('2.67795523007710800000')"),
             'tag__tag_id': '105',
-            'threshold': GenericRepr("Decimal('2.67795523007710800000')"),
+            'threshold': GenericRepr("Decimal('0.36000000000000000000')"),
             'value': ''
         },
         {
@@ -1648,7 +1648,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.01722483797685096000')"),
             'tag__tag_id': '106',
-            'threshold': GenericRepr("Decimal('0.01722483797685096000')"),
+            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
             'value': ''
         },
         {
@@ -1659,7 +1659,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00367074832320213300')"),
             'tag__tag_id': '107',
-            'threshold': GenericRepr("Decimal('0.00367074832320213300')"),
+            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
             'value': ''
         },
         {
@@ -1670,7 +1670,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00410134124816680450')"),
             'tag__tag_id': '108',
-            'threshold': GenericRepr("Decimal('0.00410134124816680450')"),
+            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
             'value': ''
         },
         {
@@ -1681,7 +1681,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.02810047168670029600')"),
             'tag__tag_id': '109',
-            'threshold': GenericRepr("Decimal('0.02810047168670029600')"),
+            'threshold': GenericRepr("Decimal('0.58000000000000000000')"),
             'value': ''
         },
         {
@@ -1692,7 +1692,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00356446807494475730')"),
             'tag__tag_id': '110',
-            'threshold': GenericRepr("Decimal('0.00356446807494475730')"),
+            'threshold': GenericRepr("Decimal('0.42000000000000000000')"),
             'value': ''
         },
         {
@@ -1703,7 +1703,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00885658950175879000')"),
             'tag__tag_id': '111',
-            'threshold': GenericRepr("Decimal('0.00885658950175879000')"),
+            'threshold': GenericRepr("Decimal('0.53000000000000000000')"),
             'value': ''
         },
         {
@@ -1714,7 +1714,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00161047546977275300')"),
             'tag__tag_id': '201',
-            'threshold': GenericRepr("Decimal('0.00161047546977275300')"),
+            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
             'value': ''
         },
         {
@@ -1725,7 +1725,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00249261039939215920')"),
             'tag__tag_id': '202',
-            'threshold': GenericRepr("Decimal('0.00249261039939215920')"),
+            'threshold': GenericRepr("Decimal('0.17000000000000000000')"),
             'value': ''
         },
         {
@@ -1736,7 +1736,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00276056816801428800')"),
             'tag__tag_id': '203',
-            'threshold': GenericRepr("Decimal('0.00276056816801428800')"),
+            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
             'value': ''
         },
         {
@@ -1747,7 +1747,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.01951472795739466000')"),
             'tag__tag_id': '204',
-            'threshold': GenericRepr("Decimal('0.01951472795739466000')"),
+            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
             'value': ''
         },
         {
@@ -1758,7 +1758,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00284144639848701430')"),
             'tag__tag_id': '205',
-            'threshold': GenericRepr("Decimal('0.00284144639848701430')"),
+            'threshold': GenericRepr("Decimal('0.31000000000000000000')"),
             'value': ''
         },
         {
@@ -1769,7 +1769,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00284233643800358870')"),
             'tag__tag_id': '206',
-            'threshold': GenericRepr("Decimal('0.00284233643800358870')"),
+            'threshold': GenericRepr("Decimal('0.44000000000000000000')"),
             'value': ''
         },
         {
@@ -1780,7 +1780,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00300193069657931750')"),
             'tag__tag_id': '207',
-            'threshold': GenericRepr("Decimal('0.00300193069657931750')"),
+            'threshold': GenericRepr("Decimal('0.30000000000000000000')"),
             'value': ''
         },
         {
@@ -1791,7 +1791,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00357941840775311000')"),
             'tag__tag_id': '208',
-            'threshold': GenericRepr("Decimal('0.00357941840775311000')"),
+            'threshold': GenericRepr("Decimal('0.20000000000000000000')"),
             'value': ''
         },
         {
@@ -1802,7 +1802,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00632169711239197600')"),
             'tag__tag_id': '209',
-            'threshold': GenericRepr("Decimal('0.00632169711239197600')"),
+            'threshold': GenericRepr("Decimal('0.17000000000000000000')"),
             'value': ''
         },
         {
@@ -1813,7 +1813,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00697963860938730400')"),
             'tag__tag_id': '210',
-            'threshold': GenericRepr("Decimal('0.00697963860938730400')"),
+            'threshold': GenericRepr("Decimal('0.23000000000000000000')"),
             'value': ''
         },
         {
@@ -1824,7 +1824,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.01237871689035704300')"),
             'tag__tag_id': '212',
-            'threshold': GenericRepr("Decimal('0.01237871689035704300')"),
+            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
             'value': ''
         },
         {
@@ -1835,7 +1835,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00024467206802345010')"),
             'tag__tag_id': '213',
-            'threshold': GenericRepr("Decimal('0.00024467206802345010')"),
+            'threshold': GenericRepr("Decimal('0.37000000000000000000')"),
             'value': ''
         },
         {
@@ -1846,7 +1846,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00036748812096354010')"),
             'tag__tag_id': '214',
-            'threshold': GenericRepr("Decimal('0.00036748812096354010')"),
+            'threshold': GenericRepr("Decimal('0.29000000000000000000')"),
             'value': ''
         },
         {
@@ -1857,7 +1857,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00047817865331461160')"),
             'tag__tag_id': '215',
-            'threshold': GenericRepr("Decimal('0.00047817865331461160')"),
+            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
             'value': ''
         },
         {
@@ -1868,7 +1868,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00696396781131625200')"),
             'tag__tag_id': '216',
-            'threshold': GenericRepr("Decimal('0.00696396781131625200')"),
+            'threshold': GenericRepr("Decimal('0.25000000000000000000')"),
             'value': ''
         },
         {
@@ -1879,7 +1879,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00091310044249089870')"),
             'tag__tag_id': '217',
-            'threshold': GenericRepr("Decimal('0.00091310044249089870')"),
+            'threshold': GenericRepr("Decimal('0.13000000000000000000')"),
             'value': ''
         },
         {
@@ -1890,7 +1890,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00106291823053302660')"),
             'tag__tag_id': '218',
-            'threshold': GenericRepr("Decimal('0.00106291823053302660')"),
+            'threshold': GenericRepr("Decimal('0.13000000000000000000')"),
             'value': ''
         },
         {
@@ -1901,7 +1901,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00187798162057463590')"),
             'tag__tag_id': '219',
-            'threshold': GenericRepr("Decimal('0.00187798162057463590')"),
+            'threshold': GenericRepr("Decimal('0.28000000000000000000')"),
             'value': ''
         },
         {
@@ -1912,7 +1912,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.01125925638038536600')"),
             'tag__tag_id': '220',
-            'threshold': GenericRepr("Decimal('0.01125925638038536600')"),
+            'threshold': GenericRepr("Decimal('0.29000000000000000000')"),
             'value': ''
         },
         {
@@ -1923,7 +1923,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00166666776701611900')"),
             'tag__tag_id': '221',
-            'threshold': GenericRepr("Decimal('0.00166666776701611900')"),
+            'threshold': GenericRepr("Decimal('0.19000000000000000000')"),
             'value': ''
         },
         {
@@ -1934,7 +1934,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00146527563629206270')"),
             'tag__tag_id': '222',
-            'threshold': GenericRepr("Decimal('0.00146527563629206270')"),
+            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
             'value': ''
         },
         {
@@ -1945,7 +1945,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00115551359139065800')"),
             'tag__tag_id': '223',
-            'threshold': GenericRepr("Decimal('0.00115551359139065800')"),
+            'threshold': GenericRepr("Decimal('0.47000000000000003000')"),
             'value': ''
         },
         {
@@ -1956,7 +1956,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00758105556347540500')"),
             'tag__tag_id': '224',
-            'threshold': GenericRepr("Decimal('0.00758105556347540500')"),
+            'threshold': GenericRepr("Decimal('0.21000000000000000000')"),
             'value': ''
         },
         {
@@ -1967,7 +1967,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00033728324827582890')"),
             'tag__tag_id': '225',
-            'threshold': GenericRepr("Decimal('0.00033728324827582890')"),
+            'threshold': GenericRepr("Decimal('0.15000000000000000000')"),
             'value': ''
         },
         {
@@ -1978,7 +1978,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00077029108069837090')"),
             'tag__tag_id': '226',
-            'threshold': GenericRepr("Decimal('0.00077029108069837090')"),
+            'threshold': GenericRepr("Decimal('0.18000000000000000000')"),
             'value': ''
         },
         {
@@ -1989,7 +1989,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00090097592975426880')"),
             'tag__tag_id': '227',
-            'threshold': GenericRepr("Decimal('0.00090097592975426880')"),
+            'threshold': GenericRepr("Decimal('0.18000000000000000000')"),
             'value': ''
         },
         {
@@ -2000,7 +2000,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00497279979754239300')"),
             'tag__tag_id': '228',
-            'threshold': GenericRepr("Decimal('0.00497279979754239300')"),
+            'threshold': GenericRepr("Decimal('0.80000000000000000000')"),
             'value': ''
         },
         {
@@ -2011,7 +2011,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00032880847216941987')"),
             'tag__tag_id': '229',
-            'threshold': GenericRepr("Decimal('0.00032880847216941987')"),
+            'threshold': GenericRepr("Decimal('0.39000000000000000000')"),
             'value': ''
         },
         {
@@ -2022,7 +2022,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00116735643615233300')"),
             'tag__tag_id': '230',
-            'threshold': GenericRepr("Decimal('0.00116735643615233300')"),
+            'threshold': GenericRepr("Decimal('0.81000000000000000000')"),
             'value': ''
         },
         {
@@ -2033,7 +2033,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00244935224877624970')"),
             'tag__tag_id': '231',
-            'threshold': GenericRepr("Decimal('0.00244935224877624970')"),
+            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
             'value': ''
         },
         {
@@ -2044,7 +2044,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00542857805671899200')"),
             'tag__tag_id': '232',
-            'threshold': GenericRepr("Decimal('0.00542857805671899200')"),
+            'threshold': GenericRepr("Decimal('0.46000000000000000000')"),
             'value': ''
         },
         {
@@ -2055,7 +2055,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00188743645513925370')"),
             'tag__tag_id': '233',
-            'threshold': GenericRepr("Decimal('0.00188743645513925370')"),
+            'threshold': GenericRepr("Decimal('0.79000000000000000000')"),
             'value': ''
         },
         {
@@ -2066,7 +2066,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00117788418989490570')"),
             'tag__tag_id': '234',
-            'threshold': GenericRepr("Decimal('0.00117788418989490570')"),
+            'threshold': GenericRepr("Decimal('0.54000000000000000000')"),
             'value': ''
         },
         {
@@ -2077,7 +2077,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00023104241032948875')"),
             'tag__tag_id': '301',
-            'threshold': GenericRepr("Decimal('0.00023104241032948875')"),
+            'threshold': GenericRepr("Decimal('0.12000000000000000000')"),
             'value': ''
         },
         {
@@ -2088,7 +2088,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00684022131126101400')"),
             'tag__tag_id': '302',
-            'threshold': GenericRepr("Decimal('0.00684022131126101400')"),
+            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
             'value': ''
         },
         {
@@ -2099,7 +2099,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('1.51390548675291000000')"),
             'tag__tag_id': '303',
-            'threshold': GenericRepr("Decimal('1.51390548675291000000')"),
+            'threshold': GenericRepr("Decimal('0.62000000000000000000')"),
             'value': ''
         },
         {
@@ -2110,7 +2110,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00246191542828455570')"),
             'tag__tag_id': '304',
-            'threshold': GenericRepr("Decimal('0.00246191542828455570')"),
+            'threshold': GenericRepr("Decimal('0.10000000000000000000')"),
             'value': ''
         },
         {
@@ -2121,7 +2121,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.19748103480006374000')"),
             'tag__tag_id': '305',
-            'threshold': GenericRepr("Decimal('0.19748103480006374000')"),
+            'threshold': GenericRepr("Decimal('0.43000000000000000000')"),
             'value': ''
         },
         {
@@ -2132,7 +2132,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.13266879380965720000')"),
             'tag__tag_id': '306',
-            'threshold': GenericRepr("Decimal('0.13266879380965720000')"),
+            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
             'value': ''
         },
         {
@@ -2143,7 +2143,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00847395147300428900')"),
             'tag__tag_id': '307',
-            'threshold': GenericRepr("Decimal('0.00847395147300428900')"),
+            'threshold': GenericRepr("Decimal('0.36000000000000000000')"),
             'value': ''
         },
         {
@@ -2154,7 +2154,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.01439434579677051900')"),
             'tag__tag_id': '308',
-            'threshold': GenericRepr("Decimal('0.01439434579677051900')"),
+            'threshold': GenericRepr("Decimal('0.45000000000000000000')"),
             'value': ''
         },
         {
@@ -2165,7 +2165,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00275349894147967100')"),
             'tag__tag_id': '309',
-            'threshold': GenericRepr("Decimal('0.00275349894147967100')"),
+            'threshold': GenericRepr("Decimal('0.31000000000000000000')"),
             'value': ''
         },
         {
@@ -2176,7 +2176,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.02261752535293742000')"),
             'tag__tag_id': '310',
-            'threshold': GenericRepr("Decimal('0.02261752535293742000')"),
+            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
             'value': ''
         },
         {
@@ -2187,7 +2187,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00280699276022220930')"),
             'tag__tag_id': '311',
-            'threshold': GenericRepr("Decimal('0.00280699276022220930')"),
+            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
             'value': ''
         },
         {
@@ -2198,7 +2198,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00353863737969235940')"),
             'tag__tag_id': '312',
-            'threshold': GenericRepr("Decimal('0.00353863737969235940')"),
+            'threshold': GenericRepr("Decimal('0.33000000000000000000')"),
             'value': ''
         },
         {
@@ -2209,7 +2209,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00474455507679118000')"),
             'tag__tag_id': '313',
-            'threshold': GenericRepr("Decimal('0.00474455507679118000')"),
+            'threshold': GenericRepr("Decimal('0.45000000000000000000')"),
             'value': ''
         },
         {
@@ -2220,7 +2220,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00243518249286959600')"),
             'tag__tag_id': '314',
-            'threshold': GenericRepr("Decimal('0.00243518249286959600')"),
+            'threshold': GenericRepr("Decimal('0.24000000000000000000')"),
             'value': ''
         },
         {
@@ -2231,7 +2231,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00498411668972535500')"),
             'tag__tag_id': '315',
-            'threshold': GenericRepr("Decimal('0.00498411668972535500')"),
+            'threshold': GenericRepr("Decimal('0.55000000000000000000')"),
             'value': ''
         },
         {
@@ -2242,7 +2242,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00342778279446065430')"),
             'tag__tag_id': '316',
-            'threshold': GenericRepr("Decimal('0.00342778279446065430')"),
+            'threshold': GenericRepr("Decimal('0.15000000000000000000')"),
             'value': ''
         },
         {
@@ -2253,7 +2253,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00183609818729261560')"),
             'tag__tag_id': '317',
-            'threshold': GenericRepr("Decimal('0.00183609818729261560')"),
+            'threshold': GenericRepr("Decimal('0.30000000000000000000')"),
             'value': ''
         },
         {
@@ -2264,7 +2264,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00765169737860560400')"),
             'tag__tag_id': '318',
-            'threshold': GenericRepr("Decimal('0.00765169737860560400')"),
+            'threshold': GenericRepr("Decimal('0.25000000000000000000')"),
             'value': ''
         },
         {
@@ -2275,7 +2275,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00020814205345232040')"),
             'tag__tag_id': '401',
-            'threshold': GenericRepr("Decimal('0.00020814205345232040')"),
+            'threshold': GenericRepr("Decimal('0.25000000000000000000')"),
             'value': ''
         },
         {
@@ -2286,7 +2286,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00299776057263129780')"),
             'tag__tag_id': '402',
-            'threshold': GenericRepr("Decimal('0.00299776057263129780')"),
+            'threshold': GenericRepr("Decimal('0.58000000000000000000')"),
             'value': ''
         },
         {
@@ -2297,7 +2297,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00299218206367056270')"),
             'tag__tag_id': '403',
-            'threshold': GenericRepr("Decimal('0.00299218206367056270')"),
+            'threshold': GenericRepr("Decimal('0.14000000000000000000')"),
             'value': ''
         },
         {
@@ -2308,7 +2308,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00241597760274695900')"),
             'tag__tag_id': '404',
-            'threshold': GenericRepr("Decimal('0.00241597760274695900')"),
+            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
             'value': ''
         },
         {
@@ -2319,7 +2319,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.02053049989999868700')"),
             'tag__tag_id': '405',
-            'threshold': GenericRepr("Decimal('0.02053049989999868700')"),
+            'threshold': GenericRepr("Decimal('0.78000000000000000000')"),
             'value': ''
         },
         {
@@ -2330,7 +2330,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00281014967745599850')"),
             'tag__tag_id': '406',
-            'threshold': GenericRepr("Decimal('0.00281014967745599850')"),
+            'threshold': GenericRepr("Decimal('0.13000000000000000000')"),
             'value': ''
         },
         {
@@ -2341,7 +2341,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00022843408415366598')"),
             'tag__tag_id': '407',
-            'threshold': GenericRepr("Decimal('0.00022843408415366598')"),
+            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
             'value': ''
         },
         {
@@ -2352,7 +2352,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00943289911848003600')"),
             'tag__tag_id': '408',
-            'threshold': GenericRepr("Decimal('0.00943289911848003600')"),
+            'threshold': GenericRepr("Decimal('0.59000000000000000000')"),
             'value': ''
         },
         {
@@ -2363,7 +2363,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00091892403101415500')"),
             'tag__tag_id': '409',
-            'threshold': GenericRepr("Decimal('0.00091892403101415500')"),
+            'threshold': GenericRepr("Decimal('0.56000000000000000000')"),
             'value': ''
         },
         {
@@ -2374,7 +2374,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('2.03979988487399360000')"),
             'tag__tag_id': '410',
-            'threshold': GenericRepr("Decimal('2.03979988487399360000')"),
+            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
             'value': ''
         },
         {
@@ -2385,7 +2385,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00750677951145917200')"),
             'tag__tag_id': '411',
-            'threshold': GenericRepr("Decimal('0.00750677951145917200')"),
+            'threshold': GenericRepr("Decimal('0.20000000000000000000')"),
             'value': ''
         },
         {
@@ -2396,7 +2396,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00019092757914525768')"),
             'tag__tag_id': '412',
-            'threshold': GenericRepr("Decimal('0.00019092757914525768')"),
+            'threshold': GenericRepr("Decimal('0.60000000000000000000')"),
             'value': ''
         },
         {
@@ -2407,7 +2407,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('1.40336945023335200000')"),
             'tag__tag_id': '501',
-            'threshold': GenericRepr("Decimal('1.40336945023335200000')"),
+            'threshold': GenericRepr("Decimal('0.71000000000000000000')"),
             'value': ''
         },
         {
@@ -2418,7 +2418,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00778131599707359600')"),
             'tag__tag_id': '502',
-            'threshold': GenericRepr("Decimal('0.00778131599707359600')"),
+            'threshold': GenericRepr("Decimal('0.44000000000000000000')"),
             'value': ''
         },
         {
@@ -2429,7 +2429,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.04068703080217044000')"),
             'tag__tag_id': '601',
-            'threshold': GenericRepr("Decimal('0.04068703080217044000')"),
+            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
             'value': ''
         },
         {
@@ -2440,7 +2440,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.02458783670921217300')"),
             'tag__tag_id': '602',
-            'threshold': GenericRepr("Decimal('0.02458783670921217300')"),
+            'threshold': GenericRepr("Decimal('0.44000000000000000000')"),
             'value': ''
         },
         {
@@ -2451,7 +2451,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.04259871318936348000')"),
             'tag__tag_id': '603',
-            'threshold': GenericRepr("Decimal('0.04259871318936348000')"),
+            'threshold': GenericRepr("Decimal('0.40000000000000000000')"),
             'value': ''
         },
         {
@@ -2462,7 +2462,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00641449491997234200')"),
             'tag__tag_id': '604',
-            'threshold': GenericRepr("Decimal('0.00641449491997234200')"),
+            'threshold': GenericRepr("Decimal('0.61000000000000000000')"),
             'value': ''
         },
         {
@@ -2473,7 +2473,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00027582379877694870')"),
             'tag__tag_id': '801',
-            'threshold': GenericRepr("Decimal('0.00027582379877694870')"),
+            'threshold': GenericRepr("Decimal('0.73000000000000000000')"),
             'value': ''
         },
         {
@@ -2484,7 +2484,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00997524285181002000')"),
             'tag__tag_id': '802',
-            'threshold': GenericRepr("Decimal('0.00997524285181002000')"),
+            'threshold': GenericRepr("Decimal('0.55000000000000000000')"),
             'value': ''
         },
         {
@@ -2495,7 +2495,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00476177378710526100')"),
             'tag__tag_id': '803',
-            'threshold': GenericRepr("Decimal('0.00476177378710526100')"),
+            'threshold': GenericRepr("Decimal('0.67000000000000000000')"),
             'value': ''
         },
         {
@@ -2506,7 +2506,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00084620605533321700')"),
             'tag__tag_id': '804',
-            'threshold': GenericRepr("Decimal('0.00084620605533321700')"),
+            'threshold': GenericRepr("Decimal('0.75000000000000000000')"),
             'value': ''
         },
         {
@@ -2517,7 +2517,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00070480359681823760')"),
             'tag__tag_id': '805',
-            'threshold': GenericRepr("Decimal('0.00070480359681823760')"),
+            'threshold': GenericRepr("Decimal('0.64000000000000000000')"),
             'value': ''
         },
         {
@@ -2528,7 +2528,7 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'model_version__model__model_id': 'all_tags_model',
             'prediction': GenericRepr("Decimal('0.00703320267416958500')"),
             'tag__tag_id': '806',
-            'threshold': GenericRepr("Decimal('0.00703320267416958500')"),
+            'threshold': GenericRepr("Decimal('0.53000000000000000000')"),
             'value': ''
         },
         {
