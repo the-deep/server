@@ -319,7 +319,7 @@ class ScoreRating(UserResource):
     assessment_registry = models.ForeignKey(
         AssessmentRegistry,
         on_delete=models.CASCADE,
-        related_name='assessment_registry',
+        related_name='score_ratings',
     )
     score_type = models.IntegerField(choices=ScoreType.choices)
     rating = models.IntegerField(choices=RatingType.choices)
