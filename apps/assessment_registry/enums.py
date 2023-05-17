@@ -3,7 +3,13 @@ from utils.graphene.enums import (
     get_enum_name_from_django_field,
 )
 
-from .models import AssessmentRegistry, MethodologyAttribute, AdditionalDocument
+from .models import (
+    AssessmentRegistry,
+    MethodologyAttribute,
+    AdditionalDocument,
+    ScoreRating,
+    ScoreAnalyticalDensity,
+)
 
 AssessmentRegistryCrisisTypeEnum = convert_enum_to_graphene_enum(
     AssessmentRegistry.CrisisType, name='AssessmentRegistryCrisisTypeEnum'
@@ -62,6 +68,12 @@ AssessmentRegistryUnitOfReportingTypeEnum = convert_enum_to_graphene_enum(
 AssessmentRegistryDocumentTypeEnum = convert_enum_to_graphene_enum(
     AdditionalDocument.DocumentType, name='AssessmentRegistryDocumentTypeEnum'
 )
+AssessmentRegistryScoreTypeEnum = convert_enum_to_graphene_enum(
+    ScoreRating.ScoreType, name='AssessmentRegistryScoreTypeEnum'
+)
+AssessmentRegistryRatingTypeEnum = convert_enum_to_graphene_enum(
+    ScoreRating.RatingType, name='AssessmentRegistryRatingType'
+)
 
 enum_map = {
     get_enum_name_from_django_field(field): enum
@@ -85,5 +97,8 @@ enum_map = {
         (MethodologyAttribute.unit_of_analysis, AssessmentRegistryUnitOfAnalysisTypeEnum),
         (MethodologyAttribute.unit_of_reporting, AssessmentRegistryUnitOfReportingTypeEnum),
         (AdditionalDocument.document_type, AssessmentRegistryDocumentTypeEnum),
+        (ScoreRating.score_type, AssessmentRegistryScoreTypeEnum),
+        (ScoreRating.rating, AssessmentRegistryRatingTypeEnum),
+        (ScoreAnalyticalDensity.sector, AssessmentRegistrySectorTypeEnum),
     )
 }
