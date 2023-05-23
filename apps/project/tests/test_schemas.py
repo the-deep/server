@@ -893,35 +893,44 @@ class TestProjectSchema(GraphQLTestCase):
 
         self.force_login(user)
 
+        # Run/try query and check if last_read_access are changing properly
+        base_now = datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
         with patch('deep.trackers.timezone.now') as timezone_now_mock:
-            timezone_now_mock.return_value = timezone_now = datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
-            # Normal run without calling notifications endpoint
-            for project in projects:
-                assert project.last_read_access is None
-                _query_check(project.id)['data']['project']
-                with self.captureOnCommitCallbacks(execute=True):
-                    schedule_tracker_data_handler()
-                if project in project_with_access:
+            timezone_now = None
+            old_timezone_now = None
+            for timezone_now in [
+                base_now,
+                base_now + relativedelta(months=Project.PROJECT_INACTIVE_AFTER_MONTHS),
+                base_now + 2 * relativedelta(months=Project.PROJECT_INACTIVE_AFTER_MONTHS),
+            ]:
+                # Current time
+                timezone_now_mock.return_value = timezone_now
+                for project in projects:
+                    if project in project_with_access:
+                        # Existing state
+                        assert project.last_read_access == old_timezone_now
+                    else:
+                        # No access (no membership)
+                        if project.is_private:
+                            assert project.last_read_access is None
+                        else:
+                            # Public project have readaccess for some nodes
+                            assert project.last_read_access == old_timezone_now
+                    _query_check(project.id)['data']['project']
+                    with self.captureOnCommitCallbacks(execute=True):
+                        schedule_tracker_data_handler()
                     project.refresh_from_db()
-                    assert project.last_read_access == timezone_now
-                else:
-                    assert project.last_read_access is None
-
-            timezone_now_mock.return_value = new_timezone_now = datetime(2022, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
-            # Normal run without calling notifications endpoint
-            for project in projects:
-                if project in project_with_access:
-                    assert project.last_read_access == timezone_now
-                else:
-                    assert project.last_read_access is None
-                _query_check(project.id)['data']['project']
-                with self.captureOnCommitCallbacks(execute=True):
-                    schedule_tracker_data_handler()
-                if project in project_with_access:
-                    project.refresh_from_db()
-                    assert project.last_read_access == new_timezone_now
-                else:
-                    assert project.last_read_access is None
+                    if project in project_with_access:
+                        # New state
+                        assert project.last_read_access == timezone_now
+                    else:
+                        # No access (no membership)
+                        if project.is_private:
+                            assert project.last_read_access is None
+                        else:
+                            # Public project have readaccess for some nodes
+                            assert project.last_read_access == timezone_now
+                old_timezone_now = timezone_now
 
     def test_project_last_write_access(self):
         MUTATION = '''
@@ -948,54 +957,52 @@ class TestProjectSchema(GraphQLTestCase):
 
         self.force_login(user)
 
+        # Run/try mutations and check if last_write_access and project.status are changing properly
+        base_now = datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
         with patch('deep.trackers.timezone.now') as timezone_now_mock:
-            timezone_now_mock.return_value = timezone_now = datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
-            # Normal run without calling notifications endpoint
-            for project in projects:
-                project.refresh_from_db()
-                assert project.last_write_access is None
-                if project in project_with_access:
-                    _query_check(project.id)['data']['project']
-                    with self.captureOnCommitCallbacks(execute=True):
-                        schedule_tracker_data_handler()
+            timezone_now = None
+            old_timezone_now = None
+            for timezone_now in [
+                base_now,
+                base_now + relativedelta(months=Project.PROJECT_INACTIVE_AFTER_MONTHS),
+                base_now + 2 * relativedelta(months=Project.PROJECT_INACTIVE_AFTER_MONTHS),
+            ]:
+                # Current time
+                timezone_now_mock.return_value = timezone_now
+                for project in projects:
                     project.refresh_from_db()
-                    assert project.last_write_access == timezone_now
-                    assert project.status == Project.Status.ACTIVE
-                else:
-                    _query_check(project.id, assert_for_error=True)
-                    with self.captureOnCommitCallbacks(execute=True):
-                        schedule_tracker_data_handler()
-                    project.refresh_from_db()
-                    assert project.last_write_access is None
-                    assert project.status == Project.Status.INACTIVE
+                    if project in project_with_access:
+                        # Existing state
+                        assert project.last_write_access == old_timezone_now
+                        _query_check(project.id)['data']['project']
+                        with self.captureOnCommitCallbacks(execute=True):
+                            schedule_tracker_data_handler()
+                        project.refresh_from_db()
+                        # New state
+                        assert project.last_write_access == timezone_now
+                        assert project.status == Project.Status.ACTIVE
+                    else:
+                        # None since we don't have access (no membership)
+                        assert project.last_write_access is None
+                        _query_check(project.id, assert_for_error=True)
+                        with self.captureOnCommitCallbacks(execute=True):
+                            schedule_tracker_data_handler()
+                        project.refresh_from_db()
+                        # Same we don't have access (no membership)
+                        assert project.last_write_access is None
+                        assert project.status == Project.Status.INACTIVE
+                old_timezone_now = timezone_now
 
-            timezone_now_mock.return_value = new_timezone_now = datetime(2022, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
-            # Normal run without calling notifications endpoint
-            for project in projects:
-                project.refresh_from_db()
-                if project in project_with_access:
-                    assert project.last_write_access == timezone_now
-                    _query_check(project.id)['data']['project']
-                    with self.captureOnCommitCallbacks(execute=True):
-                        schedule_tracker_data_handler()
-                    project.refresh_from_db()
-                    assert project.last_write_access == new_timezone_now
-                    assert project.status == Project.Status.ACTIVE
-                else:
-                    assert project.last_write_access is None
-                    _query_check(project.id, assert_for_error=True)
-                    with self.captureOnCommitCallbacks(execute=True):
-                        schedule_tracker_data_handler()
-                    project.refresh_from_db()
-                    assert project.last_write_access is None
-                    assert project.status == Project.Status.INACTIVE
-
-            # Check for auto status change
-            timezone_now_mock.return_value = new_timezone_now = datetime(2023, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+            # Without mutations, check if project.status is changing properly
+            # After + 3*PROJECT_INACTIVE_AFTER_MONTHS
+            # -- Check for auto status change
+            assert timezone_now is not None
+            timezone_now_mock.return_value = timezone_now + relativedelta(months=3 * Project.PROJECT_INACTIVE_AFTER_MONTHS)
             with self.captureOnCommitCallbacks(execute=True):
                 schedule_tracker_data_handler()
             for project in projects:
                 project.refresh_from_db()
+                # It's inactive as ahead by Project.PROJECT_INACTIVE_AFTER_MONTHS
                 assert project.status == Project.Status.INACTIVE
 
 
