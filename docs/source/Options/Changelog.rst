@@ -1,6 +1,6 @@
 
-Changelog
-++++++++++++
+Change Log
++++++++++++++
 
-Changelog
-=================
+Change Log
+==================

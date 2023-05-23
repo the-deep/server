@@ -26,3 +26,4 @@ hosting more than 85,000 carefully annotated response documents and connecting m
 Since its inception, DEEP has been used to inform more than 1,800 international humanitarian projects whose scopes are estimated to impact
 more than 98 million people, including USAID’s response to COVID-19, ACAPS’s response to the Rohingya crisis, and UNHCR and IFRC’s response
 to the Venezuela migrations crisis. More than two-thirds of individuals in areas where DEEP is utilized earn less than $5 USD per day.
+

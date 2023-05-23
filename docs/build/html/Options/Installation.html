@@ -51,6 +51,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#modify-deepl-service-dockerfile-for-m1-mac">Modify Deepl Service Dockerfile (for M1 Mac)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#disable-airplay-receiver-for-mac">Disable Airplay Receiver (for Mac)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#start-servers-with-docker-compose">Start Servers with Docker Compose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#useful-commands">Useful Commands</a></li>
 </ul>
 </li>
 </ul>
@@ -146,6 +147,21 @@
 <li><p>Start the servers:</p></li>
 </ol>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker-compose<span class="w"> </span>up
+</pre></div>
+</div>
+</section>
+<section id="useful-commands">
+<h3>Useful Commands<a class="headerlink" href="#useful-commands" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>To migrate, go to the docker container and run migrate command:</p></li>
+</ul>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker-compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>web<span class="w"> </span>./manage.py<span class="w"> </span>migrate
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>To test, go to the docker container and run the test command:</p></li>
+</ul>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker-compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>web<span class="w"> </span>./manage.py<span class="w"> </span><span class="nb">test</span>
 </pre></div>
 </div>
 </section>

@@ -81,3 +81,18 @@ To start the servers using Docker Compose, follow these steps:
 .. code-block:: shell
 
    docker-compose up
+
+Useful Commands
+----------------
+
+- To migrate, go to the docker container and run migrate command:
+
+.. code-block:: shell
+
+   docker-compose exec web ./manage.py migrate
+
+- To test, go to the docker container and run the test command:
+
+.. code-block:: shell
+
+   docker-compose exec web ./manage.py test
