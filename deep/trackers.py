@@ -77,7 +77,7 @@ def update_project_data_in_bulk():
     # -- Update project->status using last_write_access
     # -- -- To active
     Project.objects.filter(
-        last_write_access__lte=timezone.now() - relativedelta(years=1),
+        last_write_access__lte=timezone.now() - relativedelta(months=Project.PROJECT_INACTIVE_AFTER_MONTHS),
         status=Project.Status.ACTIVE,
     ).update(
         status=Project.Status.INACTIVE,
@@ -86,7 +86,7 @@ def update_project_data_in_bulk():
     Project.objects.filter(
         last_write_access__isnull=False,
     ).exclude(
-        last_write_access__lte=timezone.now() - relativedelta(years=1),
+        last_write_access__lte=timezone.now() - relativedelta(months=Project.PROJECT_INACTIVE_AFTER_MONTHS),
         status=Project.Status.INACTIVE,
     ).update(
         status=Project.Status.ACTIVE,
@@ -102,7 +102,7 @@ def update_user_data_in_bulk():
     # -- Update user->profile-is_active using last_active
     # -- -- To active
     Profile.objects.filter(
-        last_active__lte=timezone.now() - relativedelta(months=6),
+        last_active__lte=timezone.now() - relativedelta(months=Profile.USER_INACTIVE_AFTER_MONTHS),
         is_active=True,
     ).update(
         is_active=False,
@@ -111,7 +111,7 @@ def update_user_data_in_bulk():
     Profile.objects.filter(
         last_active__isnull=False,
     ).exclude(
-        last_active__lte=timezone.now() - relativedelta(months=6),
+        last_active__lte=timezone.now() - relativedelta(months=Profile.USER_INACTIVE_AFTER_MONTHS),
         is_active=False,
     ).update(
         is_active=True,

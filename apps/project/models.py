@@ -43,6 +43,8 @@ class Project(UserResource):
         ACTIVE = 'active', 'Active'
         INACTIVE = 'inactive', 'Inactive'
 
+    PROJECT_INACTIVE_AFTER_MONTHS = 12
+
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 

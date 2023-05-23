@@ -84,6 +84,8 @@ class Profile(models.Model):
     last_active = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=False)
 
+    USER_INACTIVE_AFTER_MONTHS = 6
+
     def __str__(self):
         return str(self.user)
 

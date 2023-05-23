@@ -1,6 +1,7 @@
 import pytz
 from unittest import mock
 from datetime import timedelta, datetime
+from dateutil.relativedelta import relativedelta
 
 from django.conf import settings
 from django.utils import timezone
@@ -11,7 +12,7 @@ from utils.graphene.tests import GraphQLTestCase
 from gallery.factories import FileFactory
 from project.factories import ProjectFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
-from user.models import User, Feature, EmailCondition
+from user.models import User, Feature, EmailCondition, Profile
 from user.factories import UserFactory, FeatureFactory
 from user.utils import (
     send_password_changed_notification,
@@ -954,7 +955,7 @@ class TestUserSchema(GraphQLTestCase):
         assert_user_last_activity(user3, None, False)
 
         # Now calling notifications endpoint again (But now == 6 months ahead)
-        self.now_datetime = new_timezone_now = datetime(2022, 7, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+        self.now_datetime = new_timezone_now = timezone_now + relativedelta(months=Profile.USER_INACTIVE_AFTER_MONTHS)
         with self.captureOnCommitCallbacks(execute=True):
             schedule_tracker_data_handler()
         for user in users:
