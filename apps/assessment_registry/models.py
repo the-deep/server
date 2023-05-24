@@ -368,88 +368,88 @@ class Summary(UserResource):
 
     class SummaryFocusValue(models.IntegerChoices):
         # Focus ->  Main sectorial underlying factors
-        AVAILABILITY = 0, 'Availability'
-        AVAILABILITY_PRODUCTION = 1, 'Availability/Production'
-        AVAILABILITY_TRADE = 2, 'Availability/Trade'
-        AVAILABILITY_STOCK = 3, 'Availability/Stock'
-        AVAILABILITY_TRANSFER = 4, 'Availability/Transfer'
-        ACCESS = 5, 'Access'
-        ACCESS_PHYSICAL = 6, 'Access/Physical'
-        ACCESS_FINANCIAL = 7, 'Access/Financial'
-        ACCESS_SECURITY = 8, 'Access/Security'
-        ACCESS_SOCIAL_DISCRIMINATION = 9, 'Access/Social Discrimination'
-        QUALITY = 10, 'Quality'
-        QUALITY_HUMAN_RESOURCES = 11, 'Quality/Human resources'
-        QUALITY_SAFETY = 12, 'Quality/Safety'
-        QUALITY_RELIABILITY = 13, 'Quality/Reliability'
-        QUALITY_DIVERSITY = 14, 'Quality/Diversity'
-        QUALITY_DIGNITY = 15, 'Quality/Dignity'
-        USE = 16, 'USE'
-        USE_KNOWLEDGE = 17, 'Use/Knowledge'
-        USE_ATTITUDE = 18, 'Use/Attitude'
-        USE_PRACTICE = 19, 'Use/Practice'
-        AWARENESS = 20, 'Awareness'
-        AWARENESS_MESSAGE = 21, 'Awareness/Message'
-        AWARENESS_CHANNEL = 22, 'Awareness/Channel'
-        AWARENESS_FERQUENCY = 23, 'Awareness/Frequency'
+        AVAILABILITY = 100, 'Availability'
+        AVAILABILITY_PRODUCTION = 101, 'Availability/Production'
+        AVAILABILITY_TRADE = 102, 'Availability/Trade'
+        AVAILABILITY_STOCK = 103, 'Availability/Stock'
+        AVAILABILITY_TRANSFER = 104, 'Availability/Transfer'
+        ACCESS = 105, 'Access'
+        ACCESS_PHYSICAL = 106, 'Access/Physical'
+        ACCESS_FINANCIAL = 107, 'Access/Financial'
+        ACCESS_SECURITY = 108, 'Access/Security'
+        ACCESS_SOCIAL_DISCRIMINATION = 109, 'Access/Social Discrimination'
+        QUALITY = 110, 'Quality'
+        QUALITY_HUMAN_RESOURCES = 111, 'Quality/Human resources'
+        QUALITY_SAFETY = 112, 'Quality/Safety'
+        QUALITY_RELIABILITY = 113, 'Quality/Reliability'
+        QUALITY_DIVERSITY = 114, 'Quality/Diversity'
+        QUALITY_DIGNITY = 115, 'Quality/Dignity'
+        USE = 116, 'USE'
+        USE_KNOWLEDGE = 117, 'Use/Knowledge'
+        USE_ATTITUDE = 118, 'Use/Attitude'
+        USE_PRACTICE = 119, 'Use/Practice'
+        AWARENESS = 120, 'Awareness'
+        AWARENESS_MESSAGE = 121, 'Awareness/Message'
+        AWARENESS_CHANNEL = 122, 'Awareness/Channel'
+        AWARENESS_FERQUENCY = 123, 'Awareness/Frequency'
 
         # Focus -> Priority affected groups
-        ALL = 24, 'All'
-        ALL_AFFECTED = 25, 'All/Affected'
-        AFFECTED_DISPLACED = 26, 'Affected/Displaced'
-        DISPLACED_REFUGEES = 27, 'Displaced Refugees'
-        DISPLACED_RETURNEES = 28, 'Displaced Returnees'
-        DISPLACED_OTHER_OF_CONCERNS = 29, 'Displaced/Other of concrens'
-        DISPLACED_ASYLUM_SEEKERS = 30, 'Displaced/Asylum Seekers'
-        DISPLACED_IDPS = 31, 'Displaced/IDPs'
-        DISPLACED_MIGRANTS = 32, 'Displaced/Migrants'
-        MIGRANTS_PENDULAR = 33, 'Migrants/Pendular'
-        MIGRANTS_PERMANENTS = 34, 'Migrants/Permanents'
-        MIGRANTS_IN_TRANSIT = 35, 'Migrants/In transit'
-        DISPLACED_IN_TRANSIT = 36, 'Displaced/In Transit'
-        AFFECTED_NOT_DISPLACED = 37, 'Affected/Not Displaced'
-        NOT_DISPLACED_HOST = 38, 'Not Displaced/Host'
-        NOT_DISPLACED_NOT_HOST = 39, 'Not Displaced/No Host'
-        ALL_NOT_AFFECTED = 40, 'All/Not Affected'
+        ALL = 200, 'All'
+        ALL_AFFECTED = 201, 'All/Affected'
+        AFFECTED_DISPLACED = 202, 'Affected/Displaced'
+        DISPLACED_REFUGEES = 203, 'Displaced Refugees'
+        DISPLACED_RETURNEES = 204, 'Displaced Returnees'
+        DISPLACED_OTHER_OF_CONCERNS = 205, 'Displaced/Other of concrens'
+        DISPLACED_ASYLUM_SEEKERS = 206, 'Displaced/Asylum Seekers'
+        DISPLACED_IDPS = 207, 'Displaced/IDPs'
+        DISPLACED_MIGRANTS = 208, 'Displaced/Migrants'
+        MIGRANTS_PENDULAR = 209, 'Migrants/Pendular'
+        MIGRANTS_PERMANENTS = 210, 'Migrants/Permanents'
+        MIGRANTS_IN_TRANSIT = 211, 'Migrants/In transit'
+        DISPLACED_IN_TRANSIT = 212, 'Displaced/In Transit'
+        AFFECTED_NOT_DISPLACED = 213, 'Affected/Not Displaced'
+        NOT_DISPLACED_HOST = 214, 'Not Displaced/Host'
+        NOT_DISPLACED_NOT_HOST = 215, 'Not Displaced/No Host'
+        ALL_NOT_AFFECTED = 216, 'All/Not Affected'
 
         # Focus -> Priority groups with specific needs
-        FEMALE_HEAD_OF_HOUSEHOLD = 41, 'Female Head of Household'
-        CHILD_HEAD_OF_HOUSEHOLD = 42, 'Child Head of Household'
-        ELDERLY_HEAD_OF_HOUSEHOLD = 43, 'Elderly Head of Household'
-        SINGLE_WOMEN = 44, 'Single Women (including widows'
-        CHRONICALLY_ILL = 45, 'Chronically Ill'
-        UNNACOMPANIED_CHILDREN = 46, 'Unnacompanied Children (without caregivers)'
-        SEPARATE_CHILDREN = 47, 'Separate children'
-        MINORITIES = 48, 'Minorities'
-        PERSON_WITH_DISABILITIES = 49, 'Person with Disabilities'
-        PREGNANT_OR_LACTATING_WOMEN = 50, 'Pregnant or Lactationg Women'
-        UNREGISTERED_REFUGEE = 51, 'Unregistered Refugee'
+        FEMALE_HEAD_OF_HOUSEHOLD = 300, 'Female Head of Household'
+        CHILD_HEAD_OF_HOUSEHOLD = 301, 'Child Head of Household'
+        ELDERLY_HEAD_OF_HOUSEHOLD = 302, 'Elderly Head of Household'
+        SINGLE_WOMEN = 303, 'Single Women (including widows'
+        CHRONICALLY_ILL = 304, 'Chronically Ill'
+        UNNACOMPANIED_CHILDREN = 305, 'Unnacompanied Children (without caregivers)'
+        SEPARATE_CHILDREN = 306, 'Separate children'
+        MINORITIES = 307, 'Minorities'
+        PERSON_WITH_DISABILITIES = 308, 'Person with Disabilities'
+        PREGNANT_OR_LACTATING_WOMEN = 309, 'Pregnant or Lactationg Women'
+        UNREGISTERED_REFUGEE = 310, 'Unregistered Refugee'
 
     class SummarySectorValue(models.IntegerChoices):
         # Sector -> Priority humanitarian access issues
-        ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP = 52, 'Access of Humanitarian Actors to Affected Populations'
-        ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_IMPEDIMENTS_TO_ENTRY_INTO_COUNTRY = 53,\
+        ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP = 400, 'Access of Humanitarian Actors to Affected Populations'
+        ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_IMPEDIMENTS_TO_ENTRY_INTO_COUNTRY = 401,\
             'Access of Humanitarian Actors to Affected Populations/Impediments to entry into country(bureaucratic and \
 administrative)'
-        ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_RESTRICTION_OF_MOVEMENT = 54,\
+        ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_RESTRICTION_OF_MOVEMENT = 402,\
             'Access of Humanitarian Actors to Affected Populations/Restriction of movement(\
 impediments to freedom of movement and/or administrative restrictions)'
-        ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_INTERFERENCE_INTO_IMPLEMENTATION_OF_HUMANITARIAN_ACTIVITIES = 55,\
+        ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_INTERFERENCE_INTO_IMPLEMENTATION_OF_HUMANITARIAN_ACTIVITIES = 403,\
             'Access of Humanitarian Actors to Affected Populations/Interference\
 into implementation of humanitarian activities'
-        ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_VIOLENCE_AGAINST_PERSONNEL_FACILITIES_ASSETS = 56,\
+        ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_VIOLENCE_AGAINST_PERSONNEL_FACILITIES_ASSETS = 404,\
             'Access of Humanitarian Actors to Affected Populations/Violence against personnel, facilities and assets'
-        ACCESS_OF_PEOPLE_IN_NEED_TO_AID = 57, 'Access of People in need to Aid'
-        ACCESS_OF_PEOPLE_IN_NEED_T0_AID_DENIAL_OF_EXISTENCE_OF_HUMANITARIAN_NEEDS_OR_ENTITLEMENTS_TO_ASSISTANCE = 58,\
+        ACCESS_OF_PEOPLE_IN_NEED_TO_AID = 405, 'Access of People in need to Aid'
+        ACCESS_OF_PEOPLE_IN_NEED_T0_AID_DENIAL_OF_EXISTENCE_OF_HUMANITARIAN_NEEDS_OR_ENTITLEMENTS_TO_ASSISTANCE = 406,\
             'Access of People in need to Aid/Denial of existence of humanitarian needs or entitlements to assistance'
-        ACCESS_OF_PEOPLE_IN_NEED_T0_AID_RESTRICTION_AND_OBSTRUCTION_OF_ACCESS_TO_SERVICES_AND_ASSISTANCE = 59,\
+        ACCESS_OF_PEOPLE_IN_NEED_T0_AID_RESTRICTION_AND_OBSTRUCTION_OF_ACCESS_TO_SERVICES_AND_ASSISTANCE = 407,\
             'Access of People in need to Aid/Restriction and Obstruction of access to services and assistance'
-        PHYSICAL_AND_SECURITY_CONSTRAINTS = 60, 'Physical and Security Constraints'
-        PHYSICAL_AND_SECURITY_CONSTRAINTS_ONGOING_INSECURITY_HOSTILITIES_AFFECTING_HUMANITARIAN_ASSISTANCE = 61,\
+        PHYSICAL_AND_SECURITY_CONSTRAINTS = 408, 'Physical and Security Constraints'
+        PHYSICAL_AND_SECURITY_CONSTRAINTS_ONGOING_INSECURITY_HOSTILITIES_AFFECTING_HUMANITARIAN_ASSISTANCE = 409,\
             'Physical and Security Constraints/Ongoing insecurity/hostilities affecting humanitarian assistance'
-        PHYSICAL_AND_SECIRITY_CONSTRAINTS_PRESENCE_OF_MINES_AND_IMPROVISED_EXPLOSIVE_DEVICE = 62,\
+        PHYSICAL_AND_SECIRITY_CONSTRAINTS_PRESENCE_OF_MINES_AND_IMPROVISED_EXPLOSIVE_DEVICE = 410,\
             'Physical and Security Constraints/Presence of mines and improvised explosive devices'
-        PHYSICAL_AND_SECURITY_CONSTRAINTS_PHYSICAL_CONSTRAINTS_IN_THE_ENVIRONMENT = 63,\
+        PHYSICAL_AND_SECURITY_CONSTRAINTS_PHYSICAL_CONSTRAINTS_IN_THE_ENVIRONMENT = 411,\
             'Physical and Security Constraints/Physical constraints in the environment (\
 obstacles related to terrain, climate, lack of infrastructure etc.)'
 

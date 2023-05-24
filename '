@@ -40,139 +40,71 @@ from .enums import (
     AssessmentRegistryDocumentTypeEnum,
     AssessmentRegistryScoreTypeEnum,
     AssessmentRegistryRatingTypeEnum,
-    AssessmentRegistrySummaryValueTypeEnum,
-    AssessmentRegistrySummaryRowTypeEnum,
-    AssessmentRegistrySummarySectorColumnTypeEnum,
-    AssessmentRegistrySummaryFocusColumnTypeEnum,
-    AssessmentRegistrySummarySubSectorTypeEnum,
-    AssessmentRegistrySummarySubFocusTypeEnum,
 )
 
 
-def get_summary_sub_focus_value():
-    return [
-        SummarySubFocusType(
-            sub_focus_name=value,
-            sub_focus_name_display=label,
-            sub_focus_name_value=value,
-            summary_value_type=Summary.ValueType.RAW,
-            summary_value_type_display=AssessmentRegistrySummaryValueTypeEnum.RAW.label,
-            value_choices=[]
-        ) for value, label in Summary.SubFocus.choices if value == 0
-    ] + [
-        SummarySubFocusType(
-            sub_focus_name=value,
-            sub_focus_name_display=label,
-            sub_focus_name_value=value,
-            summary_value_type=Summary.ValueType.ENUM,
-            summary_value_type_display=AssessmentRegistrySummaryValueTypeEnum.ENUM.label,
-            value_choices=[
-                SummaryValueChoiceType(
-                    value_name=value,
-                    value=key
-                ) for key, value in Summary.SummaryFocusValue.choices if 100 <= key < 200
-            ]
-        ) for value, label in Summary.SubFocus.choices if value == 1
-    ] + [
-        SummarySubFocusType(
-            sub_focus_name=value,
-            sub_focus_name_display=label,
-            sub_focus_name_value=value,
-            summary_value_type=Summary.ValueType.ENUM,
-            summary_value_type_display=AssessmentRegistrySummaryValueTypeEnum.ENUM.label,
-            value_choices=[
-                SummaryValueChoiceType(
-                    value_name=value,
-                    value=key
-                ) for key, value in Summary.SummaryFocusValue.choices if 200 <= key < 300
-            ]
-
-        ) for value, label in Summary.SubFocus.choices if value == 2
-    ] + [
-        SummarySubFocusType(
-            sub_focus_name=value,
-            sub_focus_name_display=label,
-            sub_focus_name_value=value,
-            summary_value_type=Summary.ValueType.ENUM,
-            summary_value_type_display=AssessmentRegistrySummaryValueTypeEnum.ENUM.label,
-            value_choices=[
-                SummaryValueChoiceType(
-                    value_name=value,
-                    value=key
-                ) for key, value in Summary.SummaryFocusValue.choices if 300 <= key < 400
-            ]
-
-        ) for value, label in Summary.SubFocus.choices if value == 3
-    ]
-
-
-def get_summary_sub_sector_value():
-    return [
-        SummarySubSectorType(
-            sub_sector_name=value,
-            sub_sector_name_display=label,
-            sub_sector_name_value=value,
-            summary_value_type=Summary.ValueType.ENUM,
-            summary_value_type_display=AssessmentRegistrySummaryValueTypeEnum.ENUM.label,
-            value_choices=[
-                SummaryValueChoiceType(
-                    value_name=value,
-                    value=key
-                ) for key, value in Summary.SummarySectorValue.choices if 400 <= key < 500
-            ]
-        ) for value, label in Summary.SubSector.choices if value == 0
-    ] + [
-        SummarySubSectorType(
-            sub_sector_name=value,
-            sub_sector_name_display=label,
-            sub_sector_name_value=value,
-            summary_value_type=Summary.ValueType.RAW,
-            summary_value_type_display=AssessmentRegistrySummaryValueTypeEnum.RAW.label,
-            value_choices=[],
-        ) for value, label in Summary.SubSector.choices if value == 1
-    ]
-
-
 class SummaryValueChoiceType(graphene.ObjectType):
+    value_name = graphene.Field(SummaryValueChoiceTypeEnum, required=False)
+    value_name_display = EnumDescription(source='get_value_name_display', required=False)
     value_name = graphene.String(required=False)
     value = graphene.Int(required=False)
 
 
 class SummarySubSectorType(graphene.ObjectType):
-    sub_sector_name = graphene.Field(AssessmentRegistrySummarySubSectorTypeEnum, required=False)
-    sub_sector_name_display = graphene.String(required=False)
-    sub_sector_name_value = graphene.Int(required=False)
+    sub_sector_name = graphene.String(required=False)
+    sub_sector_value = graphene.Int(required=False)
+    value_type = graphene.String(required=False)
+    value_type_value = graphene.Int(required=False)
     value_choices = graphene.List(SummaryValueChoiceType, required=False)
-    summary_value_type = graphene.Field(AssessmentRegistrySummaryValueTypeEnum)
-    summary_value_type_display = graphene.String(required=False)
 
 
-class SummarySectorColumnType(graphene.ObjectType):
-    col_name = graphene.Field(AssessmentRegistrySummarySectorColumnTypeEnum, required=False)
-    col_name_display = graphene.String(required=False)
+class SummaryColumnType(graphene.ObjectType):
+    col_name = graphene.String(required=False)
+    col_value = graphene.Int(required=False)
 
 
 class SummaryRowType(graphene.ObjectType):
-    row_name = graphene.Field(AssessmentRegistrySummaryRowTypeEnum, required=False)
-    row_name_display = graphene.String(required=False)
+    row_name = graphene.String(required=False)
+    row_value = graphene.Int(required=False)
 
 
 class SummarySectorOptionType(graphene.ObjectType):
     sub_sector = graphene.List(graphene.NonNull(SummarySubSectorType))
-    columns = graphene.List(graphene.NonNull(SummarySectorColumnType))
+    columns = graphene.List(graphene.NonNull(SummaryColumnType))
     rows = graphene.List(graphene.NonNull(SummaryRowType))
 
     @staticmethod
     def resolve_sub_sector(root, info, **kwargs):
-        return get_summary_sub_sector_value()
+        return [
+            SummarySubSectorType(
+                sub_sector_name=value,
+                sub_sector_value=key,
+                value_type=Summary.ValueType.ENUM.label,
+                value_type_value=Summary.ValueType.ENUM,
+                value_choices=[
+                    SummaryValueChoiceType(
+                        value_name=value,
+                        value=key
+                    ) for key, value in Summary.SummarySectorValue.choices if 52 <= key <= 63
+                ]
+            ) for key, value in Summary.SubSector.choices if key == 0
+        ] + [
+            SummarySubSectorType(
+                sub_sector_name=value,
+                sub_sector_value=key,
+                value_type=Summary.ValueType.RAW.label,
+                value_type_value=Summary.ValueType.RAW,
+                value_choices=[],
+            ) for key, value in Summary.SubSector.choices if key == 1
+        ]
 
     @staticmethod
     def resolve_columns(root, info, **kwargs):
         return [
-            SummarySectorColumnType(
+            SummaryColumnType(
                 col_name=value,
-                col_name_display=label
-            ) for value, label in Summary.SectorColumn.choices
+                col_value=key
+            ) for key, value in Summary.SectorColumn.choices
         ]
 
     @staticmethod
@@ -180,41 +112,84 @@ class SummarySectorOptionType(graphene.ObjectType):
         return [
             SummaryRowType(
                 row_name=value,
-                row_name_display=label,
-            ) for value, label in Summary.Row.choices
+                row_value=key
+            ) for key, value in Summary.Row.choices
         ]
 
 
-class SummaryFocusColumnType(graphene.ObjectType):
-    col_name = graphene.Field(AssessmentRegistrySummaryFocusColumnTypeEnum, required=False)
-    col_name_display = graphene.String(required=False)
-
-
 class SummarySubFocusType(graphene.ObjectType):
-    sub_focus_name = graphene.Field(AssessmentRegistrySummarySubFocusTypeEnum, required=False)
-    sub_focus_name_display = graphene.String(required=False)
-    sub_focus_name_value = graphene.Int(required=False)
+    sub_focus_name = graphene.String(required=False)
+    sub_focus_value = graphene.Int(required=False)
+    value_type = graphene.String(required=False)
+    value_type_value = graphene.Int(required=False)
     value_choices = graphene.List(SummaryValueChoiceType, required=False)
-    summary_value_type = graphene.Field(AssessmentRegistrySummaryValueTypeEnum, required=False)
-    summary_value_type_display = graphene.String(required=False)
 
 
 class SummaryFocusOptionType(graphene.ObjectType):
     sub_focus = graphene.List(graphene.NonNull(SummarySubFocusType))
-    columns = graphene.List(graphene.NonNull(SummaryFocusColumnType))
+    columns = graphene.List(graphene.NonNull(SummaryColumnType))
     rows = graphene.List(graphene.NonNull(SummaryRowType))
 
     @staticmethod
     def resolve_sub_focus(root, info, **kwargs):
-        return get_summary_sub_focus_value()
+        return [
+            SummarySubFocusType(
+                sub_focus_name=value,
+                sub_focus_value=key,
+                value_type=Summary.ValueType.RAW.label,
+                value_type_value=Summary.ValueType.RAW,
+                value_choices=[]
+            ) for key, value in Summary.SubFocus.choices if key == 0
+        ] + [
+            SummarySubFocusType(
+                sub_focus_name=value,
+                sub_focus_value=key,
+                value_type=Summary.ValueType.ENUM.label,
+                value_type_value=Summary.ValueType.ENUM,
+                value_choices=[
+                    SummaryValueChoiceType(
+                        value_name=value,
+                        value=key
+                    ) for key, value in Summary.SummaryFocusValue.choices if 0 <= key <= 23
+                ]
+            ) for key, value in Summary.SubFocus.choices if key == 1
+        ] + [
+            SummarySubFocusType(
+                sub_focus_name=value,
+                sub_focus_value=key,
+                value_type=Summary.ValueType.ENUM.label,
+                value_type_value=Summary.ValueType.ENUM,
+                value_choices=[
+                    SummaryValueChoiceType(
+                        value_name=value,
+                        value=key
+                    ) for key, value in Summary.SummaryFocusValue.choices if 24 <= key <= 40
+                ]
+
+            ) for key, value in Summary.SubFocus.choices if key == 2
+        ] + [
+            SummarySubFocusType(
+                sub_focus_name=value,
+                sub_focus_value=key,
+                value_type=Summary.ValueType.ENUM.label,
+                value_type_value=Summary.ValueType.ENUM,
+                value_choices=[
+                    SummaryValueChoiceType(
+                        value_name=value,
+                        value=key
+                    ) for key, value in Summary.SummaryFocusValue.choices if 41 <= key <= 51
+                ]
+
+            ) for key, value in Summary.SubFocus.choices if key == 3
+        ]
 
     @staticmethod
     def resolve_columns(root, info, **kwargs):
         return [
-            SummaryFocusColumnType(
+            SummaryColumnType(
                 col_name=value,
-                col_name_display=label
-            ) for value, label in Summary.FocusColumn.choices
+                col_value=key
+            ) for key, value in Summary.FocusColumn.choices
         ]
 
     @staticmethod
@@ -222,8 +197,8 @@ class SummaryFocusOptionType(graphene.ObjectType):
         return [
             SummaryRowType(
                 row_name=value,
-                row_name_display=label
-            ) for value, label in Summary.Row.choices
+                row_value=key
+            ) for key, value in Summary.Row.choices
         ]
 
 
@@ -374,8 +349,8 @@ class Query:
             page_size_query_param='pageSize',
         )
     )
-    assessment_registry_options = graphene.Field(AssessmentRegistryOptionsType)
+    assessment_reg_options = graphene.Field(AssessmentRegistryOptionsType)
 
     @staticmethod
-    def resolve_assessment_registry_options(root, info, **kwargs):
+    def resolve_assessment_reg_options(root, info, **kwargs):
         return AssessmentRegistryOptionsType
