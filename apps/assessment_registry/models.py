@@ -101,7 +101,7 @@ class AssessmentRegistry(UserResource):
         HUMANITARIAN_CONDITIONS = 6, 'Humanitarian Conditions'
         RESPONSE_AND_CAPACITIES = 7, 'Response and Capacities'
         CURRENT_AND_FORECASTED_PRIORITIES = 8, 'Current and Forecasted Priorities'
-        COVID_19_CONTAINMENT_MEASURES = 9, 'Covid 19 Conntainment Measures'
+        COVID_19_CONTAINMENT_MEASURES = 9, 'Covid 19 Containment Measures'
 
     class SectorType(models.IntegerChoices):
         F00D = 0, 'Food'
@@ -334,3 +334,126 @@ class ScoreAnalyticalDensity(UserResource):
     )
     sector = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
     value = models.IntegerField(validators=[MaxValueValidator(49), MinValueValidator(1)])
+
+
+class Summary(UserResource):
+    class SubSector(models.IntegerChoices):
+        PRIORITY_HUMANITARIAN_ACCESS_ISSUES = 0, 'Priority humanitarian access issues'
+        SETTINGS_FACING_MOST_HUMANITARIAN_ACCESS_ISSUES = 1, 'Settings facing most humanitarian access issues'
+
+    class FocusColumn(models.IntegerChoices):
+        POPULATION_IN_MODERATE_NEED_OF_ASSISTANCE = 0, 'Population in moderate need of assistance (not life threatning)'
+        POPULATION_IN_SEVERE_NEED_OF_ASSISTANCE = 1, 'Population in severe need of assistance (life threatning)'
+        POPULATION_IN_NEED_OF_ASSISTANCE = 3, 'Population in need of assistance'
+
+    class Row(models.IntegerChoices):
+        ONE = 1, 'One'
+        TWO = 2, 'Two'
+        THRE = 3, 'Three'
+
+    class ValueType(models.IntegerChoices):
+        RAW = 0, 'Raw'
+        ENUM = 1, 'Enum'
+
+    class SubFocus(models.IntegerChoices):
+        MAIN_SECTORIAL_OUTCOMES = 0, 'Main sectorial outcomes'
+        MAIN_SECTORIAL_UNDERLYING_FACTORS = 1, 'Main sectorial underlying factors'
+        PRIORITY_AFFECTED_GROUPS = 2, 'Priority affected groups'
+        PRIORITY_GROUP_WITH_SPECIFIC_NEEDS = 3, 'Priority group with specific needs'
+
+    class SectorColumn(models.IntegerChoices):
+        POPULATION_WITH_LIMITED_ACCESS = 0, 'Population with limited/interminent access'
+        POPULATION_WITH_NO_ACCESS = 1, 'Population with no/restricted access'
+        POPULATION_WITH_HUMANITARIAN_ACCESS_CONSTRAINTS = 2, 'Population with humanitarian access constraints'
+
+    class SummaryFocusValue(models.IntegerChoices):
+        # Focus ->  Main sectorial underlying factors
+        AVAILABILITY = 0, 'Availability'
+        AVAILABILITY_PRODUCTION = 1, 'Availability/Production'
+        AVAILABILITY_TRADE = 2, 'Availability/Trade'
+        AVAILABILITY_STOCK = 3, 'Availability/Stock'
+        AVAILABILITY_TRANSFER = 4, 'Availability/Transfer'
+        ACCESS = 5, 'Access'
+        ACCESS_PHYSICAL = 6, 'Access/Physical'
+        ACCESS_FINANCIAL = 7, 'Access/Financial'
+        ACCESS_SECURITY = 8, 'Access/Security'
+        ACCESS_SOCIAL_DISCRIMINATION = 9, 'Access/Social Discrimination'
+        QUALITY = 10, 'Quality'
+        QUALITY_HUMAN_RESOURCES = 11, 'Quality/Human resources'
+        QUALITY_SAFETY = 12, 'Quality/Safety'
+        QUALITY_RELIABILITY = 13, 'Quality/Reliability'
+        QUALITY_DIVERSITY = 14, 'Quality/Diversity'
+        QUALITY_DIGNITY = 15, 'Quality/Dignity'
+        USE = 16, 'USE'
+        USE_KNOWLEDGE = 17, 'Use/Knowledge'
+        USE_ATTITUDE = 18, 'Use/Attitude'
+        USE_PRACTICE = 19, 'Use/Practice'
+        AWARENESS = 20, 'Awareness'
+        AWARENESS_MESSAGE = 21, 'Awareness/Message'
+        AWARENESS_CHANNEL = 22, 'Awareness/Channel'
+        AWARENESS_FERQUENCY = 23, 'Awareness/Frequency'
+
+        # Focus -> Priority affected groups
+        ALL = 24, 'All'
+        ALL_AFFECTED = 25, 'All/Affected'
+        AFFECTED_DISPLACED = 26, 'Affected/Displaced'
+        DISPLACED_REFUGEES = 27, 'Displaced Refugees'
+        DISPLACED_RETURNEES = 28, 'Displaced Returnees'
+        DISPLACED_OTHER_OF_CONCERNS = 29, 'Displaced/Other of concrens'
+        DISPLACED_ASYLUM_SEEKERS = 30, 'Displaced/Asylum Seekers'
+        DISPLACED_IDPS = 31, 'Displaced/IDPs'
+        DISPLACED_MIGRANTS = 32, 'Displaced/Migrants'
+        MIGRANTS_PENDULAR = 33, 'Migrants/Pendular'
+        MIGRANTS_PERMANENTS = 34, 'Migrants/Permanents'
+        MIGRANTS_IN_TRANSIT = 35, 'Migrants/In transit'
+        DISPLACED_IN_TRANSIT = 36, 'Displaced/In Transit'
+        AFFECTED_NOT_DISPLACED = 37, 'Affected/Not Displaced'
+        NOT_DISPLACED_HOST = 38, 'Not Displaced/Host'
+        NOT_DISPLACED_NOT_HOST = 39, 'Not Displaced/No Host'
+        ALL_NOT_AFFECTED = 40, 'All/Not Affected'
+
+        # Focus -> Priority groups with specific needs
+        FEMALE_HEAD_OF_HOUSEHOLD = 41, 'Female Head of Household'
+        CHILD_HEAD_OF_HOUSEHOLD = 42, 'Child Head of Household'
+        ELDERLY_HEAD_OF_HOUSEHOLD = 43, 'Elderly Head of Household'
+        SINGLE_WOMEN = 44, 'Single Women (including widows'
+        CHRONICALLY_ILL = 45, 'Chronically Ill'
+        UNNACOMPANIED_CHILDREN = 46, 'Unnacompanied Children (without caregivers)'
+        SEPARATE_CHILDREN = 47, 'Separate children'
+        MINORITIES = 48, 'Minorities'
+        PERSON_WITH_DISABILITIES = 49, 'Person with Disabilities'
+        PREGNANT_OR_LACTATING_WOMEN = 50, 'Pregnant or Lactationg Women'
+        UNREGISTERED_REFUGEE = 51, 'Unregistered Refugee'
+
+    class SummarySectorValue(models.IntegerChoices):
+        # Sector -> Priority humanitarian access issues
+        ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP = 52, 'Access of Humanitarian Actors to Affected Populations'
+        ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_IMPEDIMENTS_TO_ENTRY_INTO_COUNTRY = 53,\
+            'Access of Humanitarian Actors to Affected Populations/Impediments to entry into country(bureaucratic and \
+administrative)'
+        ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_RESTRICTION_OF_MOVEMENT = 54,\
+            'Access of Humanitarian Actors to Affected Populations/Restriction of movement(\
+impediments to freedom of movement and/or administrative restrictions)'
+        ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_INTERFERENCE_INTO_IMPLEMENTATION_OF_HUMANITARIAN_ACTIVITIES = 55,\
+            'Access of Humanitarian Actors to Affected Populations/Interference\
+into implementation of humanitarian activities'
+        ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_VIOLENCE_AGAINST_PERSONNEL_FACILITIES_ASSETS = 56,\
+            'Access of Humanitarian Actors to Affected Populations/Violence against personnel, facilities and assets'
+        ACCESS_OF_PEOPLE_IN_NEED_TO_AID = 57, 'Access of People in need to Aid'
+        ACCESS_OF_PEOPLE_IN_NEED_T0_AID_DENIAL_OF_EXISTENCE_OF_HUMANITARIAN_NEEDS_OR_ENTITLEMENTS_TO_ASSISTANCE = 58,\
+            'Access of People in need to Aid/Denial of existence of humanitarian needs or entitlements to assistance'
+        ACCESS_OF_PEOPLE_IN_NEED_T0_AID_RESTRICTION_AND_OBSTRUCTION_OF_ACCESS_TO_SERVICES_AND_ASSISTANCE = 59,\
+            'Access of People in need to Aid/Restriction and Obstruction of access to services and assistance'
+        PHYSICAL_AND_SECURITY_CONSTRAINTS = 60, 'Physical and Security Constraints'
+        PHYSICAL_AND_SECURITY_CONSTRAINTS_ONGOING_INSECURITY_HOSTILITIES_AFFECTING_HUMANITARIAN_ASSISTANCE = 61,\
+            'Physical and Security Constraints/Ongoing insecurity/hostilities affecting humanitarian assistance'
+        PHYSICAL_AND_SECIRITY_CONSTRAINTS_PRESENCE_OF_MINES_AND_IMPROVISED_EXPLOSIVE_DEVICE = 62,\
+            'Physical and Security Constraints/Presence of mines and improvised explosive devices'
+        PHYSICAL_AND_SECURITY_CONSTRAINTS_PHYSICAL_CONSTRAINTS_IN_THE_ENVIRONMENT = 63,\
+            'Physical and Security Constraints/Physical constraints in the environment (\
+obstacles related to terrain, climate, lack of infrastructure etc.)'
+
+    summary_focus = models.IntegerField(choices=AssessmentRegistry.FocusType.choices)
+    focus_data = models.JSONField(default=None, blank=True, null=True)
+    summary_sector = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
+    sector_data = models.JSONField(default=None, blank=True, null=True)
