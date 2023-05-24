@@ -1638,6 +1638,41 @@ enum AssessmentRegistrySectorTypeEnum {
   GENDER_BASED_VIOLENCE
 }
 
+enum AssessmentRegistrySummaryFocusColumnTypeEnum {
+  POPULATION_IN_MODERATE_NEED_OF_ASSISTANCE
+  POPULATION_IN_SEVERE_NEED_OF_ASSISTANCE
+  POPULATION_IN_NEED_OF_ASSISTANCE
+}
+
+enum AssessmentRegistrySummaryRowTypeEnum {
+  ONE
+  TWO
+  THRE
+}
+
+enum AssessmentRegistrySummarySectorColumnTypeEnum {
+  POPULATION_WITH_LIMITED_ACCESS
+  POPULATION_WITH_NO_ACCESS
+  POPULATION_WITH_HUMANITARIAN_ACCESS_CONSTRAINTS
+}
+
+enum AssessmentRegistrySummarySubFoucsTypeEnum {
+  MAIN_SECTORIAL_OUTCOMES
+  MAIN_SECTORIAL_UNDERLYING_FACTORS
+  PRIORITY_AFFECTED_GROUPS
+  PRIORITY_GROUP_WITH_SPECIFIC_NEEDS
+}
+
+enum AssessmentRegistrySummarySubSectorTypeEnum {
+  PRIORITY_HUMANITARIAN_ACCESS_ISSUES
+  SETTINGS_FACING_MOST_HUMANITARIAN_ACCESS_ISSUES
+}
+
+enum AssessmentRegistrySummaryValueTypeEnum {
+  RAW
+  ENUM
+}
+
 type AssessmentRegistryType {
   id: ID!
   project: ProjectType!
@@ -3738,6 +3773,7 @@ type ProjectDetailType {
   recentActiveUsers: [UserEntityDateType!]
   topSourcers: [UserEntityCountType!]
   topTaggers: [UserEntityCountType!]
+  assessmentRegOptions: AssessmentRegistryOptionsType
   userMembers(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, members: [ID!], page: Int = 1, ordering: String, pageSize: Int): ProjectMembershipListType
   userGroupMembers(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, usergroups: [ID!], page: Int = 1, ordering: String, pageSize: Int): ProjectUserGroupMembershipListType
   isVisualizationAvailable: Boolean!
@@ -4430,42 +4466,49 @@ type SectionType {
   widgets: [WidgetType!]
 }
 
-type SummaryColumnType {
-  colName: String
-  colValue: Int
+type SummaryFocusColumnType {
+  colName: AssessmentRegistrySummaryFocusColumnTypeEnum
+  colNameDisplay: String
 }
 
 type SummaryFocusOptionType {
   subFocus: [SummarySubFocusType!]
-  columns: [SummaryColumnType!]
+  columns: [SummaryFocusColumnType!]
   rows: [SummaryRowType!]
 }
 
 type SummaryRowType {
-  rowName: String
-  rowValue: Int
+  rowName: AssessmentRegistrySummaryRowTypeEnum
+  rowNameDisplay: String
+}
+
+type SummarySectorColumnType {
+  colName: AssessmentRegistrySummarySectorColumnTypeEnum
+  colNameDisplay: String
 }
 
 type SummarySectorOptionType {
   subSector: [SummarySubSectorType!]
-  columns: [SummaryColumnType!]
+  columns: [SummarySectorColumnType!]
   rows: [SummaryRowType!]
 }
 
 type SummarySubFocusType {
-  subFocusName: String
-  subFocusValue: Int
-  valueType: String
-  valueTypeValue: Int
+  subFocusName: AssessmentRegistrySummarySubFoucsTypeEnum
+  subFocusNameDisplay: String
+  subFocusNameValue: Int
   valueChoices: [SummaryValueChoiceType]
+  summaryValueType: AssessmentRegistrySummaryValueTypeEnum
+  summaryValueTypeDisplay: String
 }
 
 type SummarySubSectorType {
-  subSectorName: String
-  subSectorValue: Int
-  valueType: String
-  valueTypeValue: Int
+  subSectorName: AssessmentRegistrySummarySubSectorTypeEnum
+  subSectorNameDisplay: String
+  subSectorNameValue: Int
   valueChoices: [SummaryValueChoiceType]
+  summaryValueType: AssessmentRegistrySummaryValueTypeEnum
+  summaryValueTypeDisplay: String
 }
 
 type SummaryValueChoiceType {
