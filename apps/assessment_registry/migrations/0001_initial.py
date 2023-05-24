@@ -90,6 +90,25 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
+            name='Summary',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('modified_at', models.DateTimeField(auto_now=True)),
+                ('client_id', models.CharField(blank=True, default=None, max_length=128, null=True, unique=True)),
+                ('summary_focus', models.IntegerField(choices=[(0, 'Context'), (1, 'Shock/Event'), (2, 'Displacement'), (3, 'Humaniterian Access'), (4, 'Information and Communication'), (5, 'Impact (Scope and Scale)'), (6, 'Humanitarian Conditions'), (7, 'Response and Capacities'), (8, 'Current and Forecasted Priorities'), (9, 'Covid 19 Containment Measures')])),
+                ('focus_data', models.JSONField(blank=True, default=None, null=True)),
+                ('summary_sector', models.IntegerField(choices=[(0, 'Food'), (1, 'Heath'), (2, 'Shelter'), (3, 'Wash'), (4, 'Protection'), (5, 'Nutrition'), (6, 'Livelihood'), (7, 'Education'), (8, 'Child protection'), (9, 'Gender Based Violence')])),
+                ('sector_data', models.JSONField(blank=True, default=None, null=True)),
+                ('created_by', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='summary_created', to=settings.AUTH_USER_MODEL)),
+                ('modified_by', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='summary_modified', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'ordering': ['-created_at'],
+                'abstract': False,
+            },
+        ),
+        migrations.CreateModel(
             name='ScoreRating',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
