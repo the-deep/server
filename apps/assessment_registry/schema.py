@@ -62,7 +62,6 @@ from .enums import (
 
 # NOTE : Summary data is aspected to merge with information tab data so, some changes may come to summary types
 def get_summary_sub_focus_value():
-    return [
         SummarySubFocusType(
             sub_focus_name=value,
             sub_focus_name_display=label,
@@ -146,8 +145,6 @@ def get_summary_sub_sector_value():
 
 
 class SummaryValueChoiceType(graphene.ObjectType):
-    value_name = graphene.String(required=False)
-    value = graphene.Int(required=False)
 
 
 class SummaryFocusDataType(graphene.ObjectType):
