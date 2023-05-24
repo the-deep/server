@@ -1,4 +1,7 @@
+import pytz
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from unittest.mock import patch
 
 from django.utils import timezone
 from django.contrib.gis.geos import Point
@@ -11,9 +14,11 @@ from project.models import (
     ProjectMembership,
     ProjectUserGroupMembership,
     ProjectStats,
+    Project,
 )
 from deep.permissions import ProjectPermissions as PP
 from deep.caches import CacheKey
+from deep.trackers import schedule_tracker_data_handler
 
 from user.factories import UserFactory
 from user_group.factories import UserGroupFactory
@@ -865,6 +870,141 @@ class TestProjectSchema(GraphQLTestCase):
             content = _query_check(filters=filters)['data']['project']['stats']
             self.assertEqual(_expected_response(*_expected), content, index)
 
+    def test_project_last_read_access(self):
+        QUERY = '''
+            query MyQuery ($projectId: ID!) {
+              project(id: $projectId) {
+                  id
+                }
+            }
+        '''
+
+        user = UserFactory.create()
+        projects = ProjectFactory.create_batch(2)
+        projects.extend(ProjectFactory.create_batch(2, is_private=True))
+
+        project_with_access = [projects[0], projects[2]]
+
+        for project in project_with_access:
+            project.add_member(user, role=self.project_role_member)
+
+        def _query_check(project_id):
+            return self.query_check(QUERY, variables={'projectId': project_id})
+
+        self.force_login(user)
+
+        # Run/try query and check if last_read_access are changing properly
+        base_now = datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+        with patch('deep.trackers.timezone.now') as timezone_now_mock:
+            timezone_now = None
+            old_timezone_now = None
+            for timezone_now in [
+                base_now,
+                base_now + relativedelta(months=Project.PROJECT_INACTIVE_AFTER_MONTHS),
+                base_now + 2 * relativedelta(months=Project.PROJECT_INACTIVE_AFTER_MONTHS),
+            ]:
+                # Current time
+                timezone_now_mock.return_value = timezone_now
+                for project in projects:
+                    if project in project_with_access:
+                        # Existing state
+                        assert project.last_read_access == old_timezone_now
+                    else:
+                        # No access (no membership)
+                        if project.is_private:
+                            assert project.last_read_access is None
+                        else:
+                            # Public project have readaccess for some nodes
+                            assert project.last_read_access == old_timezone_now
+                    _query_check(project.id)['data']['project']
+                    with self.captureOnCommitCallbacks(execute=True):
+                        schedule_tracker_data_handler()
+                    project.refresh_from_db()
+                    if project in project_with_access:
+                        # New state
+                        assert project.last_read_access == timezone_now
+                    else:
+                        # No access (no membership)
+                        if project.is_private:
+                            assert project.last_read_access is None
+                        else:
+                            # Public project have readaccess for some nodes
+                            assert project.last_read_access == timezone_now
+                old_timezone_now = timezone_now
+
+    def test_project_last_write_access(self):
+        MUTATION = '''
+            mutation MyMutation ($projectId: ID!) {
+              project(id: $projectId) {
+                  id
+                }
+            }
+        '''
+
+        user = UserFactory.create()
+        projects = ProjectFactory.create_batch(2)
+        projects.extend(
+            ProjectFactory.create_batch(2, is_private=True)
+        )
+
+        project_with_access = [projects[0], projects[2]]
+
+        for project in project_with_access:
+            project.add_member(user, role=self.project_role_member)
+
+        def _query_check(project_id, **kwargs):
+            return self.query_check(MUTATION, variables={'projectId': project_id}, **kwargs)
+
+        self.force_login(user)
+
+        # Run/try mutations and check if last_write_access and project.status are changing properly
+        base_now = datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+        with patch('deep.trackers.timezone.now') as timezone_now_mock:
+            timezone_now = None
+            old_timezone_now = None
+            for timezone_now in [
+                base_now,
+                base_now + relativedelta(months=Project.PROJECT_INACTIVE_AFTER_MONTHS),
+                base_now + 2 * relativedelta(months=Project.PROJECT_INACTIVE_AFTER_MONTHS),
+            ]:
+                # Current time
+                timezone_now_mock.return_value = timezone_now
+                for project in projects:
+                    project.refresh_from_db()
+                    if project in project_with_access:
+                        # Existing state
+                        assert project.last_write_access == old_timezone_now
+                        _query_check(project.id)['data']['project']
+                        with self.captureOnCommitCallbacks(execute=True):
+                            schedule_tracker_data_handler()
+                        project.refresh_from_db()
+                        # New state
+                        assert project.last_write_access == timezone_now
+                        assert project.status == Project.Status.ACTIVE
+                    else:
+                        # None since we don't have access (no membership)
+                        assert project.last_write_access is None
+                        _query_check(project.id, assert_for_error=True)
+                        with self.captureOnCommitCallbacks(execute=True):
+                            schedule_tracker_data_handler()
+                        project.refresh_from_db()
+                        # Same we don't have access (no membership)
+                        assert project.last_write_access is None
+                        assert project.status == Project.Status.INACTIVE
+                old_timezone_now = timezone_now
+
+            # Without mutations, check if project.status is changing properly
+            # After + 3*PROJECT_INACTIVE_AFTER_MONTHS
+            # -- Check for auto status change
+            assert timezone_now is not None
+            timezone_now_mock.return_value = timezone_now + relativedelta(months=3 * Project.PROJECT_INACTIVE_AFTER_MONTHS)
+            with self.captureOnCommitCallbacks(execute=True):
+                schedule_tracker_data_handler()
+            for project in projects:
+                project.refresh_from_db()
+                # It's inactive as ahead by Project.PROJECT_INACTIVE_AFTER_MONTHS
+                assert project.status == Project.Status.INACTIVE
+
 
 class TestProjectViz(GraphQLTestCase):
     ENABLE_NOW_PATCHER = True
@@ -954,7 +1094,7 @@ class TestProjectViz(GraphQLTestCase):
             content['data']['project']['vizData'],
             {
                 'dataUrl': '',
-                'modifiedAt': self.now_datetime_str,
+                'modifiedAt': self.now_datetime_str(),
                 'publicShare': False,
                 'publicUrl': None,
                 'status': self.genum(ProjectStats.Status.PENDING),
@@ -973,7 +1113,7 @@ class TestProjectViz(GraphQLTestCase):
             content['data']['project']['vizData'],
             {
                 'dataUrl': '',
-                'modifiedAt': self.now_datetime_str,
+                'modifiedAt': self.now_datetime_str(),
                 'publicShare': True,
                 'publicUrl': 'http://testserver' + project_stats.get_public_url(),
                 'status': self.genum(ProjectStats.Status.PENDING),

@@ -21,27 +21,19 @@ from graphene_django.utils import GraphQLTestCase as BaseGraphQLTestCase
 from rest_framework import status
 
 from deep.middleware import _set_current_request
+from deep.tests.test_case import (
+    TEST_CACHES,
+    TEST_AUTH_PASSWORD_VALIDATORS,
+    TEST_EMAIL_BACKEND,
+    TEST_FILE_STORAGE,
+)
+
 from analysis_framework.models import AnalysisFramework, AnalysisFrameworkRole
 from project.permissions import get_project_permissions_value
 from project.models import ProjectRole
 
 User = get_user_model()
 TEST_MEDIA_ROOT = 'media-temp'
-TEST_EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-TEST_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-TEST_CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-    }
-}
-DUMMY_TEST_CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-        'LOCATION': 'unique-snowflake',
-    }
-}
-TEST_AUTH_PASSWORD_VALIDATORS = []
 
 
 class CommonSetupClassMixin:
@@ -90,8 +82,8 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         if self.ENABLE_NOW_PATCHER:
             self.now_patcher = patch('django.utils.timezone.now')
             self.now_datetime = self.PATCHER_NOW_VALUE
-            self.now_datetime_str = self.now_datetime.isoformat()
-            self.now_patcher.start().return_value = self.now_datetime
+            self.now_datetime_str = lambda: self.now_datetime.isoformat()
+            self.now_patcher.start().side_effect = lambda: self.now_datetime
 
     def tearDown(self):
         _set_current_request()  # Clear request
@@ -100,7 +92,9 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
         self.premailer_patcher_requests.stop()
         super().tearDown()
 
-    def force_login(self, user):
+    def force_login(self, user, refresh_from_db=False):
+        if refresh_from_db:
+            user.refresh_from_db()
         self.client.force_login(user)
 
     def logout(self):
