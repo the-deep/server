@@ -98,8 +98,7 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
         )
 
     def validate(self, data):
-        if not self.instance:
-            data['project'] = self.context['request'].active_project
+        data['project'] = self.project
         error_dict = {}
 
         # validate for unique score types in score ratings

@@ -252,9 +252,8 @@ class ProjectPermissions(BasePermissions):
         # ---------------------- Lead
         CREATE_LEAD = auto()
         VIEW_ONLY_UNPROTECTED_LEAD = auto()
-        VIEW_ONLY_UNPROTECTED_ASSESSMENT_REGISTRY = auto()
         VIEW_ALL_LEAD = auto()
-        VIEW_ALL_ASSESSMENT_REGISTRY = auto()
+        VIEW_ASSESSMENT_REGISTRY = auto()
         UPDATE_LEAD = auto()
         DELETE_LEAD = auto()
         # ---------------------- Entry
@@ -279,9 +278,8 @@ class ProjectPermissions(BasePermissions):
         Permission.CAN_ADD_MEMBER: "You don't have permission to add member to project",
         Permission.CREATE_LEAD: "You don't have permission to create lead",
         Permission.VIEW_ONLY_UNPROTECTED_LEAD: "You don't have permission to view lead",
-        Permission.VIEW_ONLY_UNPROTECTED_ASSESSMENT_REGISTRY: "You don't have permission to view assessment registry",
         Permission.VIEW_ALL_LEAD: "You don't have permission to view confidential lead",
-        Permission.VIEW_ALL_ASSESSMENT_REGISTRY: "You don't have permission to view confidential assessment registry",
+        Permission.VIEW_ASSESSMENT_REGISTRY: "You don't have permission to view confidential assessment registry",
         Permission.UPDATE_LEAD: "You don't have permission to update lead",
         Permission.DELETE_LEAD: "You don't have permission to delete lead",
         Permission.CREATE_ENTRY: "You don't have permission to create entry",
@@ -298,14 +296,13 @@ class ProjectPermissions(BasePermissions):
         Permission.BASE_ACCESS,
         Permission.VIEW_ENTRY,
         Permission.VIEW_ONLY_UNPROTECTED_LEAD,
-        Permission.VIEW_ONLY_UNPROTECTED_ASSESSMENT_REGISTRY,
         Permission.CREATE_EXPORT,
     ]
     READER = [
         Permission.BASE_ACCESS,
         Permission.VIEW_ENTRY,
         Permission.VIEW_ALL_LEAD,
-        Permission.VIEW_ALL_ASSESSMENT_REGISTRY,
+        Permission.VIEW_ASSESSMENT_REGISTRY,
         Permission.CREATE_EXPORT,
     ]
     MEMBER = [
@@ -317,7 +314,7 @@ class ProjectPermissions(BasePermissions):
         Permission.UPDATE_ENTRY,
         Permission.UPDATE_LEAD,
         Permission.VIEW_ALL_LEAD,
-        Permission.VIEW_ALL_ASSESSMENT_REGISTRY,
+        Permission.VIEW_ASSESSMENT_REGISTRY,
         Permission.VIEW_UNIFIED_CONNECTOR,
         Permission.CREATE_UNIFIED_CONNECTOR,
         Permission.UPDATE_UNIFIED_CONNECTOR,
