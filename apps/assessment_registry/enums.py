@@ -9,6 +9,8 @@ from .models import (
     AdditionalDocument,
     ScoreRating,
     ScoreAnalyticalDensity,
+
+    Summary,
 )
 
 AssessmentRegistryCrisisTypeEnum = convert_enum_to_graphene_enum(
@@ -75,6 +77,24 @@ AssessmentRegistryRatingTypeEnum = convert_enum_to_graphene_enum(
     ScoreRating.RatingType, name='AssessmentRegistryRatingType'
 )
 
+AssessmentRegistrySummaryValueTypeEnum = convert_enum_to_graphene_enum(
+    Summary.ValueType, name='AssessmentRegistrySummaryValueTypeEnum'
+)
+AssessmentRegistrySummaryRowTypeEnum = convert_enum_to_graphene_enum(
+    Summary.Row, name='AssessmentRegistrySummaryRowTypeEnum'
+)
+AssessmentRegistrySummarySectorColumnTypeEnum = convert_enum_to_graphene_enum(
+    Summary.SectorColumn, name='AssessmentRegistrySummarySectorColumnTypeEnum'
+)
+AssessmentRegistrySummaryFocusColumnTypeEnum = convert_enum_to_graphene_enum(
+    Summary.FocusColumn, name='AssessmentRegistrySummaryFocusColumnTypeEnum'
+)
+AssessmentRegistrySummarySubSectorTypeEnum = convert_enum_to_graphene_enum(
+    Summary.SubSector, name='AssessmentRegistrySummarySubSectorTypeEnum'
+)
+AssessmentRegistrySummarySubFocusTypeEnum = convert_enum_to_graphene_enum(
+    Summary.SubFocus, name='AssessmentRegistrySummarySubFoucsTypeEnum'
+)
 enum_map = {
     get_enum_name_from_django_field(field): enum
     for field, enum in (
