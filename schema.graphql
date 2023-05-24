@@ -684,6 +684,11 @@ type AssessmentRegistryListType {
   pageSize: Int
 }
 
+type AssessmentRegistryOptionsType {
+  summarySector: SummarySectorOptionType
+  summaryFocus: SummaryFocusOptionType
+}
+
 enum AssessmentRegistryPreparednessTypeEnum {
   WITH_PREPAREDNESS
   WITHOUT_PREPAREDNESS
@@ -2740,6 +2745,7 @@ type ProjectDetailType {
   hasAssessmentTemplate: Boolean!
   assessmentRegistry(id: ID!): AssessmentRegistryType
   assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], leadGroup: [ID], search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
+  assessmentRegOptions: AssessmentRegistryOptionsType
   analysisOverview: AnalysisOverviewType
   analysis(id: ID!): AnalysisType
   analyses(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisListType
@@ -2956,9 +2962,8 @@ enum ProjectPermission {
   DELETE_UNIFIED_CONNECTOR
   CREATE_LEAD
   VIEW_ONLY_UNPROTECTED_LEAD
-  VIEW_ONLY_UNPROTECTED_ASSESSMENT_REGISTRY
   VIEW_ALL_LEAD
-  VIEW_ALL_ASSESSMENT_REGISTRY
+  VIEW_ASSESSMENT_REGISTRY
   UPDATE_LEAD
   DELETE_LEAD
   CREATE_ENTRY
@@ -3446,6 +3451,49 @@ type SectionType {
   tooltip: String
   clientId: String!
   widgets: [WidgetType!]
+}
+
+type SummaryColumnType {
+  colName: String
+  colValue: Int
+}
+
+type SummaryFocusOptionType {
+  subFocus: [SummarySubFocusType!]
+  columns: [SummaryColumnType!]
+  rows: [SummaryRowType!]
+}
+
+type SummaryRowType {
+  rowName: String
+  rowValue: Int
+}
+
+type SummarySectorOptionType {
+  subSector: [SummarySubSectorType!]
+  columns: [SummaryColumnType!]
+  rows: [SummaryRowType!]
+}
+
+type SummarySubFocusType {
+  subFocusName: String
+  subFocusValue: Int
+  valueType: String
+  valueTypeValue: Int
+  valueChoices: [SummaryValueChoiceType]
+}
+
+type SummarySubSectorType {
+  subSectorName: String
+  subSectorValue: Int
+  valueType: String
+  valueTypeValue: Int
+  valueChoices: [SummaryValueChoiceType]
+}
+
+type SummaryValueChoiceType {
+  valueName: String
+  value: Int
 }
 
 enum TopicModelStatusEnum {
