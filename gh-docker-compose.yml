@@ -46,6 +46,7 @@ services:
       # From redis
       CELERY_REDIS_URL: redis://redis:6379/0
       DJANGO_CACHE_REDIS_URL: redis://redis:6379/2
+      TEST_DJANGO_CACHE_REDIS_URL: redis://redis:6379/12
       # HID
       HID_CLIENT_ID: deep-local
       HID_CLIENT_REDIRECT_URL: http://localhost:3000/login/

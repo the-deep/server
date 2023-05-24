@@ -11,7 +11,9 @@ local_cache = caches['local-memory']
 
 def clear_cache(prefix):
     try:
-        cache.delete_many(cache.keys(prefix))
+        cache.delete_many(
+            cache.keys(prefix + '*')
+        )
         return True
     except Exception:
         pass
@@ -53,6 +55,13 @@ class CacheKey:
         @classmethod
         def clear_cache(cls):
             return clear_cache(cls.BASE)
+
+    class Tracker:
+        BASE = 'DEEP-TRACKER-'
+        # Dynamic
+        LAST_PROJECT_READ_ACCESS_DATETIME = BASE + 'LAST-PROJECT-READ-ACCESS-DATETIME-'
+        LAST_PROJECT_WRITE_ACCESS_DATETIME = BASE + 'LAST-PROJECT-WRITE-ACCESS-DATETIME-'
+        LAST_USER_ACTIVE_DATETIME = BASE + 'LAST-USER-ACTIVE-DATETIME-'
 
 
 class CacheHelper:

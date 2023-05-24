@@ -43,6 +43,8 @@ class Project(UserResource):
         ACTIVE = 'active', 'Active'
         INACTIVE = 'inactive', 'Inactive'
 
+    PROJECT_INACTIVE_AFTER_MONTHS = 12
+
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
@@ -108,6 +110,10 @@ class Project(UserResource):
     # this is used for project deletion
     is_deleted = models.BooleanField(default=False)
     deleted_at = models.DateField(null=True, blank=True)
+
+    # Latest activity tracking (Using graphql nodes. Updated by any nested node)
+    last_read_access = models.DateTimeField(null=True, blank=True)
+    last_write_access = models.DateTimeField(null=True, blank=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

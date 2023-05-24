@@ -80,6 +80,12 @@ class Profile(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
     original_data = models.JSONField(null=True, blank=True)
 
+    # Last Activity
+    last_active = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=False)
+
+    USER_INACTIVE_AFTER_MONTHS = 6
+
     def __str__(self):
         return str(self.user)
 
