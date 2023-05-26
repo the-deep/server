@@ -101,6 +101,7 @@ class AnalysisFrameworkType(DjangoObjectType):
             graphene.Enum.from_enum(AfP.Permission),
         ), required=True
     )
+    cloned_from = graphene.ID(source='cloned_from_id')
 
     @staticmethod
     def get_custom_node(_, info, id):
@@ -229,10 +230,6 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
         if root.get_current_user_role(info.context.request.user) is not None:
             return info.context.dl.analysis_framework.members.load(root.id)
         return []  # NOTE: Always return empty array FIXME: without empty everything is returned
-
-    @staticmethod
-    def resolve_visible_projects(root, info):
-        return info.context.dl.analysis_framework.visible_projects.load(root.id)
 
     @staticmethod
     def resolve_prediction_tags_mapping(root, info):
