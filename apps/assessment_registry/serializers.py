@@ -9,6 +9,7 @@ from .models import (
     AdditionalDocument,
     ScoreRating,
     ScoreAnalyticalDensity,
+    Summary,
 )
 
 
@@ -39,6 +40,12 @@ class ScoreAnalyticalDensitySerializer(UserResourceSerializer):
         fields = ("client_id", "sector", "value",)
 
 
+class SummarySerializer(UserResourceSerializer):
+    class Meta:
+        model = Summary
+        fields = ("summary_focus", "focus_data", "summary_sector", "sector_data")
+
+
 class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerializerMixin):
     methodology_attributes = MethodologyAttributeSerializer(
         many=True, required=False
@@ -51,6 +58,9 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
     )
     score_analytical_density = ScoreAnalyticalDensitySerializer(
         source="analytical_density", many=True, required=False
+    )
+    summary = SummarySerializer(
+        source='summary', required=False
     )
 
     class Meta:
