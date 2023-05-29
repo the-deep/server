@@ -459,6 +459,11 @@ into implementation of humanitarian activities'
             'Physical and Security Constraints/Physical constraints in the environment (\
 obstacles related to terrain, climate, lack of infrastructure etc.)'
 
+    assessment_registry = models.OneToOneField(
+        AssessmentRegistry,
+        on_delete=models.CASCADE,
+        related_name='summary'
+    )
     summary_focus = models.IntegerField(choices=AssessmentRegistry.FocusType.choices)
     focus_data = models.JSONField(default=None, blank=True, null=True)
     summary_sector = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
