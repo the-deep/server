@@ -348,8 +348,8 @@ class Summary(UserResource):
         SETTINGS_FACING_MOST_HUMANITARIAN_ACCESS_ISSUES = 1, 'Settings facing most humanitarian access issues'
 
     class FocusColumn(models.IntegerChoices):
-        POPULATION_IN_MODERATE_NEED_OF_ASSISTANCE = 0, 'Population in moderate need of assistance (not life threatning)'
-        POPULATION_IN_SEVERE_NEED_OF_ASSISTANCE = 1, 'Population in severe need of assistance (life threatning)'
+        POPULATION_IN_MODERATE_NEED_OF_ASSISTANCE = 1, 'Population in moderate need of assistance (not life threatning)'
+        POPULATION_IN_SEVERE_NEED_OF_ASSISTANCE = 2, 'Population in severe need of assistance (life threatning)'
         POPULATION_IN_NEED_OF_ASSISTANCE = 3, 'Population in need of assistance'
 
     class Row(models.IntegerChoices):
@@ -368,9 +368,9 @@ class Summary(UserResource):
         PRIORITY_GROUP_WITH_SPECIFIC_NEEDS = 3, 'Priority group with specific needs'
 
     class SectorColumn(models.IntegerChoices):
-        POPULATION_WITH_LIMITED_ACCESS = 0, 'Population with limited/interminent access'
-        POPULATION_WITH_NO_ACCESS = 1, 'Population with no/restricted access'
-        POPULATION_WITH_HUMANITARIAN_ACCESS_CONSTRAINTS = 2, 'Population with humanitarian access constraints'
+        POPULATION_WITH_LIMITED_ACCESS = 1, 'Population with limited/interminent access'
+        POPULATION_WITH_NO_ACCESS = 2, 'Population with no/restricted access'
+        POPULATION_WITH_HUMANITARIAN_ACCESS_CONSTRAINTS = 3, 'Population with humanitarian access constraints'
 
     class SummaryFocusValue(models.IntegerChoices):
         # Focus ->  Main sectorial underlying factors
@@ -459,12 +459,81 @@ into implementation of humanitarian activities'
             'Physical and Security Constraints/Physical constraints in the environment (\
 obstacles related to terrain, climate, lack of infrastructure etc.)'
 
-    assessment_registry = models.OneToOneField(
+    assessment_registry = models.ForeignKey(
         AssessmentRegistry,
         on_delete=models.CASCADE,
         related_name='summary'
     )
-    summary_focus = models.IntegerField(choices=AssessmentRegistry.FocusType.choices)
+    summary_focus = models.IntegerField(choices=AssessmentRegistry.FocusType.choices, blank=True, null=True)
     focus_data = models.JSONField(default=None, blank=True, null=True)
-    summary_sector = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
+    summary_sector = models.IntegerField(choices=AssessmentRegistry.SectorType.choices, blank=True, null=True)
     sector_data = models.JSONField(default=None, blank=True, null=True)
+
+
+#class Question(UserResource):
+#    class QuestionSector(models.IntegerChoices):
+#        RELEVANCE = 0, 'Relevance'
+#        COMPREHENSIVENESS = 1, 'Comprehensiveness'
+#        ETHICS = 2, 'Ethics'
+#        METHODOLOGICAL_RIGOR = 3, 'Methodological rigor'
+#        ANALYTICAL_VALUE = 4, 'Analytical value'
+#        TIMELINESS = 5, 'Timeliness'
+#        EFFECTIVE_COMMUNICATION = 6, 'Effective Communication'
+#        USE = 7, 'Use',
+#        PEOPLE_CENTERED_AND_INCLUSIVE = 8, 'People-centered and inclusive'
+#        ACCOUNTABILITY_TO_AFFECTED_POPULATIONS = 9, 'Accountability to affected populations'
+#        DO_NOT_HARM = 10, 'Do not harm'
+#        DESIGNED_WITH_PURPOSE = 11, 'Designed with a purpose'
+#        COMPETENCY_AND_CAPACITY = 12, 'Competency and capacity'
+#        IMPARTIALITY = 13, 'Impartiality'
+#        COORDINATION_AND_DATA_MINIMIZATION = 14, 'Coordination and data minimization'
+#        JOINT_ANALYSIS = 15, 'Joint Analysis'
+#        ACKNOWLEDGE_DISSENTING_VOICES_IN_JOINT_NEEDS_ANALYSIS = 16, 'Acknowledge dissenting voices in joint needs analysis'
+#        IFORMED_CONSENT_CONFIDENTIALITY_AND_DATA_SECURITY = 17, 'Informed consent, confidentiality and data security'
+#        SHARING_RESULTS = 18, 'Sharing results (data and analysis)'
+#        TRANSPARENCY_BETWEEN_ACTORS = 19, 'Tranparency between actors'
+#        MINIMUM_TECHNICAL_STANDARDS = 20, 'Minimum technical standards'
+#
+#    class QuestionSubSector(models.IntegerChoices):
+#        RELEVANCE = 0, 'Relevance'
+#        GEOGRAPHIC_COMPREHENSIVENESS = 1, 'Geographic comprehensiveness'
+#        SECTORAL_COMPREHENSIVENESS = 2, 'Sectoral comprehensiveness'
+#        AFFECTED_AND_VULNERABLE_GROUPS_COMPREHENSIVENESS = 3, 'Affected and vulnerabel groups comprehensiveness'
+#        SAFETY_AND_PROTECTION = 4, 'Safety and protection'
+#        HUMANITARIAN_PRINCIPLES = 5, 'Humanitarian Principles'
+#        CONTRIBUTION = 6, 'Contribution'
+#        TRANSPARENCY = 7, 'Transparency'
+#        MITIGATING_BIAS = 8, 'Mitigating Bias'
+#        PARTICIPATION = 9, 'Participation'
+#        CONTEXT_SPECIFICITY = 10, 'Context specificity'
+#        ANALYTICAL_STANDARDS = 11, 'Ananlytical standards'
+#        DESCRIPTIONS = 12, 'Descriptions'
+#        EXPLANATION = 13, 'Explanation'
+#        INTERPRETATION = 14, 'Interpretation'
+#        ANTICIPATION = 15, 'Anticipation'
+#        TIMELINESS = 16, 'Timeliness'
+#        USER_FRIENDLY_PRESENTATION = 17, 'User-friendly presentation'
+#        ACTIVE_DISSEMINATION = 18, 'Active dissemination'
+#        USE_FOR_COLLECTIVE_PLANNING = 19, 'Use for collective planning'
+#        BUY_IN_AND_USE_BY_HUMANITARIAN_CLUSTERS_SECTORS = 20, 'Buy-in and use by humanitarian clusters/sectors'
+#        BUY_IN_AND_USE_BY_UN_AGENCIES = 21, 'Buy-in and use by UN agencies'
+#        BUY_IN_AND_USE_BY_INTERNATIONAL_NGO = 22, 'Buy-in and use by international non-governmental organizations (NGOs)'
+#        BUY_IN_AND_USE_BY_LOCAL_NGO = 23, 'Buy-in and use by local non-governmental organization (local NGOs)'
+#        BUY_IN_AND_USE_BY_MEMBER_OF_RED_CROSS_RED_CRESENT_MOVEMENT = 24, \
+#            'Buy-in and use by member of Red Cross/Red Cresent Movement'
+#        BUY_IN_AND_USE_BY_DONORS = 25, 'Buy-in and use by donors'
+#        BUY_IN_AND_USE_BY_NATIONAL_AND_LOCAL_GOVERNMENT_AGENCIES = 26, \
+#            'Buy-in and use by naional and local government agencies'
+#        BUY_IN_AND_USE_BY_DEVELOPMENT_AND_STABILIZATION_ACTORS = 27, 'Buy-in and use by development and stabilization actors'
+#
+#    sector = models.CharField(choices=QuestionSector.choices)
+#    sub_sector = models.CharField(choices=QuestionSubSector)
+#    question = models.CharField(max_length=500)
+#
+#
+#class Answer(UserResource):
+#    question = models.ForeignKey(
+#        Question,
+#        on_delete=models.CASCADE
+#    )
+#    answer = models.BooleanField()
