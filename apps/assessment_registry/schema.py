@@ -49,6 +49,10 @@ from .enums import (
     AssessmentRegistrySummaryFocusColumnTypeEnum,
     AssessmentRegistrySummarySubSectorTypeEnum,
     AssessmentRegistrySummarySubFocusTypeEnum,
+    AssessmentRegistrySummaryFocusTypeEnum,
+    AssessmentRegistrySummarySectorTypeEnum,
+    AssessmentRegistrySummaryFocusValueTypeEnum,
+    AssessmentRegistrySummarySectorValueTypeEnum,
 )
 
 
@@ -139,6 +143,35 @@ def get_summary_sub_sector_value():
 class SummaryValueChoiceType(graphene.ObjectType):
     value_name = graphene.String(required=False)
     value = graphene.Int(required=False)
+
+
+class SummaryFocusDataType(graphene.ObjectType):
+    sub_focus = graphene.Field(AssessmentRegistrySummarySubFocusTypeEnum, required=False)
+    column = graphene.Field(AssessmentRegistrySummaryFocusColumnTypeEnum, required=False)
+    row = graphene.Field(AssessmentRegistrySummaryRowTypeEnum, required=False)
+    value = graphene.Field(AssessmentRegistrySummaryFocusValueTypeEnum, required=False)
+    raw_value = graphene.String(required=False)
+
+
+class SummarySectorDataType(graphene.ObjectType):
+    sub_sector = graphene.Field(AssessmentRegistrySummarySubSectorTypeEnum, required=False)
+    column = graphene.Field(AssessmentRegistrySummarySectorColumnTypeEnum, required=False)
+    row = graphene.Field(AssessmentRegistrySummaryRowTypeEnum, required=False)
+    value = graphene.Field(AssessmentRegistrySummarySectorValueTypeEnum, required=False)
+    raw_value = graphene.String(required=False)
+
+
+class SummaryType(DjangoObjectType, UserResourceMixin):
+    class Meta:
+        model = Summary
+        fields = ("id", "client_id", "sector_data")
+
+    focus_data = graphene.List(SummaryFocusDataType, required=False)
+    sector_data = graphene.List(SummarySectorDataType, required=False)
+    summary_focus = graphene.Field(AssessmentRegistrySummaryFocusTypeEnum, required=False)
+    summary_focus_display = EnumDescription(source='get_summary_focus_display', required=False)
+    summary_sector = graphene.Field(AssessmentRegistrySummarySectorTypeEnum, required=False)
+    summary_sector_display = EnumDescription(source='get_summary_sector_display', required=False)
 
 
 class SummarySubSectorType(graphene.ObjectType):
@@ -346,6 +379,7 @@ class AssessmentRegistryType(
     score_analytical_density = graphene.List(graphene.NonNull(ScoreAnalyticalDensityType), required=True)
     lead = graphene.NonNull(LeadDetailType)
     locations = graphene.List(graphene.NonNull(ProjectGeoAreaType))
+    summary = graphene.List(graphene.NonNull(SummaryType), required=False)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -370,6 +404,10 @@ class AssessmentRegistryType(
     @staticmethod
     def resolve_score_analytical_density(root, info, **kwargs):
         return ScoreAnalyticalDensity.objects.filter(assessment_registry=root)
+
+    @staticmethod
+    def resolve_summary(root, info, **kwargs):
+        return Summary.objects.filter(assessment_registry=root)
 
 
 class AssessmentRegistryListType(CustomDjangoListObjectType):
