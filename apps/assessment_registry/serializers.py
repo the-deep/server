@@ -40,10 +40,29 @@ class ScoreAnalyticalDensitySerializer(UserResourceSerializer):
         fields = ("client_id", "sector", "value",)
 
 
-class SummarySerializer(UserResourceSerializer):
+class SummaryFocusDataSerializer(serializers.Serializer):
+    sub_focus = serializers.IntegerField()
+    column = serializers.IntegerField()
+    row = serializers.IntegerField()
+    value = serializers.IntegerField()
+    raw_value = serializers.CharField(required=False)
+
+
+class SummarySectorDataSerializer(serializers.Serializer):
+    sub_sector = serializers.IntegerField()
+    column = serializers.IntegerField()
+    row = serializers.IntegerField()
+    value = serializers.IntegerField()
+    raw_value = serializers.CharField(required=False)
+
+
+class SummarySerializer(UserResourceSerializer, TempClientIdMixin):
+    focus_data = SummaryFocusDataSerializer(many=True, required=False)
+    sector_data = SummarySectorDataSerializer(many=True, required=False)
+
     class Meta:
         model = Summary
-        fields = ("summary_focus", "focus_data", "summary_sector", "sector_data")
+        fields = ("client_id", "summary_focus", "focus_data", "summary_sector", "sector_data")
 
 
 class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerializerMixin):
@@ -60,7 +79,7 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
         source="analytical_density", many=True, required=False
     )
     summary = SummarySerializer(
-        source='summary', required=False
+        many=True, required=False
     )
 
     class Meta:
@@ -105,6 +124,7 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             "matrix_score",
             "final_score",
             "score_analytical_density",
+            "summary",
         )
 
     def validate(self, data):
