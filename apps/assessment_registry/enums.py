@@ -95,6 +95,18 @@ AssessmentRegistrySummarySubSectorTypeEnum = convert_enum_to_graphene_enum(
 AssessmentRegistrySummarySubFocusTypeEnum = convert_enum_to_graphene_enum(
     Summary.SubFocus, name='AssessmentRegistrySummarySubFoucsTypeEnum'
 )
+AssessmentRegistrySummaryFocusTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.FocusType, name='AssessmentRegistrySummaryFoucsTypeEnum'
+)
+AssessmentRegistrySummarySectorTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.SectorType, name='AssessmentRegistrySummarySectorTypeEnum'
+)
+AssessmentRegistrySummaryFocusValueTypeEnum = convert_enum_to_graphene_enum(
+    Summary.SummaryFocusValue, name='AssessmentRegistrySummaryFocusValueTypeEnum'
+)
+AssessmentRegistrySummarySectorValueTypeEnum = convert_enum_to_graphene_enum(
+    Summary.SummarySectorValue, name='AssessmentRegistrySummarySectorValueTypeEnum'
+)
 enum_map = {
     get_enum_name_from_django_field(field): enum
     for field, enum in (
@@ -120,5 +132,7 @@ enum_map = {
         (ScoreRating.score_type, AssessmentRegistryScoreTypeEnum),
         (ScoreRating.rating, AssessmentRegistryRatingTypeEnum),
         (ScoreAnalyticalDensity.sector, AssessmentRegistrySectorTypeEnum),
+        (Summary.summary_focus, AssessmentRegistrySummaryFocusTypeEnum),
+        (Summary.summary_sector, AssessmentRegistrySummarySectorTypeEnum),
     )
 }
