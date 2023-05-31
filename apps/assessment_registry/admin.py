@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models import (
     AssessmentRegistry,
     MethodologyAttribute,
+    Summary,
 )
 
 
@@ -12,10 +13,15 @@ class MethodologyAttributeInline(admin.TabularInline):
     extra = 1
 
 
+class SummaryInline(admin.TabularInline):
+    model = Summary
+
+
 @admin.register(AssessmentRegistry)
 class AssessmentRegistryAdmin(admin.ModelAdmin):
     list_display = ('id', 'lead', 'project')
 
     inlines = [
-        MethodologyAttributeInline
+        MethodologyAttributeInline,
+        SummaryInline,
     ]
