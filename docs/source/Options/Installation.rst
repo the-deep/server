@@ -3,7 +3,7 @@ Installation
 ++++++++++++
 
 Clone Deeper Repo
-=================
+------------------
 
 To clone the deeper repository, use the following command:
 

@@ -3,7 +3,7 @@ Introduction
 ++++++++++++
 
 The Problem
-=================
+------------
 
 **Manual Entry Wasn’t Made For 21st Century Crises**.
 
@@ -13,7 +13,7 @@ The colossal effort to manually collect, track, translate, store, verify, and sh
 and hindering global ability to prevent and abate future disasters. That’s where DEEP was born.
 
 The Solution
-===============
+-------------
 
 **Remove Collaboration Barriers, Improve Response Time, Save More Lives**.
 
