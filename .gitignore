@@ -47,3 +47,5 @@ schema-latest.graphql
 
 ci-share/
 rest-media-temp/
+
+docs/build/
