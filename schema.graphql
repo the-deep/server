@@ -1392,6 +1392,61 @@ enum AssessmentRegistryAffectedGroupTypeEnum {
   ALL_AFFECTED_NOT_DISPLACED_HOST
 }
 
+enum AssessmentRegistryCNAQuestionSectorTypeEnum {
+  RELEVANCE
+  COMPREHENSIVENESS
+  ETHICS
+  METHODOLOGICAL_RIGOR
+  ANALYTICAL_VALUE
+  TIMELINESS
+  EFFECTIVE_COMMUNICATION
+  USE
+  PEOPLE_CENTERED_AND_INCLUSIVE
+  ACCOUNTABILITY_TO_AFFECTED_POPULATIONS
+  DO_NOT_HARM
+  DESIGNED_WITH_PURPOSE
+  COMPETENCY_AND_CAPACITY
+  IMPARTIALITY
+  COORDINATION_AND_DATA_MINIMIZATION
+  JOINT_ANALYSIS
+  ACKNOWLEDGE_DISSENTING_VOICES_IN_JOINT_NEEDS_ANALYSIS
+  IFORMED_CONSENT_CONFIDENTIALITY_AND_DATA_SECURITY
+  SHARING_RESULTS
+  TRANSPARENCY_BETWEEN_ACTORS
+  MINIMUM_TECHNICAL_STANDARDS
+}
+
+enum AssessmentRegistryCNAQuestionSubSectorTypeEnum {
+  RELEVANCE
+  GEOGRAPHIC_COMPREHENSIVENESS
+  SECTORAL_COMPREHENSIVENESS
+  AFFECTED_AND_VULNERABLE_GROUPS_COMPREHENSIVENESS
+  SAFETY_AND_PROTECTION
+  HUMANITARIAN_PRINCIPLES
+  CONTRIBUTION
+  TRANSPARENCY
+  MITIGATING_BIAS
+  PARTICIPATION
+  CONTEXT_SPECIFICITY
+  ANALYTICAL_STANDARDS
+  DESCRIPTIONS
+  EXPLANATION
+  INTERPRETATION
+  ANTICIPATION
+  TIMELINESS
+  USER_FRIENDLY_PRESENTATION
+  ACTIVE_DISSEMINATION
+  USE_FOR_COLLECTIVE_PLANNING
+  BUY_IN_AND_USE_BY_HUMANITARIAN_CLUSTERS_SECTORS
+  BUY_IN_AND_USE_BY_UN_AGENCIES
+  BUY_IN_AND_USE_BY_INTERNATIONAL_NGO
+  BUY_IN_AND_USE_BY_LOCAL_NGO
+  BUY_IN_AND_USE_BY_MEMBER_OF_RED_CROSS_RED_CRESENT_MOVEMENT
+  BUY_IN_AND_USE_BY_DONORS
+  BUY_IN_AND_USE_BY_NATIONAL_AND_LOCAL_GOVERNMENT_AGENCIES
+  BUY_IN_AND_USE_BY_DEVELOPMENT_AND_STABILIZATION_ACTORS
+}
+
 enum AssessmentRegistryConfidentialityTypeEnum {
   UNPROTECTED
   CONFIDENTIAL
@@ -1442,6 +1497,8 @@ input AssessmentRegistryCreateInputType {
   matrixScore: Int
   finalScore: Int
   scoreAnalyticalDensity: [ScoreAnalyticalDensityInputType!]
+  summary: [SummaryInputType!]
+  cna: [CNAAnswerInputType!]
 }
 
 enum AssessmentRegistryCrisisTypeEnum {
@@ -1557,6 +1614,7 @@ type AssessmentRegistryListType {
 type AssessmentRegistryOptionsType {
   summarySector: SummarySectorOptionType
   summaryFocus: SummaryFocusOptionType
+  cnaQuestions: [QuestionType!]
 }
 
 enum AssessmentRegistryPreparednessTypeEnum {
@@ -1619,7 +1677,7 @@ enum AssessmentRegistryScoreTypeEnum {
 }
 
 enum AssessmentRegistrySectorTypeEnum {
-  F00D
+  FOOD
   HEALTH
   SHELTER
   WASH
@@ -1637,6 +1695,74 @@ enum AssessmentRegistrySummaryFocusColumnTypeEnum {
   POPULATION_IN_NEED_OF_ASSISTANCE
 }
 
+enum AssessmentRegistrySummaryFocusValueTypeEnum {
+  AVAILABILITY
+  AVAILABILITY_PRODUCTION
+  AVAILABILITY_TRADE
+  AVAILABILITY_STOCK
+  AVAILABILITY_TRANSFER
+  ACCESS
+  ACCESS_PHYSICAL
+  ACCESS_FINANCIAL
+  ACCESS_SECURITY
+  ACCESS_SOCIAL_DISCRIMINATION
+  QUALITY
+  QUALITY_HUMAN_RESOURCES
+  QUALITY_SAFETY
+  QUALITY_RELIABILITY
+  QUALITY_DIVERSITY
+  QUALITY_DIGNITY
+  USE
+  USE_KNOWLEDGE
+  USE_ATTITUDE
+  USE_PRACTICE
+  AWARENESS
+  AWARENESS_MESSAGE
+  AWARENESS_CHANNEL
+  AWARENESS_FERQUENCY
+  ALL
+  ALL_AFFECTED
+  AFFECTED_DISPLACED
+  DISPLACED_REFUGEES
+  DISPLACED_RETURNEES
+  DISPLACED_OTHER_OF_CONCERNS
+  DISPLACED_ASYLUM_SEEKERS
+  DISPLACED_IDPS
+  DISPLACED_MIGRANTS
+  MIGRANTS_PENDULAR
+  MIGRANTS_PERMANENTS
+  MIGRANTS_IN_TRANSIT
+  DISPLACED_IN_TRANSIT
+  AFFECTED_NOT_DISPLACED
+  NOT_DISPLACED_HOST
+  NOT_DISPLACED_NOT_HOST
+  ALL_NOT_AFFECTED
+  FEMALE_HEAD_OF_HOUSEHOLD
+  CHILD_HEAD_OF_HOUSEHOLD
+  ELDERLY_HEAD_OF_HOUSEHOLD
+  SINGLE_WOMEN
+  CHRONICALLY_ILL
+  UNNACOMPANIED_CHILDREN
+  SEPARATE_CHILDREN
+  MINORITIES
+  PERSON_WITH_DISABILITIES
+  PREGNANT_OR_LACTATING_WOMEN
+  UNREGISTERED_REFUGEE
+}
+
+enum AssessmentRegistrySummaryFoucsTypeEnum {
+  CONTEXT
+  SHOCK_EVENT
+  DISPLACEMENT
+  HUMANITERIAN_ACCESS
+  INFORMATION_AND_COMMUNICATION
+  IMPACT
+  HUMANITARIAN_CONDITIONS
+  RESPONSE_AND_CAPACITIES
+  CURRENT_AND_FORECASTED_PRIORITIES
+  COVID_19_CONTAINMENT_MEASURES
+}
+
 enum AssessmentRegistrySummaryRowTypeEnum {
   ONE
   TWO
@@ -1647,6 +1773,34 @@ enum AssessmentRegistrySummarySectorColumnTypeEnum {
   POPULATION_WITH_LIMITED_ACCESS
   POPULATION_WITH_NO_ACCESS
   POPULATION_WITH_HUMANITARIAN_ACCESS_CONSTRAINTS
+}
+
+enum AssessmentRegistrySummarySectorTypeEnum {
+  FOOD
+  HEALTH
+  SHELTER
+  WASH
+  PROTECTION
+  NUTRITION
+  LIVELIHOOD
+  EDUCATION
+  CHILD_PROTECTION
+  GENDER_BASED_VIOLENCE
+}
+
+enum AssessmentRegistrySummarySectorValueTypeEnum {
+  ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP
+  ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_IMPEDIMENTS_TO_ENTRY_INTO_COUNTRY
+  ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_RESTRICTION_OF_MOVEMENT
+  ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_INTERFERENCE_INTO_IMPLEMENTATION_OF_HUMANITARIAN_ACTIVITIES
+  ACCESS_OF_HUMANITARIAN_ACTORS_TO_AFFECTED_POP_VIOLENCE_AGAINST_PERSONNEL_FACILITIES_ASSETS
+  ACCESS_OF_PEOPLE_IN_NEED_TO_AID
+  ACCESS_OF_PEOPLE_IN_NEED_T0_AID_DENIAL_OF_EXISTENCE_OF_HUMANITARIAN_NEEDS_OR_ENTITLEMENTS_TO_ASSISTANCE
+  ACCESS_OF_PEOPLE_IN_NEED_T0_AID_RESTRICTION_AND_OBSTRUCTION_OF_ACCESS_TO_SERVICES_AND_ASSISTANCE
+  PHYSICAL_AND_SECURITY_CONSTRAINTS
+  PHYSICAL_AND_SECURITY_CONSTRAINTS_ONGOING_INSECURITY_HOSTILITIES_AFFECTING_HUMANITARIAN_ASSISTANCE
+  PHYSICAL_AND_SECIRITY_CONSTRAINTS_PRESENCE_OF_MINES_AND_IMPROVISED_EXPLOSIVE_DEVICE
+  PHYSICAL_AND_SECURITY_CONSTRAINTS_PHYSICAL_CONSTRAINTS_IN_THE_ENVIRONMENT
 }
 
 enum AssessmentRegistrySummarySubFoucsTypeEnum {
@@ -1720,6 +1874,8 @@ type AssessmentRegistryType {
   additionalDocuments: [AdditionalDocumentType!]
   scoreRatings: [ScoreRatingType!]!
   scoreAnalyticalDensity: [ScoreAnalyticalDensityType!]!
+  summary: [SummaryType!]
+  cna: [CNAType!]
 }
 
 enum AssessmentRegistryUnitOfAnalysisTypeEnum {
@@ -1977,6 +2133,21 @@ input BulkUserGroupMembershipInputType {
   member: ID!
   role: GroupMembershipRoleEnum
   clientId: String
+}
+
+input CNAAnswerInputType {
+  question: ID!
+  answer: Boolean!
+}
+
+type CNAType {
+  id: ID!
+  question: QuestionType
+  answer: Boolean!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
 }
 
 type CancelUserExport {
@@ -4289,6 +4460,19 @@ type Query {
   _debug: DjangoDebug
 }
 
+type QuestionType {
+  id: ID!
+  subSector: AssessmentRegistryCNAQuestionSubSectorTypeEnum
+  question: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  sector: AssessmentRegistryCNAQuestionSectorTypeEnum
+  sectorDisplay: EnumDescription
+  subSectorDisplay: EnumDescription
+}
+
 type RecentActivityType {
   id: ID!
   createdAt: DateTime
@@ -4464,10 +4648,34 @@ type SummaryFocusColumnType {
   colNameDisplay: String
 }
 
+input SummaryFocusDataInputType {
+  subFocus: Int!
+  column: Int!
+  row: Int!
+  value: Int!
+  rawValue: String
+}
+
+type SummaryFocusDataType {
+  subFocus: AssessmentRegistrySummarySubFoucsTypeEnum
+  column: AssessmentRegistrySummaryFocusColumnTypeEnum
+  row: AssessmentRegistrySummaryRowTypeEnum
+  value: AssessmentRegistrySummaryFocusValueTypeEnum
+  rawValue: String
+}
+
 type SummaryFocusOptionType {
   subFocus: [SummarySubFocusType!]
   columns: [SummaryFocusColumnType!]
   rows: [SummaryRowType!]
+}
+
+input SummaryInputType {
+  clientId: String
+  summaryFocus: AssessmentRegistrySummaryFoucsTypeEnum
+  focusData: [SummaryFocusDataInputType!]
+  summarySector: AssessmentRegistrySummarySectorTypeEnum
+  sectorData: [SummarySectorDataInputType!]
 }
 
 type SummaryRowType {
@@ -4478,6 +4686,22 @@ type SummaryRowType {
 type SummarySectorColumnType {
   colName: AssessmentRegistrySummarySectorColumnTypeEnum
   colNameDisplay: String
+}
+
+input SummarySectorDataInputType {
+  subSector: Int!
+  column: Int!
+  row: Int!
+  value: Int!
+  rawValue: String
+}
+
+type SummarySectorDataType {
+  subSector: AssessmentRegistrySummarySubSectorTypeEnum
+  column: AssessmentRegistrySummarySectorColumnTypeEnum
+  row: AssessmentRegistrySummaryRowTypeEnum
+  value: AssessmentRegistrySummarySectorValueTypeEnum
+  rawValue: String
 }
 
 type SummarySectorOptionType {
@@ -4502,6 +4726,21 @@ type SummarySubSectorType {
   valueChoices: [SummaryValueChoiceType]
   summaryValueType: AssessmentRegistrySummaryValueTypeEnum
   summaryValueTypeDisplay: String
+}
+
+type SummaryType {
+  id: ID!
+  clientId: String
+  sectorData: [SummarySectorDataType]
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  focusData: [SummaryFocusDataType]
+  summaryFocus: AssessmentRegistrySummaryFoucsTypeEnum
+  summaryFocusDisplay: EnumDescription
+  summarySector: AssessmentRegistrySummarySectorTypeEnum
+  summarySectorDisplay: EnumDescription
 }
 
 type SummaryValueChoiceType {
