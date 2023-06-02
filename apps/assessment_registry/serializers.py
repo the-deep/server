@@ -10,6 +10,7 @@ from .models import (
     ScoreRating,
     ScoreAnalyticalDensity,
     Summary,
+    Answer,
 )
 
 
@@ -65,6 +66,12 @@ class SummarySerializer(UserResourceSerializer, TempClientIdMixin):
         fields = ("client_id", "summary_focus", "focus_data", "summary_sector", "sector_data")
 
 
+class CNAAnswerSerializer(UserResourceSerializer):
+    class Meta:
+        model = Answer
+        fields = ('question', 'answer')
+
+
 class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerializerMixin):
     methodology_attributes = MethodologyAttributeSerializer(
         many=True, required=False
@@ -80,6 +87,11 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
     )
     summary = SummarySerializer(
         many=True, required=False
+    )
+    cna = CNAAnswerSerializer(
+        source='answer',
+        many=True,
+        required=False
     )
 
     class Meta:
@@ -125,6 +137,7 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             "final_score",
             "score_analytical_density",
             "summary",
+            "cna",
         )
 
     def validate(self, data):

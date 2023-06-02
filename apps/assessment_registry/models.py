@@ -104,7 +104,7 @@ class AssessmentRegistry(UserResource):
         COVID_19_CONTAINMENT_MEASURES = 9, 'Covid 19 Containment Measures'
 
     class SectorType(models.IntegerChoices):
-        F00D = 0, 'Food'
+        FOOD = 0, 'Food'
         HEALTH = 1, 'Heath'
         SHELTER = 2, 'Shelter'
         WASH = 3, 'Wash'
@@ -200,6 +200,12 @@ class AssessmentRegistry(UserResource):
     # Score Fields
     matrix_score = models.IntegerField(default=0)
     final_score = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.project.title
 
 
 class MethodologyAttribute(UserResource):
@@ -464,70 +470,85 @@ obstacles related to terrain, climate, lack of infrastructure etc.)'
     sector_data = models.JSONField(default=None, blank=True, null=True)
 
 
-#class Question(UserResource):
-#    class QuestionSector(models.IntegerChoices):
-#        RELEVANCE = 0, 'Relevance'
-#        COMPREHENSIVENESS = 1, 'Comprehensiveness'
-#        ETHICS = 2, 'Ethics'
-#        METHODOLOGICAL_RIGOR = 3, 'Methodological rigor'
-#        ANALYTICAL_VALUE = 4, 'Analytical value'
-#        TIMELINESS = 5, 'Timeliness'
-#        EFFECTIVE_COMMUNICATION = 6, 'Effective Communication'
-#        USE = 7, 'Use',
-#        PEOPLE_CENTERED_AND_INCLUSIVE = 8, 'People-centered and inclusive'
-#        ACCOUNTABILITY_TO_AFFECTED_POPULATIONS = 9, 'Accountability to affected populations'
-#        DO_NOT_HARM = 10, 'Do not harm'
-#        DESIGNED_WITH_PURPOSE = 11, 'Designed with a purpose'
-#        COMPETENCY_AND_CAPACITY = 12, 'Competency and capacity'
-#        IMPARTIALITY = 13, 'Impartiality'
-#        COORDINATION_AND_DATA_MINIMIZATION = 14, 'Coordination and data minimization'
-#        JOINT_ANALYSIS = 15, 'Joint Analysis'
-#        ACKNOWLEDGE_DISSENTING_VOICES_IN_JOINT_NEEDS_ANALYSIS = 16, 'Acknowledge dissenting voices in joint needs analysis'
-#        IFORMED_CONSENT_CONFIDENTIALITY_AND_DATA_SECURITY = 17, 'Informed consent, confidentiality and data security'
-#        SHARING_RESULTS = 18, 'Sharing results (data and analysis)'
-#        TRANSPARENCY_BETWEEN_ACTORS = 19, 'Tranparency between actors'
-#        MINIMUM_TECHNICAL_STANDARDS = 20, 'Minimum technical standards'
-#
-#    class QuestionSubSector(models.IntegerChoices):
-#        RELEVANCE = 0, 'Relevance'
-#        GEOGRAPHIC_COMPREHENSIVENESS = 1, 'Geographic comprehensiveness'
-#        SECTORAL_COMPREHENSIVENESS = 2, 'Sectoral comprehensiveness'
-#        AFFECTED_AND_VULNERABLE_GROUPS_COMPREHENSIVENESS = 3, 'Affected and vulnerabel groups comprehensiveness'
-#        SAFETY_AND_PROTECTION = 4, 'Safety and protection'
-#        HUMANITARIAN_PRINCIPLES = 5, 'Humanitarian Principles'
-#        CONTRIBUTION = 6, 'Contribution'
-#        TRANSPARENCY = 7, 'Transparency'
-#        MITIGATING_BIAS = 8, 'Mitigating Bias'
-#        PARTICIPATION = 9, 'Participation'
-#        CONTEXT_SPECIFICITY = 10, 'Context specificity'
-#        ANALYTICAL_STANDARDS = 11, 'Ananlytical standards'
-#        DESCRIPTIONS = 12, 'Descriptions'
-#        EXPLANATION = 13, 'Explanation'
-#        INTERPRETATION = 14, 'Interpretation'
-#        ANTICIPATION = 15, 'Anticipation'
-#        TIMELINESS = 16, 'Timeliness'
-#        USER_FRIENDLY_PRESENTATION = 17, 'User-friendly presentation'
-#        ACTIVE_DISSEMINATION = 18, 'Active dissemination'
-#        USE_FOR_COLLECTIVE_PLANNING = 19, 'Use for collective planning'
-#        BUY_IN_AND_USE_BY_HUMANITARIAN_CLUSTERS_SECTORS = 20, 'Buy-in and use by humanitarian clusters/sectors'
-#        BUY_IN_AND_USE_BY_UN_AGENCIES = 21, 'Buy-in and use by UN agencies'
-#        BUY_IN_AND_USE_BY_INTERNATIONAL_NGO = 22, 'Buy-in and use by international non-governmental organizations (NGOs)'
-#        BUY_IN_AND_USE_BY_LOCAL_NGO = 23, 'Buy-in and use by local non-governmental organization (local NGOs)'
-#        BUY_IN_AND_USE_BY_MEMBER_OF_RED_CROSS_RED_CRESENT_MOVEMENT = 24, \
-#            'Buy-in and use by member of Red Cross/Red Cresent Movement'
-#        BUY_IN_AND_USE_BY_DONORS = 25, 'Buy-in and use by donors'
-#        BUY_IN_AND_USE_BY_NATIONAL_AND_LOCAL_GOVERNMENT_AGENCIES = 26, \
-#            'Buy-in and use by naional and local government agencies'
-#        BUY_IN_AND_USE_BY_DEVELOPMENT_AND_STABILIZATION_ACTORS = 27, 'Buy-in and use by development and stabilization actors'
-#
-#    sector = models.CharField(choices=QuestionSector.choices)
-#    sub_sector = models.CharField(choices=QuestionSubSector)
-#    question = models.CharField(max_length=500)
-#
-#
-#class Answer(UserResource):
-#    question = models.ForeignKey(
-#        Question,
-#        on_delete=models.CASCADE
-#    )
-#    answer = models.BooleanField()
+class Question(UserResource):
+    class QuestionSector(models.IntegerChoices):
+        RELEVANCE = 0, 'Relevance'
+        COMPREHENSIVENESS = 1, 'Comprehensiveness'
+        ETHICS = 2, 'Ethics'
+        METHODOLOGICAL_RIGOR = 3, 'Methodological rigor'
+        ANALYTICAL_VALUE = 4, 'Analytical value'
+        TIMELINESS = 5, 'Timeliness'
+        EFFECTIVE_COMMUNICATION = 6, 'Effective Communication'
+        USE = 7, 'Use',
+        PEOPLE_CENTERED_AND_INCLUSIVE = 8, 'People-centered and inclusive'
+        ACCOUNTABILITY_TO_AFFECTED_POPULATIONS = 9, 'Accountability to affected populations'
+        DO_NOT_HARM = 10, 'Do not harm'
+        DESIGNED_WITH_PURPOSE = 11, 'Designed with a purpose'
+        COMPETENCY_AND_CAPACITY = 12, 'Competency and capacity'
+        IMPARTIALITY = 13, 'Impartiality'
+        COORDINATION_AND_DATA_MINIMIZATION = 14, 'Coordination and data minimization'
+        JOINT_ANALYSIS = 15, 'Joint Analysis'
+        ACKNOWLEDGE_DISSENTING_VOICES_IN_JOINT_NEEDS_ANALYSIS = 16, 'Acknowledge dissenting voices in joint needs analysis'
+        IFORMED_CONSENT_CONFIDENTIALITY_AND_DATA_SECURITY = 17, 'Informed consent, confidentiality and data security'
+        SHARING_RESULTS = 18, 'Sharing results (data and analysis)'
+        TRANSPARENCY_BETWEEN_ACTORS = 19, 'Tranparency between actors'
+        MINIMUM_TECHNICAL_STANDARDS = 20, 'Minimum technical standards'
+
+    class QuestionSubSector(models.IntegerChoices):
+        RELEVANCE = 0, 'Relevance'
+        GEOGRAPHIC_COMPREHENSIVENESS = 1, 'Geographic comprehensiveness'
+        SECTORAL_COMPREHENSIVENESS = 2, 'Sectoral comprehensiveness'
+        AFFECTED_AND_VULNERABLE_GROUPS_COMPREHENSIVENESS = 3, 'Affected and vulnerabel groups comprehensiveness'
+        SAFETY_AND_PROTECTION = 4, 'Safety and protection'
+        HUMANITARIAN_PRINCIPLES = 5, 'Humanitarian Principles'
+        CONTRIBUTION = 6, 'Contribution'
+        TRANSPARENCY = 7, 'Transparency'
+        MITIGATING_BIAS = 8, 'Mitigating Bias'
+        PARTICIPATION = 9, 'Participation'
+        CONTEXT_SPECIFICITY = 10, 'Context specificity'
+        ANALYTICAL_STANDARDS = 11, 'Ananlytical standards'
+        DESCRIPTIONS = 12, 'Descriptions'
+        EXPLANATION = 13, 'Explanation'
+        INTERPRETATION = 14, 'Interpretation'
+        ANTICIPATION = 15, 'Anticipation'
+        TIMELINESS = 16, 'Timeliness'
+        USER_FRIENDLY_PRESENTATION = 17, 'User-friendly presentation'
+        ACTIVE_DISSEMINATION = 18, 'Active dissemination'
+        USE_FOR_COLLECTIVE_PLANNING = 19, 'Use for collective planning'
+        BUY_IN_AND_USE_BY_HUMANITARIAN_CLUSTERS_SECTORS = 20, 'Buy-in and use by humanitarian clusters/sectors'
+        BUY_IN_AND_USE_BY_UN_AGENCIES = 21, 'Buy-in and use by UN agencies'
+        BUY_IN_AND_USE_BY_INTERNATIONAL_NGO = 22, 'Buy-in and use by international non-governmental organizations (NGOs)'
+        BUY_IN_AND_USE_BY_LOCAL_NGO = 23, 'Buy-in and use by local non-governmental organization (local NGOs)'
+        BUY_IN_AND_USE_BY_MEMBER_OF_RED_CROSS_RED_CRESENT_MOVEMENT = 24, \
+            'Buy-in and use by member of Red Cross/Red Cresent Movement'
+        BUY_IN_AND_USE_BY_DONORS = 25, 'Buy-in and use by donors'
+        BUY_IN_AND_USE_BY_NATIONAL_AND_LOCAL_GOVERNMENT_AGENCIES = 26, \
+            'Buy-in and use by naional and local government agencies'
+        BUY_IN_AND_USE_BY_DEVELOPMENT_AND_STABILIZATION_ACTORS = 27, 'Buy-in and use by development and stabilization actors'
+
+    sector = models.IntegerField(choices=QuestionSector.choices)
+    sub_sector = models.IntegerField(choices=QuestionSubSector.choices)
+    question = models.CharField(max_length=500)
+
+    class Meta:
+        ordering = ["id"]
+
+    def __str__(self):
+        return self.question
+
+
+class Answer(UserResource):
+    assessment_registry = models.ForeignKey(
+        AssessmentRegistry,
+        on_delete=models.CASCADE,
+        related_name='answer'
+    )
+    question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE
+    )
+    answer = models.BooleanField()
+
+    class Meta:
+        ordering = ["id"]
+        unique_together = [["assessment_registry", "question"]]
