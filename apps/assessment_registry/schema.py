@@ -19,6 +19,8 @@ from .models import (
     ScoreRating,
     ScoreAnalyticalDensity,
     Summary,
+    Question,
+    Answer,
 )
 from .filters import AssessmentRegistryGQFilterSet
 from .enums import (
@@ -53,9 +55,12 @@ from .enums import (
     AssessmentRegistrySummarySectorTypeEnum,
     AssessmentRegistrySummaryFocusValueTypeEnum,
     AssessmentRegistrySummarySectorValueTypeEnum,
+    AssessmentRegistryCNAQuestionSectorTypeEnum,
+    AssessmentRegistryCNAQuestionSubSectorTypeEnum,
 )
 
 
+# NOTE : Summary data is aspected to merge with information tab data so, some changes may come to summary types
 def get_summary_sub_focus_value():
     return [
         SummarySubFocusType(
@@ -263,9 +268,22 @@ class SummaryFocusOptionType(graphene.ObjectType):
         ]
 
 
+class QuestionType(DjangoObjectType, UserResourceMixin):
+    class Meta:
+        model = Question
+        fields = ("id", "question", "sub_sector",)
+
+    sector = graphene.Field(AssessmentRegistryCNAQuestionSectorTypeEnum, required=False)
+    sector_display = EnumDescription(source='get_sector_display', required=False)
+
+    sub_sector = graphene.Field(AssessmentRegistryCNAQuestionSubSectorTypeEnum, required=False)
+    sub_sector_display = EnumDescription(source='get_sub_sector_display', required=False)
+
+
 class AssessmentRegistryOptionsType(graphene.ObjectType):
     summary_sector = graphene.Field(SummarySectorOptionType)
     summary_focus = graphene.Field(SummaryFocusOptionType)
+    cna_questions = graphene.List(graphene.NonNull(QuestionType), required=False)
 
     @staticmethod
     def resolve_summary_sector(root, info, **kwargs):
@@ -274,6 +292,10 @@ class AssessmentRegistryOptionsType(graphene.ObjectType):
     @staticmethod
     def resolve_summary_focus(root, info, **kwargs):
         return SummaryFocusOptionType
+
+    @staticmethod
+    def resolve_cna_questions(root, info, **kwargs):
+        return Question.objects.all()
 
 
 class ScoreRatingType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
@@ -336,6 +358,14 @@ class AdditionalDocumentType(DjangoObjectType, UserResourceMixin, ClientIdMixin)
         return render_string_for_graphql(root.external_link)
 
 
+class CNAType(DjangoObjectType, UserResourceMixin):
+    question = graphene.Field(QuestionType, required=False)
+
+    class Meta:
+        model = Answer
+        fields = ("id", "question", "answer",)
+
+
 class AssessmentRegistryType(
         DjangoObjectType,
         UserResourceMixin,
@@ -380,6 +410,7 @@ class AssessmentRegistryType(
     lead = graphene.NonNull(LeadDetailType)
     locations = graphene.List(graphene.NonNull(ProjectGeoAreaType))
     summary = graphene.List(graphene.NonNull(SummaryType), required=False)
+    cna = graphene.List(graphene.NonNull(CNAType), required=False)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -408,6 +439,10 @@ class AssessmentRegistryType(
     @staticmethod
     def resolve_summary(root, info, **kwargs):
         return Summary.objects.filter(assessment_registry=root)
+
+    @staticmethod
+    def resolve_cna(root, info, **kwargs):
+        return Answer.objects.filter(assessment_registry=root)
 
 
 class AssessmentRegistryListType(CustomDjangoListObjectType):
