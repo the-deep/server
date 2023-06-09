@@ -62,6 +62,7 @@ from .enums import (
 
 # NOTE : Summary data is aspected to merge with information tab data so, some changes may come to summary types
 def get_summary_sub_focus_value():
+    return [
         SummarySubFocusType(
             sub_focus_name=value,
             sub_focus_name_display=label,
@@ -145,6 +146,8 @@ def get_summary_sub_sector_value():
 
 
 class SummaryValueChoiceType(graphene.ObjectType):
+    value_name = graphene.String(required=False)
+    value = graphene.Int(required=False)
 
 
 class SummaryFocusDataType(graphene.ObjectType):
@@ -321,7 +324,7 @@ def get_assessment_registry_qs(info):
     if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
         return assessment_registry_qs
     elif PP.check_permission(info, PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD):
-        return assessment_registry_qs.filter(confidentiality=AssessmentRegistry.Confidentiality.UNPROTECTED)
+        return assessment_registry_qs.filter(confidentiality=AssessmentRegistry.ConfidentialityType.UNPROTECTED)
     return AssessmentRegistry.objects.none()
 
 
@@ -457,6 +460,10 @@ class Query:
         )
     )
     assessment_registry_options = graphene.Field(AssessmentRegistryOptionsType)
+
+    @staticmethod
+    def resolve_assessment_registries(root, info, **kwargs):
+        return get_assessment_registry_qs(info)
 
     @staticmethod
     def resolve_assessment_registry_options(root, info, **kwargs):
