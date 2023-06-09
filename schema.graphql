@@ -4616,7 +4616,7 @@ type ScoreAnalyticalDensityType {
 input ScoreRatingInputType {
   clientId: String
   scoreType: AssessmentRegistryScoreTypeEnum!
-  rating: AssessmentRegistryRatingType!
+  rating: AssessmentRegistryRatingType
   reason: String
 }
 
