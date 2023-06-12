@@ -14,6 +14,8 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from django_otp.admin import OTPAdminSite
+from graphene_django.views import GraphQLView
+from .views import graphql_docs
 
 from . import converters
 
@@ -400,6 +402,10 @@ if not settings.DEBUG:
     admin.site.__class__ = OTPAdminSite
 
 urlpatterns = [
+    #docs paths
+    path('graphql', GraphQLView.as_view(), name='graphql_endpoint'),
+    path('docs', graphql_docs, name='graphql_docs'),
+    
     re_path(r'^$', FrontendView.as_view(), name='server-frontend'),
     re_path(r'^admin/', admin.site.urls),
 
