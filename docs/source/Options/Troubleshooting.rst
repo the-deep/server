@@ -1,6 +1,6 @@
 
-Troubleshooting
-+++++++++++++++
+💡 Troubleshooting
+++++++++++++++++++
 
 If you encounter any issues during the installation or execution of the project, consider the following troubleshooting steps:
 
