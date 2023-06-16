@@ -3944,7 +3944,6 @@ type ProjectDetailType {
   recentActiveUsers: [UserEntityDateType!]
   topSourcers: [UserEntityCountType!]
   topTaggers: [UserEntityCountType!]
-  assessmentRegOptions: AssessmentRegistryOptionsType
   userMembers(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, members: [ID!], page: Int = 1, ordering: String, pageSize: Int): ProjectMembershipListType
   userGroupMembers(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, usergroups: [ID!], page: Int = 1, ordering: String, pageSize: Int): ProjectUserGroupMembershipListType
   isVisualizationAvailable: Boolean!
