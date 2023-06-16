@@ -6,6 +6,8 @@ from .models import (
     Summary,
     Question,
     Answer,
+    ScoreRating,
+    ScoreAnalyticalDensity,
 )
 
 
@@ -25,15 +27,37 @@ class QuestionAdmin(admin.ModelAdmin):
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
     list_display = ('id', 'question')
+    readonly_fields = ('created_by', 'modified_by', 'client_id',)
 
 
 class MethodologyAttributeInline(admin.TabularInline):
     model = MethodologyAttribute
-    extra = 1
+    extra = 0
+    exclude = ('created_by', 'modified_by', 'client_id')
 
 
 class SummaryInline(admin.TabularInline):
     model = Summary
+    extra = 0
+    exclude = ('created_by', 'modified_by', 'client_id')
+
+
+class AnswerInline(admin.TabularInline):
+    model = Answer
+    extra = 0
+    exclude = ('created_by', 'modified_by', 'client_id')
+
+
+class ScoreInline(admin.TabularInline):
+    model = ScoreRating
+    extra = 0
+    exclude = ('created_by', 'modified_by', 'client_id')
+
+
+class AnalyticalDensityInline(admin.TabularInline):
+    model = ScoreAnalyticalDensity
+    extra = 0
+    exclude = ('created_by', 'modified_by', 'client_id')
 
 
 @admin.register(AssessmentRegistry)
@@ -43,4 +67,7 @@ class AssessmentRegistryAdmin(admin.ModelAdmin):
     inlines = [
         MethodologyAttributeInline,
         SummaryInline,
+        ScoreInline,
+        AnalyticalDensityInline,
+        AnswerInline,
     ]

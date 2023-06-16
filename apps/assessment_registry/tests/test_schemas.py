@@ -185,7 +185,7 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
                     'assessmentRegistryId': assessment_registry.id
                 }, **kwargs)
 
-        # -- non member user (Project 1)
+        # -- non member user
         self.force_login(non_member_user)
         content1 = _query_check(assessment_registry)
         self.assertIsNone(content1['data']['project']['assessmentRegistry'])
@@ -286,7 +286,7 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         # -- Without login
         _query_check(assert_for_error=True)
 
-        # -- non member user (Project 1)
+        # -- non member user
         self.force_login(non_member_user)
         content = _query_check(okay=False)
         self.assertEqual(content['data']['project']['assessmentRegistries']['totalCount'], 0)
@@ -297,7 +297,7 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
 
         self.assertEqual(content['data']['project']['assessmentRegistries']['totalCount'], 4, content)
 
-        # -- non confidential member user (Project 1)
+        # -- non confidential member user
         self.force_login(non_confidential_member_user)
         content = _query_check(okay=False)
         self.assertEqual(content['data']['project']['assessmentRegistries']['totalCount'], 3)
