@@ -92,6 +92,7 @@ django-graphiql-debug-toolbar = "*"
 django-stubs = { version = "*", allow-prereleases = true }
 django-autofixture = { branch = "master", git = "https://github.com/the-deep/django-autofixture" }
 django-fixture-magic = { rev = "466fa35c075009e4a1974f6e588471dd9e720e53", git = "https://github.com/davedash/django-fixture-magic.git" }
+graphdoc = "0.4.0"
 # mypy = "*"
 # flake8 = "*"
 # pylint = "*"

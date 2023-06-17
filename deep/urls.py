@@ -15,7 +15,6 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from django_otp.admin import OTPAdminSite
 from graphene_django.views import GraphQLView
-from .views import graphql_docs
 
 from . import converters
 
@@ -172,6 +171,7 @@ from deep.views import (
     ProjectPublicVizView,
     PasswordChanged,
     get_frontend_url,
+    graphql_docs
 )
 from organization.views import (
     OrganizationViewSet,
