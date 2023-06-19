@@ -170,6 +170,7 @@ from deep.views import (
     ProjectPublicVizView,
     PasswordChanged,
     get_frontend_url,
+    graphql_docs
 )
 from organization.views import (
     OrganizationViewSet,
@@ -402,7 +403,7 @@ if not settings.DEBUG:
 urlpatterns = [
     re_path(r'^$', FrontendView.as_view(), name='server-frontend'),
     re_path(r'^admin/', admin.site.urls),
-
+    re_path(r'^graphql-docs/$', graphql_docs, name='graphql_docs'),
     re_path(r'^api-docs(?P<format>\.json|\.yaml)$',
             api_schema_view.without_ui(cache_timeout=settings.OPEN_API_DOCS_TIMEOUT), name='schema-json'),
     re_path(r'^api-docs/$', api_schema_view.with_ui('swagger', cache_timeout=settings.OPEN_API_DOCS_TIMEOUT),
