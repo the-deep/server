@@ -9,7 +9,7 @@ from rest_framework import (
 
 from django.core.exceptions import PermissionDenied as DjPermissionDenied
 from django.views.decorators.clickjacking import xframe_options_exempt
-from django.http import JsonResponse,HttpResponse
+from django.http import JsonResponse, HttpResponse
 from django.urls import resolve
 from django.views.generic import View
 from django.conf import settings
@@ -35,9 +35,11 @@ from quality_assurance.models import EntryReviewComment
 from notification.models import Notification
 import graphdoc
 
+
 def graphql_docs(request):
     html = graphdoc.to_doc(str(CustomGraphQLView().schema))
     return HttpResponse(html, content_type='text/html')
+
 
 def get_frontend_url(path=''):
     return '{protocol}://{domain}/{path}'.format(
