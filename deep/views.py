@@ -10,7 +10,7 @@ from rest_framework import (
 
 from django.core.exceptions import PermissionDenied as DjPermissionDenied
 from django.views.decorators.clickjacking import xframe_options_exempt
-from django.http import JsonResponse
+from django.http import JsonResponse,HttpResponse
 from django.urls import resolve
 from django.views.generic import View
 from django.conf import settings
@@ -18,7 +18,6 @@ from django.template.response import TemplateResponse
 from graphene_django.views import GraphQLView
 from graphene_file_upload.django import FileUploadGraphQLView
 from sentry_sdk.api import start_transaction as sentry_start_transaction
-from django.http import HttpResponse
 from graphene_django.views import GraphQLView
 
 # Importing for initialization (Make sure to import this before apps.<>)
@@ -46,7 +45,7 @@ def get_frontend_url(path=''):
     )
 
 def graphql_docs(request):
-    html = graphdoc.to_doc(GraphQLView().schema)
+    html = graphdoc.to_doc(str(CustomGraphQLView().schema))
     return HttpResponse(html, content_type='text/html')
 
 class FrontendView(View):

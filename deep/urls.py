@@ -403,9 +403,6 @@ if not settings.DEBUG:
 
 urlpatterns = [
     #docs paths
-    path('graphql', GraphQLView.as_view(), name='graphql_endpoint'),
-    path('docs', graphql_docs, name='graphql_docs'),
-    
     re_path(r'^$', FrontendView.as_view(), name='server-frontend'),
     re_path(r'^admin/', admin.site.urls),
 
@@ -415,7 +412,7 @@ urlpatterns = [
             name='schema-swagger-ui'),
     re_path(r'^redoc/$', api_schema_view.with_ui('redoc', cache_timeout=settings.OPEN_API_DOCS_TIMEOUT),
             name='schema-redoc'),
-
+    re_path(r'^graphql-doc/$', graphql_docs, name='graphql_docs'),
     # JWT Authentication
     re_path(get_api_path(r'token/$'),
             TokenObtainPairView.as_view()),
