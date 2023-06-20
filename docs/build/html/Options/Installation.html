@@ -162,6 +162,23 @@
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker-compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>web<span class="w"> </span>./manage.py<span class="w"> </span><span class="nb">test</span>
 </pre></div>
 </div>
+<ul class="simple">
+<li><p>To add a new package the following steps</p></li>
+</ul>
+<ol class="arabic simple">
+<li><p>In the server directory</p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>Add<span class="w"> </span>package<span class="w"> </span><span class="k">in</span><span class="w"> </span>pyproject.yml<span class="w"> </span>file
+
+Run<span class="w"> </span><span class="sb">`</span>poetry<span class="w"> </span>lock<span class="w"> </span>--no-update<span class="sb">`</span>.This<span class="w"> </span>will<span class="w"> </span>update<span class="w"> </span>poetry.lock
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>In the deeper directory</p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>--build
+</pre></div>
+</div>
 </section>
 </section>
 

@@ -96,3 +96,20 @@ Useful Commands
 .. code-block:: shell
 
    docker-compose exec web ./manage.py test
+
+- To add a new package the following steps
+
+1. In the server directory
+
+.. code-block:: shell
+
+   Add package in pyproject.yml file
+
+   Run `poetry lock --no-update`.This will update poetry.lock
+
+2. In the deeper directory
+
+.. code-block:: shell
+   
+   docker compose up --build
+   
