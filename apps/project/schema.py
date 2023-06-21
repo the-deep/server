@@ -37,7 +37,6 @@ from analysis.schema import Query as AnalysisQuery
 from assessment_registry.schema import Query as AssessmentRegistryQuery
 from unified_connector.schema import UnifiedConnectorQueryType
 from assisted_tagging.schema import AssistedTaggingQueryType
-from assessment_registry.schema import AssessmentRegistryOptionsType
 
 from lead.models import Lead
 from entry.models import Entry
@@ -424,7 +423,6 @@ class ProjectDetailType(
     recent_active_users = graphene.List(graphene.NonNull(UserEntityDateType))
     top_sourcers = graphene.List(graphene.NonNull(UserEntityCountType))
     top_taggers = graphene.List(graphene.NonNull(UserEntityCountType))
-    assessment_reg_options = graphene.Field(AssessmentRegistryOptionsType)
 
     user_members = DjangoPaginatedListObjectField(
         ProjectMembershipListType,
