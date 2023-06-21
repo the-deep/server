@@ -8,6 +8,7 @@ from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.enums import EnumDescription
 from deep.permissions import ProjectPermissions as PP
 from user_resource.schema import UserResourceMixin
+from lead.schema import LeadDetailType
 
 from .models import (
     AssessmentRegistry,
@@ -311,6 +312,7 @@ class AssessmentRegistryType(
     additional_documents = graphene.List(graphene.NonNull(AdditionalDocumentType), required=False)
     score_ratings = graphene.List(graphene.NonNull(ScoreRatingType), required=True)
     score_analytical_density = graphene.List(graphene.NonNull(ScoreAnalyticalDensityType), required=True)
+    lead = graphene.Field(LeadDetailType, required=False)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
