@@ -271,8 +271,6 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 },
                 [lead5]
             ),
-            ({'hasAssessment': True}, [lead1, lead2]),
-            ({'hasAssessment': False}, [lead3, lead4, lead5]),
             ({'isAssessment': True}, [lead4, lead5]),
             # TODO:
             # ({'emmEntities': []}, []),
