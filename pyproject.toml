@@ -9,6 +9,7 @@ license = "GNU Affero General Public License v3.0"
 python = "^3.8"
 beautifulsoup4 = "==4.9.3"
 boto3 = "==1.17.98"
+graphdoc = "0.4.0"
 celery = { version = "==5.2.7", extras = ["redis"] }
 # coreapi = "==2.3.3"
 # dateparser = "==0.7.0"
