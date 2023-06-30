@@ -1420,16 +1420,16 @@ input AssessmentRegistryCreateInputType {
   dataCollectionStartDate: Date
   dataCollectionEndDate: Date
   publicationDate: Date
-  leadOrganizations: [ID!]!
-  internationalPartners: [ID!]!
-  donors: [ID!]!
-  nationalPartners: [ID!]!
-  governments: [ID!]!
+  leadOrganizations: [ID!]
+  internationalPartners: [ID!]
+  donors: [ID!]
+  nationalPartners: [ID!]
+  governments: [ID!]
   objectives: String
   dataCollectionTechniques: String
   sampling: String
   limitations: String
-  locations: [ID!]!
+  locations: [ID!]
   bgCrisisType: AssessmentRegistryCrisisTypeEnum!
   bgPreparedness: AssessmentRegistryPreparednessTypeEnum!
   externalSupport: AssessmentRegistryExternalTypeEnum!
@@ -1439,9 +1439,9 @@ input AssessmentRegistryCreateInputType {
   frequency: AssessmentRegistryFrequencyTypeEnum!
   confidentiality: AssessmentRegistryConfidentialityTypeEnum!
   language: [AssessmentRegistryLanguageTypeEnum!]!
-  focuses: [AssessmentRegistryFocusTypeEnum!]!
-  sectors: [AssessmentRegistrySectorTypeEnum!]!
-  protectionInfoMgmts: [AssessmentRegistryProtectionInfoTypeEnum!]!
+  focuses: [AssessmentRegistryFocusTypeEnum!]
+  sectors: [AssessmentRegistrySectorTypeEnum!]
+  protectionInfoMgmts: [AssessmentRegistryProtectionInfoTypeEnum!]
   affectedGroups: AssessmentRegistryAffectedGroupTypeEnum
   methodologyAttributes: [MethodologyAttributeInputType!]
   additionalDocuments: [AdditionalDocumentInputType!]
