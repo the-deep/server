@@ -177,11 +177,11 @@ class AssessmentRegistry(UserResource):
     publication_date = models.DateField(null=True, blank=True)
 
     # -- Stakeholders
-    lead_organizations = models.ManyToManyField(Organization, related_name='lead_org_assessment_reg')
-    international_partners = models.ManyToManyField(Organization, related_name='int_partners_assessment_reg')
-    donors = models.ManyToManyField(Organization, related_name='donor_assessment_reg')
-    national_partners = models.ManyToManyField(Organization, related_name='national_partner_assessment_reg')
-    governments = models.ManyToManyField(Organization, related_name='gov_assessment_reg')
+    lead_organizations = models.ManyToManyField(Organization, related_name='lead_org_assessment_reg', blank=True)
+    international_partners = models.ManyToManyField(Organization, related_name='int_partners_assessment_reg', blank=True)
+    donors = models.ManyToManyField(Organization, related_name='donor_assessment_reg', blank=True)
+    national_partners = models.ManyToManyField(Organization, related_name='national_partner_assessment_reg', blank=True)
+    governments = models.ManyToManyField(Organization, related_name='gov_assessment_reg', blank=True)
 
     # Methodology
     objectives = models.TextField(blank=True, null=True)
@@ -191,11 +191,14 @@ class AssessmentRegistry(UserResource):
 
     # Focus
     # -- Focus Sectors
-    focuses = ArrayField(models.IntegerField(choices=FocusType.choices, null=True, blank=True))
-    sectors = ArrayField(models.IntegerField(choices=SectorType.choices, null=True, blank=True))
-    protection_info_mgmts = ArrayField(models.IntegerField(choices=ProtectionInfoType.choices, null=True, blank=True))
+    focuses = ArrayField(models.IntegerField(choices=FocusType.choices, null=True, blank=True), blank=True)
+    sectors = ArrayField(models.IntegerField(choices=SectorType.choices, null=True, blank=True), blank=True)
+    protection_info_mgmts = ArrayField(
+        models.IntegerField(choices=ProtectionInfoType.choices, null=True, blank=True),
+        blank=True
+    )
     affected_groups = models.IntegerField(choices=AffectedGroupType.choices, null=True, blank=True)
-    locations = models.ManyToManyField(Region, related_name='focus_location_assessment_reg')
+    locations = models.ManyToManyField(Region, related_name='focus_location_assessment_reg', blank=True)
 
     # Score Fields
     matrix_score = models.IntegerField(default=0)
