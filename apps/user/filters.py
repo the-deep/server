@@ -43,15 +43,24 @@ class UserGqlFilterSet(django_filters.FilterSet):
                 ~models.Q(groupmembership__group_id=value)
             )
         return qs
-
+    
     def filter_search(self, qs, name, value):
         if value:
+            first_name, last_name = value.split(' ', 1) if ' ' in value else (value, '')
+        
+        if first_name and last_name:
+            qs = qs.filter(
+                models.Q(first_name__icontains=first_name) &
+                models.Q(last_name__icontains=last_name)
+            )
+        else:
             qs = qs.filter(
                 models.Q(first_name__icontains=value) |
                 models.Q(last_name__icontains=value) |
                 models.Q(email__icontains=value) |
                 models.Q(username__icontains=value)
             )
+
         return qs
 
     @property
