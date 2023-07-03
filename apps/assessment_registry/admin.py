@@ -3,7 +3,6 @@ from django.contrib import admin
 from .models import (
     AssessmentRegistry,
     MethodologyAttribute,
-    Summary,
     Question,
     Answer,
     ScoreRating,
@@ -36,12 +35,6 @@ class MethodologyAttributeInline(admin.TabularInline):
     exclude = ('created_by', 'modified_by', 'client_id')
 
 
-class SummaryInline(admin.TabularInline):
-    model = Summary
-    extra = 0
-    exclude = ('created_by', 'modified_by', 'client_id')
-
-
 class AnswerInline(admin.TabularInline):
     model = Answer
     extra = 0
@@ -66,7 +59,6 @@ class AssessmentRegistryAdmin(admin.ModelAdmin):
 
     inlines = [
         MethodologyAttributeInline,
-        SummaryInline,
         ScoreInline,
         AnalyticalDensityInline,
         AnswerInline,
