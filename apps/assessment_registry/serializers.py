@@ -9,7 +9,6 @@ from .models import (
     AdditionalDocument,
     ScoreRating,
     ScoreAnalyticalDensity,
-    Summary,
     Answer,
 )
 
@@ -41,32 +40,6 @@ class ScoreAnalyticalDensitySerializer(UserResourceSerializer):
         fields = ("client_id", "sector", "value",)
 
 
-# NOTE : Summary Tab is expected to merge with information tab so , may be summary serializer may change.
-class SummaryFocusDataSerializer(serializers.Serializer):
-    sub_focus = serializers.IntegerField()
-    column = serializers.IntegerField()
-    row = serializers.IntegerField()
-    value = serializers.IntegerField()
-    raw_value = serializers.CharField(required=False)
-
-
-class SummarySectorDataSerializer(serializers.Serializer):
-    sub_sector = serializers.IntegerField()
-    column = serializers.IntegerField()
-    row = serializers.IntegerField()
-    value = serializers.IntegerField()
-    raw_value = serializers.CharField(required=False)
-
-
-class SummarySerializer(UserResourceSerializer, TempClientIdMixin):
-    focus_data = SummaryFocusDataSerializer(many=True, required=False)
-    sector_data = SummarySectorDataSerializer(many=True, required=False)
-
-    class Meta:
-        model = Summary
-        fields = ("client_id", "summary_focus", "focus_data", "summary_sector", "sector_data")
-
-
 class CNAAnswerSerializer(UserResourceSerializer):
     class Meta:
         model = Answer
@@ -85,9 +58,6 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
     )
     score_analytical_density = ScoreAnalyticalDensitySerializer(
         source="analytical_density", many=True, required=False
-    )
-    summary = SummarySerializer(
-        many=True, required=False
     )
     cna = CNAAnswerSerializer(
         source='answer',
@@ -137,7 +107,6 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             "matrix_score",
             "final_score",
             "score_analytical_density",
-            "summary",
             "cna",
         )
 

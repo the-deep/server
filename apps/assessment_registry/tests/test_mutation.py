@@ -85,28 +85,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                             metadata
                         }
                     }
-                    summary {
-                      focusData {
-                        subFocus
-                        column
-                        row
-                        value
-                        rawValue
-                      }
-                      summarySectorDisplay
-                      summarySector
-                      summaryFocusDisplay
-                      summaryFocus
-                      sectorData {
-                        subSector
-                        column
-                        row
-                        value
-                        rawValue
-                      }
-                      id
-                    }
-                    cna {
+                   cna {
                       answer
                       id
                       question {
@@ -237,30 +216,6 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     reason="test"
                 )
             ],
-            summary=[
-                dict(
-                    clientId="1",
-                    summaryFocus=self.genum(AssessmentRegistry.FocusType.HUMANITERIAN_ACCESS),
-                    summarySector=self.genum(AssessmentRegistry.SectorType.FOOD),
-                    focusData=[
-                        dict(
-                            column=1,
-                            row=1,
-                            subFocus=0,
-                            value=100
-                        ),
-                    ],
-                    sectorData=[
-                        dict(
-                            subSector=0,
-                            column=1,
-                            row=1,
-                            value=400,
-                            rawValue="test"
-                        )
-                    ],
-                ),
-            ],
             cna=[
                 dict(
                     answer=True,
@@ -274,5 +229,4 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
         self.assertEqual(data['costEstimatesUsd'], minput['costEstimatesUsd'], data)
         self.assertIsNotNone(data['methodologyAttributes'])
         self.assertIsNotNone(data['additionalDocuments'])
-        self.assertIsNotNone(data['summary'])
         self.assertIsNotNone(data['cna'])
