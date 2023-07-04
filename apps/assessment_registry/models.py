@@ -96,16 +96,17 @@ class AssessmentRegistry(UserResource):
         CONTEXT = 0, 'Context'
         SHOCK_EVENT = 1, 'Shock/Event'
         DISPLACEMENT = 2, 'Displacement'
-        HUMANITERIAN_ACCESS = 3, 'Humaniterian Access'
+        CASUALTIES = 3, 'Casualties'
         INFORMATION_AND_COMMUNICATION = 4, 'Information and Communication'
-        IMPACT = 5, 'Impact (Scope and Scale)'
-        HUMANITARIAN_CONDITIONS = 6, 'Humanitarian Conditions'
-        RESPONSE_AND_CAPACITIES = 7, 'Response and Capacities'
-        CURRENT_AND_FORECASTED_PRIORITIES = 8, 'Current and Forecasted Priorities'
-        COVID_19_CONTAINMENT_MEASURES = 9, 'Covid 19 Containment Measures'
+        HUMANITERIAN_ACCESS = 5, 'Humaniterian Access'
+        IMPACT = 6, 'Impact'
+        HUMANITARIAN_CONDITIONS = 7, 'Humanitarian Conditions'
+        PEOPLE_AT_RISK = 8, 'People at risk'
+        PRIORITIES_AND_PREFERENCES = 9, 'Priorities & Preferences'
+        RESPONSE_AND_CAPACITIES = 10, 'Response and Capacities'
 
     class SectorType(models.IntegerChoices):
-        FOOD = 0, 'Food'
+        FOOD_SECURITY = 0, 'Food Security'
         HEALTH = 1, 'Heath'
         SHELTER = 2, 'Shelter'
         WASH = 3, 'Wash'
@@ -113,8 +114,8 @@ class AssessmentRegistry(UserResource):
         NUTRITION = 5, 'Nutrition'
         LIVELIHOOD = 6, 'Livelihood'
         EDUCATION = 7, 'Education'
-        CHILD_PROTECTION = 8, 'Child protection'
-        GENDER_BASED_VIOLENCE = 9, 'Gender Based Violence'
+        LOGISTICS = 8, 'Logistics'
+        INTER_CROSS_SECTOR = 9, 'Inter/Cross Sector'
 
     class ProtectionInfoType(models.IntegerChoices):
         PROTECTION_MONITORING = 0, 'Protection Monitoring'
@@ -436,3 +437,140 @@ class Answer(UserResource):
     class Meta:
         ordering = ["id"]
         unique_together = [["assessment_registry", "question"]]
+
+
+class Summary(UserResource):
+    class Sector(models.IntegerChoices):
+        CONTEXT = 0, 'Context'
+        EVENT_SHOCK = 1, 'Event/Shock'
+        DISPLACEMENT = 2, 'Displacement'
+        INFORMATION_AND_COMMUNICATION = 3, 'Information & Communication'
+        HUMANITARIAN_ACCESS = 4, 'Humanitarian Access'
+
+    assessment_registry = models.ForeignKey(
+        AssessmentRegistry,
+        on_delete=models.CASCADE,
+        related_name='summary'
+    )
+    total_people_assessed = models.IntegerField(null=True, blank=True)
+    total_dead = models.IntegerField(null=True, blank=True)
+    total_injured = models.IntegerField(null=True, blank=True)
+    total_missing = models.IntegerField(null=True, blank=True)
+    total_people_facing_hum_access_cons = models.IntegerField(null=True, blank=True)
+    percentage_of_people_facing_hum_access_cons = models.IntegerField(null=True, blank=True)
+
+
+class SummarySubSectorIssue(UserResource):
+    assessment_registry = models.ForeignKey(
+        AssessmentRegistry,
+        on_delete=models.CASCADE,
+        related_name='summary_sub_sector_issue_ary'
+    )
+    summary_issue = models.ForeignKey(
+        'SummaryIssue',
+        on_delete=models.CASCADE,
+        related_name='summary_subsector_issue'
+    )
+    text = models.TextField(blank=True)
+    order = models.IntegerField(blank=True, null=True)
+    lead_preview_text_ref = models.JSONField(default=None, blank=True, null=True)
+
+
+class SummaryFocus(UserResource):
+    class Sector(models.IntegerChoices):
+        IMPACT = 0, 'Impact'
+        HUMANITARIAN_CONDITIONS = 1, 'Humanitarian Conditions'
+        PRIORITIES_AND_PREFERENCES = 2, 'Priorities & Preferences'
+        CONCLUSIONS = 3, 'Conclusions'
+        HUMANITARIAN_POPULATION_FIGURES = 4, 'Humanitarian Population Figures'
+
+    assessment_registry = models.ForeignKey(
+        AssessmentRegistry,
+        on_delete=models.CASCADE,
+        related_name='summary_focus'
+    )
+    percentage_of_people_affected = models.IntegerField(null=True, blank=True)
+    total_people_affected = models.IntegerField(null=True, blank=True)
+    percentage_of_moderate = models.IntegerField(null=True, blank=True)
+    percentage_of_severe = models.IntegerField(null=True, blank=True)
+    percentage_of_critical = models.IntegerField(null=True, blank=True)
+    percentage_in_need = models.IntegerField(null=True, blank=True)
+    total_moderate = models.IntegerField(null=True, blank=True)
+    total_severe = models.IntegerField(null=True, blank=True)
+    total_critical = models.IntegerField(null=True, blank=True)
+    total_in_need = models.IntegerField(null=True, blank=True)
+    total_pop_assessed = models.IntegerField(null=True, blank=True)
+    total_not_affected = models.IntegerField(null=True, blank=True)
+    total_affected = models.IntegerField(null=True, blank=True)
+    total_people_in_need = models.IntegerField(null=True, blank=True)
+    total_people_moderately_in_need = models.IntegerField(null=True, blank=True)
+    total_people_severly_in_need = models.IntegerField(null=True, blank=True)
+    total_people_critically_in_need = models.IntegerField(null=True, blank=True)
+
+
+class SummaryIssue(models.Model):
+    class SubSector(models.IntegerChoices):
+        POLITICS = 0, 'Politics'
+        DEMOGRAPHY = 1, 'Demography'
+        SOCIO_CULTURAL = 2, 'Socio-Cultural'
+        ENVIRONMENT = 3, 'Environment'
+        SECURITY_AND_STABILITY = 4, 'Security & Stability'
+        ECONOMICS = 5, 'Economics'
+        CHARACTERISTICS = 6, 'Characteristics'
+        DRIVERS_AND_AGGRAVATING_FACTORS = 7, 'Drivers and Aggravating Factors'
+        MITIGATING_FACTORS = 8, 'Mitigating Factors'
+        HAZARDS_AND_THREATS = 9, 'Hazards & Threats'
+        PUSH_FACTORS = 10, 'Push Factors'
+        PULL_FACTORS = 11, 'Pull Factors'
+        INTENTIONS = 12, 'Intentions'
+        LOCAL_INTREGATIONS = 13, 'Local Integrations'
+        SOURCE_AND_MEANS = 14, 'Source & Means'
+        CHALLANGES_AND_BARRIERS = 15, 'Challanges & Barriers'
+        KNOWLEDGE_AND_INFO_GAPS_HUMAN = 16, 'Knowledge & Info Gaps (Humanitarian)'
+        KNOWLEDGE_AND_INFO_GAPS_POP = 17, 'Knowledge & Info Gaps (Population)'
+        POPULATION_TO_RELIEF = 18, 'Population To Relief'
+        RELIEF_TO_POPULATION = 19, 'Relief To Population'
+        PHYSICAL_AND_SECURITY = 20, 'Physical & Security'
+
+    class FocusSubSector(models.IntegerChoices):
+        DRIVERS = 0, 'Drivers'
+        IMPACT_ON_PEOPLE = 1, 'Impact on People'
+        IMPACT_ON_SYSTEM = 2, 'Impact On System, Network And Services'
+        LIVING_STANDARDS = 3, 'Living Standards'
+        COPING_MECHANISMS = 4, 'Coping Mechanisms'
+        PHYSICAL_AND_MENTAL_WELL_BEING = 5, 'Physical And Mental Well Being'
+        NEEDS_POP = 6, 'Needs (Population)'
+        NEEDS_HUMAN = 7, 'Needs (Humanitarian)'
+        INTERVENTIONS_POP = 8, 'Interventions (Population)'
+        INTERVENTIONS_HUMAN = 9, 'Interventions (Humanitarian)'
+        DEMOGRAPHIC_GROUPS = 10, 'Demographic Groups'
+        GROUPS_WITH_SPECIFIC_NEEDS = 11, 'Groups With Specific Needs'
+        GEOGRAPHICAL_AREAS = 12, 'Geographical Areas'
+        PEOPLE_AT_RISKS = 13, 'People At Risks'
+        FOCAL_ISSUES = 14, 'Focal Issues'
+
+    sub_sector = models.IntegerField(choices=SubSector.choices, blank=True)
+    focus_sub_sector = models.IntegerField(choices=FocusSubSector.choices, blank=True)
+    parent = models.ForeignKey(
+        'SummaryIssue',
+        on_delete=models.CASCADE,
+    )
+    label = models.CharField(max_length=220)
+    full_label = models.CharField(max_length=220, blank=True)
+
+
+class SummaryFocusSubSectorIssue(UserResource):
+    assessment_registry = models.ForeignKey(
+        AssessmentRegistry,
+        on_delete=models.CASCADE,
+        related_name='summary_focus_subsector_issue_ary'
+    )
+    focus = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
+    summary_issue = models.ForeignKey(
+        SummaryIssue,
+        on_delete=models.CASCADE,
+        related_name='summary_focus_subsector_issue'
+    )
+    text = models.TextField(blank=True)
+    order = models.IntegerField(blank=True, null=True)
+    lead_preview_text_ref = models.JSONField(default=None, blank=True, null=True)
