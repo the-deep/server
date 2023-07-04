@@ -1,7 +1,8 @@
 import django_filters
 from django.db import models
-
+from django.db.models.functions import Concat
 from utils.graphene.filters import IDFilter
+from .models import Q
 
 from .models import User
 
@@ -46,18 +47,17 @@ class UserGqlFilterSet(django_filters.FilterSet):
 
     def filter_search(self, qs, name, value):
         if value:
-            first_name, last_name = value.split(' ', 1) if ' ' in value else (value, '')
-        if first_name and last_name:
-            qs = qs.filter(
-                models.Q(first_name__icontains=first_name) &
-                models.Q(last_name__icontains=last_name)
-            )
-        else:
-            qs = qs.filter(
-                models.Q(first_name__icontains=value) |
-                models.Q(last_name__icontains=value) |
-                models.Q(email__icontains=value) |
-                models.Q(username__icontains=value)
+            qs = qs.annotate(
+                full_name=Concat(
+                    models.F("first_name"),
+                    models.Value(" "),
+                    models.F("last_name"),
+                    output_field=models.CharField(),
+                )
+            ).filter(
+                Q(full_name__icontains=value) |
+                Q(email__icontains=value) |
+                Q(username__icontains=value)
             )
         return qs
 
