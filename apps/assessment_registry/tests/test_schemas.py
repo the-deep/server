@@ -157,7 +157,7 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         # Add Score Analytical Density
         ScoreAnalyticalDensityFactory.create(
             assessment_registry=assessment_registry,
-            sector=AssessmentRegistry.SectorType.FOOD,
+            sector=AssessmentRegistry.SectorType.FOOD_SECURITY,
             value=1
         )
         ScoreAnalyticalDensityFactory.create(

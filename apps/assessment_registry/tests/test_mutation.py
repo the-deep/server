@@ -196,7 +196,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
             ],
             scoreAnalyticalDensity=[
                 dict(
-                    sector=self.genum(AssessmentRegistry.SectorType.FOOD),
+                    sector=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
                     value=10
                 ),
                 dict(
