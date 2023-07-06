@@ -6,7 +6,7 @@ from user_resource.models import UserResource
 from geo.models import Region
 from organization.models import Organization
 from gallery.models import File
-from lead.models import Lead, LeadGroup
+from lead.models import Lead
 
 
 class AssessmentRegistry(UserResource):
@@ -146,11 +146,7 @@ class AssessmentRegistry(UserResource):
 
     project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
     lead = models.OneToOneField(
-        Lead, default=None, blank=True, null=True, on_delete=models.CASCADE,
-    )
-    lead_group = models.OneToOneField(
-        LeadGroup, on_delete=models.CASCADE,
-        default=None, blank=True, null=True,
+        Lead, on_delete=models.CASCADE,
     )
 
     # Metadata Group
