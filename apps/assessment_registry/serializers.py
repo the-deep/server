@@ -7,6 +7,10 @@ from .models import (
     AssessmentRegistry,
     MethodologyAttribute,
     AdditionalDocument,
+    Summary,
+    SummarySubSectorIssue,
+    SummaryFocus,
+    SummaryFocusSubSectorIssue,
     ScoreRating,
     ScoreAnalyticalDensity,
     Answer,
@@ -28,7 +32,41 @@ class AdditionalDocumentSerializer(TempClientIdMixin, UserResourceSerializer):
         fields = ("client_id", "document_type", "file", "external_link",)
 
 
-class ScoreRatingSerializer(TempClientIdMixin, UserResourceSerializer):
+class SummarySubSectorIssueSerializer(UserResourceSerializer, TempClientIdMixin):
+    class Meta:
+        model = SummarySubSectorIssue
+        fields = ("summary_issue", "text", "order", "lead_preview_text_ref")
+
+
+class SummarySerializer(UserResourceSerializer):
+
+    class Meta:
+        model = Summary
+        fields = (
+            "total_people_assessed", "total_dead", "total_injured", "total_missing",
+            "total_people_facing_hum_access_cons", "percentage_of_people_facing_hum_access_cons",
+        )
+
+
+class SummaryFocusSerializer(UserResourceSerializer):
+    class Meta:
+        model = SummaryFocus
+        fields = (
+            "percentage_of_people_affected", "total_people_affected", "percentage_of_moderate",
+            "percentage_of_severe", "percentage_of_critical", "percentage_in_need", "total_moderate",
+            "total_severe", "total_critical", "total_in_need", "total_pop_assessed", "total_not_affected",
+            "total_affected", "total_people_in_need", "total_people_moderately_in_need",
+            "total_people_severly_in_need", "total_people_critically_in_need",
+        )
+
+
+class SummaryFocusIssueSerializer(UserResourceSerializer):
+    class Meta:
+        model = SummaryFocusSubSectorIssue
+        fields = ("summary_issue", "focus", "text", "order", "lead_preview_text_ref",)
+
+
+class ScoreRatingSerializer(UserResourceSerializer, TempClientIdMixin):
     class Meta:
         model = ScoreRating
         fields = ("client_id", "score_type", "rating", "reason",)
@@ -63,6 +101,17 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
         source='answer',
         many=True,
         required=False
+    )
+    summary_meta = SummarySerializer(source='summary', required=False, many=True)
+
+    summary_subsector_issue = SummarySubSectorIssueSerializer(
+        source="summary_sub_sector_issue_ary", many=True, required=False
+    )
+    summary_focus_meta = SummaryFocusSerializer(
+        source='summary_focus', many=True, required=False
+    )
+    summary_focus_issue = SummaryFocusIssueSerializer(
+        source="summary_focus_subsector_issue_ary", many=True, required=False
     )
 
     class Meta:
@@ -108,6 +157,10 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             "final_score",
             "score_analytical_density",
             "cna",
+            "summary_meta",
+            "summary_subsector_issue",
+            "summary_focus_meta",
+            "summary_focus_issue",
         )
 
     def validate(self, data):
