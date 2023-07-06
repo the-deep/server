@@ -549,11 +549,13 @@ class SummaryIssue(models.Model):
         PEOPLE_AT_RISKS = 13, 'People At Risks'
         FOCAL_ISSUES = 14, 'Focal Issues'
 
-    sub_sector = models.IntegerField(choices=SubSector.choices, blank=True)
-    focus_sub_sector = models.IntegerField(choices=FocusSubSector.choices, blank=True)
+    sub_sector = models.IntegerField(choices=SubSector.choices, blank=True, null=True)
+    focus_sub_sector = models.IntegerField(choices=FocusSubSector.choices, blank=True, null=True)
     parent = models.ForeignKey(
         'SummaryIssue',
         on_delete=models.CASCADE,
+        blank=True,
+        null=True,
     )
     label = models.CharField(max_length=220)
     full_label = models.CharField(max_length=220, blank=True)

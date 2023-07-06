@@ -16,6 +16,11 @@ from .models import (
     AssessmentRegistry,
     MethodologyAttribute,
     AdditionalDocument,
+    Summary,
+    SummarySubSectorIssue,
+    SummaryIssue,
+    SummaryFocus,
+    SummaryFocusSubSectorIssue,
     ScoreRating,
     ScoreAnalyticalDensity,
     Question,
@@ -46,6 +51,8 @@ from .enums import (
     AssessmentRegistryRatingTypeEnum,
     AssessmentRegistryCNAQuestionSectorTypeEnum,
     AssessmentRegistryCNAQuestionSubSectorTypeEnum,
+    AssessmentRegistrySummarySubSectorTypeEnum,
+    AssessmentRegistrySummaryFocusSubSectorTypeEnum,
 )
 
 
@@ -137,6 +144,64 @@ class CNAType(DjangoObjectType, UserResourceMixin):
         fields = ("id", "question", "answer",)
 
 
+class IssueType(DjangoObjectType, UserResourceMixin):
+    sub_sector = graphene.Field(AssessmentRegistrySummarySubSectorTypeEnum, required=False)
+    sub_sector_display = graphene.String(required=False)
+    focus_sub_sector = graphene.Field(AssessmentRegistrySummaryFocusSubSectorTypeEnum, required=False)
+    focus_sub_sector_display = graphene.String(required=False)
+
+    class Meta:
+        model = SummaryIssue
+        fields = [
+            'id', 'label', 'full_label',
+        ]
+
+    @staticmethod
+    def resolve_sub_sector_display(root, info, **kwargs):
+        if root.sub_sector is not None:
+            return root.get_sub_sector_display()
+        return None
+
+    @staticmethod
+    def resolve_focus_sub_sector_display(root, info, **kwargs):
+        if root.focus_sub_sector is not None:
+            return root.get_focus_sub_sector_display()
+        return None
+
+
+class SummaryType(DjangoObjectType, UserResourceMixin):
+    class Meta:
+        model = Summary
+        fields = [
+            "id", "total_people_assessed", "total_dead", "total_injured", "total_missing",
+            "total_people_facing_hum_access_cons", "percentage_of_people_facing_hum_access_cons",
+        ]
+
+
+class SummarySubSectorIssueType(DjangoObjectType, UserResourceMixin):
+    issue = graphene.Field(IssueType, required=False)
+
+    class Meta:
+        model = SummarySubSectorIssue
+        fields = [
+            "id", "text", "order", "lead_preview_text_ref"
+        ]
+
+    @staticmethod
+    def resolve_issue(root, info, **kwargs):
+        return root.summary_issue
+
+
+class SummaryFocusType(DjangoObjectType, UserResourceMixin):
+    class Meta:
+        model = SummaryFocus
+
+
+class SummaryFocusSubSectorIssueType(DjangoObjectType, UserResourceMixin):
+    class Meta:
+        model = SummaryFocusSubSectorIssue
+
+
 class AssessmentRegistryType(
         DjangoObjectType,
         UserResourceMixin,
@@ -182,6 +247,10 @@ class AssessmentRegistryType(
     locations = graphene.List(graphene.NonNull(ProjectGeoAreaType))
     summary = graphene.List(graphene.NonNull(SummaryType), required=False)
     cna = graphene.List(graphene.NonNull(CNAType), required=False)
+    summary_meta = graphene.Field(SummaryType, required=False)
+    summary_subsector_issue = graphene.List(graphene.NonNull(SummarySubSectorIssueType), required=False)
+    summary_focus_meta = graphene.List(graphene.NonNull(SummaryFocusType), required=False)
+    summary_focus_subsector_issue = graphene.List(graphene.NonNull(SummaryFocusSubSectorIssueType), required=False)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -210,6 +279,22 @@ class AssessmentRegistryType(
     @staticmethod
     def resolve_cna(root, info, **kwargs):
         return Answer.objects.filter(assessment_registry=root)
+
+    @staticmethod
+    def resolve_summary_meta(root, info, **kwargs):
+        return Summary.objects.get(assessment_registry=root)
+
+    @staticmethod
+    def resolve_summary_subsector_issue(root, info, **kwargs):
+        return SummarySubSectorIssue.objects.filter(assessment_registry=root)
+
+    @staticmethod
+    def resolve_summary_focus(root, info, **kwargs):
+        return SummaryFocus.objects.filter(assessment_registry=root)
+
+    @staticmethod
+    def resolve_summary_focus_subsector_issue(root, info, **kwargs):
+        return SummaryFocusSubSectorIssue.objects.filter(assessment_registry=root)
 
 
 class AssessmentRegistryListType(CustomDjangoListObjectType):
