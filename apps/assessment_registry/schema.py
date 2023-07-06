@@ -279,7 +279,7 @@ class AssessmentRegistryType(
     class Meta:
         model = AssessmentRegistry
         fields = (
-            "id", "lead", "project", "lead_group", "bg_countries", "bg_crisis_start_date",
+            "id", "lead", "project", "bg_countries", "bg_crisis_start_date",
             "cost_estimates_usd", "no_of_pages", "data_collection_start_date", "data_collection_end_date",
             "publication_date", "lead_organizations", "international_partners", "donors", "national_partners",
             "governments", "objectives", "data_collection_techniques", "sampling", "limitations", "locations",
