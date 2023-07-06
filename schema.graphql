@@ -1404,8 +1404,7 @@ enum AssessmentRegistryCoordinationTypeEnum {
 }
 
 input AssessmentRegistryCreateInputType {
-  lead: ID
-  leadGroup: ID
+  lead: ID!
   bgCountries: [ID!]!
   bgCrisisStartDate: Date!
   costEstimatesUsd: Int
@@ -1636,7 +1635,6 @@ type AssessmentRegistryType {
   id: ID!
   project: ProjectType!
   lead: LeadDetailType
-  leadGroup: LeadGroupType
   bgCountries: [RegionWithProject!]!
   bgCrisisStartDate: Date!
   costEstimatesUsd: Int
@@ -3708,7 +3706,7 @@ type ProjectDetailType {
   hasAnalysisFramework: Boolean!
   hasAssessmentTemplate: Boolean!
   assessmentRegistry(id: ID!): AssessmentRegistryType
-  assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], leadGroup: [ID], search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
+  assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
   assessmentRegOptions: AssessmentRegistryOptionsType
   analysisOverview: AnalysisOverviewType
   analysis(id: ID!): AnalysisType

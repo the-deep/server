@@ -58,7 +58,6 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
         fields = (
             "id",
             "lead",
-            "lead_group",
             "bg_countries",
             "bg_crisis_start_date",
             "cost_estimates_usd",
