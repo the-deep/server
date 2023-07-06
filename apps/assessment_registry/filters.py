@@ -6,7 +6,7 @@ from user_resource.filters import UserResourceGqlFilterSet
 
 from user.models import User
 from project.models import Project
-from lead.models import Lead, LeadGroup
+from lead.models import Lead
 
 from .models import AssessmentRegistry
 
@@ -18,9 +18,6 @@ class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
     )
     lead = django_filters.ModelMultipleChoiceFilter(
         queryset=Lead.objects.all(),
-    )
-    lead_group = django_filters.ModelMultipleChoiceFilter(
-        queryset=LeadGroup.objects.all(),
     )
     created_by = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all(),
@@ -46,6 +43,5 @@ class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
             return qs
         return qs.filter(
             Q(id=value) |
-            Q(lead__title__icontains=value) |
-            Q(lead_group__title__icontains=value)
+            Q(lead__title__icontains=value)
         ).distinct()
