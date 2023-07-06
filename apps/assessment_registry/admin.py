@@ -5,6 +5,7 @@ from .models import (
     MethodologyAttribute,
     Question,
     Answer,
+    SummaryIssue,
     ScoreRating,
     ScoreAnalyticalDensity,
 )
@@ -63,3 +64,6 @@ class AssessmentRegistryAdmin(admin.ModelAdmin):
         AnalyticalDensityInline,
         AnswerInline,
     ]
+
+
+admin.site.register(SummaryIssue)
