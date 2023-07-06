@@ -7,9 +7,11 @@ from .models import (
     AssessmentRegistry,
     MethodologyAttribute,
     AdditionalDocument,
+    SummaryIssue,
     ScoreRating,
     ScoreAnalyticalDensity,
     Question,
+    SummaryFocusSubSectorIssue,
 )
 
 AssessmentRegistryCrisisTypeEnum = convert_enum_to_graphene_enum(
@@ -81,6 +83,12 @@ AssessmentRegistryCNAQuestionSectorTypeEnum = convert_enum_to_graphene_enum(
 AssessmentRegistryCNAQuestionSubSectorTypeEnum = convert_enum_to_graphene_enum(
     Question.QuestionSubSector, name='AssessmentRegistryCNAQuestionSubSectorTypeEnum'
 )
+AssessmentRegistrySummarySubSectorTypeEnum = convert_enum_to_graphene_enum(
+    SummaryIssue.SubSector, name='AssessmentRegistrySummarySubSectorTypeEnum'
+)
+AssessmentRegistrySummaryFocusSubSectorTypeEnum = convert_enum_to_graphene_enum(
+    SummaryIssue.FocusSubSector, name='AssessmentRegistrySummaryFocusSubSectorTypeEnum'
+)
 enum_map = {
     get_enum_name_from_django_field(field): enum
     for field, enum in (
@@ -106,5 +114,8 @@ enum_map = {
         (ScoreRating.score_type, AssessmentRegistryScoreTypeEnum),
         (ScoreRating.rating, AssessmentRegistryRatingTypeEnum),
         (ScoreAnalyticalDensity.sector, AssessmentRegistrySectorTypeEnum),
+        (SummaryFocusSubSectorIssue.focus, AssessmentRegistryFocusTypeEnum),
+        (SummaryIssue.sub_sector, AssessmentRegistrySummarySubSectorTypeEnum),
+        (SummaryIssue.focus_sub_sector, AssessmentRegistrySummaryFocusSubSectorTypeEnum),
     )
 }
