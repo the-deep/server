@@ -587,7 +587,8 @@ class TestUserSchema(GraphQLTestCase):
             ('exclude-project-2', dict(membersExcludeProject=project2.pk), 2, [user1, user3]),
             ('exclude-af-1', dict(membersExcludeFramework=af1.pk), 1, [user3]),
             ('exclude-af-2', dict(membersExcludeFramework=af2.pk), 3, [user, user1, user3]),
-            ('search', dict(search='Guy'), 1, [user]),
+            ('search-1', dict(search='Normal'), 1, [user]),
+            ('search-2', dict(search='Guy'), 1, [user]),
         ):
             content = _query_check(filters)['data']['users']['results']
             self.assertEqual(len(content), count, (name, content))

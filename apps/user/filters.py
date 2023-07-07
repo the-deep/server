@@ -2,7 +2,7 @@ import django_filters
 from django.db import models
 from django.db.models.functions import Concat
 from utils.graphene.filters import IDFilter
-from .models import Q
+
 
 from .models import User
 
@@ -55,9 +55,11 @@ class UserGqlFilterSet(django_filters.FilterSet):
                     output_field=models.CharField(),
                 )
             ).filter(
-                Q(full_name__icontains=value) |
-                Q(email__icontains=value) |
-                Q(username__icontains=value)
+                models.Q(full_name__icontains=value) |
+                models.Q(first_name__icontains=value) |
+                models.Q(last_name__icontains=value) |
+                models.Q(email__icontains=value) |
+                models.Q(username__icontains=value)
             )
         return qs
 
