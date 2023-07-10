@@ -187,11 +187,11 @@ class AssessmentRegistry(UserResource):
 
     # Focus
     # -- Focus Sectors
-    focuses = ArrayField(models.IntegerField(choices=FocusType.choices, null=True, blank=True), blank=True)
-    sectors = ArrayField(models.IntegerField(choices=SectorType.choices, null=True, blank=True), blank=True)
+    focuses = ArrayField(models.IntegerField(choices=FocusType.choices), default=list)
+    sectors = ArrayField(models.IntegerField(choices=SectorType.choices), default=list)
     protection_info_mgmts = ArrayField(
-        models.IntegerField(choices=ProtectionInfoType.choices, null=True, blank=True),
-        blank=True
+        models.IntegerField(choices=ProtectionInfoType.choices),
+        default=list
     )
     affected_groups = models.IntegerField(choices=AffectedGroupType.choices, null=True, blank=True)
     locations = models.ManyToManyField(Region, related_name='focus_location_assessment_reg', blank=True)
