@@ -1,6 +1,6 @@
 from typing import TypedDict
 
 
-class NlpExtractorUrl(TypedDict):
+class NlpExtractorDocument(TypedDict):
     url: str
     client_id: str

@@ -39,7 +39,7 @@ from lead.models import (
     LeadPreview,
     LeadPreviewImage,
 )
-from lead.typings import NlpExtractorUrl
+from lead.typings import NlpExtractorDocument
 from entry.models import Entry
 from analysis.models import (
     TopicModel,
@@ -83,6 +83,11 @@ class DefaultClientIdGenerator(DeepTokenGenerator):
 
     def _make_hash_value(self, instance, timestamp):
         return str(type(instance)) + str(instance.pk) + str(timestamp)
+
+
+class NlpRequestType:
+    SYSTEM = 0  # Note: SYSTEM refers to requests from CONNECTORS.
+    USER = 1
 
 
 class BaseHandler:
@@ -352,14 +357,14 @@ class LeadExtractionHandler(BaseHandler):
     @classmethod
     def send_trigger_request_to_extractor(
         cls,
-        urls: List[NlpExtractorUrl],
+        documents: List[NlpExtractorDocument],
         callback_url: str,
         high_priority=False,
     ):
         payload = {
-            'urls': urls,
+            'documents': documents,
             'callback_url': callback_url,
-            'type': 'user' if high_priority else 'system',
+            'request_type': NlpRequestType.USER if high_priority else NlpRequestType.SYSTEM,
         }
         try:
             response = requests.post(
