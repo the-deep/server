@@ -28,5 +28,17 @@ class CreateAssessmentRegistry(PsGrapheneMutation):
     permissions = [PP.Permission.CREATE_ASSESSMENT_REGISTRY]
 
 
+class UpdateAssessmentRegistry(PsGrapheneMutation):
+    class Arguments:
+        data = AssessmentRegistryCreateInputType(required=True)
+        id = graphene.ID(required=False)
+
+    result = graphene.Field(AssessmentRegistryType)
+    serializer_class = AssessmentRegistrySerializer
+    model = AssessmentRegistry
+    permissions = [PP.Permission.UPDATE_ASSESSMENT_REGISTRY]
+
+
 class Mutation():
     create_assessment_registry = CreateAssessmentRegistry.Field()
+    update_assessment_registry = UpdateAssessmentRegistry.Field()
