@@ -522,6 +522,7 @@ class ProjectJoinRequestType(DjangoObjectType):
 class RegionWithProject(DjangoObjectType):
     class Meta:
         model = Region
+        skip_registry = True
         only_fields = (
             'id', 'centroid',
         )
