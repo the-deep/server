@@ -270,6 +270,7 @@ class ProjectPermissions(BasePermissions):
 
         # ---------------------AssessmentRegistry
         CREATE_ASSESSMENT_REGISTRY = auto()
+        UPDATE_ASSESSMENT_REGISTRY = auto()
 
     Permission.__name__ = 'ProjectPermission'
 
@@ -289,6 +290,8 @@ class ProjectPermissions(BasePermissions):
         Permission.CREATE_EXPORT: "You don't have permission to create exports",
         Permission.CAN_QUALITY_CONTROL: "You don't have permission to Quality Control",
         Permission.CREATE_ANALYSIS_MODULE: "You don't have permission to Analysis Module",
+        Permission.CREATE_ASSESSMENT_REGISTRY: "You don't have permission to create Assessment Registry",
+        Permission.UPDATE_ASSESSMENT_REGISTRY: "You don't have permission to update Assessment Registry",
     }
 
     # NOTE: If we need to have delete permission as well make sure to update queryset in schema and mutations.
@@ -320,6 +323,7 @@ class ProjectPermissions(BasePermissions):
         Permission.UPDATE_UNIFIED_CONNECTOR,
         Permission.CREATE_ANALYSIS_MODULE,
         Permission.CREATE_ASSESSMENT_REGISTRY,
+        Permission.UPDATE_ASSESSMENT_REGISTRY,
     ]
     ADMIN = [
         *MEMBER,
