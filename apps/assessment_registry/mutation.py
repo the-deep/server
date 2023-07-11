@@ -6,16 +6,31 @@ from utils.graphene.mutation import (
 )
 from deep.permissions import ProjectPermissions as PP
 
-from .models import AssessmentRegistry
-from .schema import AssessmentRegistryType
+from .models import AssessmentRegistry, SummaryIssue
+from .schema import AssessmentRegistryType, IssueType
 from .serializers import (
-    AssessmentRegistrySerializer
+    AssessmentRegistrySerializer,
+    IssueSerializer,
 )
 
 AssessmentRegistryCreateInputType = generate_input_type_for_serializer(
     'AssessmentRegistryCreateInputType',
     serializer_class=AssessmentRegistrySerializer
 )
+IssueCreateInputType = generate_input_type_for_serializer(
+    'IssueCreateInputType',
+    serializer_class=IssueSerializer
+)
+
+
+class CreateIssue(PsGrapheneMutation):
+    class Arguments:
+        data = IssueCreateInputType(required=True)
+
+    result = graphene.Field(IssueType)
+    serializer_class = IssueSerializer
+    model = SummaryIssue
+    permissions = []
 
 
 class CreateAssessmentRegistry(PsGrapheneMutation):
@@ -42,3 +57,7 @@ class UpdateAssessmentRegistry(PsGrapheneMutation):
 class Mutation():
     create_assessment_registry = CreateAssessmentRegistry.Field()
     update_assessment_registry = UpdateAssessmentRegistry.Field()
+
+
+class Mutation():
+    create_issue = CreateIssue.Field()
