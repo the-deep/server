@@ -764,7 +764,7 @@ type AssessmentRegistryType {
   id: ID!
   project: ProjectType!
   lead: LeadDetailType
-  bgCountries: [RegionWithProject!]!
+  bgCountries: [RegionType!]!
   bgCrisisStartDate: Date!
   costEstimatesUsd: Int
   noOfPages: Int
@@ -780,7 +780,7 @@ type AssessmentRegistryType {
   dataCollectionTechniques: String
   sampling: String
   limitations: String
-  locations: [RegionWithProject!]!
+  locations: [RegionType!]!
   matrixScore: Int!
   finalScore: Int!
   clientId: String!
@@ -2637,7 +2637,7 @@ type OrganizationType {
   url: String!
   logo: GalleryFileType
   verified: Boolean!
-  regions: [RegionWithProject!]!
+  regions: [RegionType!]!
   organizationType: OrganizationTypeType
   mergedAs: MergedAsOrganizationType
 }
