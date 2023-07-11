@@ -3855,6 +3855,7 @@ type ProjectMutationType {
   id: ID!
   title: String!
   createAssessmentRegistry(data: AssessmentRegistryCreateInputType!): CreateAssessmentRegistry
+  updateAssessmentRegistry(data: AssessmentRegistryCreateInputType!, id: ID): UpdateAssessmentRegistry
   analysisPillarUpdate(data: AnalysisPillarUpdateInputType!, id: ID!): UpdateAnalysisPillar
   discardedEntryCreate(data: DiscardedEntryCreateInputType!): CreateAnalysisPillarDiscardedEntry
   discardedEntryUpdate(data: DiscardedEntryUpdateInputType!, id: ID!): UpdateAnalysisPillarDiscardedEntry
@@ -3958,6 +3959,7 @@ enum ProjectPermission {
   CAN_QUALITY_CONTROL
   CREATE_ANALYSIS_MODULE
   CREATE_ASSESSMENT_REGISTRY
+  UPDATE_ASSESSMENT_REGISTRY
 }
 
 type ProjectRoleType {
@@ -4622,6 +4624,10 @@ type UpdateAnalysisReport {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisReportType
+type UpdateAssessmentRegistry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssessmentRegistryType
 }
 
 type UpdateConnectorSourceLead {
