@@ -7,6 +7,7 @@ from .models import (
     AssessmentRegistry,
     MethodologyAttribute,
     AdditionalDocument,
+    SummaryIssue,
     Summary,
     SummarySubSectorIssue,
     SummaryFocus,
@@ -30,6 +31,27 @@ class AdditionalDocumentSerializer(TempClientIdMixin, UserResourceSerializer):
     class Meta:
         model = AdditionalDocument
         fields = ("client_id", "document_type", "file", "external_link",)
+
+
+class IssueSerializer(UserResourceSerializer):
+    class Meta:
+        model = SummaryIssue
+        fields = (
+            'sub_sector', 'focus_sub_sector', 'parent', 'label'
+        )
+
+    def validate(self, data):
+        if data.get('sub_sector') is not None and data.get('focus_sub_sector') is not None:
+            raise serializers.ValidationError("Cannot select both sub_sector and focus_sub_sector field.")
+        if data.get('parent') is not None:
+            if data.get('sub_sector') is not None:
+                if data.get('sub_sector') != data.get('parent').sub_sector:
+                    raise serializers.ValidationError("sub_sector does not match between parent and child.")
+
+            if data.get('focus_sub_sector') is not None:
+                if data.get('focus_sub_sector') != data.get('parent').focus_sub_sector:
+                    raise serializers.ValidationError("focus_sub_sector does not match between child and parent.")
+        return data
 
 
 class SummarySubSectorIssueSerializer(UserResourceSerializer, TempClientIdMixin):

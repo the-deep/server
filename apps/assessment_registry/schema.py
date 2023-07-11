@@ -153,7 +153,7 @@ class IssueType(DjangoObjectType, UserResourceMixin):
     class Meta:
         model = SummaryIssue
         fields = [
-            'id', 'label', 'full_label',
+            'id', 'parent', 'label', 'full_label',
         ]
 
     @staticmethod
