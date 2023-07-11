@@ -23,6 +23,7 @@ from notification import schema as notification_schema, mutation as notification
 from assisted_tagging import schema as assisted_tagging_schema
 from unified_connector import schema as unified_connector_schema
 from export import schema as export_schema, mutation as export_mutation
+from assessment_registry import mutation as issue_mutation
 from deep_explore import schema as deep_explore_schema
 from gallery import mutations as gallery_mutation
 
@@ -68,6 +69,7 @@ class Mutation(
     notification_mutation.Mutation,
     export_mutation.Mutation,
     gallery_mutation.Mutation,
+    issue_mutation.Mutation,
     # --
     graphene.ObjectType
 ):
