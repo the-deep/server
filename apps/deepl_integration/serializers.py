@@ -47,13 +47,23 @@ class BaseCallbackSerializer(serializers.Serializer):
         return data
 
 
+class DeeplServerBaseCallbackSerializer(BaseCallbackSerializer):
+    class Status(models.IntegerChoices):
+        # NOTE: Defined by NLP
+        # INITIATED = 1, 'Initiated'  # Not needed or used by deep
+        SUCCESS = 2, 'Success'
+        FAILED = 3, 'Failed'
+        INPUT_URL_PROCESS_FAILED = 4, 'Input url process failed'
+
+    status = serializers.ChoiceField(choices=Status.choices)
+
+
 # -- Lead
-class LeadExtractCallbackSerializer(BaseCallbackSerializer):
+class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
     """
     Serialize deepl extractor
     """
     url = serializers.CharField()
-    extraction_status = serializers.IntegerField()  # 0 = Failed, 1 = Success
     # Data fields
     images_path = serializers.ListField(
         child=serializers.CharField(allow_blank=True),
@@ -68,21 +78,21 @@ class LeadExtractCallbackSerializer(BaseCallbackSerializer):
     def validate(self, data):
         data = super().validate(data)
         # Additional validation
-        if data['extraction_status'] == 1 and data.get('text_path') in [None, '']:
+        if data['status'] == self.Status.SUCCESS and data.get('text_path') in [None, '']:
             raise serializers.ValidationError({
-                'text_path': 'text_path is required when extraction_status is success/1'
+                'text_path': 'text_path is required when extraction status is success'
             })
-        if data['extraction_status'] == 1:
+        if data['status'] == self.Status.SUCCESS:
             errors = {}
             for key in ['text_path', 'total_words_count', 'total_pages']:
                 if key not in data:
-                    errors[key] = f'<{key}> is missing. Required when the extraction is 1 (Success)'
+                    errors[key] = f'<{key}> is missing. Required when the extraction status is Success'
             if errors:
                 raise serializers.ValidationError(errors)
         return data
 
     def create(self, data):
-        success = data['extraction_status'] == 1
+        success = data['status'] == self.Status.SUCCESS
         lead = data['object']   # Added from validate
         if success:
             lead = self.nlp_handler.save_data(
@@ -100,12 +110,11 @@ class LeadExtractCallbackSerializer(BaseCallbackSerializer):
 
 
 # -- Unified Connector
-class UnifiedConnectorLeadExtractCallbackSerializer(BaseCallbackSerializer):
+class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
     """
     Serialize deepl extractor
     """
     url = serializers.CharField()
-    extraction_status = serializers.IntegerField()  # 0 = Failed, 1 = Success
     # Data fields
     images_path = serializers.ListField(
         child=serializers.CharField(allow_blank=True),
@@ -123,17 +132,17 @@ class UnifiedConnectorLeadExtractCallbackSerializer(BaseCallbackSerializer):
             raise serializers.ValidationError({
                 'url': 'Different url found provided vs original connector lead',
             })
-        if data['extraction_status'] == 1:
+        if data['status'] == self.Status.SUCCESS:
             errors = {}
             for key in ['text_path', 'total_words_count', 'total_pages']:
                 if key not in data:
-                    errors[key] = f'<{key}> is missing. Required when the extraction is 1 (Success)'
+                    errors[key] = f'<{key}> is missing. Required when the extraction is Success'
             if errors:
                 raise serializers.ValidationError(errors)
         return data
 
     def create(self, data):
-        success = data['extraction_status'] == 1
+        success = data['status'] == self.Status.SUCCESS
         connector_lead = data['object']   # Added from validate
         if success:
             return self.nlp_handler.save_data(
@@ -197,17 +206,6 @@ class AssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializ
         )
 
 
-# -- Analysis
-class DeeplServerBaseCallbackSerializer(BaseCallbackSerializer):
-    class Status(models.IntegerChoices):
-        # NOTE: Defined by NLP
-        SUCCESS = 2, 'Success'
-        FAILED = 3, 'Failed'
-        INPUT_URL_PROCESS_FAILED = 4, 'Input url process failed'
-
-    status = serializers.ChoiceField(choices=Status.choices)
-
-
 class EntriesCollectionBaseCallbackSerializer(DeeplServerBaseCallbackSerializer):
     model: Type[DeeplTrackBaseModel]
     presigned_s3_url = serializers.URLField()
@@ -222,6 +220,7 @@ class EntriesCollectionBaseCallbackSerializer(DeeplServerBaseCallbackSerializer)
         return obj
 
 
+# -- Analysis
 class AnalysisTopicModelCallbackSerializer(EntriesCollectionBaseCallbackSerializer):
     model = TopicModel
     nlp_handler = AnalysisTopicModelHandler
