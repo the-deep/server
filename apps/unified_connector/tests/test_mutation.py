@@ -15,6 +15,7 @@ from unified_connector.models import (
     ConnectorLeadPreviewImage,
 )
 from deepl_integration.handlers import UnifiedConnectorLeadHandler
+from deepl_integration.serializers import DeeplServerBaseCallbackSerializer
 from unified_connector.factories import (
     ConnectorLeadFactory,
     ConnectorSourceFactory,
@@ -496,7 +497,7 @@ class UnifiedConnectorCallbackApiTest(TestCase):
             text_path='https://example.com/url-where-data-is-fetched-from-mock-response',
             total_words_count=100,
             total_pages=10,
-            extraction_status=0,  # Failed
+            status=DeeplServerBaseCallbackSerializer.Status.FAILED.value,
         )
 
         response = self.client.post(url, data)
@@ -522,7 +523,7 @@ class UnifiedConnectorCallbackApiTest(TestCase):
             text_path='https://example.com/url-where-data-is-fetched-from-mock-response',
             total_words_count=100,
             total_pages=10,
-            extraction_status=1,  # Failed
+            status=DeeplServerBaseCallbackSerializer.Status.SUCCESS.value,
         )
         response = self.client.post(url, data)
         self.assert_400(response)

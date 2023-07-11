@@ -26,6 +26,7 @@ from organization.serializers import SimpleOrganizationSerializer
 from lead.filter_set import LeadFilterSet
 from lead.serializers import SimpleLeadGroupSerializer
 from deepl_integration.handlers import LeadExtractionHandler
+from deepl_integration.serializers import DeeplServerBaseCallbackSerializer
 from entry.models import (
     Entry,
     ProjectEntryLabel,
@@ -1800,7 +1801,7 @@ class TestExtractorCallback(TestCase):
             'url': 'http://random.com/pdf_file.pdf',
             'total_words_count': 300,
             'total_pages': 4,
-            'extraction_status': 0,
+            'status': DeeplServerBaseCallbackSerializer.Status.FAILED.value,
         }
 
         # After callback [Failure]
@@ -1811,7 +1812,7 @@ class TestExtractorCallback(TestCase):
         self.assertEqual(LeadPreview.objects.filter(lead=self.lead).count(), 0)
         self.assertEqual(LeadPreviewImage.objects.filter(lead=self.lead).count(), 0)
 
-        data['extraction_status'] = 1
+        data['status'] = DeeplServerBaseCallbackSerializer.Status.SUCCESS.value
         # After callback [Success]
         with self.captureOnCommitCallbacks(execute=True):
             response = self.client.post(url, data)
