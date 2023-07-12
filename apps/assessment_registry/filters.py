@@ -3,12 +3,14 @@ from django.db import models
 from django.db.models import Q
 
 from user_resource.filters import UserResourceGqlFilterSet
+from utils.graphene.filters import SimpleInputFilter
 
 from user.models import User
 from project.models import Project
 from lead.models import Lead
 
-from .models import AssessmentRegistry
+from .models import AssessmentRegistry, SummaryIssue
+from .enums import AssessmentRegistrySummarySubSectorTypeEnum, AssessmentRegistrySummaryFocusSubSectorTypeEnum
 
 
 class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
@@ -45,3 +47,12 @@ class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
             Q(id=value) |
             Q(lead__title__icontains=value)
         ).distinct()
+
+
+class IssueGQFilterSet(django_filters.FilterSet):
+    sub_sector = SimpleInputFilter(AssessmentRegistrySummarySubSectorTypeEnum)
+    focus_sub_sector = SimpleInputFilter(AssessmentRegistrySummaryFocusSubSectorTypeEnum)
+
+    class Meta:
+        model = SummaryIssue
+        fields = ('label', 'parent',)
