@@ -1,6 +1,6 @@
 import graphene
 from graphene_django import DjangoObjectType
-from graphene_django_extras import DjangoObjectField
+from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.common import render_string_for_graphql
 from utils.graphene.types import ClientIdMixin, CustomDjangoListObjectType
@@ -26,7 +26,7 @@ from .models import (
     Question,
     Answer,
 )
-from .filters import AssessmentRegistryGQFilterSet
+from .filters import AssessmentRegistryGQFilterSet, IssueGQFilterSet
 from .enums import (
     AssessmentRegistryCrisisTypeEnum,
     AssessmentRegistryPreparednessTypeEnum,
@@ -169,6 +169,12 @@ class IssueType(DjangoObjectType, UserResourceMixin):
         return None
 
 
+class IssueListType(CustomDjangoListObjectType):
+    class Meta:
+        model = SummaryIssue
+        filterset_class = IssueGQFilterSet
+
+
 class SummaryType(DjangoObjectType, UserResourceMixin):
     class Meta:
         model = Summary
@@ -198,6 +204,9 @@ class SummaryFocusType(DjangoObjectType, UserResourceMixin):
 
 
 class SummaryFocusSubSectorIssueType(DjangoObjectType, UserResourceMixin):
+    focus = graphene.Field(AssessmentRegistryFocusTypeEnum, required=False)
+    focus_display = graphene.String(required=False)
+
     class Meta:
         model = SummaryFocusSubSectorIssue
 
@@ -303,7 +312,7 @@ class AssessmentRegistryListType(CustomDjangoListObjectType):
         filterset_class = AssessmentRegistryGQFilterSet
 
 
-class Query:
+class ProjectQuery:
     assessment_registry = DjangoObjectField(AssessmentRegistryType)
     assessment_registries = DjangoPaginatedListObjectField(
         AssessmentRegistryListType,
@@ -320,3 +329,13 @@ class Query:
     @staticmethod
     def resolve_assessment_registry_options(root, info, **kwargs):
         return AssessmentRegistryOptionsType
+
+
+class Query():
+    issue = DjangoObjectField(IssueType)
+    issues = DjangoPaginatedListObjectField(
+        IssueListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
