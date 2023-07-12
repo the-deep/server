@@ -312,7 +312,7 @@ class AssessmentRegistryType(
     additional_documents = graphene.List(graphene.NonNull(AdditionalDocumentType), required=False)
     score_ratings = graphene.List(graphene.NonNull(ScoreRatingType), required=True)
     score_analytical_density = graphene.List(graphene.NonNull(ScoreAnalyticalDensityType), required=True)
-    lead = graphene.Field(LeadDetailType, required=False)
+    lead = graphene.NonNull(LeadDetailType)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
