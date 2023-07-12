@@ -763,7 +763,7 @@ enum AssessmentRegistrySectorTypeEnum {
 type AssessmentRegistryType {
   id: ID!
   project: ProjectType!
-  lead: LeadDetailType
+  lead: LeadDetailType!
   bgCountries: [RegionType!]!
   bgCrisisStartDate: Date!
   costEstimatesUsd: Int
