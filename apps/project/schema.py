@@ -34,7 +34,7 @@ from geo.schema import RegionDetailType, ProjectScopeQuery as GeoQuery
 from quality_assurance.schema import Query as QualityAssuranceQuery
 from ary.schema import Query as AryQuery
 from analysis.schema import Query as AnalysisQuery
-from assessment_registry.schema import Query as AssessmentRegistryQuery
+from assessment_registry.schema import ProjectQuery as AssessmentRegistryQuery
 from unified_connector.schema import UnifiedConnectorQueryType
 from assisted_tagging.schema import AssistedTaggingQueryType
 
