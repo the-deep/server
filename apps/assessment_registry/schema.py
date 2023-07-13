@@ -51,6 +51,7 @@ from .enums import (
     AssessmentRegistryRatingTypeEnum,
     AssessmentRegistryCNAQuestionSectorTypeEnum,
     AssessmentRegistryCNAQuestionSubSectorTypeEnum,
+    AssessmentRegistrySummarySectorTypeEnum,
     AssessmentRegistrySummarySubSectorTypeEnum,
     AssessmentRegistrySummaryFocusSubSectorTypeEnum,
 )
@@ -68,12 +69,63 @@ class QuestionType(DjangoObjectType, UserResourceMixin):
     sub_sector_display = EnumDescription(source='get_sub_sector_display', required=False)
 
 
+class SummarySubSectorType(graphene.ObjectType):
+    sub_sector = graphene.String()
+    sub_sector_value = graphene.Int()
+
+
+class SummaryOptionType(graphene.ObjectType):
+    sector = graphene.Field(AssessmentRegistrySummarySectorTypeEnum, required=False)
+#    sector_value = graphene.Int()
+    sub_sector = graphene.List(AssessmentRegistrySummarySubSectorTypeEnum, required=False)
+
+
 class AssessmentRegistryOptionsType(graphene.ObjectType):
     cna_questions = graphene.List(graphene.NonNull(QuestionType), required=False)
+    summary_options = graphene.List(SummaryOptionType)
 
     @staticmethod
     def resolve_cna_questions(root, info, **kwargs):
         return Question.objects.all()
+
+    @staticmethod
+    def resolve_summary_options(root, info, **kwargs):
+        return [
+            SummaryOptionType(
+                sector=enum,
+                sub_sector=[
+                    enum for enum, _ in SummaryIssue.SubSector.choices if 0 <= enum <= 5
+                ]
+            ) for enum, _ in Summary.Sector.choices if enum == 0
+        ] + [
+            SummaryOptionType(
+                sector=enum,
+                sub_sector=[
+                    enum for enum, _ in SummaryIssue.SubSector.choices if 6 <= enum <= 9
+                ]
+            ) for enum, _ in Summary.Sector.choices if enum == 1
+        ] + [
+            SummaryOptionType(
+                sector=enum,
+                sub_sector=[
+                    enum for enum, _ in SummaryIssue.SubSector.choices if 10 <= enum <= 14
+                ]
+            ) for enum, _ in Summary.Sector.choices if enum == 2
+        ] + [
+            SummaryOptionType(
+                sector=enum,
+                sub_sector=[
+                    enum for enum, _ in SummaryIssue.SubSector.choices if 15 <= enum <= 18
+                ]
+            ) for enum, _ in Summary.Sector.choices if enum == 3
+        ] + [
+            SummaryOptionType(
+                sector=enum,
+                sub_sector=[
+                    enum for enum, _ in SummaryIssue.SubSector.choices if 19 <= enum <= 21
+                ]
+            ) for enum, _ in Summary.Sector.choices if enum == 4
+        ]
 
 
 class ScoreRatingType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
@@ -257,9 +309,9 @@ class AssessmentRegistryType(
     summary = graphene.List(graphene.NonNull(SummaryType), required=False)
     cna = graphene.List(graphene.NonNull(CNAType), required=False)
     summary_meta = graphene.Field(SummaryType, required=False)
-    summary_subsector_issue = graphene.List(graphene.NonNull(SummarySubSectorIssueType), required=False)
-    summary_focus_meta = graphene.List(graphene.NonNull(SummaryFocusType), required=False)
-    summary_focus_subsector_issue = graphene.List(graphene.NonNull(SummaryFocusSubSectorIssueType), required=False)
+    summary_subsector_issue = graphene.List(SummarySubSectorIssueType, required=False)
+    summary_focus_meta = graphene.List(SummaryFocusType, required=False)
+    summary_focus_subsector_issue = graphene.List(SummaryFocusSubSectorIssueType, required=False)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
