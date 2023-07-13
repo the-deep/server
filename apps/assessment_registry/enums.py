@@ -7,6 +7,7 @@ from .models import (
     AssessmentRegistry,
     MethodologyAttribute,
     AdditionalDocument,
+    Summary,
     SummaryIssue,
     ScoreRating,
     ScoreAnalyticalDensity,
@@ -82,6 +83,9 @@ AssessmentRegistryCNAQuestionSectorTypeEnum = convert_enum_to_graphene_enum(
 )
 AssessmentRegistryCNAQuestionSubSectorTypeEnum = convert_enum_to_graphene_enum(
     Question.QuestionSubSector, name='AssessmentRegistryCNAQuestionSubSectorTypeEnum'
+)
+AssessmentRegistrySummarySectorTypeEnum = convert_enum_to_graphene_enum(
+    Summary.Sector, name='AssessmentRegistrySummarySectorTypeEnum'
 )
 AssessmentRegistrySummarySubSectorTypeEnum = convert_enum_to_graphene_enum(
     SummaryIssue.SubSector, name='AssessmentRegistrySummarySubSectorTypeEnum'
