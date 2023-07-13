@@ -563,7 +563,7 @@ input AssessmentRegistryCreateInputType {
   focuses: [AssessmentRegistryFocusTypeEnum!]
   sectors: [AssessmentRegistrySectorTypeEnum!]
   protectionInfoMgmts: [AssessmentRegistryProtectionInfoTypeEnum!]
-  affectedGroups: AssessmentRegistryAffectedGroupTypeEnum
+  affectedGroups: [AssessmentRegistryAffectedGroupTypeEnum!]
   methodologyAttributes: [MethodologyAttributeInputType!]
   additionalDocuments: [AdditionalDocumentInputType!]
   scoreRatings: [ScoreRatingInputType!]
@@ -808,8 +808,7 @@ type AssessmentRegistryType {
   focuses: [AssessmentRegistryFocusTypeEnum!]!
   sectors: [AssessmentRegistrySectorTypeEnum!]!
   protectionInfoMgmts: [AssessmentRegistryProtectionInfoTypeEnum!]!
-  affectedGroups: AssessmentRegistryAffectedGroupTypeEnum!
-  affectedGroupsDisplay: EnumDescription!
+  affectedGroups: [AssessmentRegistryAffectedGroupTypeEnum]
   methodologyAttributes: [MethodologyAttributeType!]
   additionalDocuments: [AdditionalDocumentType!]
   scoreRatings: [ScoreRatingType!]!
