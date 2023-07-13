@@ -338,9 +338,6 @@ class ScoreRating(UserResource):
     rating = models.IntegerField(choices=RatingType.choices, default=RatingType.FAIR)
     reason = models.TextField(blank=True, null=True)
 
-    class Meta:
-        unique_together = [['assessment_registry', 'score_type', 'rating']]
-
 
 class ScoreAnalyticalDensity(UserResource):
     assessment_registry = models.ForeignKey(
@@ -350,9 +347,6 @@ class ScoreAnalyticalDensity(UserResource):
     )
     sector = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
     value = models.IntegerField(validators=[MaxValueValidator(49), MinValueValidator(1)])
-
-    class Meta:
-        unique_together = [['assessment_registry', 'sector', 'value']]
 
 
 class Question(UserResource):

@@ -54,7 +54,7 @@ class UpdateAssessmentRegistry(PsGrapheneMutation):
     permissions = [PP.Permission.UPDATE_ASSESSMENT_REGISTRY]
 
 
-class Mutation():
+class ProjectMutation():
     create_assessment_registry = CreateAssessmentRegistry.Field()
     update_assessment_registry = UpdateAssessmentRegistry.Field()
 
