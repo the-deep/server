@@ -193,7 +193,11 @@ class AssessmentRegistry(UserResource):
         models.IntegerField(choices=ProtectionInfoType.choices),
         default=list
     )
-    affected_groups = models.IntegerField(choices=AffectedGroupType.choices, null=True, blank=True)
+    affected_groups = ArrayField(
+        models.IntegerField(choices=AffectedGroupType.choices),
+        default=list
+    )
+
     locations = models.ManyToManyField(Region, related_name='focus_location_assessment_reg', blank=True)
 
     # Score Fields
