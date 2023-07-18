@@ -6,7 +6,7 @@ from geo.factories import RegionFactory
 from gallery.factories import FileFactory
 from project.factories import ProjectFactory
 from user.factories import UserFactory
-from lead.factories import LeadGroupFactory, LeadFactory
+from lead.factories import LeadFactory
 from assessment_registry.factories import (
     QuestionFactory,
     MethodologyAttributeFactory,
@@ -51,9 +51,6 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
                   sectors
                   protectionInfoMgmts
                   lead {
-                    id
-                  }
-                  leadGroup {
                     id
                   }
                   bgCrisisTypeDisplay
@@ -112,13 +109,11 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         non_member_user = UserFactory.create()
 
         lead_1 = LeadFactory.create(project=project1)
-        lead_group2 = LeadGroupFactory.create(project=project1)
 
         project1.add_member(member_user)
         assessment_registry = AssessmentRegistryFactory.create(
             project=project1,
             lead=lead_1,
-            lead_group=lead_group2,
             confidentiality=AssessmentRegistry.ConfidentialityType.UNPROTECTED,
             bg_countries=[self.country1.id, self.country2.id],
             lead_organizations=self.org_list,
@@ -195,7 +190,6 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         content = _query_check(assessment_registry)
         self.assertIsNotNone(content['data']['project']['assessmentRegistry']['id'])
         self.assertEqual(content['data']['project']['assessmentRegistry']['lead']['id'], str(lead_1.id), )
-        self.assertEqual(content['data']['project']['assessmentRegistry']['leadGroup']['id'], str(lead_group2.id), )
         self.assertIsNotNone(content['data']['project']['assessmentRegistry']['bgCountries'])
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['bgCountries']), 2)
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['leadOrganizations']), 2)
@@ -241,18 +235,13 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         lead3, lead4, lead5 = LeadFactory.create_batch(3, project=project1)
         confidential_lead = LeadFactory.create(project=project2, confidentiality=Lead.Confidentiality.CONFIDENTIAL)
 
-        lead_group_confidential = LeadGroupFactory.create(project=project2)
-        lead_group3, lead_group4, lead_group5 = LeadGroupFactory.create_batch(3, project=project1)
-
         leads = [lead3, lead4, lead5]
-        lead_groups = [lead_group3, lead_group4, lead_group5]
 
         assessment_registries = []
         for i in range(len(leads)):
             assessment_reg = AssessmentRegistryFactory.create(
                 project=project1,
                 lead=leads[i],
-                lead_group=lead_groups[i],
                 confidentiality=AssessmentRegistry.ConfidentialityType.UNPROTECTED,
                 bg_countries=[self.country1.id, self.country2.id],
                 lead_organizations=self.org_list,
@@ -266,7 +255,6 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         AssessmentRegistryFactory.create(
             project=project1,
             lead=confidential_lead,
-            lead_group=lead_group_confidential,
             confidentiality=AssessmentRegistry.ConfidentialityType.CONFIDENTIAL,
             bg_countries=[self.country1.id, self.country2.id],
             lead_organizations=self.org_list,
