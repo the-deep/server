@@ -53,6 +53,7 @@ from .enums import (
     AssessmentRegistryCNAQuestionSubSectorTypeEnum,
     AssessmentRegistrySummarySectorTypeEnum,
     AssessmentRegistrySummarySubSectorTypeEnum,
+    AssessmentRegistrySummaryFocusSectorTypeEnum,
     AssessmentRegistrySummaryFocusSubSectorTypeEnum,
 )
 
@@ -76,13 +77,18 @@ class SummarySubSectorType(graphene.ObjectType):
 
 class SummaryOptionType(graphene.ObjectType):
     sector = graphene.Field(AssessmentRegistrySummarySectorTypeEnum, required=False)
-#    sector_value = graphene.Int()
     sub_sector = graphene.List(AssessmentRegistrySummarySubSectorTypeEnum, required=False)
+
+
+class SummaryFocusOptionType(graphene.ObjectType):
+    sector = graphene.Field(AssessmentRegistrySummaryFocusSectorTypeEnum, required=False)
+    sub_sector = graphene.List(AssessmentRegistrySummaryFocusSubSectorTypeEnum, required=False)
 
 
 class AssessmentRegistryOptionsType(graphene.ObjectType):
     cna_questions = graphene.List(graphene.NonNull(QuestionType), required=False)
     summary_options = graphene.List(SummaryOptionType)
+    summary_focus_options = graphene.List(SummaryFocusOptionType)
 
     @staticmethod
     def resolve_cna_questions(root, info, **kwargs):
@@ -125,6 +131,38 @@ class AssessmentRegistryOptionsType(graphene.ObjectType):
                     enum for enum, _ in SummaryIssue.SubSector.choices if 19 <= enum <= 21
                 ]
             ) for enum, _ in Summary.Sector.choices if enum == 4
+        ]
+
+    @staticmethod
+    def resolve_summary_focus_options(root, info, **kwargs):
+        return [
+            SummaryFocusOptionType(
+                sector=enum,
+                sub_sector=[
+                    enum for enum, _ in SummaryIssue.SubSector.choices if 0 <= enum <= 2
+                ]
+            ) for enum, _ in Summary.Sector.choices if enum == 0
+        ] + [
+            SummaryFocusOptionType(
+                sector=enum,
+                sub_sector=[
+                    enum for enum, _ in SummaryIssue.SubSector.choices if 3 <= enum <= 5
+                ]
+            ) for enum, _ in Summary.Sector.choices if enum == 1
+        ] + [
+            SummaryFocusOptionType(
+                sector=enum,
+                sub_sector=[
+                    enum for enum, _ in SummaryIssue.SubSector.choices if 6 <= enum <= 9
+                ]
+            ) for enum, _ in Summary.Sector.choices if enum == 2
+        ] + [
+            SummaryFocusOptionType(
+                sector=enum,
+                sub_sector=[
+                    enum for enum, _ in SummaryIssue.SubSector.choices if 10 <= enum <= 14
+                ]
+            ) for enum, _ in Summary.Sector.choices if enum == 3
         ]
 
 

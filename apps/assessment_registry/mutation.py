@@ -25,7 +25,7 @@ IssueCreateInputType = generate_input_type_for_serializer(
 
 class CreateIssue(PsGrapheneMutation):
     class Arguments:
-        data = IssueCreateInputType(required=True)
+        data = IssueCreateInputType()
 
     result = graphene.Field(IssueType)
     serializer_class = IssueSerializer
@@ -35,7 +35,7 @@ class CreateIssue(PsGrapheneMutation):
 
 class CreateAssessmentRegistry(PsGrapheneMutation):
     class Arguments:
-        data = AssessmentRegistryCreateInputType(required=True)
+        data = AssessmentRegistryCreateInputType()
 
     result = graphene.Field(AssessmentRegistryType)
     serializer_class = AssessmentRegistrySerializer
@@ -45,7 +45,7 @@ class CreateAssessmentRegistry(PsGrapheneMutation):
 
 class UpdateAssessmentRegistry(PsGrapheneMutation):
     class Arguments:
-        data = AssessmentRegistryCreateInputType(required=True)
+        data = AssessmentRegistryCreateInputType()
         id = graphene.ID(required=False)
 
     result = graphene.Field(AssessmentRegistryType)
