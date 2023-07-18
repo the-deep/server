@@ -5,7 +5,7 @@ from geo.factories import RegionFactory
 from gallery.factories import FileFactory
 from project.factories import ProjectFactory
 from user.factories import UserFactory
-from lead.factories import LeadGroupFactory, LeadFactory
+from lead.factories import LeadFactory
 from assessment_registry.factories import QuestionFactory
 from assessment_registry.models import (
     AssessmentRegistry,
@@ -58,9 +58,6 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     lead {
                       id
                     }
-                    leadGroup {
-                      id
-                    }
                     methodologyAttributes {
                       unitOfReportingDisplay
                       unitOfReporting
@@ -108,7 +105,6 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
         self.member_user = UserFactory.create()
         self.project1 = ProjectFactory.create()
         self.lead1 = LeadFactory.create(project=self.project1)
-        self.lead_group1 = LeadGroupFactory.create(project=self.project1)
         self.organization1 = OrganizationFactory.create()
         self.organization2 = OrganizationFactory.create()
         self.region1 = RegionFactory.create()
@@ -146,7 +142,6 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                 self.genum(AssessmentRegistry.FocusType.DISPLACEMENT)
             ],
             frequency=self.genum(AssessmentRegistry.FrequencyType.ONE_OFF),
-            leadGroup=self.lead_group1.id,
             protectionInfoMgmts=[
                 self.genum(AssessmentRegistry.ProtectionInfoType.PROTECTION_MONITORING),
                 self.genum(AssessmentRegistry.ProtectionInfoType.PROTECTION_NEEDS_ASSESSMENT)
