@@ -9,6 +9,7 @@ from .models import (
     AdditionalDocument,
     Summary,
     SummaryIssue,
+    SummaryFocus,
     ScoreRating,
     ScoreAnalyticalDensity,
     Question,
@@ -87,11 +88,14 @@ AssessmentRegistryCNAQuestionSubSectorTypeEnum = convert_enum_to_graphene_enum(
 AssessmentRegistrySummarySectorTypeEnum = convert_enum_to_graphene_enum(
     Summary.Sector, name='AssessmentRegistrySummarySectorTypeEnum'
 )
-AssessmentRegistrySummarySubSectorTypeEnum = convert_enum_to_graphene_enum(
-    SummaryIssue.SubSector, name='AssessmentRegistrySummarySubSectorTypeEnum'
+AssessmentRegistrySummaryFocusSectorTypeEnum = convert_enum_to_graphene_enum(
+    SummaryFocus.Sector, name='AssessmentRegistrySummaryFocusSectorTypeEnum'
 )
 AssessmentRegistrySummaryFocusSubSectorTypeEnum = convert_enum_to_graphene_enum(
     SummaryIssue.FocusSubSector, name='AssessmentRegistrySummaryFocusSubSectorTypeEnum'
+)
+AssessmentRegistrySummarySubSectorTypeEnum = convert_enum_to_graphene_enum(
+    SummaryIssue.SubSector, name='AssessmentRegistrySummarySubSectorTypeEnum'
 )
 enum_map = {
     get_enum_name_from_django_field(field): enum

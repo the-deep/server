@@ -1618,6 +1618,7 @@ type AssessmentRegistryListType {
 type AssessmentRegistryOptionsType {
   cnaQuestions: [QuestionType!]
   summaryOptions: [SummaryOptionType]
+  summaryFocusOptions: [SummaryFocusOptionType]
 }
 
 enum AssessmentRegistryPreparednessTypeEnum {
@@ -1692,6 +1693,14 @@ enum AssessmentRegistrySectorTypeEnum {
   INTER_CROSS_SECTOR
 }
 
+enum AssessmentRegistrySummaryFocusSectorTypeEnum {
+  IMPACT
+  HUMANITARIAN_CONDITIONS
+  PRIORITIES_AND_PREFERENCES
+  CONCLUSIONS
+  HUMANITARIAN_POPULATION_FIGURES
+}
+
 enum AssessmentRegistrySummaryFocusSubSectorTypeEnum {
   DRIVERS
   IMPACT_ON_PEOPLE
@@ -1746,7 +1755,7 @@ enum AssessmentRegistrySummarySubSectorTypeEnum {
 type AssessmentRegistryType {
   id: ID!
   project: ProjectType!
-  lead: LeadDetailType!
+  lead: LeadType!
   bgCountries: [RegionType!]!
   bgCrisisStartDate: Date!
   costEstimatesUsd: Int
@@ -3854,7 +3863,7 @@ type ProjectDetailType {
   hasAssessmentTemplate: Boolean!
   assessmentRegistry(id: ID!): AssessmentRegistryType
   assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
-  assessmentRegOptions: AssessmentRegistryOptionsType
+  assessmentRegistryOptions: AssessmentRegistryOptionsType
   analysisOverview: AnalysisOverviewType
   analysis(id: ID!): AnalysisType
   analyses(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisListType
@@ -3992,8 +4001,8 @@ type ProjectMembershipType {
 type ProjectMutationType {
   id: ID!
   title: String!
-  createAssessmentRegistry(data: AssessmentRegistryCreateInputType!): CreateAssessmentRegistry
-  updateAssessmentRegistry(data: AssessmentRegistryCreateInputType!, id: ID): UpdateAssessmentRegistry
+  createAssessmentRegistry(data: AssessmentRegistryCreateInputType): CreateAssessmentRegistry
+  updateAssessmentRegistry(data: AssessmentRegistryCreateInputType, id: ID): UpdateAssessmentRegistry
   analysisPillarUpdate(data: AnalysisPillarUpdateInputType!, id: ID!): UpdateAnalysisPillar
   discardedEntryCreate(data: DiscardedEntryCreateInputType!): CreateAnalysisPillarDiscardedEntry
   discardedEntryUpdate(data: DiscardedEntryUpdateInputType!, id: ID!): UpdateAnalysisPillarDiscardedEntry
@@ -4628,6 +4637,11 @@ input SummaryFocusIssueInputType {
   text: String
   order: Int
   leadPreviewTextRef: GenericScalar
+}
+
+type SummaryFocusOptionType {
+  sector: AssessmentRegistrySummaryFocusSectorTypeEnum
+  subSector: [AssessmentRegistrySummaryFocusSubSectorTypeEnum]
 }
 
 type SummaryFocusSubSectorIssueType {
