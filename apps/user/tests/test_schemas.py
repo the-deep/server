@@ -560,8 +560,9 @@ class TestUserSchema(GraphQLTestCase):
         project1, project2 = ProjectFactory.create_batch(2)
         af1, af2 = AnalysisFrameworkFactory.create_batch(2)
 
-        user = UserFactory.create(first_name='Normal Guy')
-        user1, user2, user3 = UserFactory.create_batch(3)
+        user = UserFactory.create(first_name='Normal', last_name='Guy', email='test@testing.com')
+        user1 = UserFactory.create(first_name='Admin', last_name='Guy', email='admin@testing.com')
+        user2, user3 = UserFactory.create_batch(2)
         project1.add_member(user1)
         project1.add_member(user2)
         project2.add_member(user2)
@@ -581,17 +582,25 @@ class TestUserSchema(GraphQLTestCase):
         self.force_login(user)
 
         # Without any filters
-        for name, filters, count, users in (
-            ('no-filter', dict(), 4, [user, user1, user2, user3]),
-            ('exclude-project-1', dict(membersExcludeProject=project1.pk), 2, [user, user3]),
-            ('exclude-project-2', dict(membersExcludeProject=project2.pk), 2, [user1, user3]),
-            ('exclude-af-1', dict(membersExcludeFramework=af1.pk), 1, [user3]),
-            ('exclude-af-2', dict(membersExcludeFramework=af2.pk), 3, [user, user1, user3]),
-            ('search-1', dict(search='Normal'), 1, [user]),
-            ('search-2', dict(search='Guy'), 1, [user]),
+        for name, filters, users in (
+            ('no-filter', dict(), [user, user1, user2, user3]),
+            ('exclude-project-1', dict(membersExcludeProject=project1.pk), [user, user3]),
+            ('exclude-project-2', dict(membersExcludeProject=project2.pk), [user1, user3]),
+            ('exclude-af-1', dict(membersExcludeFramework=af1.pk), [user3]),
+            ('exclude-af-2', dict(membersExcludeFramework=af2.pk), [user, user1, user3]),
+            ('search-fist_name', dict(search='Normal'), [user]),
+            ('search-last_name', dict(search='Guy'), [user, user1]),
+            ('search-email', dict(search='test@testing.com'), [user]),
+            ('search-partial_email-01', dict(search='test@'), [user]),
+            ('search-partial_email-02', dict(search='@testing.com'), [user, user1]),
+            ('search-full_name', dict(search='Normal Guy'), [user]),
+            ('search-with-space-after-first_name', dict(search='Normal '), [user]),
+            ('search-with-space-before-first_name', dict(search=' Normal'), [user]),
+            ('search-with-space-before-after-last_name', dict(search=' Guy '), [user, user1]),
+            ('search-with-space-after-full-name', dict(search='Normal Guy '), [user]),
         ):
             content = _query_check(filters)['data']['users']['results']
-            self.assertEqual(len(content), count, (name, content))
+            self.assertEqual(len(content), len(users), (name, content))
             self.assertListIds(content, users, (name, content))
 
     def test_get_user_hidden_email(self):
