@@ -621,7 +621,6 @@ enum AssessmentRegistryDetailTypeEnum {
 }
 
 enum AssessmentRegistryDocumentTypeEnum {
-  EXECUTIVE_SUMMARY
   ASSESSMENT_DATABASE
   QUESTIONNAIRE
   MISCELLANEOUS
@@ -776,6 +775,7 @@ type AssessmentRegistryType {
   donors: [OrganizationType!]!
   nationalPartners: [OrganizationType!]!
   governments: [OrganizationType!]!
+  executiveSummary: String!
   objectives: String
   dataCollectionTechniques: String
   sampling: String
