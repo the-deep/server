@@ -65,6 +65,7 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             "data_collection_start_date",
             "data_collection_end_date",
             "publication_date",
+            "executive_summary",
             "lead_organizations",
             "international_partners",
             "donors",
