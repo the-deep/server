@@ -541,6 +541,7 @@ input AssessmentRegistryCreateInputType {
   dataCollectionStartDate: Date
   dataCollectionEndDate: Date
   publicationDate: Date
+  executiveSummary: String
   leadOrganizations: [ID!]
   internationalPartners: [ID!]
   donors: [ID!]
@@ -621,7 +622,6 @@ enum AssessmentRegistryDetailTypeEnum {
 }
 
 enum AssessmentRegistryDocumentTypeEnum {
-  EXECUTIVE_SUMMARY
   ASSESSMENT_DATABASE
   QUESTIONNAIRE
   MISCELLANEOUS
@@ -776,6 +776,7 @@ type AssessmentRegistryType {
   donors: [OrganizationType!]!
   nationalPartners: [OrganizationType!]!
   governments: [OrganizationType!]!
+  executiveSummary: String!
   objectives: String
   dataCollectionTechniques: String
   sampling: String
@@ -2472,6 +2473,7 @@ input MethodologyAttributeInputType {
 type MethodologyAttributeType {
   id: ID!
   clientId: String
+  samplingSize: Int
   proximity: AssessmentRegistryProximityTypeEnum!
   createdAt: DateTime!
   modifiedAt: DateTime!
