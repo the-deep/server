@@ -1412,6 +1412,7 @@ input AssessmentRegistryCreateInputType {
   dataCollectionStartDate: Date
   dataCollectionEndDate: Date
   publicationDate: Date
+  executiveSummary: String
   leadOrganizations: [ID!]
   internationalPartners: [ID!]
   donors: [ID!]
@@ -3460,6 +3461,7 @@ input MethodologyAttributeInputType {
 type MethodologyAttributeType {
   id: ID!
   clientId: String
+  samplingSize: Int
   proximity: AssessmentRegistryProximityTypeEnum!
   createdAt: DateTime!
   modifiedAt: DateTime!
