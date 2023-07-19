@@ -247,7 +247,7 @@ def get_assessment_registry_qs(info):
 class MethodologyAttributeType(DjangoObjectType, UserResourceMixin):
     class Meta:
         model = MethodologyAttribute
-        fields = ("id", "client_id", "proximity",)
+        fields = ("id", "client_id", "proximity", "sampling_size",)
 
     data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum, required=True)
     data_collection_technique_display = EnumDescription(source='get_data_collection_technique_display', required=True)
