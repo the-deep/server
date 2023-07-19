@@ -179,6 +179,9 @@ class AssessmentRegistry(UserResource):
     national_partners = models.ManyToManyField(Organization, related_name='national_partner_assessment_reg', blank=True)
     governments = models.ManyToManyField(Organization, related_name='gov_assessment_reg', blank=True)
 
+    # Additional Documents
+    executive_summary = models.TextField(blank=True)
+
     # Methodology
     objectives = models.TextField(blank=True, null=True)
     data_collection_techniques = models.TextField(blank=True, null=True)
@@ -269,10 +272,9 @@ class MethodologyAttribute(UserResource):
 
 class AdditionalDocument(UserResource):
     class DocumentType(models.IntegerChoices):
-        EXECUTIVE_SUMMARY = 0, 'Executive summary'
-        ASSESSMENT_DATABASE = 1, 'Assessment database'
-        QUESTIONNAIRE = 2, 'Questionnaire'
-        MISCELLANEOUS = 3, 'Miscellaneous'
+        ASSESSMENT_DATABASE = 0, 'Assessment database'
+        QUESTIONNAIRE = 1, 'Questionnaire'
+        MISCELLANEOUS = 2, 'Miscellaneous'
 
     assessment_registry = models.ForeignKey(
         AssessmentRegistry,
