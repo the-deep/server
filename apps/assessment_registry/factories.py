@@ -11,7 +11,23 @@ from assessment_registry.models import (
     AdditionalDocument,
     ScoreRating,
     ScoreAnalyticalDensity,
+    Summary,
+    SummaryIssue,
+    SummarySubSectorIssue,
 )
+
+class SummaryIssueFactory(DjangoModelFactory):
+    class Meta:
+         model = SummaryIssue
+
+class SummaryMetaFactory(DjangoModelFactory):
+    class Meta:
+        model = Summary
+
+
+class SummarySubSectorIssueFactory(DjangoModelFactory):
+    class Meta:
+        model = SummarySubSectorIssue
 
 
 class QuestionFactory(DjangoModelFactory):
