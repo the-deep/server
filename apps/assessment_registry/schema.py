@@ -214,10 +214,10 @@ class AssessmentRegistryOptionsType(graphene.ObjectType):
         return SummaryFocusOptionType
 
 
-class ScoreRatingType(DjangoObjectType, UserResourceMixin):
+class ScoreRatingType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     class Meta:
         model = ScoreRating
-        fields = ("id", "client_id", "score_type", "rating", "reason",)
+        fields = ("id", "score_type", "rating", "reason",)
 
     score_type = graphene.Field(AssessmentRegistryScoreTypeEnum, required=True)
     score_type_display = EnumDescription(source='get_score_type_display', required=True)
@@ -225,10 +225,10 @@ class ScoreRatingType(DjangoObjectType, UserResourceMixin):
     rating_display = EnumDescription(source='get_rating_display', required=True)
 
 
-class ScoreAnalyticalDensityType(DjangoObjectType, UserResourceMixin):
+class ScoreAnalyticalDensityType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     class Meta:
         model = ScoreAnalyticalDensity
-        fields = ("id", "client_id", "sector", "value")
+        fields = ("id", "sector", "value")
 
     sector = graphene.Field(AssessmentRegistrySectorTypeEnum, required=True)
     sector_display = EnumDescription(source='get_sector_display', required=True)
@@ -244,10 +244,10 @@ def get_assessment_registry_qs(info):
     return AssessmentRegistry.objects.none()
 
 
-class MethodologyAttributeType(DjangoObjectType, UserResourceMixin):
+class MethodologyAttributeType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     class Meta:
         model = MethodologyAttribute
-        fields = ("id", "client_id", "proximity", "sampling_size",)
+        fields = ("id", "proximity", "sampling_size",)
 
     data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum, required=True)
     data_collection_technique_display = EnumDescription(source='get_data_collection_technique_display', required=True)
@@ -261,10 +261,10 @@ class MethodologyAttributeType(DjangoObjectType, UserResourceMixin):
     unit_of_reporting_display = EnumDescription(source='get_unit_of_reporting_display', required=True)
 
 
-class AdditionalDocumentType(DjangoObjectType, UserResourceMixin):
+class AdditionalDocumentType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     class Meta:
         model = AdditionalDocument
-        fields = ("id", "client_id", "file", "external_link")
+        fields = ("id", "file", "external_link")
 
     document_type = graphene.Field(AssessmentRegistryDocumentTypeEnum, required=True)
     document_type_display = EnumDescription(source='get_document_type_display', required=True)
