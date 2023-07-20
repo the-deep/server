@@ -71,6 +71,7 @@ class SummarySerializer(UserResourceSerializer):
 
 
 class SummaryFocusSerializer(UserResourceSerializer):
+
     class Meta:
         model = SummaryFocus
         fields = (
@@ -124,7 +125,7 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
         many=True,
         required=False
     )
-    summary_meta = SummarySerializer(source='summary', required=False, many=True)
+    summary_meta = SummarySerializer(source='summary', many=True, required=False)
 
     summary_subsector_issue = SummarySubSectorIssueSerializer(
         source="summary_sub_sector_issue_ary", many=True, required=False

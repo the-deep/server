@@ -6,7 +6,12 @@ from gallery.factories import FileFactory
 from project.factories import ProjectFactory
 from user.factories import UserFactory
 from lead.factories import LeadFactory
-from assessment_registry.factories import QuestionFactory
+from assessment_registry.factories import (
+    QuestionFactory,
+    SummaryIssueFactory,
+    SummaryMetaFactory,
+    SummarySubSectorIssue,
+)
 from assessment_registry.models import (
     AssessmentRegistry,
     MethodologyAttribute,
@@ -93,7 +98,21 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                         sectorDisplay
                         subSectorDisplay
                       }
-                    }
+                   }
+                   summaryFocusMeta {
+                      id
+                      percentageInNeed
+                   }
+                   summaryFocusSubsectorIssue {
+                      id
+                   }
+                   summaryMeta {
+                      id
+                      totalPeopleAssessed
+                   }
+                   summarySubsectorIssue {
+                      id
+                   }
                 }
             }
         }
@@ -116,6 +135,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
         )
         self.file = FileFactory.create()
         self.project1.add_member(self.member_user, role=self.project_role_member)
+        self.summary_issue1, self.summary_issue2, self.summary_issue3 = SummaryIssueFactory.create_batch(3)
 
     def test_create_assessment_registry(self):
         def _query_check(minput, **kwargs):
@@ -216,12 +236,37 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     answer=True,
                     question=self.question1.id,
                 )
+            ],
+            summaryMeta=[
+                dict(
+                    totalPeopleAssessed=1000
+                )
+            ],
+            summarySubsectorIssue=[
+                dict(
+                    summaryIssue=self.summary_issue1.id
+                )
+            ],
+            summaryFocusMeta=[
+                dict(
+                    percentageInNeed=10
+                )
+            ],
+            summaryFocusIssue=[
+                dict(
+                    summaryIssue=self.summary_issue2.id,
+                    focus=self.genum(AssessmentRegistry.FocusType.CONTEXT),
+                )
             ]
         )
         self.force_login(self.member_user)
+        print("INPUT*****************:", minput)
         content = _query_check(minput, okay=False)
         data = content['data']['project']['createAssessmentRegistry']['result']
+        print("DATA*******************", data)
         self.assertEqual(data['costEstimatesUsd'], minput['costEstimatesUsd'], data)
         self.assertIsNotNone(data['methodologyAttributes'])
         self.assertIsNotNone(data['additionalDocuments'])
         self.assertIsNotNone(data['cna'])
+        self.assertIsNotNone(data['summaryMeta'])
+        self.assertIsNotNone(data['summaryFocusMeta'])
