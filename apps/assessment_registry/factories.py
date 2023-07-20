@@ -11,14 +11,18 @@ from assessment_registry.models import (
     AdditionalDocument,
     ScoreRating,
     ScoreAnalyticalDensity,
-    Summary,
     SummaryIssue,
+    Summary,
+    SummaryFocus,
     SummarySubSectorIssue,
+    SummaryFocusSubSectorIssue,
 )
+
 
 class SummaryIssueFactory(DjangoModelFactory):
     class Meta:
-         model = SummaryIssue
+        model = SummaryIssue
+
 
 class SummaryMetaFactory(DjangoModelFactory):
     class Meta:
@@ -28,6 +32,16 @@ class SummaryMetaFactory(DjangoModelFactory):
 class SummarySubSectorIssueFactory(DjangoModelFactory):
     class Meta:
         model = SummarySubSectorIssue
+
+
+class SummaryFocusFactory(DjangoModelFactory):
+    class Meta:
+        model = SummaryFocus
+
+
+class SummaryFocusSubSectorIssueFactory(DjangoModelFactory):
+    class Meta:
+        model = SummaryFocusSubSectorIssue
 
 
 class QuestionFactory(DjangoModelFactory):

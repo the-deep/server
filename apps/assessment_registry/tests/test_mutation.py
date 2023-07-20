@@ -9,8 +9,6 @@ from lead.factories import LeadFactory
 from assessment_registry.factories import (
     QuestionFactory,
     SummaryIssueFactory,
-    SummaryMetaFactory,
-    SummarySubSectorIssue,
 )
 from assessment_registry.models import (
     AssessmentRegistry,
@@ -260,13 +258,13 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
             ]
         )
         self.force_login(self.member_user)
-        print("INPUT*****************:", minput)
         content = _query_check(minput, okay=False)
         data = content['data']['project']['createAssessmentRegistry']['result']
-        print("DATA*******************", data)
         self.assertEqual(data['costEstimatesUsd'], minput['costEstimatesUsd'], data)
         self.assertIsNotNone(data['methodologyAttributes'])
         self.assertIsNotNone(data['additionalDocuments'])
         self.assertIsNotNone(data['cna'])
         self.assertIsNotNone(data['summaryMeta'])
         self.assertIsNotNone(data['summaryFocusMeta'])
+        self.assertIsNotNone(data['summarySubsectorIssue'])
+        self.assertIsNotNone(data['summaryFocusSubsectorIssue'])
