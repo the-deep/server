@@ -12,9 +12,9 @@ input AdditionalDocumentInputType {
 
 type AdditionalDocumentType {
   id: ID!
-  clientId: String
   file: GalleryFileType
   externalLink: String!
+  clientId: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -2498,9 +2498,9 @@ input MethodologyAttributeInputType {
 
 type MethodologyAttributeType {
   id: ID!
-  clientId: String
   samplingSize: Int
   proximity: AssessmentRegistryProximityTypeEnum!
+  clientId: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -3405,9 +3405,9 @@ input ScoreAnalyticalDensityInputType {
 
 type ScoreAnalyticalDensityType {
   id: ID!
-  clientId: String
   sector: AssessmentRegistrySectorTypeEnum!
   value: Int!
+  clientId: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -3424,10 +3424,10 @@ input ScoreRatingInputType {
 
 type ScoreRatingType {
   id: ID!
-  clientId: String
   scoreType: AssessmentRegistryScoreTypeEnum!
   rating: AssessmentRegistryRatingType!
   reason: String
+  clientId: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
