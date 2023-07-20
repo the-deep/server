@@ -388,7 +388,7 @@ class AssessmentRegistryType(
         return SummarySubSectorIssue.objects.filter(assessment_registry=root)
 
     @staticmethod
-    def resolve_summary_focus(root, info, **kwargs):
+    def resolve_summary_focus_meta(root, info, **kwargs):
         return SummaryFocus.objects.filter(assessment_registry=root)
 
     @staticmethod
