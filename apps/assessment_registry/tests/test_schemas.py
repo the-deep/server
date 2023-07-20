@@ -14,6 +14,11 @@ from assessment_registry.factories import (
     ScoreRatingFactory,
     ScoreAnalyticalDensityFactory,
     AnswerFactory,
+    SummaryMetaFactory,
+    SummarySubSectorIssueFactory,
+    SummaryIssueFactory,
+    SummaryFocusFactory,
+    SummaryFocusSubSectorIssueFactory,
 )
 from lead.models import Lead
 from project.models import Project
@@ -98,6 +103,19 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
                       id
                     }
                   }
+
+                   summaryFocusMeta {
+                      id
+                   }
+                   summaryFocusSubsectorIssue {
+                      id
+                   }
+                   summaryMeta {
+                      id
+                   }
+                   summarySubsectorIssue {
+                      id
+                   }
                 }
               }
             }
@@ -109,6 +127,7 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         non_member_user = UserFactory.create()
 
         lead_1 = LeadFactory.create(project=project1)
+        summary_issue1, summary_issue2 = SummaryIssueFactory.create_batch(2)
 
         project1.add_member(member_user)
         assessment_registry = AssessmentRegistryFactory.create(
@@ -171,6 +190,21 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
             question=self.question2,
             answer=False
         )
+        SummaryMetaFactory.create(
+            assessment_registry=assessment_registry,
+        )
+        SummarySubSectorIssueFactory.create(
+            assessment_registry=assessment_registry,
+            summary_issue=summary_issue1
+        )
+        SummaryFocusFactory.create(
+            assessment_registry=assessment_registry,
+        )
+        SummaryFocusSubSectorIssueFactory.create(
+            assessment_registry=assessment_registry,
+            summary_issue=summary_issue2,
+            focus=AssessmentRegistry.FocusType.CONTEXT
+        )
 
         def _query_check(assessment_registry, **kwargs):
             return self.query_check(
@@ -205,6 +239,11 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['scoreRatings']), 3)
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['scoreAnalyticalDensity']), 2)
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['cna']), 2)
+
+        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summaryMeta']), 1)
+        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summarySubsectorIssue']), 1)
+        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summaryFocusMeta']), 1)
+        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summaryFocusSubsectorIssue']), 1)
 
     def test_list_assessment_registry_query(self):
         query = '''
