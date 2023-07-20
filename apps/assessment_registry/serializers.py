@@ -12,7 +12,7 @@ from .models import (
 )
 
 
-class MethodologyAttributeSerializer(serializers.ModelSerializer):
+class MethodologyAttributeSerializer(TempClientIdMixin, serializers.ModelSerializer):
     class Meta:
         model = MethodologyAttribute
         fields = (
@@ -21,13 +21,13 @@ class MethodologyAttributeSerializer(serializers.ModelSerializer):
         )
 
 
-class AdditionalDocumentSerializer(UserResourceSerializer, TempClientIdMixin):
+class AdditionalDocumentSerializer(TempClientIdMixin, UserResourceSerializer):
     class Meta:
         model = AdditionalDocument
         fields = ("client_id", "document_type", "file", "external_link",)
 
 
-class ScoreRatingSerializer(UserResourceSerializer, TempClientIdMixin):
+class ScoreRatingSerializer(TempClientIdMixin, UserResourceSerializer):
     class Meta:
         model = ScoreRating
         fields = ("client_id", "score_type", "rating", "reason",)
