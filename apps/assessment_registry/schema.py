@@ -350,6 +350,7 @@ class AssessmentRegistryType(
     summary_subsector_issue = graphene.List(SummarySubSectorIssueType, required=False)
     summary_focus_meta = graphene.List(SummaryFocusType, required=False)
     summary_focus_subsector_issue = graphene.List(SummaryFocusSubSectorIssueType, required=False)
+    lead = graphene.NonNull(LeadDetailType)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
