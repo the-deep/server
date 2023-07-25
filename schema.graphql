@@ -1199,7 +1199,7 @@ input CNAAnswerInputType {
 
 type CNAType {
   id: ID!
-  question: QuestionType
+  question: QuestionType!
   answer: Boolean!
   createdAt: DateTime!
   modifiedAt: DateTime!
@@ -2182,13 +2182,19 @@ type FileFieldType {
   url: String
 }
 
-input FileUploadInputType {
+input FileInputType {
   clientId: String
   file: Upload!
   title: String!
   isPublic: Boolean
   createdBy: ID
   projects: [ID!]
+}
+
+type FileUploadMutation {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: GalleryFileType
 }
 
 type GalleryFileType {
@@ -2689,8 +2695,8 @@ type MissingPredictionReviewType {
 }
 
 type Mutation {
-  fileUpload(data: FileUploadInputType!): UploadFile
-  createIssue(data: IssueCreateInputType!): CreateIssue
+  fileUpload(data: FileInputType): FileUploadMutation
+  createIssue(data: IssueCreateInputType): CreateIssue
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
   genericExportCancel(id: ID!): CancelUserGenericExport
   notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
