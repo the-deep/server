@@ -186,26 +186,24 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             "summary_focus_issue",
         )
 
-    def validate(self, data):
-        data['project'] = self.project
-        error_dict = {}
-
-        # validate for unique score types in score ratings
+    def validate_score_ratings(self, data):
         unique_score_types = set()
-        for d in data['score_ratings']:
+        for d in data:
             score_type = d.get("score_type")
             if score_type in unique_score_types:
-                error_dict['score_ratings'] = "Score ratings should have unique score types"
+                raise serializers.ValidationError("Score ratings should have unique score types")
             unique_score_types.add(score_type)
+        return data
 
-        # validate for unique sector in score analytical density
+    def validate_score_analytical_density(self, data):
         unique_sector = set()
-        for d in data['analytical_density']:
+        for d in data:
             sector = d.get("sector")
             if sector in unique_sector:
-                error_dict['score_analytical_density'] = "Score analytical density should have unique sectors"
+                raise serializers.ValidationError("Score analytical density should have unique sectors")
             unique_sector.add(sector)
+        return data
 
-        if error_dict:
-            raise serializers.ValidationError(error_dict)
+    def validate(self, data):
+        data['project'] = self.project
         return data
