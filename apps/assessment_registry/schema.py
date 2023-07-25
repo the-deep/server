@@ -227,7 +227,7 @@ class AdditionalDocumentType(DjangoObjectType, UserResourceMixin, ClientIdMixin)
 
 
 class CNAType(DjangoObjectType, UserResourceMixin):
-    question = graphene.Field(QuestionType, required=False)
+    question = graphene.Field(QuestionType, required=True)
 
     class Meta:
         model = Answer
