@@ -67,6 +67,7 @@ class Mutation(
     export_mutation.Mutation,
     gallery_mutation.Mutation,
     issue_mutation.Mutation,
+    gallery_mutation.Mutation,
     # --
     graphene.ObjectType
 ):
