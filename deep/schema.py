@@ -25,7 +25,6 @@ from export import schema as export_schema, mutation as export_mutation
 from deep_explore import schema as deep_explore_schema
 from deep.enums import CustomEnum
 
-
 class Query(
     pj_schema.Query,
     af_schema.Query,
@@ -40,6 +39,7 @@ class Query(
     deep_explore_schema.Query,
     # --
     graphene.ObjectType
+
 ):
     assisted_tagging = graphene.Field(assisted_tagging_schema.AssistedTaggingRootQueryType)
     custom_enum = graphene.Field(
