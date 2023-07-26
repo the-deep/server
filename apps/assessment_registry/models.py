@@ -288,7 +288,7 @@ class AdditionalDocument(UserResource):
         related_name='assessment_reg_file',
         null=True, blank=True
     )
-    external_link = models.TextField(blank=True)
+    external_link = models.URLField(max_length=500, blank=True)
 
 
 class ScoreRating(UserResource):
