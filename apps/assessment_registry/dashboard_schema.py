@@ -2,8 +2,8 @@ import graphene
 from .models import AssessmentRegistry, MethodologyAttribute
 from .enums import (
     AssessmentRegistryCoordinationTypeEnum,
-    AssessmentRegistryDataCollectionTechniqueTypeEnum
-    )
+    AssessmentRegistryDataCollectionTechniqueTypeEnum,
+)
 from django.db.models import Count
 
 
@@ -13,8 +13,7 @@ class AssessmentCount(graphene.ObjectType):
     count = graphene.Int()
 
     def resolve_coordinated_joint_display(self, info):
-        return AssessmentRegistry.CoordinationType(
-            self.coordinated_joint).label
+        return AssessmentRegistry.CoordinationType(self.coordinated_joint).label
 
 
 class StakeholderCount(graphene.ObjectType):
@@ -24,13 +23,15 @@ class StakeholderCount(graphene.ObjectType):
 
 class CollectionTechniqueCount(graphene.ObjectType):
     data_collection_technique = graphene.Field(
-        AssessmentRegistryDataCollectionTechniqueTypeEnum)
+        AssessmentRegistryDataCollectionTechniqueTypeEnum
+    )
     data_collection_technique_display = graphene.String()
     count = graphene.Int()
 
     def resolve_data_collection_technique_display(self, info):
         return MethodologyAttribute.CollectionTechniqueType(
-            self.data_collection_technique).label
+            self.data_collection_technique
+        ).label
 
 
 class AssessmentDashboardStatistics(graphene.ObjectType):
@@ -41,8 +42,7 @@ class AssessmentDashboardStatistics(graphene.ObjectType):
 
     def resolve_assessment_count(self, info):
         assessment = (
-            self.model.objects
-            .filter(project=info.context.active_project)
+            self.model.objects.filter(project=info.context.active_project)
             .values("coordinated_joint")
             .annotate(count=Count("coordinated_joint"))
             .order_by("coordinated_joint")
@@ -57,8 +57,7 @@ class AssessmentDashboardStatistics(graphene.ObjectType):
 
     def resolve_stakeholder_count(self, info):
         stakeholder = (
-            self.model.objects
-            .filter(project=info.context.active_project)
+            self.model.objects.filter(project=info.context.active_project)
             .values("lead_organizations", "lead_organizations__title")
             .annotate(count=Count("lead_organizations"))
             .order_by("lead_organizations")
@@ -70,22 +69,20 @@ class AssessmentDashboardStatistics(graphene.ObjectType):
             )
             for stakeholder in stakeholder
         ]
- 
+
     def resolve_collection_technique_count(self, info):
         data_collection_technique = (
-            MethodologyAttribute.objects
-            .filter(
-             assessment_registry__project_id=info.context.active_project)
-            .values('data_collection_technique')
+            MethodologyAttribute.objects.filter(
+                assessment_registry__project_id=info.context.active_project
+            )
+            .values("data_collection_technique")
             .annotate(count=Count("data_collection_technique"))
             .order_by("data_collection_technique")
         )
         return [
             CollectionTechniqueCount(
-                data_collection_technique=technique[
-                    "data_collection_technique"
-                ],
-                count=technique["count"]
+                data_collection_technique=technique["data_collection_technique"],
+                count=technique["count"],
             )
             for technique in data_collection_technique
         ]
@@ -94,7 +91,7 @@ class AssessmentDashboardStatistics(graphene.ObjectType):
 class Query:
     assessment_dashboard_statistics = graphene.Field(
         AssessmentDashboardStatistics)
-  
+
     @staticmethod
     def resolve_assessment_dashboard_statistics(root, info, **kwargs):
         return AssessmentDashboardStatistics

@@ -14,7 +14,7 @@ class MethodologyAttributeInline(admin.TabularInline):
 
 @admin.register(AssessmentRegistry)
 class AssessmentRegistryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'lead', 'project','coordinated_joint')
+    list_display = ('id', 'lead', 'project', 'coordinated_joint')
 
     inlines = [
         MethodologyAttributeInline
