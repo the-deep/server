@@ -13,12 +13,12 @@ input AdditionalDocumentInputType {
 type AdditionalDocumentType {
   id: ID!
   file: GalleryFileType
-  externalLink: String!
   clientId: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
+  externalLink: String
   documentType: AssessmentRegistryDocumentTypeEnum!
   documentTypeDisplay: EnumDescription!
 }
