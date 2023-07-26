@@ -84,7 +84,7 @@ class SummaryIssueAdmin(admin.ModelAdmin):
 
 @admin.register(AssessmentRegistry)
 class AssessmentRegistryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'lead', 'project','coordinated_joint')
+    list_display = ('id', 'lead', 'project', 'coordinated_joint')
 
     inlines = [
         MethodologyAttributeInline,

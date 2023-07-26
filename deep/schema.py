@@ -28,6 +28,7 @@ from deep_explore import schema as deep_explore_schema
 from gallery import mutations as gallery_mutation
 from deep.enums import CustomEnum
 
+
 class Query(
     pj_schema.Query,
     af_schema.Query,
