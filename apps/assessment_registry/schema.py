@@ -262,12 +262,19 @@ class MethodologyAttributeType(DjangoObjectType, UserResourceMixin, ClientIdMixi
 
 
 class AdditionalDocumentType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
+    external_link = graphene.String(required=False)
+
     class Meta:
         model = AdditionalDocument
-        fields = ("id", "file", "external_link")
+        fields = ("id", "file")
 
     document_type = graphene.Field(AssessmentRegistryDocumentTypeEnum, required=True)
     document_type_display = EnumDescription(source='get_document_type_display', required=True)
+
+    def resolve_external_link(root, info, **kwargs):
+        if root.external_link == "":
+            return None
+        return root.external_link
 
 
 class AssessmentRegistryType(
