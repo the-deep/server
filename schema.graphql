@@ -484,6 +484,18 @@ type AnalyticalStatementType {
   entries: [AnalyticalStatementEntryType!]
 }
 
+type AssessmentCountType {
+  coordinatedJoint: AssessmentRegistryCoordinationTypeEnum
+  coordinatedJointDisplay: String
+  count: Int
+}
+
+type AssessmentDashboardStatisticsType {
+  assessmentCount: [AssessmentCountType]
+  stakeholderCount: [StakeholderCountType]
+  collectionTechniqueCount: [CollectionTechniqueCountType]
+}
+
 type AssessmentListType {
   results: [AssessmentType!]
   totalCount: Int
@@ -1330,6 +1342,12 @@ type CancelUserGenericExport {
 type ChangeUserPassword {
   errors: [GenericScalar!]
   ok: Boolean
+}
+
+type CollectionTechniqueCountType {
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
+  dataCollectionTechniqueDisplay: String
+  count: Int
 }
 
 enum ConnectorLeadExtractionStatusEnum {
@@ -2977,6 +2995,7 @@ type ProjectDetailType {
   organizations: [ProjectOrganizationType!]
   hasAnalysisFramework: Boolean!
   hasAssessmentTemplate: Boolean!
+  assessmentDashboardStatistics: AssessmentDashboardStatisticsType
   assessmentRegistry(id: ID!): AssessmentRegistryType
   assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], publicationDateLte: Date, publicationDateGte: Date, search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
   assessmentRegistryOptions: AssessmentRegistryOptionsType
@@ -3719,6 +3738,11 @@ type SectionType {
   tooltip: String
   clientId: ID!
   widgets: [WidgetType!]
+}
+
+type StakeholderCountType {
+  stakeholder: String
+  count: Int
 }
 
 input SummaryFocusMetaInputType {
