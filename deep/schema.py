@@ -30,6 +30,7 @@ from gallery import mutations as gallery_mutation
 
 from deep.enums import AppEnumCollection
 
+
 class Query(
     pj_schema.Query,
     af_schema.Query,
