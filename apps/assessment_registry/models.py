@@ -7,6 +7,7 @@ from geo.models import Region
 from organization.models import Organization
 from gallery.models import File
 from lead.models import Lead
+from geo.models import GeoArea
 
 
 class AssessmentRegistry(UserResource):
@@ -201,7 +202,7 @@ class AssessmentRegistry(UserResource):
         default=list
     )
 
-    locations = models.ManyToManyField(Region, related_name='focus_location_assessment_reg', blank=True)
+    locations = models.ManyToManyField(GeoArea, related_name='focus_location_assessment_reg', blank=True)
 
     # Score Fields
     matrix_score = models.IntegerField(default=0)
@@ -289,6 +290,7 @@ class AdditionalDocument(UserResource):
         null=True, blank=True
     )
     external_link = models.URLField(max_length=500, blank=True)
+    file_path = models.CharField(max_length=500, blank=True)
 
 
 class ScoreRating(UserResource):
