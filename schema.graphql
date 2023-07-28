@@ -8,7 +8,6 @@ input AdditionalDocumentInputType {
   documentType: AssessmentRegistryDocumentTypeEnum!
   file: ID
   externalLink: String
-  filePath: String
 }
 
 type AdditionalDocumentType {
