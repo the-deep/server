@@ -290,8 +290,6 @@ class AdditionalDocument(UserResource):
         null=True, blank=True
     )
     external_link = models.URLField(max_length=500, blank=True)
-    file_path = models.CharField(max_length=500, blank=True)
-
 
 class ScoreRating(UserResource):
     class ScoreType(models.IntegerChoices):
