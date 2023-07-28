@@ -21,3 +21,11 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def admin_levels_by_region(self):
         return AdminLevelLoader(context=self.context)
+
+#class GeoAreaLoader(DataLoaderWithContext):
+#    def batch_load_fn(self, keys):
+#        geo_area_qs = GeoArea.objects.all()
+#        _map = defaultdict(list)
+#        for geo_area in geo_area_qs:
+#            _map[geo_area.id].append(geo_area)
+#        return Promise.resolve([_map.get(key) for key in keys])
