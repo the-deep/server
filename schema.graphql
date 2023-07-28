@@ -8,6 +8,7 @@ input AdditionalDocumentInputType {
   documentType: AssessmentRegistryDocumentTypeEnum!
   file: ID
   externalLink: String
+  filePath: String
 }
 
 type AdditionalDocumentType {
@@ -781,7 +782,7 @@ type AssessmentRegistryType {
   dataCollectionTechniques: String
   sampling: String
   limitations: String
-  locations: [RegionType!]!
+  locations: [ProjectGeoAreaType!]
   matrixScore: Int!
   finalScore: Int!
   clientId: String!
@@ -809,7 +810,7 @@ type AssessmentRegistryType {
   focuses: [AssessmentRegistryFocusTypeEnum!]!
   sectors: [AssessmentRegistrySectorTypeEnum!]!
   protectionInfoMgmts: [AssessmentRegistryProtectionInfoTypeEnum!]!
-  affectedGroups: [AssessmentRegistryAffectedGroupTypeEnum]
+  affectedGroups: [AssessmentRegistryAffectedGroupTypeEnum!]!
   methodologyAttributes: [MethodologyAttributeType!]
   additionalDocuments: [AdditionalDocumentType!]
   scoreRatings: [ScoreRatingType!]!
