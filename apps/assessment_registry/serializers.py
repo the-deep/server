@@ -24,7 +24,7 @@ class MethodologyAttributeSerializer(TempClientIdMixin, serializers.ModelSeriali
 class AdditionalDocumentSerializer(TempClientIdMixin, UserResourceSerializer):
     class Meta:
         model = AdditionalDocument
-        fields = ("client_id", "document_type", "file", "external_link", "file_path",)
+        fields = ("client_id", "document_type", "file", "external_link",)
 
 
 class ScoreRatingSerializer(TempClientIdMixin, UserResourceSerializer):
