@@ -1,4 +1,5 @@
 import graphene
+from typing import Optional
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
 
@@ -9,6 +10,7 @@ from utils.graphene.enums import EnumDescription
 from deep.permissions import ProjectPermissions as PP
 from user_resource.schema import UserResourceMixin
 from lead.schema import LeadDetailType
+from geo.schema import ProjectGeoAreaType
 
 from .models import (
     AssessmentRegistry,
@@ -313,16 +315,22 @@ class AssessmentRegistryType(
     focuses = graphene.List(graphene.NonNull(AssessmentRegistryFocusTypeEnum), required=True)
     sectors = graphene.List(graphene.NonNull(AssessmentRegistrySectorTypeEnum), required=True)
     protection_info_mgmts = graphene.List(graphene.NonNull(AssessmentRegistryProtectionInfoTypeEnum), required=True)
-    affected_groups = graphene.List(AssessmentRegistryAffectedGroupTypeEnum, required=False)
+    affected_groups = graphene.List(graphene.NonNull(AssessmentRegistryAffectedGroupTypeEnum), required=True)
     methodology_attributes = graphene.List(graphene.NonNull(MethodologyAttributeType), required=False)
     additional_documents = graphene.List(graphene.NonNull(AdditionalDocumentType), required=False)
     score_ratings = graphene.List(graphene.NonNull(ScoreRatingType), required=True)
     score_analytical_density = graphene.List(graphene.NonNull(ScoreAnalyticalDensityType), required=True)
     lead = graphene.NonNull(LeadDetailType)
+    locations = graphene.List(graphene.NonNull(ProjectGeoAreaType))
+
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
         return get_assessment_registry_qs(info)
+
+    @staticmethod
+    def resolve_locations(root, info, **kwargs) -> Optional[None]:
+        return root.locations.all()
 
     @staticmethod
     def resolve_methodology_attributes(root, info, **kwargs):
