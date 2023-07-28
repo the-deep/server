@@ -291,7 +291,6 @@ class AdditionalDocument(UserResource):
     )
     external_link = models.URLField(max_length=500, blank=True)
 
-
 class ScoreRating(UserResource):
     class ScoreType(models.IntegerChoices):
         RELEVANCE = 0, "Fit for purpose -> Relevance"
