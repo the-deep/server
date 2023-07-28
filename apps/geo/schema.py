@@ -107,6 +107,13 @@ class ProjectGeoAreaType(DjangoObjectType):
     region_title = graphene.String(required=True)
     admin_level_title = graphene.String(required=True)
 
+    @staticmethod
+    def resolve_region_title(root, info, **kwargs):
+        return root.admin_level.region.title
+
+    def resolve_admin_level_title(root, info, **kwargs):
+        return root.admin_level.title
+
 
 class ProjectGeoAreaListType(CustomDjangoListObjectType):
     class Meta:
