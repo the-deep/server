@@ -1,8 +1,8 @@
 import graphene
-from typing import Optional
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
 
+from utils.commons import render_string_for_graphql
 from utils.graphene.types import ClientIdMixin, CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
@@ -274,9 +274,7 @@ class AdditionalDocumentType(DjangoObjectType, UserResourceMixin, ClientIdMixin)
     document_type_display = EnumDescription(source='get_document_type_display', required=True)
 
     def resolve_external_link(root, info, **kwargs):
-        if root.external_link == "":
-            return None
-        return root.external_link
+        return render_string_for_graphql(root.external_link)
 
 
 class AssessmentRegistryType(
@@ -323,14 +321,13 @@ class AssessmentRegistryType(
     lead = graphene.NonNull(LeadDetailType)
     locations = graphene.List(graphene.NonNull(ProjectGeoAreaType))
 
-
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
         return get_assessment_registry_qs(info)
 
     @staticmethod
-    def resolve_locations(root, info, **kwargs) -> Optional[None]:
-        return root.locations.all()
+    def resolve_locations(root, info, **_):
+        return info.context.dl.geo.assessment_registry_locations.load(root.pk)
 
     @staticmethod
     def resolve_methodology_attributes(root, info, **kwargs):
