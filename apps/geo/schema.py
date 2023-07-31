@@ -21,9 +21,13 @@ def get_users_adminlevel_qs(info):
 
 
 def get_geo_area_queryset_for_project_geo_area_type(queryset=None):
-    return (queryset or GeoArea.objects).annotate(
+    _queryset = queryset
+    if _queryset is None:
+        _queryset = GeoArea.objects
+    return _queryset.annotate(
         region_title=models.F('admin_level__region__title'),
         admin_level_title=models.F('admin_level__title'),
+        admin_level_level=models.F('admin_level__level'),
     )
 
 
@@ -98,6 +102,14 @@ class Query:
 
 # -------------------------------- Project Specific Query ---------------------------------
 # NOTE: Use with ProjectScopeQuery only.
+class GeoAreaParentType(graphene.ObjectType):
+    id = graphene.ID(required=True)
+    title = graphene.String(required=True)
+    region_title = graphene.String(required=True)
+    admin_level_title = graphene.String(required=True)
+    admin_level_level = graphene.Int()
+
+
 class ProjectGeoAreaType(DjangoObjectType):
     class Meta:
         model = GeoArea
@@ -106,6 +118,13 @@ class ProjectGeoAreaType(DjangoObjectType):
 
     region_title = graphene.String(required=True)
     admin_level_title = graphene.String(required=True)
+    admin_level_level = graphene.Int()
+    parents = graphene.List(graphene.NonNull(GeoAreaParentType), required=True)
+
+    def resolve_parents(root, info, **kwargs):
+        if root.parent_id:
+            return info.context.dl.geo.geo_area_parents.load(root.parent_id)
+        return []
 
 
 class ProjectGeoAreaListType(CustomDjangoListObjectType):

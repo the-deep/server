@@ -91,12 +91,14 @@ class AdminLevelFilterSet(django_filters.rest_framework.FilterSet):
 # ------------------------------ Graphql filters -----------------------------------
 class GeoAreaGqlFilterSet(OrderEnumMixin, django_filters.rest_framework.FilterSet):
     ids = IDListFilter(field_name='id')
+    region_ids = IDListFilter(field_name='admin_level__region')
+    admin_level_ids = IDListFilter(field_name='admin_level')
     search = django_filters.CharFilter(
         label='Geo Area Label search',
         method='geo_area_label'
     )
     titles = StringListFilter(
-        label='Geo Area Label search',
+        label='Geo Area Label search (Multiple titles)',
         method='filter_titles'
     )
     ordering = MultipleInputFilter(GeoAreaOrderingEnum, method='ordering_filter')
