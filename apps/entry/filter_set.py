@@ -236,7 +236,7 @@ class EntryFilterMixin(django_filters.filterset.FilterSet):
                     'lead__authors__organization_type'
                 )
             )
-            if type(value[0]) == OrganizationType:
+            if isinstance(value[0], OrganizationType):
                 return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
             return qs.filter(organization_types__in=value).distinct()
         return qs
@@ -292,7 +292,7 @@ def get_filtered_entries_using_af_filter(
             .annotate(adminlevel_count=models.Count('adminlevel'))\
             .aggregate(max_level=models.Max('adminlevel_count'))['max_level'] or 0
 
-    if type(queries) == list:
+    if isinstance(queries, list):
         queries = {
             q['filter_key']: q
             for q in queries
@@ -651,7 +651,7 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
                     'lead__authors__organization_type'
                 )
             )
-            if type(value[0]) == OrganizationType:
+            if isinstance(value[0], OrganizationType):
                 return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
             return qs.filter(organization_types__in=value).distinct()
         return qs

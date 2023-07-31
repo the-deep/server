@@ -76,9 +76,9 @@ class CacheHelper:
         if item is None:
             return ''
         hashable = None
-        if type(item) == str:
+        if isinstance(item, str):
             hashable = item
-        elif type(item) == dict:
+        elif isinstance(item, dict):
             hashable = json.dumps(
                 item,
                 sort_keys=True,

@@ -267,7 +267,7 @@ class AssessmentTests(TestCase):
         # New ARY Count (after assessment-copy)
         for project, _, new_ary_count in ary_stats:
             current_ary_count = Assessment.objects.filter(project_id=project.pk).count()
-            assert new_ary_count == current_ary_count,\
+            assert new_ary_count == current_ary_count, \
                 f'Project: {project.title} {project.pk} Assessment new count is different'
 
     def test_filter_assessment(self):

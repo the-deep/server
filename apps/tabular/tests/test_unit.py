@@ -167,11 +167,11 @@ class TestTabularExtraction(TestCase):
                 assert isinstance(v, dict)
 
             if field.title == 'id':
-                assert field.type == Field.STRING,\
+                assert field.type == Field.STRING, \
                     'id is string as it is inconsistent'
                 # Verify that being string, no value is invalid
                 for v in field.data:
-                    assert not v.get('invalid'),\
+                    assert not v.get('invalid'), \
                         "Since string, shouldn't be invalid"
             elif field.title == 'age':
                 assert field.type == Field.NUMBER, 'age is number'
@@ -180,10 +180,10 @@ class TestTabularExtraction(TestCase):
             elif field.title == 'name':
                 assert field.type == Field.STRING, 'name is string'
             elif field.title == 'date':
-                assert field.type == Field.STRING,\
+                assert field.type == Field.STRING, \
                     'date is string: only less than 80% rows are of date type'
             elif field.title == 'place':
-                assert field.type == Field.GEO,\
+                assert field.type == Field.GEO, \
                     'place is geo: more than 80% rows are of geo type'
 
     def test_auto_detection_geo_type_name(self):
@@ -199,7 +199,7 @@ class TestTabularExtraction(TestCase):
         for field in Field.objects.all():
             if field.title == 'place':
                 geofield = field
-                assert field.type == Field.GEO,\
+                assert field.type == Field.GEO, \
                     'place is geo: more than 80% rows are of geo type'
                 assert field.options != {}
                 assert 'regions' in field.options
@@ -239,7 +239,7 @@ class TestTabularExtraction(TestCase):
         for field in Field.objects.all():
             if field.title == 'place':
                 geofield = field
-                assert field.type == Field.GEO,\
+                assert field.type == Field.GEO, \
                     'place is geo: more than 80% rows are of geo type'
                 assert field.options != {}
                 assert 'regions' in field.options

@@ -75,7 +75,7 @@ def entrycomment_assignment_signal(sender, instance, action, **kwargs):
 @receiver(post_delete, sender=EntryReviewComment)
 def delete_related_assignment(sender, instance, *args, **kwargs):
     pk = instance.id
-    if type(instance) == Lead:
+    if isinstance(instance, Lead):
         Assignment.objects.filter(lead__id=pk).delete()
-    elif type(instance) == EntryReviewComment:
+    elif isinstance(instance, EntryReviewComment):
         Assignment.objects.filter(entry_review_comment__id=pk).delete()

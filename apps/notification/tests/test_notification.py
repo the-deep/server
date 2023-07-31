@@ -35,7 +35,7 @@ class TestNotification(TestCase):
         # Get notifications for admin_users
         for user in [self.user, admin_user]:
             notifications = Notification.get_for(user)
-            assert notifications.count() == 1,\
+            assert notifications.count() == 1, \
                 "A notification should have been created for admin"
 
             notification = notifications[0]

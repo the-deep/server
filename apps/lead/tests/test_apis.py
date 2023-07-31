@@ -1154,7 +1154,7 @@ class LeadTests(TestCase):
         response = self.client.post(url, post_data)
         assert response.json()['count'] == 3
         assert set([each['filteredEntriesCount'] for each in response.json()['results']]) \
-            == set([0, 0, 2]),\
+            == set([0, 0, 2]), \
             response.json()
 
         entry2 = self.create(Entry, project=project, lead=lead2, controlled=False, entry_type=Entry.TagType.IMAGE)

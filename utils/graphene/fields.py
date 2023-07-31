@@ -220,7 +220,7 @@ class DjangoPaginatedListObjectField(DjangoFilterPaginateListField):
 
         if getattr(self, "pagination", None):
             ordering = kwargs.pop(self.pagination.ordering_param, None) or self.pagination.ordering
-            if type(self.pagination) == NoOrderingPageGraphqlPagination:
+            if isinstance(self.pagination, NoOrderingPageGraphqlPagination):
                 # This is handled in filterset
                 kwargs[self.pagination.ordering_param] = None
             else:

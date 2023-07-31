@@ -88,9 +88,9 @@ class Source(ABC):
 
     def get_leads(self, params, request_user) -> Tuple[List[Lead], int]:
         def _parse_date(date_raw) -> Union[None, datetime.date]:
-            if type(date_raw) == datetime.date:
+            if isinstance(date_raw, datetime.date):
                 return date_raw
-            elif type(date_raw) == datetime.datetime:
+            elif isinstance(date_raw, datetime.datetime):
                 return date_raw.date()
             else:
                 published_on = str_to_date(date_raw)

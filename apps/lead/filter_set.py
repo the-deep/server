@@ -251,7 +251,7 @@ class LeadFilterSet(django_filters.FilterSet):
                     'authors__organization_type'
                 )
             )
-            if type(value[0]) == OrganizationType:
+            if isinstance(value[0], OrganizationType):
                 return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
             return qs.filter(organization_types__in=value).distinct()
         return qs
@@ -421,7 +421,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
                     'authors__organization_type'
                 )
             )
-            if type(value[0]) == OrganizationType:
+            if isinstance(value[0], OrganizationType):
                 return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
             return qs.filter(organization_types__in=value).distinct()
         return qs

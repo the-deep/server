@@ -68,7 +68,7 @@ def custom_exception_handler(exc, context):
     if hasattr(exc, 'message'):
         errors = exc.message
     elif hasattr(exc, 'detail'):
-        if type(exc.detail) is list:
+        if isinstance(exc.detail, list):
             errors = [str(error) for error in exc.detail]
         else:
             errors = exc.detail
