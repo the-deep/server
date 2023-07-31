@@ -274,7 +274,7 @@ class EntrySerializer(RemoveNullFieldsMixin,
                 lead,
                 request.user,
             )
-            if type(generated_image) == File:
+            if isinstance(generated_image, File):
                 data['image'] = generated_image
         return data
 
@@ -693,7 +693,7 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
             data['image'] = lead_image.clone_as_deep_file(request.user)
         elif image_raw:
             generated_image = base64_to_deep_image(image_raw, lead, request.user)
-            if type(generated_image) == File:
+            if isinstance(generated_image, File):
                 data['image'] = generated_image
 
         return data

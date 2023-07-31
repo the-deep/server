@@ -21,7 +21,7 @@ from analysis.models import Analysis
 def export_upload_to(instance, filename: str) -> str:
     random_string = get_random_string(length=10)
     prefix = 'export'
-    if type(instance) == GenericExport:
+    if isinstance(instance, GenericExport):
         prefix = 'global-export'
     return f'{prefix}/{random_string}/{filename}'
 

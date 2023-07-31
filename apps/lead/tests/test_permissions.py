@@ -75,7 +75,7 @@ class TestLeadPermissions(TestCase):
         self.assert_201(response)
 
         assert Lead.objects.count() == initial_lead_count + 1, "One more lead should be created"
-        assert Lead.objects.filter(title=lead.title, project=dest_project).exists(),\
+        assert Lead.objects.filter(title=lead.title, project=dest_project).exists(), \
             "Exact same lead should be created"
 
     def test_cannot_view_confidential_lead_without_permissions(self):

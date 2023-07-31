@@ -113,7 +113,7 @@ class TestCase(test.APITestCase):
     def assert_http_code(self, response, status_code, msg=None):
         error_resp = getattr(response, 'data', None)
         mesg = msg or error_resp
-        if type(error_resp) is dict and 'errors' in error_resp:
+        if isinstance(error_resp, dict) and 'errors' in error_resp:
             mesg = error_resp['errors']
         return self.assertEqual(response.status_code, status_code, mesg)
 
@@ -248,7 +248,7 @@ class TestCase(test.APITestCase):
         response = self.client.post(url, data)
         self.assert_201(response)
 
-        self.assertEqual(model.objects.count(), model_count + 1),\
+        self.assertEqual(model.objects.count(), model_count + 1), \
             f'One more {model} should have been created'
 
         for field in fields:
