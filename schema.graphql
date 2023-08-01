@@ -18,9 +18,9 @@ type AdditionalDocumentType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  externalLink: String
   documentType: AssessmentRegistryDocumentTypeEnum!
   documentTypeDisplay: EnumDescription!
+  externalLink: String
 }
 
 type AdminLevelType {
@@ -2039,6 +2039,15 @@ type FileFieldType {
   url: String
 }
 
+input FileUploadInputType {
+  clientId: String
+  file: Upload!
+  title: String!
+  isPublic: Boolean
+  createdBy: ID
+  projects: [ID!]
+}
+
 type GalleryFileType {
   id: ID!
   title: String!
@@ -2508,6 +2517,7 @@ type MissingPredictionReviewType {
 }
 
 type Mutation {
+  fileUpload(data: FileUploadInputType!): UploadFile
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
   genericExportCancel(id: ID!): CancelUserGenericExport
   notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
@@ -3662,6 +3672,12 @@ type UpdateUserGroup {
 }
 
 scalar Upload
+
+type UploadFile {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: GalleryFileType
+}
 
 type UserDelete {
   errors: [GenericScalar!]
