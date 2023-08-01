@@ -76,6 +76,12 @@ AssessmentRegistryDocumentTypeEnum = convert_enum_to_graphene_enum(
 AssessmentRegistryScoreTypeEnum = convert_enum_to_graphene_enum(
     ScoreRating.ScoreType, name='AssessmentRegistryScoreTypeEnum'
 )
+AssessmentRegistryAnalysisLevelTypeEnum = convert_enum_to_graphene_enum(
+    ScoreAnalyticalDensity.AnalysisLevelCovered, name='AssessmentRegistryAnalysisLevelTypeEnum'
+)
+AssessmentRegistryAnalysisFigureTypeEnum = convert_enum_to_graphene_enum(
+    ScoreAnalyticalDensity.FigureProvidedByAssessement, name='AssessmentRegistryAnalysisFigureTypeEnum'
+)
 AssessmentRegistryRatingTypeEnum = convert_enum_to_graphene_enum(
     ScoreRating.RatingType, name='AssessmentRegistryRatingType'
 )
@@ -122,6 +128,8 @@ enum_map = {
         (ScoreRating.score_type, AssessmentRegistryScoreTypeEnum),
         (ScoreRating.rating, AssessmentRegistryRatingTypeEnum),
         (ScoreAnalyticalDensity.sector, AssessmentRegistrySectorTypeEnum),
+        (ScoreAnalyticalDensity.analysis_level_covered, AssessmentRegistryAnalysisLevelTypeEnum),
+        (ScoreAnalyticalDensity.figure_provided, AssessmentRegistryAnalysisFigureTypeEnum),
         (SummaryFocusSubSectorIssue.focus, AssessmentRegistryFocusTypeEnum),
         (SummaryIssue.sub_sector, AssessmentRegistrySummarySubSectorTypeEnum),
         (SummaryIssue.focus_sub_sector, AssessmentRegistrySummaryFocusSubSectorTypeEnum),
