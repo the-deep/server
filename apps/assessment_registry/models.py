@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-from django.core.validators import MaxValueValidator, MinValueValidator
 
 from user_resource.models import UserResource
 from geo.models import Region
@@ -340,14 +339,44 @@ class ScoreRating(UserResource):
 
 
 class ScoreAnalyticalDensity(UserResource):
+    class AnalysisLevelCovered(models.IntegerChoices):
+        ISSUE_UNMET_NEEDS_ARE_DETAILED = 0, 'Issues/unmet needs are detailed'
+        ISSUE_UNMET_NEEDS_ARE_PRIOTIZED_RANKED = 1, 'Issues/unmet needs are priotized/ranked'
+        CAUSES_OR_UNDERLYING_MECHANISMS_BEHIND_ISSUES_UNMET_NEEDS_ARE_DETAILED = 2,\
+            'Causes or underlying mechanisms behind issues/unmet needs are detailed'
+        CAUSES_OR_UNDERLYING_MECHANISMS_BEHIND_ISSUES_UNMET_NEEDS_ARE_PRIOTIZED_RANKED = 3,\
+            'Causes or underlying mechanisms behind issues/unmet needs are priotized/ranked'
+        SEVERITY_OF_SOME_ALL_ISSUE_UNMET_NEEDS_IS_DETAILED = 4,\
+            'Severity of some/all issues/unmet_needs_is_detailed'
+        FUTURE_ISSUES_UNMET_NEEDS_ARE_DETAILED = 5, 'Future issues/unmet needs are detailed'
+        FUTURE_ISSUES_UNMET_NEEDS_ARE_PRIOTIZED_RANKED = 6, 'Future issues/unmet needs are priotized/ranked'
+        SEVERITY_OF_SOME_ALL_FUTURE_ISSUE_UNMET_NEEDS_IS_DETAILED = 7,\
+            'Severity of some/all future issues/unmet_needs_is_detailed'
+        RECOMMENDATIONS_INTERVENTIONS_ARE_DETAILED = 8, 'Recommnedations/interventions are detailed'
+        RECOMMENDATIONS_INTERVENTIONS_ARE_PRIOTIZED_RANKED = 9,\
+            'Recommnedations/interventions are priotized/ranked'
+
+    class FigureProvidedByAssessement(models.IntegerChoices):
+        TOTAL_POP_IN_THE_ASSESSED_AREAS = 0, 'Total population in the assessed areas'
+        TOTAL_POP_EXPOSED_TO_THE_SHOCK_EVENT = 1, 'Total population exposed to the shock/event'
+        TOTAL_POP_AFFECTED_LIVING_IN_THE_AFFECTED_AREAS = 2,\
+            'Total populaiton affected/living in the affected area'
+        TOTAL_POP_FACING_HUMANITARIAN_ACCESS_CONSTRAINTS = 3, 'Total population facing humanitarian access constraints'
+        TOTAL_POP_IN_NEED = 4, 'Total populaiton in need'
+        TOTAL_POP_IN_CRITICAL_NEED = 5, 'Total population in critical need'
+        TOTAL_POP_IN_SEVERE_NEED = 6, 'Total population in severe need'
+        TOTAL_POP_IN_MODERATE_NEED = 7, 'Total population in moderate need'
+        TOTAL_POP_AT_RISK_VULNERABLE = 9, 'Total population at risk/vulnerable'
+        TOTAL_POP_REACHED_BY_ASSISTANCE = 10, 'Total population reached by assistance'
+
     assessment_registry = models.ForeignKey(
         AssessmentRegistry,
         on_delete=models.CASCADE,
         related_name='analytical_density'
     )
     sector = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
-    value = models.IntegerField(validators=[MaxValueValidator(49), MinValueValidator(1)])
-
+    analysis_level_covered = ArrayField(models.IntegerField(choices=AnalysisLevelCovered.choices), default=list)
+    figure_provided = ArrayField(models.IntegerField(choices=FigureProvidedByAssessement.choices), default=list)
 
 class Question(UserResource):
     class QuestionSector(models.IntegerChoices):

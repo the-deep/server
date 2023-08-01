@@ -98,7 +98,7 @@ class ScoreRatingSerializer(UserResourceSerializer, TempClientIdMixin):
 class ScoreAnalyticalDensitySerializer(UserResourceSerializer):
     class Meta:
         model = ScoreAnalyticalDensity
-        fields = ("client_id", "sector", "value",)
+        fields = ("client_id", "sector", "analysis_level_covered", "figure_provided",)
 
 
 class CNAAnswerSerializer(UserResourceSerializer):
