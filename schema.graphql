@@ -18,9 +18,9 @@ type AdditionalDocumentType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  externalLink: String
   documentType: AssessmentRegistryDocumentTypeEnum!
   documentTypeDisplay: EnumDescription!
+  externalLink: String
 }
 
 type AdminLevelType {
@@ -2987,24 +2987,6 @@ input FileUploadInputType {
   title: String!
   isPublic: Boolean
   projects: [ID!]
-}
-
-enum FocusTypeEnum {
-  CONTEXT
-  SHOCK_EVENT
-  DISPLACEMENT
-  HUMANITERIAN_ACCESS
-  INFORMATION_AND_COMMUNICATION
-  IMPACT
-  HUMANITARIAN_CONDITIONS
-  RESPONSE_AND_CAPACITIES
-  CURRENT_AND_FORECASTED_PRIORITIES
-  COVID_19_CONTAINMENT_MEASURES
-}
-
-enum FrequencyTypeEnum {
-  ONE_OFF
-  REGULAR
 }
 
 type GalleryFileType {
