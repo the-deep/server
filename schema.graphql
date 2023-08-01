@@ -1644,7 +1644,7 @@ type AssessmentRegistryListType {
 type AssessmentRegistryOptionsType {
   cnaQuestions: [QuestionType!]!
   summaryOptions: [SummaryOptionType!]!
-  summaryFocusOptions: [SummaryFocusOptionType]
+  summaryFocusOptions: [SummaryFocusOptionType!]
 }
 
 enum AssessmentRegistryPreparednessTypeEnum {
@@ -4676,7 +4676,7 @@ input SummaryFocusIssueInputType {
 
 type SummaryFocusOptionType {
   sector: AssessmentRegistrySummaryFocusSectorTypeEnum
-  subSector: [AssessmentRegistrySummaryFocusSubSectorTypeEnum]
+  subSector: [AssessmentRegistrySummaryFocusSubSectorTypeEnum!]
 }
 
 type SummaryFocusSubSectorIssueType {
