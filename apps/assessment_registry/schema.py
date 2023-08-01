@@ -2,7 +2,7 @@ import graphene
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
 
-from utils.commons import render_string_for_graphql
+from utils.common import render_string_for_graphql
 from utils.graphene.types import ClientIdMixin, CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
@@ -264,14 +264,13 @@ class MethodologyAttributeType(DjangoObjectType, UserResourceMixin, ClientIdMixi
 
 
 class AdditionalDocumentType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
-    external_link = graphene.String(required=False)
-
     class Meta:
         model = AdditionalDocument
         fields = ("id", "file")
 
     document_type = graphene.Field(AssessmentRegistryDocumentTypeEnum, required=True)
     document_type_display = EnumDescription(source='get_document_type_display', required=True)
+    external_link = graphene.String(required=False)
 
     def resolve_external_link(root, info, **kwargs):
         return render_string_for_graphql(root.external_link)
