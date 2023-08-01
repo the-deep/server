@@ -84,13 +84,13 @@ class SummaryOptionType(graphene.ObjectType):
 
 class SummaryFocusOptionType(graphene.ObjectType):
     sector = graphene.Field(AssessmentRegistrySummaryFocusSectorTypeEnum, required=False)
-    sub_sector = graphene.List(AssessmentRegistrySummaryFocusSubSectorTypeEnum, required=False)
+    sub_sector = graphene.List(graphene.NonNull(AssessmentRegistrySummaryFocusSubSectorTypeEnum), required=False)
 
 
 class AssessmentRegistryOptionsType(graphene.ObjectType):
     cna_questions = graphene.List(graphene.NonNull(QuestionType), required=True)
     summary_options = graphene.List(graphene.NonNull(SummaryOptionType), required=True)
-    summary_focus_options = graphene.List(SummaryFocusOptionType)
+    summary_focus_options = graphene.List(graphene.NonNull(SummaryFocusOptionType))
 
     @staticmethod
     def resolve_cna_questions(root, info, **kwargs):
@@ -354,9 +354,9 @@ class AssessmentRegistryType(
     summary = graphene.List(graphene.NonNull(SummaryType), required=False)
     cna = graphene.List(graphene.NonNull(CNAType), required=False)
     summary_meta = graphene.Field(SummaryType, required=False)
-    summary_subsector_issue = graphene.List(SummarySubSectorIssueType, required=False)
-    summary_focus_meta = graphene.List(SummaryFocusType, required=False)
-    summary_focus_subsector_issue = graphene.List(SummaryFocusSubSectorIssueType, required=False)
+    summary_subsector_issue = graphene.List(graphene.NonNull(SummarySubSectorIssueType), required=False)
+    summary_focus_meta = graphene.List(graphene.NonNull(SummaryFocusType), required=False)
+    summary_focus_subsector_issue = graphene.List(graphene.NonNull(SummaryFocusSubSectorIssueType), required=False)
     lead = graphene.NonNull(LeadDetailType)
 
     @staticmethod
