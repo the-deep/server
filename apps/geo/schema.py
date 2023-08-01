@@ -119,13 +119,6 @@ class ProjectGeoAreaType(DjangoObjectType):
     def resolve_parent_titles(root, info, **kwargs):
         return (root.cached_data or {}).get('parent_titles') or []
 
-    @staticmethod
-    def resolve_region_title(root, info, **kwargs):
-        return root.admin_level.region.title
-
-    def resolve_admin_level_title(root, info, **kwargs):
-        return root.admin_level.title
-
 
 class ProjectGeoAreaListType(CustomDjangoListObjectType):
     class Meta:
