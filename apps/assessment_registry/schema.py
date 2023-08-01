@@ -49,6 +49,8 @@ from .enums import (
     AssessmentRegistryDocumentTypeEnum,
     AssessmentRegistryScoreTypeEnum,
     AssessmentRegistryRatingTypeEnum,
+    AssessmentRegistryAnalysisLevelTypeEnum,
+    AssessmentRegistryAnalysisFigureTypeEnum,
     AssessmentRegistryCNAQuestionSectorTypeEnum,
     AssessmentRegistryCNAQuestionSubSectorTypeEnum,
     AssessmentRegistrySummarySectorTypeEnum,
@@ -76,8 +78,8 @@ class SummarySubSectorType(graphene.ObjectType):
 
 
 class SummaryOptionType(graphene.ObjectType):
-    sector = graphene.Field(AssessmentRegistrySummarySectorTypeEnum, required=False)
-    sub_sector = graphene.List(AssessmentRegistrySummarySubSectorTypeEnum, required=False)
+    sector = graphene.Field(AssessmentRegistrySummarySectorTypeEnum, required=True)
+    sub_sector = graphene.List(graphene.NonNull(AssessmentRegistrySummarySubSectorTypeEnum), required=True)
 
 
 class SummaryFocusOptionType(graphene.ObjectType):
@@ -86,8 +88,8 @@ class SummaryFocusOptionType(graphene.ObjectType):
 
 
 class AssessmentRegistryOptionsType(graphene.ObjectType):
-    cna_questions = graphene.List(graphene.NonNull(QuestionType), required=False)
-    summary_options = graphene.List(SummaryOptionType)
+    cna_questions = graphene.List(graphene.NonNull(QuestionType), required=True)
+    summary_options = graphene.List(graphene.NonNull(SummaryOptionType), required=True)
     summary_focus_options = graphene.List(SummaryFocusOptionType)
 
     @staticmethod
@@ -180,11 +182,16 @@ class ScoreRatingType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
 class ScoreAnalyticalDensityType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     class Meta:
         model = ScoreAnalyticalDensity
-        fields = ("id", "sector", "value")
+        fields = ("id", "client_id", "sector", "analysis_level_covered", "figure_provided",)
 
     sector = graphene.Field(AssessmentRegistrySectorTypeEnum, required=True)
     sector_display = EnumDescription(source='get_sector_display', required=True)
 
+    analysis_level_covered = graphene.Field(AssessmentRegistryAnalysisLevelTypeEnum, required=True)
+    analysis_level_covered_display = EnumDescription(source='get_analysis_level_covered_display', required=True)
+
+    figure_provided = graphene.Field(AssessmentRegistryAnalysisFigureTypeEnum, required=True)
+    figure_provided_display = EnumDescription(source='get_figure_provided_display', required=True)
 
 def get_assessment_registry_qs(info):
     assessment_registry_qs = AssessmentRegistry.objects.filter(project=info.context.active_project)
