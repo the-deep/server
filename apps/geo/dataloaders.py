@@ -2,8 +2,10 @@ from collections import defaultdict
 
 from promise import Promise
 from django.utils.functional import cached_property
+from django.db.models import Prefetch
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
+from geo.schema import get_geo_area_queryset_for_project_geo_area_type
 
 from .models import AdminLevel
 from assessment_registry.models import AssessmentRegistry
@@ -21,7 +23,9 @@ class AdminLevelLoader(DataLoaderWithContext):
 class AssessmentRegistryGeoAreaLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         ary_geo_area_qs = AssessmentRegistry.locations.through.objects\
-            .filter(assessmentregistry__in=keys).prefetch_related('geoarea')
+            .filter(assessmentregistry__in=keys).prefetch_related(
+                Prefetch('geoarea', queryset=get_geo_area_queryset_for_project_geo_area_type())
+            )
         _map = defaultdict(list)
         for ary_geo_area in ary_geo_area_qs.all():
             _map[ary_geo_area.assessmentregistry_id].append(ary_geo_area.geoarea)
