@@ -1392,6 +1392,32 @@ enum AssessmentRegistryAffectedGroupTypeEnum {
   ALL_AFFECTED_NOT_DISPLACED_HOST
 }
 
+enum AssessmentRegistryAnalysisFigureTypeEnum {
+  TOTAL_POP_IN_THE_ASSESSED_AREAS
+  TOTAL_POP_EXPOSED_TO_THE_SHOCK_EVENT
+  TOTAL_POP_AFFECTED_LIVING_IN_THE_AFFECTED_AREAS
+  TOTAL_POP_FACING_HUMANITARIAN_ACCESS_CONSTRAINTS
+  TOTAL_POP_IN_NEED
+  TOTAL_POP_IN_CRITICAL_NEED
+  TOTAL_POP_IN_SEVERE_NEED
+  TOTAL_POP_IN_MODERATE_NEED
+  TOTAL_POP_AT_RISK_VULNERABLE
+  TOTAL_POP_REACHED_BY_ASSISTANCE
+}
+
+enum AssessmentRegistryAnalysisLevelTypeEnum {
+  ISSUE_UNMET_NEEDS_ARE_DETAILED
+  ISSUE_UNMET_NEEDS_ARE_PRIOTIZED_RANKED
+  CAUSES_OR_UNDERLYING_MECHANISMS_BEHIND_ISSUES_UNMET_NEEDS_ARE_DETAILED
+  CAUSES_OR_UNDERLYING_MECHANISMS_BEHIND_ISSUES_UNMET_NEEDS_ARE_PRIOTIZED_RANKED
+  SEVERITY_OF_SOME_ALL_ISSUE_UNMET_NEEDS_IS_DETAILED
+  FUTURE_ISSUES_UNMET_NEEDS_ARE_DETAILED
+  FUTURE_ISSUES_UNMET_NEEDS_ARE_PRIOTIZED_RANKED
+  SEVERITY_OF_SOME_ALL_FUTURE_ISSUE_UNMET_NEEDS_IS_DETAILED
+  RECOMMENDATIONS_INTERVENTIONS_ARE_DETAILED
+  RECOMMENDATIONS_INTERVENTIONS_ARE_PRIOTIZED_RANKED
+}
+
 enum AssessmentRegistryCNAQuestionSectorTypeEnum {
   RELEVANCE
   COMPREHENSIVENESS
@@ -1616,8 +1642,8 @@ type AssessmentRegistryListType {
 }
 
 type AssessmentRegistryOptionsType {
-  cnaQuestions: [QuestionType!]
-  summaryOptions: [SummaryOptionType]
+  cnaQuestions: [QuestionType!]!
+  summaryOptions: [SummaryOptionType!]!
   summaryFocusOptions: [SummaryFocusOptionType]
 }
 
@@ -4563,19 +4589,22 @@ type SaveUserSavedLeadFilter {
 input ScoreAnalyticalDensityInputType {
   clientId: String
   sector: AssessmentRegistrySectorTypeEnum!
-  value: Int!
+  analysisLevelCovered: [AssessmentRegistryAnalysisLevelTypeEnum!]
+  figureProvided: [AssessmentRegistryAnalysisFigureTypeEnum!]
 }
 
 type ScoreAnalyticalDensityType {
   id: ID!
   sector: AssessmentRegistrySectorTypeEnum!
-  value: Int!
-  clientId: String!
+  analysisLevelCovered: AssessmentRegistryAnalysisLevelTypeEnum!
+  figureProvided: AssessmentRegistryAnalysisFigureTypeEnum!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
   sectorDisplay: EnumDescription!
+  analysisLevelCoveredDisplay: EnumDescription!
+  figureProvidedDisplay: EnumDescription!
 }
 
 input ScoreRatingInputType {
@@ -4703,8 +4732,8 @@ input SummaryInputType {
 }
 
 type SummaryOptionType {
-  sector: AssessmentRegistrySummarySectorTypeEnum
-  subSector: [AssessmentRegistrySummarySubSectorTypeEnum]
+  sector: AssessmentRegistrySummarySectorTypeEnum!
+  subSector: [AssessmentRegistrySummarySubSectorTypeEnum!]!
 }
 
 input SummarySubSectorIssueInputType {
