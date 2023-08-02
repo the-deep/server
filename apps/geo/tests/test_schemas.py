@@ -1,5 +1,7 @@
 from utils.graphene.tests import GraphQLTestCase
 
+from geo.models import AdminLevel
+
 from project.factories import ProjectFactory
 from user.factories import UserFactory
 from geo.factories import RegionFactory, AdminLevelFactory, GeoAreaFactory
@@ -29,13 +31,7 @@ class TestGeoSchema(GraphQLTestCase):
                 adminLevelLevel
                 adminLevelTitle
                 title
-                parents {
-                  id
-                  regionTitle
-                  adminLevelLevel
-                  adminLevelTitle
-                  title
-                }
+                parentTitles
               }
             }
           }
@@ -177,6 +173,9 @@ class TestGeoSchema(GraphQLTestCase):
         # With authentication -----
         self.force_login(user)
 
+        for admin_level in AdminLevel.objects.all():
+            admin_level.calc_cache()
+
         content = _query_check()['data']['project']['geoAreas']
         self.assertEqual(content['results'], [
             {
@@ -185,14 +184,8 @@ class TestGeoSchema(GraphQLTestCase):
                 'adminLevelLevel': geo_area.admin_level.level,
                 'adminLevelTitle': geo_area.admin_level.title,
                 'regionTitle': geo_area.admin_level.region.title,
-                'parents': [
-                    {
-                        'id': str(parent.id),
-                        'title': parent.title,
-                        'adminLevelLevel': parent.admin_level.level,
-                        'adminLevelTitle': parent.admin_level.title,
-                        'regionTitle': parent.admin_level.region.title,
-                    }
+                'parentTitles': [
+                    parent.title
                     for parent in parents
                 ],
             }
@@ -200,7 +193,7 @@ class TestGeoSchema(GraphQLTestCase):
                 (region_1_ad_2_geo_area_01, [region_1_ad_1_geo_area_01]),
                 (region_1_ad_2_geo_area_02, [region_1_ad_1_geo_area_01]),
                 (region_1_ad_2_geo_area_03, []),
-                (region_1_ad_3_geo_area_01, [region_1_ad_2_geo_area_01, region_1_ad_1_geo_area_01]),
+                (region_1_ad_3_geo_area_01, [region_1_ad_1_geo_area_01, region_1_ad_2_geo_area_01]),
                 (region_2_ad_2_geo_area_01, [])
             ]
         ])

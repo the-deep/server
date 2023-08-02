@@ -105,14 +105,6 @@ class Query:
 
 # -------------------------------- Project Specific Query ---------------------------------
 # NOTE: Use with ProjectScopeQuery only.
-class GeoAreaParentType(graphene.ObjectType):
-    id = graphene.ID(required=True)
-    title = graphene.String(required=True)
-    region_title = graphene.String(required=True)
-    admin_level_title = graphene.String(required=True)
-    admin_level_level = graphene.Int()
-
-
 class ProjectGeoAreaType(DjangoObjectType):
     class Meta:
         model = GeoArea
@@ -122,12 +114,10 @@ class ProjectGeoAreaType(DjangoObjectType):
     region_title = graphene.String(required=True)
     admin_level_title = graphene.String(required=True)
     admin_level_level = graphene.Int()
-    parents = graphene.List(graphene.NonNull(GeoAreaParentType), required=True)
+    parent_titles = graphene.List(graphene.NonNull(graphene.String), required=True)
 
-    def resolve_parents(root, info, **kwargs):
-        if root.parent_id:
-            return info.context.dl.geo.geo_area_parents.load(root.parent_id)
-        return []
+    def resolve_parent_titles(root, info, **kwargs):
+        return (root.cached_data or {}).get('parent_titles') or []
 
 
 class ProjectGeoAreaListType(CustomDjangoListObjectType):

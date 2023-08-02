@@ -1712,14 +1712,6 @@ enum GeoAreaOrderingEnum {
   DESC_ADMIN_LEVEL
 }
 
-type GeoAreaParentType {
-  id: ID!
-  title: String!
-  regionTitle: String!
-  adminLevelTitle: String!
-  adminLevelLevel: Int
-}
-
 enum GroupMembershipRoleEnum {
   NORMAL
   ADMIN
@@ -2390,7 +2382,7 @@ type ProjectGeoAreaType {
   regionTitle: String!
   adminLevelTitle: String!
   adminLevelLevel: Int
-  parents: [GeoAreaParentType!]!
+  parentTitles: [String!]!
 }
 
 type ProjectJoinRequestDelete {

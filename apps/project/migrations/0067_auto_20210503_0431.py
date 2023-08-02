@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='project',
             name='stats_cache',
-            field=models.JSONField(default=dict),
+            field=models.JSONField(default=dict, blank=True),
         ),
         migrations.AlterField(
             model_name='projectjoinrequest',

@@ -102,7 +102,7 @@ class Project(UserResource):
     has_publicly_viewable_confidential_leads = models.BooleanField(default=False)
 
     # Store project stats data as cache. View project/tasks for structure
-    stats_cache = models.JSONField(default=dict)
+    stats_cache = models.JSONField(default=dict, blank=True)
     # Stores the geo locations data as cache.
     geo_cache_hash = models.CharField(max_length=256, null=True, blank=True)
     geo_cache_file = models.FileField(upload_to='project-geo-cache/', null=True, blank=True)
