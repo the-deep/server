@@ -1651,7 +1651,8 @@ type AssessmentRegistryListType {
 type AssessmentRegistryOptionsType {
   cnaQuestions: [QuestionType!]!
   summaryOptions: [SummaryOptionType!]!
-  summaryFocusOptions: [SummaryFocusOptionType!]
+  summaryFocusOptions: [SummaryFocusOptionType!]!
+  scoreOptions: [ScoreOptionsType!]!
 }
 
 enum AssessmentRegistryPreparednessTypeEnum {
@@ -1690,7 +1691,14 @@ enum AssessmentRegistrySamplingApproachTypeEnum {
   FULL_ENUMERATION
 }
 
-enum AssessmentRegistryScoreTypeEnum {
+enum AssessmentRegistryScoreAnalyticalStatementTypeEnum {
+  FIT_FOR_PURPOSE
+  TRUSTWORTHINESS
+  ANALYTICAL_RIGOR
+  ANALYTICAL_WRITING
+}
+
+enum AssessmentRegistryScoreCriteriaTypeEnum {
   RELEVANCE
   COMPREHENSIVENESS
   TIMELINESS
@@ -1839,7 +1847,12 @@ type AssessmentRegistryType {
   additionalDocuments: [AdditionalDocumentType!]
   scoreRatings: [ScoreRatingType!]!
   scoreAnalyticalDensity: [ScoreAnalyticalDensityType!]!
+  summary: [SummaryType!]
   cna: [CNAType!]
+  summaryMeta: SummaryType
+  summarySubsectorIssue: [SummarySubSectorIssueType!]
+  summaryFocusMeta: [SummaryFocusType!]
+  summaryFocusSubsectorIssue: [SummaryFocusSubSectorIssueType!]
 }
 
 enum AssessmentRegistryUnitOfAnalysisTypeEnum {
@@ -3157,18 +3170,12 @@ type FileFieldType {
   url: String
 }
 
-input FileInputType {
+input FileUploadInputType {
   clientId: String
   file: Upload!
   title: String!
   isPublic: Boolean
   projects: [ID!]
-}
-
-type FileUploadMutation {
-  errors: [GenericScalar!]
-  ok: Boolean
-  result: GalleryFileType
 }
 
 type GalleryFileType {
@@ -3691,8 +3698,8 @@ type MissingPredictionReviewType {
 }
 
 type Mutation {
-  fileUpload(data: FileInputType): FileUploadMutation
   createIssue(data: IssueCreateInputType): CreateIssue
+  fileUpload(data: FileUploadInputType!): UploadFile
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
   genericExportCancel(id: ID!): CancelUserGenericExport
   notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
@@ -4604,6 +4611,7 @@ input ScoreAnalyticalDensityInputType {
 
 type ScoreAnalyticalDensityType {
   id: ID!
+  clientId: String!
   sector: AssessmentRegistrySectorTypeEnum!
   analysisLevelCovered: AssessmentRegistryAnalysisLevelTypeEnum!
   figureProvided: AssessmentRegistryAnalysisFigureTypeEnum!
@@ -4616,16 +4624,21 @@ type ScoreAnalyticalDensityType {
   figureProvidedDisplay: EnumDescription!
 }
 
+type ScoreOptionsType {
+  analyticalStatement: AssessmentRegistryScoreAnalyticalStatementTypeEnum!
+  scoreCriteria: [AssessmentRegistryScoreCriteriaTypeEnum!]!
+}
+
 input ScoreRatingInputType {
   clientId: String
-  scoreType: AssessmentRegistryScoreTypeEnum!
+  scoreType: AssessmentRegistryScoreCriteriaTypeEnum!
   rating: AssessmentRegistryRatingType
   reason: String
 }
 
 type ScoreRatingType {
   id: ID!
-  scoreType: AssessmentRegistryScoreTypeEnum!
+  scoreType: AssessmentRegistryScoreCriteriaTypeEnum!
   rating: AssessmentRegistryRatingType!
   reason: String
   clientId: String!
