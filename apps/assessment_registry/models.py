@@ -299,7 +299,13 @@ class AdditionalDocument(UserResource):
 
 
 class ScoreRating(UserResource):
-    class ScoreType(models.IntegerChoices):
+    class AnalyticalStatement(models.IntegerChoices):
+        FIT_FOR_PURPOSE = 0, 'Fit for purpose'
+        TRUSTWORTHINESS = 1, 'Trustworthiness'
+        ANALYTICAL_RIGOR = 2, 'Analytical Rigor'
+        ANALYTICAL_WRITING = 3, 'Analytical Writing'
+
+    class ScoreCriteria(models.IntegerChoices):
         RELEVANCE = 0, "Fit for purpose -> Relevance"
         COMPREHENSIVENESS = 1, "Fit for purpose -> Comprehensiveness"
         TIMELINESS = 2, "Fit for purpose -> Timeliness"
@@ -333,7 +339,7 @@ class ScoreRating(UserResource):
         on_delete=models.CASCADE,
         related_name='score_ratings',
     )
-    score_type = models.IntegerField(choices=ScoreType.choices)
+    score_type = models.IntegerField(choices=ScoreCriteria.choices)
     rating = models.IntegerField(choices=RatingType.choices, default=RatingType.FAIR)
     reason = models.TextField(blank=True, null=True)
 
@@ -377,6 +383,7 @@ class ScoreAnalyticalDensity(UserResource):
     sector = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
     analysis_level_covered = ArrayField(models.IntegerField(choices=AnalysisLevelCovered.choices), default=list)
     figure_provided = ArrayField(models.IntegerField(choices=FigureProvidedByAssessement.choices), default=list)
+
 
 class Question(UserResource):
     class QuestionSector(models.IntegerChoices):
