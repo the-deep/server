@@ -73,8 +73,11 @@ AssessmentRegistryUnitOfReportingTypeEnum = convert_enum_to_graphene_enum(
 AssessmentRegistryDocumentTypeEnum = convert_enum_to_graphene_enum(
     AdditionalDocument.DocumentType, name='AssessmentRegistryDocumentTypeEnum'
 )
-AssessmentRegistryScoreTypeEnum = convert_enum_to_graphene_enum(
-    ScoreRating.ScoreType, name='AssessmentRegistryScoreTypeEnum'
+AssessmentRegistryScoreCriteriaTypeEnum = convert_enum_to_graphene_enum(
+    ScoreRating.ScoreCriteria, name='AssessmentRegistryScoreCriteriaTypeEnum'
+)
+AssessmentRegistryScoreAnalyticalStatementTypeEnum = convert_enum_to_graphene_enum(
+    ScoreRating.AnalyticalStatement, name='AssessmentRegistryScoreAnalyticalStatementTypeEnum'
 )
 AssessmentRegistryAnalysisLevelTypeEnum = convert_enum_to_graphene_enum(
     ScoreAnalyticalDensity.AnalysisLevelCovered, name='AssessmentRegistryAnalysisLevelTypeEnum'
@@ -125,7 +128,7 @@ enum_map = {
         (MethodologyAttribute.unit_of_analysis, AssessmentRegistryUnitOfAnalysisTypeEnum),
         (MethodologyAttribute.unit_of_reporting, AssessmentRegistryUnitOfReportingTypeEnum),
         (AdditionalDocument.document_type, AssessmentRegistryDocumentTypeEnum),
-        (ScoreRating.score_type, AssessmentRegistryScoreTypeEnum),
+        (ScoreRating.score_type, AssessmentRegistryScoreCriteriaTypeEnum),
         (ScoreRating.rating, AssessmentRegistryRatingTypeEnum),
         (ScoreAnalyticalDensity.sector, AssessmentRegistrySectorTypeEnum),
         (ScoreAnalyticalDensity.analysis_level_covered, AssessmentRegistryAnalysisLevelTypeEnum),
