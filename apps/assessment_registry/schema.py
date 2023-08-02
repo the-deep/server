@@ -47,7 +47,8 @@ from .enums import (
     AssessmentRegistryUnitOfAnalysisTypeEnum,
     AssessmentRegistryUnitOfReportingTypeEnum,
     AssessmentRegistryDocumentTypeEnum,
-    AssessmentRegistryScoreTypeEnum,
+    AssessmentRegistryScoreAnalyticalStatementTypeEnum,
+    AssessmentRegistryScoreCriteriaTypeEnum,
     AssessmentRegistryRatingTypeEnum,
     AssessmentRegistryAnalysisLevelTypeEnum,
     AssessmentRegistryAnalysisFigureTypeEnum,
@@ -87,10 +88,48 @@ class SummaryFocusOptionType(graphene.ObjectType):
     sub_sector = graphene.List(graphene.NonNull(AssessmentRegistrySummaryFocusSubSectorTypeEnum), required=False)
 
 
+class ScoreOptionsType(graphene.ObjectType):
+    analytical_statement = graphene.Field(AssessmentRegistryScoreAnalyticalStatementTypeEnum, required=True)
+    score_criteria = graphene.List(graphene.NonNull(AssessmentRegistryScoreCriteriaTypeEnum), required=True)
+
+
 class AssessmentRegistryOptionsType(graphene.ObjectType):
     cna_questions = graphene.List(graphene.NonNull(QuestionType), required=True)
     summary_options = graphene.List(graphene.NonNull(SummaryOptionType), required=True)
-    summary_focus_options = graphene.List(graphene.NonNull(SummaryFocusOptionType))
+    summary_focus_options = graphene.List(graphene.NonNull(SummaryFocusOptionType), required=True)
+    score_options = graphene.List(graphene.NonNull(ScoreOptionsType), required=True)
+
+    @staticmethod
+    def resolve_score_options(root, info, **kwargs):
+        return [
+            ScoreOptionsType(
+                analytical_statement=enum,
+                score_criteria=[
+                    enum for enum, _ in ScoreRating.ScoreCriteria.choices if 0 <= enum <= 4
+                ]
+            )for enum, _ in ScoreRating.AnalyticalStatement.choices if enum == 0
+        ] + [
+            ScoreOptionsType(
+                analytical_statement=enum,
+                score_criteria=[
+                    enum for enum, _ in ScoreRating.ScoreCriteria.choices if 5 <= enum <= 9
+                ]
+            )for enum, _ in ScoreRating.AnalyticalStatement.choices if enum == 1
+        ] + [
+            ScoreOptionsType(
+                analytical_statement=enum,
+                score_criteria=[
+                    enum for enum, _ in ScoreRating.ScoreCriteria.choices if 10 <= enum <= 14
+                ]
+            )for enum, _ in ScoreRating.AnalyticalStatement.choices if enum == 2
+        ] + [
+            ScoreOptionsType(
+                analytical_statement=enum,
+                score_criteria=[
+                    enum for enum, _ in ScoreRating.ScoreCriteria.choices if 15 <= enum <= 19
+                ]
+            )for enum, _ in ScoreRating.AnalyticalStatement.choices if enum == 3
+        ]
 
     @staticmethod
     def resolve_cna_questions(root, info, **kwargs):
@@ -173,7 +212,7 @@ class ScoreRatingType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
         model = ScoreRating
         fields = ("id", "score_type", "rating", "reason",)
 
-    score_type = graphene.Field(AssessmentRegistryScoreTypeEnum, required=True)
+    score_type = graphene.Field(AssessmentRegistryScoreCriteriaTypeEnum, required=True)
     score_type_display = EnumDescription(source='get_score_type_display', required=True)
     rating = graphene.Field(AssessmentRegistryRatingTypeEnum, required=True)
     rating_display = EnumDescription(source='get_rating_display', required=True)
@@ -192,6 +231,7 @@ class ScoreAnalyticalDensityType(DjangoObjectType, UserResourceMixin, ClientIdMi
 
     figure_provided = graphene.Field(AssessmentRegistryAnalysisFigureTypeEnum, required=True)
     figure_provided_display = EnumDescription(source='get_figure_provided_display', required=True)
+
 
 def get_assessment_registry_qs(info):
     assessment_registry_qs = AssessmentRegistry.objects.filter(project=info.context.active_project)
