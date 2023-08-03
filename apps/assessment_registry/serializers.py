@@ -9,7 +9,7 @@ from .models import (
     AdditionalDocument,
     SummaryIssue,
     Summary,
-    SummarySubSectorIssue,
+    SummarySubPillarIssue,
     SummaryFocus,
     SummaryFocusSubSectorIssue,
     ScoreRating,
@@ -54,9 +54,9 @@ class IssueSerializer(UserResourceSerializer):
         return data
 
 
-class SummarySubSectorIssueSerializer(UserResourceSerializer, TempClientIdMixin):
+class SummarySubPillarIssueSerializer(UserResourceSerializer, TempClientIdMixin):
     class Meta:
-        model = SummarySubSectorIssue
+        model = SummarySubPillarIssue
         fields = ("summary_issue", "text", "order", "lead_preview_text_ref")
 
 
@@ -127,7 +127,7 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
     )
     summary_meta = SummarySerializer(source='summary', many=True, required=False)
 
-    summary_subsector_issue = SummarySubSectorIssueSerializer(
+    summary_subsector_issue = SummarySubPillarIssueSerializer(
         source="summary_sub_sector_issue_ary", many=True, required=False
     )
     summary_focus_meta = SummaryFocusSerializer(
