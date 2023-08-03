@@ -13,7 +13,7 @@ from .models import (
     ScoreRating,
     ScoreAnalyticalDensity,
     Question,
-    SummaryFocusSubSectorIssue,
+    SummarySubDimmensionIssue,
 )
 
 AssessmentRegistryCrisisTypeEnum = convert_enum_to_graphene_enum(
@@ -133,7 +133,7 @@ enum_map = {
         (ScoreAnalyticalDensity.sector, AssessmentRegistrySectorTypeEnum),
         (ScoreAnalyticalDensity.analysis_level_covered, AssessmentRegistryAnalysisLevelTypeEnum),
         (ScoreAnalyticalDensity.figure_provided, AssessmentRegistryAnalysisFigureTypeEnum),
-        (SummaryFocusSubSectorIssue.focus, AssessmentRegistryFocusTypeEnum),
+        (SummarySubDimmensionIssue.focus, AssessmentRegistryFocusTypeEnum),
         (SummaryIssue.sub_pillar, AssessmentRegistrySummarySubPillarTypeEnum),
         (SummaryIssue.sub_dimmension, AssessmentRegistrySummarySubDimmensionTypeEnum),
     )

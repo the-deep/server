@@ -1,7 +1,7 @@
 from utils.graphene.tests import GraphQLTestCase
 
 from organization.factories import OrganizationFactory
-from geo.factories import RegionFactory
+from geo.factories import GeoAreaFactory, AdminLevelFactory, RegionFactory
 from gallery.factories import FileFactory
 from project.factories import ProjectFactory
 from user.factories import UserFactory
@@ -29,7 +29,6 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                  result {
                     id
                     affectedGroups
-                    affectedGroupsDisplay
                     bgCrisisStartDate
                     confidentiality
                     confidentialityDisplay
@@ -97,18 +96,18 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                         subSectorDisplay
                       }
                    }
-                   summaryFocusMeta {
+                   summaryDimmensionMeta {
                       id
                       percentageInNeed
                    }
-                   summaryFocusSubsectorIssue {
+                   summarySubDimmensionIssue {
                       id
                    }
-                   summaryMeta {
+                   summaryPillarMeta {
                       id
                       totalPeopleAssessed
                    }
-                   summarySubsectorIssue {
+                   summarySubPillarIssue {
                       id
                    }
                 }
@@ -124,8 +123,10 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
         self.lead1 = LeadFactory.create(project=self.project1)
         self.organization1 = OrganizationFactory.create()
         self.organization2 = OrganizationFactory.create()
-        self.region1 = RegionFactory.create()
-        self.region2 = RegionFactory.create()
+        self.region = RegionFactory.create()
+        self.admin_level1 = AdminLevelFactory.create(region=self.region)
+        self.geo_area1 = GeoAreaFactory.create(admin_level=self.admin_level1)
+        self.geo_area2 = GeoAreaFactory.create(admin_level=self.admin_level1)
         self.question1 = QuestionFactory.create(
             sector=Question.QuestionSector.RELEVANCE.value,
             sub_sector=Question.QuestionSubSector.RELEVANCE.value,
@@ -173,7 +174,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
             internationalPartners=[self.organization1.id, self.organization2.id],
             lead=self.lead1.id,
             leadOrganizations=[self.organization1.id, self.organization2.id],
-            locations=[self.region1.id, self.region2.id],
+            locations=[self.geo_area1.id, self.geo_area2.id],
             nationalPartners=[self.organization1.id, self.organization2.id],
             dataCollectionEndDate="2023-01-01",
             dataCollectionStartDate="2023-01-01",
@@ -187,9 +188,9 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                 self.genum(AssessmentRegistry.Language.ENGLISH),
                 self.genum(AssessmentRegistry.Language.SPANISH)
             ],
-            bgCountries=[self.region1.id, self.region2.id],
+            bgCountries=[self.region.id],
             donors=[self.organization1.id, self.organization2.id],
-            affectedGroups=self.genum(AssessmentRegistry.AffectedGroupType.ALL_AFFECTED),
+            affectedGroups=[self.genum(AssessmentRegistry.AffectedGroupType.ALL_AFFECTED)],
             methodologyAttributes=[
                 dict(
                     dataCollectionTechnique=self.genum(MethodologyAttribute.CollectionTechniqueType.SECONDARY_DATA_REVIEW),
@@ -202,7 +203,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
             ],
             additionalDocuments=[
                 dict(
-                    documentType=self.genum(AdditionalDocument.DocumentType.EXECUTIVE_SUMMARY),
+                    documentType=self.genum(AdditionalDocument.DocumentType.ASSESSMENT_DATABASE),
                     externalLink="",
                     file=str(self.file.id)
                 ),
@@ -210,21 +211,19 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
             scoreAnalyticalDensity=[
                 dict(
                     sector=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
-                    value=10
                 ),
                 dict(
                     sector=self.genum(AssessmentRegistry.SectorType.SHELTER),
-                    value=10
                 )
             ],
             scoreRatings=[
                 dict(
-                    scoreType=self.genum(ScoreRating.ScoreType.ASSUMPTIONS),
+                    scoreType=self.genum(ScoreRating.ScoreCriteria.ASSUMPTIONS),
                     rating=self.genum(ScoreRating.RatingType.VERY_POOR),
                     reason="test"
                 ),
                 dict(
-                    scoreType=self.genum(ScoreRating.ScoreType.RELEVANCE),
+                    scoreType=self.genum(ScoreRating.ScoreCriteria.RELEVANCE),
                     rating=self.genum(ScoreRating.RatingType.VERY_POOR),
                     reason="test"
                 )
@@ -235,22 +234,22 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     question=self.question1.id,
                 )
             ],
-            summaryMeta=[
+            summaryPillarMeta=[
                 dict(
                     totalPeopleAssessed=1000
                 )
             ],
-            summarySubsectorIssue=[
+            summarySubPillarIssue=[
                 dict(
                     summaryIssue=self.summary_issue1.id
                 )
             ],
-            summaryFocusMeta=[
+            summaryDimmensionMeta=[
                 dict(
                     percentageInNeed=10
                 )
             ],
-            summaryFocusIssue=[
+            summarySubDimmensionIssue=[
                 dict(
                     summaryIssue=self.summary_issue2.id,
                     focus=self.genum(AssessmentRegistry.FocusType.CONTEXT),
@@ -264,7 +263,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
         self.assertIsNotNone(data['methodologyAttributes'])
         self.assertIsNotNone(data['additionalDocuments'])
         self.assertIsNotNone(data['cna'])
-        self.assertIsNotNone(data['summaryMeta'])
-        self.assertIsNotNone(data['summaryFocusMeta'])
-        self.assertIsNotNone(data['summarySubsectorIssue'])
-        self.assertIsNotNone(data['summaryFocusSubsectorIssue'])
+        self.assertIsNotNone(data['summaryPillarMeta'])
+        self.assertIsNotNone(data['summaryDimmensionMeta'])
+        self.assertIsNotNone(data['summarySubPillarIssue'])
+        self.assertIsNotNone(data['summarySubDimmensionIssue'])
