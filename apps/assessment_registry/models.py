@@ -623,7 +623,7 @@ class SummaryIssue(models.Model):
     full_label = models.CharField(max_length=220, blank=True)
 
 
-class SummaryFocusSubSectorIssue(UserResource):
+class SummarySubDimmensionIssue(UserResource):
     assessment_registry = models.ForeignKey(
         AssessmentRegistry,
         on_delete=models.CASCADE,

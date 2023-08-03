@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from user_resource.serializers import UserResourceSerializer
-from deep.serializers import ProjectPropertySerializerMixin, TempClientIdMixin
+from deep.serializers import ProjectPropertySerializerMixin, TempClientIdMixin, IntegerIDField
 
 from .models import (
     AssessmentRegistry,
@@ -11,7 +11,7 @@ from .models import (
     Summary,
     SummarySubPillarIssue,
     SummaryFocus,
-    SummaryFocusSubSectorIssue,
+    SummarySubDimmensionIssue,
     ScoreRating,
     ScoreAnalyticalDensity,
     Answer,
@@ -19,18 +19,22 @@ from .models import (
 
 
 class MethodologyAttributeSerializer(TempClientIdMixin, serializers.ModelSerializer):
+    id = IntegerIDField(required=False)
+
     class Meta:
         model = MethodologyAttribute
         fields = (
-            "client_id", "data_collection_technique", "sampling_approach", "sampling_size",
+            "id", "client_id", "data_collection_technique", "sampling_approach", "sampling_size",
             "proximity", "unit_of_analysis", "unit_of_reporting",
         )
 
 
 class AdditionalDocumentSerializer(TempClientIdMixin, UserResourceSerializer):
+    id = IntegerIDField(required=False)
+
     class Meta:
         model = AdditionalDocument
-        fields = ("client_id", "document_type", "file", "external_link",)
+        fields = ("id", "client_id", "document_type", "file", "external_link",)
 
 
 class IssueSerializer(UserResourceSerializer):
@@ -55,25 +59,31 @@ class IssueSerializer(UserResourceSerializer):
 
 
 class SummarySubPillarIssueSerializer(UserResourceSerializer, TempClientIdMixin):
+    id = IntegerIDField(required=False)
+
     class Meta:
         model = SummarySubPillarIssue
-        fields = ("summary_issue", "text", "order", "lead_preview_text_ref")
+        fields = ("id", "summary_issue", "text", "order", "lead_preview_text_ref")
 
 
 class SummaryMetaSerializer(UserResourceSerializer):
+    id = IntegerIDField(required=False)
+
     class Meta:
         model = Summary
         fields = (
-            "total_people_assessed", "total_dead", "total_injured", "total_missing",
+            "id", "total_people_assessed", "total_dead", "total_injured", "total_missing",
             "total_people_facing_hum_access_cons", "percentage_of_people_facing_hum_access_cons",
         )
 
 
 class SummaryFocusMetaSerializer(UserResourceSerializer):
+    id = IntegerIDField(required=False)
+
     class Meta:
         model = SummaryFocus
         fields = (
-            "percentage_of_people_affected", "total_people_affected", "percentage_of_moderate",
+            "id", "percentage_of_people_affected", "total_people_affected", "percentage_of_moderate",
             "percentage_of_severe", "percentage_of_critical", "percentage_in_need", "total_moderate",
             "total_severe", "total_critical", "total_in_need", "total_pop_assessed", "total_not_affected",
             "total_affected", "total_people_in_need", "total_people_moderately_in_need",
@@ -81,28 +91,36 @@ class SummaryFocusMetaSerializer(UserResourceSerializer):
         )
 
 
-class SummaryFocusIssueSerializer(UserResourceSerializer):
+class SummarySubDimmensionSerializer(UserResourceSerializer):
+    id = IntegerIDField(required=False)
+
     class Meta:
-        model = SummaryFocusSubSectorIssue
-        fields = ("summary_issue", "focus", "text", "order", "lead_preview_text_ref",)
+        model = SummarySubDimmensionIssue
+        fields = ("id", "summary_issue", "focus", "text", "order", "lead_preview_text_ref",)
 
 
 class ScoreRatingSerializer(UserResourceSerializer, TempClientIdMixin):
+    id = IntegerIDField(required=False)
+
     class Meta:
         model = ScoreRating
-        fields = ("client_id", "score_type", "rating", "reason",)
+        fields = ("id", "client_id", "score_type", "rating", "reason",)
 
 
 class ScoreAnalyticalDensitySerializer(UserResourceSerializer):
+    id = IntegerIDField(required=False)
+
     class Meta:
         model = ScoreAnalyticalDensity
-        fields = ("client_id", "sector", "analysis_level_covered", "figure_provided",)
+        fields = ("id", "client_id", "sector", "analysis_level_covered", "figure_provided",)
 
 
 class CNAAnswerSerializer(TempClientIdMixin, UserResourceSerializer):
+    id = IntegerIDField(required=False)
+
     class Meta:
         model = Answer
-        fields = ('client_id', 'question', 'answer')
+        fields = ("id", 'client_id', 'question', 'answer')
 
 
 class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerializerMixin):
@@ -131,7 +149,7 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
     summary_dimmension_meta = SummaryFocusMetaSerializer(
         source='summary_focus', many=True, required=False
     )
-    summary_sub_dimmension_issue = SummaryFocusIssueSerializer(
+    summary_sub_dimmension_issue = SummarySubDimmensionSerializer(
         source="summary_focus_subsector_issue_ary", many=True, required=False
     )
 
