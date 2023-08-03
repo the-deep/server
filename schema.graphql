@@ -3400,8 +3400,8 @@ input HIDLoginInputType {
 }
 
 input IssueCreateInputType {
-  subSector: AssessmentRegistrySummarySubPillarTypeEnum
-  focusSubSector: AssessmentRegistrySummaryFocusSubSectorTypeEnum
+  subPillar: AssessmentRegistrySummarySubPillarTypeEnum
+  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
   parent: ID
   label: String!
 }
@@ -3422,10 +3422,10 @@ type IssueType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  subSector: AssessmentRegistrySummarySubPillarTypeEnum
-  subSectorDisplay: String
-  focusSubSector: AssessmentRegistrySummaryFocusSubSectorTypeEnum
-  focusSubSectorDisplay: String
+  subPillar: AssessmentRegistrySummarySubPillarTypeEnum
+  subPillarDisplay: String
+  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
+  subDimmensionDisplay: String
 }
 
 type JwtTokenType {
