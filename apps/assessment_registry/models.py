@@ -195,7 +195,7 @@ class AssessmentRegistry(UserResource):
     sectors = ArrayField(models.IntegerField(choices=SectorType.choices), default=list)
     protection_info_mgmts = ArrayField(
         models.IntegerField(choices=ProtectionInfoType.choices),
-        default=list
+        blank=True, null=True
     )
     affected_groups = ArrayField(
         models.IntegerField(choices=AffectedGroupType.choices),
@@ -538,7 +538,7 @@ class SummarySubPillarIssue(UserResource):
 
 
 class SummaryFocus(UserResource):
-    class Sector(models.IntegerChoices):
+    class Dimmension(models.IntegerChoices):
         IMPACT = 0, 'Impact'
         HUMANITARIAN_CONDITIONS = 1, 'Humanitarian Conditions'
         PRIORITIES_AND_PREFERENCES = 2, 'Priorities & Preferences'
@@ -594,7 +594,7 @@ class SummaryIssue(models.Model):
         RELIEF_TO_POPULATION = 20, 'Relief To Population'
         PHYSICAL_AND_SECURITY = 21, 'Physical & Security'
 
-    class FocusSubSector(models.IntegerChoices):
+    class SubDimmension(models.IntegerChoices):
         DRIVERS = 0, 'Drivers'
         IMPACT_ON_PEOPLE = 1, 'Impact on People'
         IMPACT_ON_SYSTEM = 2, 'Impact On System, Network And Services'
@@ -611,8 +611,8 @@ class SummaryIssue(models.Model):
         PEOPLE_AT_RISKS = 13, 'People At Risks'
         FOCAL_ISSUES = 14, 'Focal Issues'
 
-    sub_sector = models.IntegerField(choices=SubPillar.choices, blank=True, null=True)
-    focus_sub_sector = models.IntegerField(choices=FocusSubSector.choices, blank=True, null=True)
+    sub_pillar = models.IntegerField(choices=SubPillar.choices, blank=True, null=True)
+    sub_dimmension = models.IntegerField(choices=SubDimmension.choices, blank=True, null=True)
     parent = models.ForeignKey(
         'SummaryIssue',
         on_delete=models.CASCADE,
