@@ -37,20 +37,20 @@ class IssueSerializer(UserResourceSerializer):
     class Meta:
         model = SummaryIssue
         fields = (
-            'sub_sector', 'focus_sub_sector', 'parent', 'label'
+            'sub_pillar', 'sub_dimmension', 'parent', 'label'
         )
 
     def validate(self, data):
-        if data.get('sub_sector') is not None and data.get('focus_sub_sector') is not None:
-            raise serializers.ValidationError("Cannot select both sub_sector and focus_sub_sector field.")
+        if data.get('sub_pillar') is not None and data.get('sub_dimmension') is not None:
+            raise serializers.ValidationError("Cannot select both sub_pillar and sub_dimmension field.")
         if data.get('parent') is not None:
-            if data.get('sub_sector') is not None:
-                if data.get('sub_sector') != data.get('parent').sub_sector:
-                    raise serializers.ValidationError("sub_sector does not match between parent and child.")
+            if data.get('sub_pillar') is not None:
+                if data.get('sub_pillar') != data.get('parent').sub_pillar:
+                    raise serializers.ValidationError("sub_pillar does not match between parent and child.")
 
-            if data.get('focus_sub_sector') is not None:
-                if data.get('focus_sub_sector') != data.get('parent').focus_sub_sector:
-                    raise serializers.ValidationError("focus_sub_sector does not match between child and parent.")
+            if data.get('sub_dimmension') is not None:
+                if data.get('sub_dimmension') != data.get('parent').sub_dimmension:
+                    raise serializers.ValidationError("sub_dimmension does not match between child and parent.")
         return data
 
 
@@ -60,8 +60,7 @@ class SummarySubPillarIssueSerializer(UserResourceSerializer, TempClientIdMixin)
         fields = ("summary_issue", "text", "order", "lead_preview_text_ref")
 
 
-class SummarySerializer(UserResourceSerializer):
-
+class SummaryMetaSerializer(UserResourceSerializer):
     class Meta:
         model = Summary
         fields = (
@@ -70,8 +69,7 @@ class SummarySerializer(UserResourceSerializer):
         )
 
 
-class SummaryFocusSerializer(UserResourceSerializer):
-
+class SummaryFocusMetaSerializer(UserResourceSerializer):
     class Meta:
         model = SummaryFocus
         fields = (
@@ -101,10 +99,10 @@ class ScoreAnalyticalDensitySerializer(UserResourceSerializer):
         fields = ("client_id", "sector", "analysis_level_covered", "figure_provided",)
 
 
-class CNAAnswerSerializer(UserResourceSerializer):
+class CNAAnswerSerializer(TempClientIdMixin, UserResourceSerializer):
     class Meta:
         model = Answer
-        fields = ('question', 'answer')
+        fields = ('client_id', 'question', 'answer')
 
 
 class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerializerMixin):
@@ -125,15 +123,15 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
         many=True,
         required=False
     )
-    summary_meta = SummarySerializer(source='summary', many=True, required=False)
+    summary_pillar_meta = SummaryMetaSerializer(source='summary', many=True, required=False)
 
-    summary_subsector_issue = SummarySubPillarIssueSerializer(
+    summary_sub_pillar_issue = SummarySubPillarIssueSerializer(
         source="summary_sub_sector_issue_ary", many=True, required=False
     )
-    summary_focus_meta = SummaryFocusSerializer(
+    summary_dimmension_meta = SummaryFocusMetaSerializer(
         source='summary_focus', many=True, required=False
     )
-    summary_focus_issue = SummaryFocusIssueSerializer(
+    summary_sub_dimmension_issue = SummaryFocusIssueSerializer(
         source="summary_focus_subsector_issue_ary", many=True, required=False
     )
 
@@ -180,10 +178,10 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             "final_score",
             "score_analytical_density",
             "cna",
-            "summary_meta",
-            "summary_subsector_issue",
-            "summary_focus_meta",
-            "summary_focus_issue",
+            "summary_pillar_meta",
+            "summary_sub_pillar_issue",
+            "summary_dimmension_meta",
+            "summary_sub_dimmension_issue",
         )
 
     def validate_score_ratings(self, data):

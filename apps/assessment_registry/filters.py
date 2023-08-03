@@ -10,7 +10,7 @@ from project.models import Project
 from lead.models import Lead
 
 from .models import AssessmentRegistry, SummaryIssue
-from .enums import AssessmentRegistrySummarySubPillarTypeEnum, AssessmentRegistrySummaryFocusSubSectorTypeEnum
+from .enums import AssessmentRegistrySummarySubPillarTypeEnum, AssessmentRegistrySummarySubDimmensionTypeEnum
 
 
 class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
@@ -50,8 +50,8 @@ class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
 
 
 class IssueGQFilterSet(django_filters.FilterSet):
-    sub_sector = SimpleInputFilter(AssessmentRegistrySummarySubPillarTypeEnum)
-    focus_sub_sector = SimpleInputFilter(AssessmentRegistrySummaryFocusSubSectorTypeEnum)
+    sub_pillar = SimpleInputFilter(AssessmentRegistrySummarySubPillarTypeEnum)
+    sub_dimmension = SimpleInputFilter(AssessmentRegistrySummarySubDimmensionTypeEnum)
 
     class Meta:
         model = SummaryIssue
