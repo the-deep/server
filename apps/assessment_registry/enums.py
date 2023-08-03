@@ -94,8 +94,8 @@ AssessmentRegistryCNAQuestionSectorTypeEnum = convert_enum_to_graphene_enum(
 AssessmentRegistryCNAQuestionSubSectorTypeEnum = convert_enum_to_graphene_enum(
     Question.QuestionSubSector, name='AssessmentRegistryCNAQuestionSubSectorTypeEnum'
 )
-AssessmentRegistrySummarySectorTypeEnum = convert_enum_to_graphene_enum(
-    Summary.Sector, name='AssessmentRegistrySummarySectorTypeEnum'
+AssessmentRegistrySummaryPillarTypeEnum = convert_enum_to_graphene_enum(
+    Summary.Pillar, name='AssessmentRegistrySummaryPillarTypeEnum'
 )
 AssessmentRegistrySummaryFocusSectorTypeEnum = convert_enum_to_graphene_enum(
     SummaryFocus.Sector, name='AssessmentRegistrySummaryFocusSectorTypeEnum'
@@ -103,8 +103,8 @@ AssessmentRegistrySummaryFocusSectorTypeEnum = convert_enum_to_graphene_enum(
 AssessmentRegistrySummaryFocusSubSectorTypeEnum = convert_enum_to_graphene_enum(
     SummaryIssue.FocusSubSector, name='AssessmentRegistrySummaryFocusSubSectorTypeEnum'
 )
-AssessmentRegistrySummarySubSectorTypeEnum = convert_enum_to_graphene_enum(
-    SummaryIssue.SubSector, name='AssessmentRegistrySummarySubSectorTypeEnum'
+AssessmentRegistrySummarySubPillarTypeEnum = convert_enum_to_graphene_enum(
+    SummaryIssue.SubPillar, name='AssessmentRegistrySummarySubPillarTypeEnum'
 )
 enum_map = {
     get_enum_name_from_django_field(field): enum
@@ -134,7 +134,7 @@ enum_map = {
         (ScoreAnalyticalDensity.analysis_level_covered, AssessmentRegistryAnalysisLevelTypeEnum),
         (ScoreAnalyticalDensity.figure_provided, AssessmentRegistryAnalysisFigureTypeEnum),
         (SummaryFocusSubSectorIssue.focus, AssessmentRegistryFocusTypeEnum),
-        (SummaryIssue.sub_sector, AssessmentRegistrySummarySubSectorTypeEnum),
+        (SummaryIssue.sub_sector, AssessmentRegistrySummarySubPillarTypeEnum),
         (SummaryIssue.focus_sub_sector, AssessmentRegistrySummaryFocusSubSectorTypeEnum),
     )
 }
