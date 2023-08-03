@@ -97,11 +97,11 @@ AssessmentRegistryCNAQuestionSubSectorTypeEnum = convert_enum_to_graphene_enum(
 AssessmentRegistrySummaryPillarTypeEnum = convert_enum_to_graphene_enum(
     Summary.Pillar, name='AssessmentRegistrySummaryPillarTypeEnum'
 )
-AssessmentRegistrySummaryFocusSectorTypeEnum = convert_enum_to_graphene_enum(
-    SummaryFocus.Sector, name='AssessmentRegistrySummaryFocusSectorTypeEnum'
+AssessmentRegistrySummaryFocusDimmensionTypeEnum = convert_enum_to_graphene_enum(
+    SummaryFocus.Dimmension, name='AssessmentRegistrySummaryFocusDimmensionTypeEnum'
 )
-AssessmentRegistrySummaryFocusSubSectorTypeEnum = convert_enum_to_graphene_enum(
-    SummaryIssue.FocusSubSector, name='AssessmentRegistrySummaryFocusSubSectorTypeEnum'
+AssessmentRegistrySummarySubDimmensionTypeEnum = convert_enum_to_graphene_enum(
+    SummaryIssue.SubDimmension, name='AssessmentRegistrySummarySubDimmensionTypeEnum'
 )
 AssessmentRegistrySummarySubPillarTypeEnum = convert_enum_to_graphene_enum(
     SummaryIssue.SubPillar, name='AssessmentRegistrySummarySubPillarTypeEnum'
@@ -134,7 +134,7 @@ enum_map = {
         (ScoreAnalyticalDensity.analysis_level_covered, AssessmentRegistryAnalysisLevelTypeEnum),
         (ScoreAnalyticalDensity.figure_provided, AssessmentRegistryAnalysisFigureTypeEnum),
         (SummaryFocusSubSectorIssue.focus, AssessmentRegistryFocusTypeEnum),
-        (SummaryIssue.sub_sector, AssessmentRegistrySummarySubPillarTypeEnum),
-        (SummaryIssue.focus_sub_sector, AssessmentRegistrySummaryFocusSubSectorTypeEnum),
+        (SummaryIssue.sub_pillar, AssessmentRegistrySummarySubPillarTypeEnum),
+        (SummaryIssue.sub_dimmension, AssessmentRegistrySummarySubDimmensionTypeEnum),
     )
 }
