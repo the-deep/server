@@ -1524,10 +1524,10 @@ input AssessmentRegistryCreateInputType {
   finalScore: Int
   scoreAnalyticalDensity: [ScoreAnalyticalDensityInputType!]
   cna: [CNAAnswerInputType!]
-  summaryMeta: [SummaryInputType!]
-  summarySubsectorIssue: [SummarySubPillarIssueInputType!]
-  summaryFocusMeta: [SummaryFocusInputType!]
-  summaryFocusIssue: [SummaryFocusIssueInputType!]
+  summaryPillarMeta: [SummaryMetaInputType!]
+  summarySubPillarIssue: [SummarySubPillarIssueInputType!]
+  summaryDimmensionMeta: [SummaryFocusMetaInputType!]
+  summarySubDimmensionIssue: [SummaryFocusIssueInputType!]
 }
 
 enum AssessmentRegistryCrisisTypeEnum {
@@ -1727,7 +1727,7 @@ enum AssessmentRegistrySectorTypeEnum {
   INTER_CROSS_SECTOR
 }
 
-enum AssessmentRegistrySummaryFocusSectorTypeEnum {
+enum AssessmentRegistrySummaryFocusDimmensionTypeEnum {
   IMPACT
   HUMANITARIAN_CONDITIONS
   PRIORITIES_AND_PREFERENCES
@@ -1735,7 +1735,15 @@ enum AssessmentRegistrySummaryFocusSectorTypeEnum {
   HUMANITARIAN_POPULATION_FIGURES
 }
 
-enum AssessmentRegistrySummaryFocusSubSectorTypeEnum {
+enum AssessmentRegistrySummaryPillarTypeEnum {
+  CONTEXT
+  EVENT_SHOCK
+  DISPLACEMENT
+  INFORMATION_AND_COMMUNICATION
+  HUMANITARIAN_ACCESS
+}
+
+enum AssessmentRegistrySummarySubDimmensionTypeEnum {
   DRIVERS
   IMPACT_ON_PEOPLE
   IMPACT_ON_SYSTEM
@@ -1751,14 +1759,6 @@ enum AssessmentRegistrySummaryFocusSubSectorTypeEnum {
   GEOGRAPHICAL_AREAS
   PEOPLE_AT_RISKS
   FOCAL_ISSUES
-}
-
-enum AssessmentRegistrySummaryPillarTypeEnum {
-  CONTEXT
-  EVENT_SHOCK
-  DISPLACEMENT
-  INFORMATION_AND_COMMUNICATION
-  HUMANITARIAN_ACCESS
 }
 
 enum AssessmentRegistrySummarySubPillarTypeEnum {
@@ -1834,18 +1834,17 @@ type AssessmentRegistryType {
   language: [AssessmentRegistryLanguageTypeEnum!]!
   focuses: [AssessmentRegistryFocusTypeEnum!]!
   sectors: [AssessmentRegistrySectorTypeEnum!]!
-  protectionInfoMgmts: [AssessmentRegistryProtectionInfoTypeEnum!]!
+  protectionInfoMgmts: [AssessmentRegistryProtectionInfoTypeEnum!]
   affectedGroups: [AssessmentRegistryAffectedGroupTypeEnum!]!
   methodologyAttributes: [MethodologyAttributeType!]
   additionalDocuments: [AdditionalDocumentType!]
   scoreRatings: [ScoreRatingType!]!
   scoreAnalyticalDensity: [ScoreAnalyticalDensityType!]!
-  summary: [SummaryType!]
   cna: [CNAType!]
-  summaryMeta: SummaryType
-  summarySubsectorIssue: [SummarySubPillarIssueType!]
-  summaryFocusMeta: [SummaryFocusType!]
-  summaryFocusSubsectorIssue: [SummaryFocusSubSectorIssueType!]
+  summaryPillarMeta: SummaryMetaType
+  summarySubPillarIssue: [SummarySubPillarIssueType!]
+  summaryDimmensionMeta: [SummaryFocusMetaType!]
+  summarySubDimmensionIssue: [SummaryFocusSubDimmensionIssueType!]
 }
 
 enum AssessmentRegistryUnitOfAnalysisTypeEnum {
@@ -2106,6 +2105,7 @@ input BulkUserGroupMembershipInputType {
 }
 
 input CNAAnswerInputType {
+  clientId: String
   question: ID!
   answer: Boolean!
 }
@@ -2114,6 +2114,7 @@ type CNAType {
   id: ID!
   question: QuestionType!
   answer: Boolean!
+  clientId: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -3238,8 +3239,8 @@ input HIDLoginInputType {
 }
 
 input IssueCreateInputType {
-  subSector: AssessmentRegistrySummarySubPillarTypeEnum
-  focusSubSector: AssessmentRegistrySummaryFocusSubSectorTypeEnum
+  subPillar: AssessmentRegistrySummarySubPillarTypeEnum
+  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
   parent: ID
   label: String!
 }
@@ -3260,10 +3261,10 @@ type IssueType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  subSector: AssessmentRegistrySummarySubPillarTypeEnum
-  subSectorDisplay: String
-  focusSubSector: AssessmentRegistrySummaryFocusSubSectorTypeEnum
-  focusSubSectorDisplay: String
+  subPillar: AssessmentRegistrySummarySubPillarTypeEnum
+  subPillarDisplay: String
+  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
+  subDimmensionDisplay: String
 }
 
 type JwtTokenType {
@@ -4428,7 +4429,7 @@ type PublicProjectWithMembershipData {
 type Query {
   publicAnalysisReportSnapshot(slug: String!): AnalysisReportSnapshotType
   issue(id: ID!): IssueType
-  issues(label: String, parent: ID, subSector: AssessmentRegistrySummarySubPillarTypeEnum, focusSubSector: AssessmentRegistrySummaryFocusSubSectorTypeEnum, page: Int = 1, ordering: String, pageSize: Int): IssueListType
+  issues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum, page: Int = 1, ordering: String, pageSize: Int): IssueListType
   deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
   publicDeepExploreYearlySnapshots: [PublicExploreSnapshotType!]
   publicDeepExploreGlobalSnapshots: [PublicExploreSnapshotType!]
@@ -4604,15 +4605,13 @@ type ScoreAnalyticalDensityType {
   id: ID!
   clientId: String!
   sector: AssessmentRegistrySectorTypeEnum!
-  analysisLevelCovered: AssessmentRegistryAnalysisLevelTypeEnum!
-  figureProvided: AssessmentRegistryAnalysisFigureTypeEnum!
+  analysisLevelCovered: [AssessmentRegistryAnalysisLevelTypeEnum!]!
+  figureProvided: [AssessmentRegistryAnalysisFigureTypeEnum!]!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
   sectorDisplay: EnumDescription!
-  analysisLevelCoveredDisplay: EnumDescription!
-  figureProvidedDisplay: EnumDescription!
 }
 
 type ScoreOptionsType {
@@ -4661,7 +4660,15 @@ type SectionType {
   widgets: [WidgetType!]
 }
 
-input SummaryFocusInputType {
+input SummaryFocusIssueInputType {
+  summaryIssue: ID!
+  focus: AssessmentRegistryFocusTypeEnum!
+  text: String
+  order: Int
+  leadPreviewTextRef: GenericScalar
+}
+
+input SummaryFocusMetaInputType {
   percentageOfPeopleAffected: Int
   totalPeopleAffected: Int
   percentageOfModerate: Int
@@ -4681,20 +4688,39 @@ input SummaryFocusInputType {
   totalPeopleCriticallyInNeed: Int
 }
 
-input SummaryFocusIssueInputType {
-  summaryIssue: ID!
-  focus: AssessmentRegistryFocusTypeEnum!
-  text: String
-  order: Int
-  leadPreviewTextRef: GenericScalar
+type SummaryFocusMetaType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  clientId: String
+  assessmentRegistry: AssessmentRegistryType!
+  percentageOfPeopleAffected: Int
+  totalPeopleAffected: Int
+  percentageOfModerate: Int
+  percentageOfSevere: Int
+  percentageOfCritical: Int
+  percentageInNeed: Int
+  totalModerate: Int
+  totalSevere: Int
+  totalCritical: Int
+  totalInNeed: Int
+  totalPopAssessed: Int
+  totalNotAffected: Int
+  totalAffected: Int
+  totalPeopleInNeed: Int
+  totalPeopleModeratelyInNeed: Int
+  totalPeopleSeverlyInNeed: Int
+  totalPeopleCriticallyInNeed: Int
 }
 
 type SummaryFocusOptionType {
-  sector: AssessmentRegistrySummaryFocusSectorTypeEnum
-  subSector: [AssessmentRegistrySummaryFocusSubSectorTypeEnum!]
+  dimmension: AssessmentRegistrySummaryFocusDimmensionTypeEnum
+  subDimmension: [AssessmentRegistrySummarySubDimmensionTypeEnum!]
 }
 
-type SummaryFocusSubSectorIssueType {
+type SummaryFocusSubDimmensionIssueType {
   id: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
@@ -4710,34 +4736,7 @@ type SummaryFocusSubSectorIssueType {
   focusDisplay: String
 }
 
-type SummaryFocusType {
-  id: ID!
-  createdAt: DateTime!
-  modifiedAt: DateTime!
-  createdBy: UserType
-  modifiedBy: UserType
-  clientId: String
-  assessmentRegistry: AssessmentRegistryType!
-  percentageOfPeopleAffected: Int
-  totalPeopleAffected: Int
-  percentageOfModerate: Int
-  percentageOfSevere: Int
-  percentageOfCritical: Int
-  percentageInNeed: Int
-  totalModerate: Int
-  totalSevere: Int
-  totalCritical: Int
-  totalInNeed: Int
-  totalPopAssessed: Int
-  totalNotAffected: Int
-  totalAffected: Int
-  totalPeopleInNeed: Int
-  totalPeopleModeratelyInNeed: Int
-  totalPeopleSeverlyInNeed: Int
-  totalPeopleCriticallyInNeed: Int
-}
-
-input SummaryInputType {
+input SummaryMetaInputType {
   totalPeopleAssessed: Int
   totalDead: Int
   totalInjured: Int
@@ -4746,9 +4745,23 @@ input SummaryInputType {
   percentageOfPeopleFacingHumAccessCons: Int
 }
 
+type SummaryMetaType {
+  id: ID!
+  totalPeopleAssessed: Int
+  totalDead: Int
+  totalInjured: Int
+  totalMissing: Int
+  totalPeopleFacingHumAccessCons: Int
+  percentageOfPeopleFacingHumAccessCons: Int
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+}
+
 type SummaryOptionType {
-  sector: AssessmentRegistrySummaryPillarTypeEnum!
-  subSector: [AssessmentRegistrySummarySubPillarTypeEnum!]!
+  pillar: AssessmentRegistrySummaryPillarTypeEnum!
+  subPillar: [AssessmentRegistrySummarySubPillarTypeEnum!]!
 }
 
 input SummarySubPillarIssueInputType {
@@ -4768,20 +4781,6 @@ type SummarySubPillarIssueType {
   createdBy: UserType
   modifiedBy: UserType
   issue: IssueType
-}
-
-type SummaryType {
-  id: ID!
-  totalPeopleAssessed: Int
-  totalDead: Int
-  totalInjured: Int
-  totalMissing: Int
-  totalPeopleFacingHumAccessCons: Int
-  percentageOfPeopleFacingHumAccessCons: Int
-  createdAt: DateTime!
-  modifiedAt: DateTime!
-  createdBy: UserType
-  modifiedBy: UserType
 }
 
 enum TopicModelStatusEnum {
