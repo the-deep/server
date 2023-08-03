@@ -56,8 +56,8 @@ from .enums import (
     AssessmentRegistryCNAQuestionSubSectorTypeEnum,
     AssessmentRegistrySummaryPillarTypeEnum,
     AssessmentRegistrySummarySubPillarTypeEnum,
-    AssessmentRegistrySummaryFocusSectorTypeEnum,
-    AssessmentRegistrySummaryFocusSubSectorTypeEnum,
+    AssessmentRegistrySummaryFocusDimmensionTypeEnum,
+    AssessmentRegistrySummarySubDimmensionTypeEnum,
 )
 
 
@@ -79,13 +79,13 @@ class SummarySubSectorType(graphene.ObjectType):
 
 
 class SummaryOptionType(graphene.ObjectType):
-    sector = graphene.Field(AssessmentRegistrySummaryPillarTypeEnum, required=True)
-    sub_sector = graphene.List(graphene.NonNull(AssessmentRegistrySummarySubPillarTypeEnum), required=True)
+    pillar = graphene.Field(AssessmentRegistrySummaryPillarTypeEnum, required=True)
+    sub_pillar = graphene.List(graphene.NonNull(AssessmentRegistrySummarySubPillarTypeEnum), required=True)
 
 
 class SummaryFocusOptionType(graphene.ObjectType):
-    sector = graphene.Field(AssessmentRegistrySummaryFocusSectorTypeEnum, required=False)
-    sub_sector = graphene.List(graphene.NonNull(AssessmentRegistrySummaryFocusSubSectorTypeEnum), required=False)
+    dimmension = graphene.Field(AssessmentRegistrySummaryFocusDimmensionTypeEnum, required=False)
+    sub_dimmension = graphene.List(graphene.NonNull(AssessmentRegistrySummarySubDimmensionTypeEnum), required=False)
 
 
 class ScoreOptionsType(graphene.ObjectType):
@@ -122,36 +122,36 @@ class AssessmentRegistryOptionsType(graphene.ObjectType):
     def resolve_summary_options(root, info, **kwargs):
         return [
             SummaryOptionType(
-                sector=enum,
-                sub_sector=[
+                pillar=enum,
+                sub_pillar=[
                     enum for enum, _ in SummaryIssue.SubPillar.choices if 0 <= enum <= 5
                 ]
             ) for enum, _ in Summary.Pillar.choices if enum == 0
         ] + [
             SummaryOptionType(
-                sector=enum,
-                sub_sector=[
+                pillar=enum,
+                sub_pillar=[
                     enum for enum, _ in SummaryIssue.SubPillar.choices if 6 <= enum <= 9
                 ]
             ) for enum, _ in Summary.Pillar.choices if enum == 1
         ] + [
             SummaryOptionType(
-                sector=enum,
-                sub_sector=[
+                pillar=enum,
+                sub_pillar=[
                     enum for enum, _ in SummaryIssue.SubPillar.choices if 10 <= enum <= 14
                 ]
             ) for enum, _ in Summary.Pillar.choices if enum == 2
         ] + [
             SummaryOptionType(
-                sector=enum,
-                sub_sector=[
+                pillar=enum,
+                sub_pillar=[
                     enum for enum, _ in SummaryIssue.SubPillar.choices if 15 <= enum <= 18
                 ]
             ) for enum, _ in Summary.Pillar.choices if enum == 3
         ] + [
             SummaryOptionType(
-                sector=enum,
-                sub_sector=[
+                pillar=enum,
+                sub_pillar=[
                     enum for enum, _ in SummaryIssue.SubPillar.choices if 19 <= enum <= 21
                 ]
             ) for enum, _ in Summary.Pillar.choices if enum == 4
@@ -161,32 +161,32 @@ class AssessmentRegistryOptionsType(graphene.ObjectType):
     def resolve_summary_focus_options(root, info, **kwargs):
         return [
             SummaryFocusOptionType(
-                sector=enum,
-                sub_sector=[
-                    enum for enum, _ in SummaryIssue.SubPillar.choices if 0 <= enum <= 2
+                dimmension=enum,
+                sub_dimmension=[
+                    enum for enum, _ in SummaryIssue.SubDimmension.choices if 0 <= enum <= 2
                 ]
-            ) for enum, _ in Summary.Pillar.choices if enum == 0
+            ) for enum, _ in SummaryFocus.Dimmension.choices if enum == 0
         ] + [
             SummaryFocusOptionType(
-                sector=enum,
-                sub_sector=[
-                    enum for enum, _ in SummaryIssue.SubPillar.choices if 3 <= enum <= 5
+                dimmension=enum,
+                sub_dimmension=[
+                    enum for enum, _ in SummaryIssue.SubDimmension.choices if 3 <= enum <= 5
                 ]
-            ) for enum, _ in Summary.Pillar.choices if enum == 1
+            ) for enum, _ in SummaryFocus.Dimmension.choices if enum == 1
         ] + [
             SummaryFocusOptionType(
-                sector=enum,
-                sub_sector=[
-                    enum for enum, _ in SummaryIssue.SubPillar.choices if 6 <= enum <= 9
+                dimmension=enum,
+                sub_dimmension=[
+                    enum for enum, _ in SummaryIssue.SubDimmension.choices if 6 <= enum <= 9
                 ]
-            ) for enum, _ in Summary.Pillar.choices if enum == 2
+            ) for enum, _ in SummaryFocus.Dimmension.choices if enum == 2
         ] + [
             SummaryFocusOptionType(
-                sector=enum,
-                sub_sector=[
-                    enum for enum, _ in SummaryIssue.SubPillar.choices if 10 <= enum <= 14
+                dimmension=enum,
+                sub_dimmension=[
+                    enum for enum, _ in SummaryIssue.SubDimmension.choices if 10 <= enum <= 14
                 ]
-            ) for enum, _ in Summary.Pillar.choices if enum == 3
+            ) for enum, _ in SummaryFocus.Dimmension.choices if enum == 3
         ]
 
 
@@ -208,12 +208,8 @@ class ScoreAnalyticalDensityType(DjangoObjectType, UserResourceMixin, ClientIdMi
 
     sector = graphene.Field(AssessmentRegistrySectorTypeEnum, required=True)
     sector_display = EnumDescription(source='get_sector_display', required=True)
-
-    analysis_level_covered = graphene.Field(AssessmentRegistryAnalysisLevelTypeEnum, required=True)
-    analysis_level_covered_display = EnumDescription(source='get_analysis_level_covered_display', required=True)
-
-    figure_provided = graphene.Field(AssessmentRegistryAnalysisFigureTypeEnum, required=True)
-    figure_provided_display = EnumDescription(source='get_figure_provided_display', required=True)
+    analysis_level_covered = graphene.List(graphene.NonNull(AssessmentRegistryAnalysisLevelTypeEnum), required=True)
+    figure_provided = graphene.List(graphene.NonNull(AssessmentRegistryAnalysisFigureTypeEnum), required=True)
 
 
 def get_assessment_registry_qs(info):
@@ -256,7 +252,7 @@ class AdditionalDocumentType(DjangoObjectType, UserResourceMixin, ClientIdMixin)
         return render_string_for_graphql(root.external_link)
 
 
-class CNAType(DjangoObjectType, UserResourceMixin):
+class CNAType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     question = graphene.Field(QuestionType, required=True)
 
     class Meta:
@@ -265,10 +261,10 @@ class CNAType(DjangoObjectType, UserResourceMixin):
 
 
 class IssueType(DjangoObjectType, UserResourceMixin):
-    sub_sector = graphene.Field(AssessmentRegistrySummarySubPillarTypeEnum, required=False)
-    sub_sector_display = graphene.String(required=False)
-    focus_sub_sector = graphene.Field(AssessmentRegistrySummaryFocusSubSectorTypeEnum, required=False)
-    focus_sub_sector_display = graphene.String(required=False)
+    sub_pillar = graphene.Field(AssessmentRegistrySummarySubPillarTypeEnum, required=False)
+    sub_pillar_display = graphene.String(required=False)
+    sub_dimmension = graphene.Field(AssessmentRegistrySummarySubDimmensionTypeEnum, required=False)
+    sub_dimmension_display = graphene.String(required=False)
 
     class Meta:
         model = SummaryIssue
@@ -277,15 +273,15 @@ class IssueType(DjangoObjectType, UserResourceMixin):
         ]
 
     @staticmethod
-    def resolve_sub_sector_display(root, info, **kwargs):
-        if root.sub_sector is not None:
-            return root.get_sub_sector_display()
+    def resolve_sub_pillar_display(root, info, **kwargs):
+        if root.sub_pillar is not None:
+            return root.get_sub_pillar_display()
         return None
 
     @staticmethod
-    def resolve_focus_sub_sector_display(root, info, **kwargs):
-        if root.focus_sub_sector is not None:
-            return root.get_focus_sub_sector_display()
+    def resolve_sub_dimmension_display(root, info, **kwargs):
+        if root.sub_dimmension is not None:
+            return root.get_sub_dimmension_display()
         return None
 
 
@@ -295,7 +291,7 @@ class IssueListType(CustomDjangoListObjectType):
         filterset_class = IssueGQFilterSet
 
 
-class SummaryType(DjangoObjectType, UserResourceMixin):
+class SummaryMetaType(DjangoObjectType, UserResourceMixin):
     class Meta:
         model = Summary
         fields = [
@@ -318,12 +314,12 @@ class SummarySubPillarIssueType(DjangoObjectType, UserResourceMixin):
         return root.summary_issue
 
 
-class SummaryFocusType(DjangoObjectType, UserResourceMixin):
+class SummaryFocusMetaType(DjangoObjectType, UserResourceMixin):
     class Meta:
         model = SummaryFocus
 
 
-class SummaryFocusSubSectorIssueType(DjangoObjectType, UserResourceMixin):
+class SummaryFocusSubDimmensionIssueType(DjangoObjectType, UserResourceMixin):
     focus = graphene.Field(AssessmentRegistryFocusTypeEnum, required=False)
     focus_display = graphene.String(required=False)
 
@@ -366,7 +362,7 @@ class AssessmentRegistryType(
     language = graphene.List(graphene.NonNull(AssessmentRegistryLanguageTypeEnum), required=True)
     focuses = graphene.List(graphene.NonNull(AssessmentRegistryFocusTypeEnum), required=True)
     sectors = graphene.List(graphene.NonNull(AssessmentRegistrySectorTypeEnum), required=True)
-    protection_info_mgmts = graphene.List(graphene.NonNull(AssessmentRegistryProtectionInfoTypeEnum), required=True)
+    protection_info_mgmts = graphene.List(graphene.NonNull(AssessmentRegistryProtectionInfoTypeEnum), required=False)
     affected_groups = graphene.List(graphene.NonNull(AssessmentRegistryAffectedGroupTypeEnum), required=True)
     methodology_attributes = graphene.List(graphene.NonNull(MethodologyAttributeType), required=False)
     additional_documents = graphene.List(graphene.NonNull(AdditionalDocumentType), required=False)
@@ -374,12 +370,11 @@ class AssessmentRegistryType(
     score_analytical_density = graphene.List(graphene.NonNull(ScoreAnalyticalDensityType), required=True)
     lead = graphene.NonNull(LeadDetailType)
     locations = graphene.List(graphene.NonNull(ProjectGeoAreaType))
-    summary = graphene.List(graphene.NonNull(SummaryType), required=False)
     cna = graphene.List(graphene.NonNull(CNAType), required=False)
-    summary_meta = graphene.Field(SummaryType, required=False)
-    summary_subsector_issue = graphene.List(graphene.NonNull(SummarySubPillarIssueType), required=False)
-    summary_focus_meta = graphene.List(graphene.NonNull(SummaryFocusType), required=False)
-    summary_focus_subsector_issue = graphene.List(graphene.NonNull(SummaryFocusSubSectorIssueType), required=False)
+    summary_pillar_meta = graphene.Field(SummaryMetaType, required=False)
+    summary_sub_pillar_issue = graphene.List(graphene.NonNull(SummarySubPillarIssueType), required=False)
+    summary_dimmension_meta = graphene.List(graphene.NonNull(SummaryFocusMetaType), required=False)
+    summary_sub_dimmension_issue = graphene.List(graphene.NonNull(SummaryFocusSubDimmensionIssueType), required=False)
     lead = graphene.NonNull(LeadDetailType)
 
     @staticmethod
@@ -411,19 +406,19 @@ class AssessmentRegistryType(
         return Answer.objects.filter(assessment_registry=root)
 
     @staticmethod
-    def resolve_summary_meta(root, info, **kwargs):
+    def resolve_summary_pillar_meta(root, info, **kwargs):
         return Summary.objects.get(assessment_registry=root)
 
     @staticmethod
-    def resolve_summary_subsector_issue(root, info, **kwargs):
+    def resolve_summary_sub_pillar_issue(root, info, **kwargs):
         return SummarySubPillarIssue.objects.filter(assessment_registry=root)
 
     @staticmethod
-    def resolve_summary_focus_meta(root, info, **kwargs):
+    def resolve_summary_dimmension_meta(root, info, **kwargs):
         return SummaryFocus.objects.filter(assessment_registry=root)
 
     @staticmethod
-    def resolve_summary_focus_subsector_issue(root, info, **kwargs):
+    def resolve_summary_sub_dimmension_issue(root, info, **kwargs):
         return SummaryFocusSubSectorIssue.objects.filter(assessment_registry=root)
 
 
