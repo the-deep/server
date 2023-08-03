@@ -1519,7 +1519,6 @@ input AssessmentRegistryCreateInputType {
   scoreRatings: [ScoreRatingInputType!]
   scoreAnalyticalDensity: [ScoreAnalyticalDensityInputType!]
   cna: [CNAAnswerInputType!]
-<<<<<<< HEAD
   summaryPillarMeta: SummaryMetaInputType
   summarySubPillarIssue: [SummarySubPillarIssueInputType!]
   summaryDimensionMeta: [SummaryFocusMetaInputType!]
@@ -1537,13 +1536,6 @@ type AssessmentRegistryCreateIssue {
   errors: [GenericScalar!]
   ok: Boolean
   result: AssessmentRegistrySummaryIssueType
-||||||| parent of e40e05de5 (Add mutation for rest of the tabs.)
-=======
-  summaryMeta: [SummaryInputType!]
-  summarySubsectorIssue: [SummarySubSectorIssueInputType!]
-  summaryFocusMeta: [SummaryFocusInputType!]
-  summaryFocusIssue: [SummaryFocusIssueInputType!]
->>>>>>> e40e05de5 (Add mutation for rest of the tabs.)
 }
 
 enum AssessmentRegistryCrisisTypeEnum {
@@ -1658,7 +1650,6 @@ type AssessmentRegistryListType {
 }
 
 type AssessmentRegistryOptionsType {
-<<<<<<< HEAD
   cnaQuestions: [QuestionType!]!
   summaryOptions: [SummaryOptionType!]!
   summaryFocusOptions: [SummaryFocusOptionType!]!
@@ -1690,12 +1681,6 @@ enum AssessmentRegistryOrganizationTypeEnum {
   NATIONAL_PARTNER
   DONOR
   GOVERNMENT
-||||||| parent of e40e05de5 (Add mutation for rest of the tabs.)
-  cnaQuestions: [QuestionType!]
-=======
-  cnaQuestions: [QuestionType!]
-  summaryOptions: [SummaryOptionType]
->>>>>>> e40e05de5 (Add mutation for rest of the tabs.)
 }
 
 enum AssessmentRegistryPreparednessTypeEnum {
@@ -1777,7 +1762,6 @@ enum AssessmentRegistrySectorTypeEnum {
   INTER_CROSS_SECTOR
 }
 
-<<<<<<< HEAD
 enum AssessmentRegistrySummaryFocusDimensionTypeEnum {
   IMPACT
   HUMANITARIAN_CONDITIONS
@@ -1844,36 +1828,6 @@ enum AssessmentRegistrySummarySubDimensionTypeEnum {
 }
 
 enum AssessmentRegistrySummarySubPillarTypeEnum {
-||||||| parent of e40e05de5 (Add mutation for rest of the tabs.)
-=======
-enum AssessmentRegistrySummaryFocusSubSectorTypeEnum {
-  DRIVERS
-  IMPACT_ON_PEOPLE
-  IMPACT_ON_SYSTEM
-  LIVING_STANDARDS
-  COPING_MECHANISMS
-  PHYSICAL_AND_MENTAL_WELL_BEING
-  NEEDS_POP
-  NEEDS_HUMAN
-  INTERVENTIONS_POP
-  INTERVENTIONS_HUMAN
-  DEMOGRAPHIC_GROUPS
-  GROUPS_WITH_SPECIFIC_NEEDS
-  GEOGRAPHICAL_AREAS
-  PEOPLE_AT_RISKS
-  FOCAL_ISSUES
-}
-
-enum AssessmentRegistrySummarySectorTypeEnum {
-  CONTEXT
-  EVENT_SHOCK
-  DISPLACEMENT
-  INFORMATION_AND_COMMUNICATION
-  HUMANITARIAN_ACCESS
-}
-
-enum AssessmentRegistrySummarySubSectorTypeEnum {
->>>>>>> e40e05de5 (Add mutation for rest of the tabs.)
   POLITICS
   DEMOGRAPHY
   SOCIO_CULTURAL
@@ -4658,15 +4612,9 @@ type PublicProjectWithMembershipData {
 }
 
 type Query {
-<<<<<<< HEAD
   publicAnalysisReportSnapshot(slug: String!): AnalysisReportSnapshotType
   assessmentRegSummaryIssue(id: ID!): AssessmentRegistrySummaryIssueType
   assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimension: AssessmentRegistrySummarySubDimensionTypeEnum, search: String, isParent: Boolean, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
-||||||| parent of e40e05de5 (Add mutation for rest of the tabs.)
-=======
-  issue(id: ID!): IssueType
-  issues(label: String, parent: ID, subSector: AssessmentRegistrySummarySubSectorTypeEnum, focusSubSector: AssessmentRegistrySummaryFocusSubSectorTypeEnum, page: Int = 1, ordering: String, pageSize: Int): IssueListType
->>>>>>> e40e05de5 (Add mutation for rest of the tabs.)
   deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
   publicDeepExploreYearlySnapshots: [PublicExploreSnapshotType!]
   publicDeepExploreGlobalSnapshots: [PublicExploreSnapshotType!]
@@ -4899,7 +4847,6 @@ type SectionType {
   widgets: [WidgetType!]
 }
 
-<<<<<<< HEAD
 input SummaryFocusMetaInputType {
   id: ID
   clientId: String
@@ -5016,121 +4963,6 @@ type SummarySubPillarIssueType {
   order: Int!
   leadPreviewTextRef: GenericScalar
   clientId: ID!
-||||||| parent of e40e05de5 (Add mutation for rest of the tabs.)
-=======
-input SummaryFocusInputType {
-  percentageOfPeopleAffected: Int
-  totalPeopleAffected: Int
-  percentageOfModerate: Int
-  percentageOfSevere: Int
-  percentageOfCritical: Int
-  percentageInNeed: Int
-  totalModerate: Int
-  totalSevere: Int
-  totalCritical: Int
-  totalInNeed: Int
-  totalPopAssessed: Int
-  totalNotAffected: Int
-  totalAffected: Int
-  totalPeopleInNeed: Int
-  totalPeopleModeratelyInNeed: Int
-  totalPeopleSeverlyInNeed: Int
-  totalPeopleCriticallyInNeed: Int
-}
-
-input SummaryFocusIssueInputType {
-  summaryIssue: ID!
-  focus: AssessmentRegistryFocusTypeEnum!
-  text: String
-  order: Int
-  leadPreviewTextRef: GenericScalar
-}
-
-type SummaryFocusSubSectorIssueType {
-  id: ID!
-  createdAt: DateTime!
-  modifiedAt: DateTime!
-  createdBy: UserType
-  modifiedBy: UserType
-  clientId: String
-  assessmentRegistry: AssessmentRegistryType!
-  focus: AssessmentRegistryFocusTypeEnum
-  summaryIssue: IssueType!
-  text: String!
-  order: Int
-  leadPreviewTextRef: GenericScalar
-  focusDisplay: String
-}
-
-type SummaryFocusType {
-  id: ID!
-  createdAt: DateTime!
-  modifiedAt: DateTime!
-  createdBy: UserType
-  modifiedBy: UserType
-  clientId: String
-  assessmentRegistry: AssessmentRegistryType!
-  percentageOfPeopleAffected: Int
-  totalPeopleAffected: Int
-  percentageOfModerate: Int
-  percentageOfSevere: Int
-  percentageOfCritical: Int
-  percentageInNeed: Int
-  totalModerate: Int
-  totalSevere: Int
-  totalCritical: Int
-  totalInNeed: Int
-  totalPopAssessed: Int
-  totalNotAffected: Int
-  totalAffected: Int
-  totalPeopleInNeed: Int
-  totalPeopleModeratelyInNeed: Int
-  totalPeopleSeverlyInNeed: Int
-  totalPeopleCriticallyInNeed: Int
-}
-
-input SummaryInputType {
-  totalPeopleAssessed: Int
-  totalDead: Int
-  totalInjured: Int
-  totalMissing: Int
-  totalPeopleFacingHumAccessCons: Int
-  percentageOfPeopleFacingHumAccessCons: Int
-}
-
-type SummaryOptionType {
-  sector: AssessmentRegistrySummarySectorTypeEnum
-  subSector: [AssessmentRegistrySummarySubSectorTypeEnum]
-}
-
-input SummarySubSectorIssueInputType {
-  summaryIssue: ID!
-  text: String
-  order: Int
-  leadPreviewTextRef: GenericScalar
-}
-
-type SummarySubSectorIssueType {
-  id: ID!
-  text: String!
-  order: Int
-  leadPreviewTextRef: GenericScalar
-  createdAt: DateTime!
-  modifiedAt: DateTime!
-  createdBy: UserType
-  modifiedBy: UserType
-  issue: IssueType
-}
-
-type SummaryType {
-  id: ID!
-  totalPeopleAssessed: Int
-  totalDead: Int
-  totalInjured: Int
-  totalMissing: Int
-  totalPeopleFacingHumAccessCons: Int
-  percentageOfPeopleFacingHumAccessCons: Int
->>>>>>> e40e05de5 (Add mutation for rest of the tabs.)
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
