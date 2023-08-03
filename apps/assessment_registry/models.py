@@ -306,26 +306,26 @@ class ScoreRating(UserResource):
         ANALYTICAL_WRITING = 3, 'Analytical Writing'
 
     class ScoreCriteria(models.IntegerChoices):
-        RELEVANCE = 0, "Fit for purpose -> Relevance"
-        COMPREHENSIVENESS = 1, "Fit for purpose -> Comprehensiveness"
-        TIMELINESS = 2, "Fit for purpose -> Timeliness"
-        GRANULARITY = 3, "Fit for purpose -> Granularity"
-        COMPARABILITY = 4, "Fit for purpose -> Comparability"
-        SOURCE_REABILITY = 5, "Trustworthiness -> Source reability"
-        METHODS = 6, "Trustworthiness -> Methods"
-        TRIANGULATION = 7, "Trustworthiness -> Triangulation"
-        PLAUSIBILITY = 8, "Trustworthiness -> Plausibility"
-        INCLUSIVENESS = 9, "Trustworthiness - Inclusiveness"
-        ASSUMPTIONS = 10, "Analytical rigor -> Assumptions"
-        CORROBORATION = 11, "Analytical rigor -> Corroboration"
-        STRUCTURED_ANALYTICAL_TECHNIQUE = 12, "Analytical rigor -> Structured Ananlytical Technique"
-        CONSENSUS = 13, "Analytical rigor > Consensus"
-        REPRODUCIBILITY = 14, "Analytical rigor -> Reproducibility"
-        CLEARLY_ARTICULATED_RESULT = 15, "Analytical Writing -> Clearly Articulated Result"
-        LEVEL_OF_CONFIDENCE = 16, "Analytical writing -> Level Of Confidence"
-        ILLUSTRATION = 17, "Analytical writing -> Illustration"
-        SOURCED_DATA_EVIDENCE = 18, "Analytical writing -> Sourced data and evidence"
-        CLEARLY_STATED_OUTLIERS = 19, "Analytical writing -> Clearly stated outliers"
+        RELEVANCE = 0, "Relevance"
+        COMPREHENSIVENESS = 1, "Comprehensiveness"
+        TIMELINESS = 2, "Timeliness"
+        GRANULARITY = 3, "Granularity"
+        COMPARABILITY = 4, "Comparability"
+        SOURCE_REABILITY = 5, "Source reability"
+        METHODS = 6, "Methods"
+        TRIANGULATION = 7, "Triangulation"
+        PLAUSIBILITY = 8, "Plausibility"
+        INCLUSIVENESS = 9, "Inclusiveness"
+        ASSUMPTIONS = 10, "Assumptions"
+        CORROBORATION = 11, "Corroboration"
+        STRUCTURED_ANALYTICAL_TECHNIQUE = 12, "Structured Ananlytical Technique"
+        CONSENSUS = 13, "Consensus"
+        REPRODUCIBILITY = 14, "Reproducibility"
+        CLEARLY_ARTICULATED_RESULT = 15, "Clearly Articulated Result"
+        LEVEL_OF_CONFIDENCE = 16, "Level Of Confidence"
+        ILLUSTRATION = 17, "Illustration"
+        SOURCED_DATA_EVIDENCE = 18, "Sourced data and evidence"
+        CLEARLY_STATED_OUTLIERS = 19, "Clearly stated outliers"
 
     class RatingType(models.IntegerChoices):
         VERY_POOR = 1, "Very poor"
@@ -333,6 +333,37 @@ class ScoreRating(UserResource):
         FAIR = 3, "Fair"
         GOOD = 4, "Good"
         VERY_GOOD = 5, "Very Good"
+
+    ANALYTICAL_STATEMENT_SCORE_CRITERIA_MAP = {
+        AnalyticalStatement.FIT_FOR_PURPOSE: [
+            ScoreCriteria.RELEVANCE,
+            ScoreCriteria.COMPREHENSIVENESS,
+            ScoreCriteria.TIMELINESS,
+            ScoreCriteria.GRANULARITY,
+            ScoreCriteria.COMPARABILITY,
+        ],
+        AnalyticalStatement.TRUSTWORTHINESS: [
+            ScoreCriteria.SOURCE_REABILITY,
+            ScoreCriteria.METHODS,
+            ScoreCriteria.TRIANGULATION,
+            ScoreCriteria.PLAUSIBILITY,
+            ScoreCriteria.INCLUSIVENESS,
+        ],
+        AnalyticalStatement.ANALYTICAL_RIGOR: [
+            ScoreCriteria.ASSUMPTIONS,
+            ScoreCriteria.CORROBORATION,
+            ScoreCriteria.STRUCTURED_ANALYTICAL_TECHNIQUE,
+            ScoreCriteria.CONSENSUS,
+            ScoreCriteria.REPRODUCIBILITY,
+        ],
+        AnalyticalStatement.ANALYTICAL_WRITING: [
+            ScoreCriteria.CLEARLY_ARTICULATED_RESULT,
+            ScoreCriteria.LEVEL_OF_CONFIDENCE,
+            ScoreCriteria.ILLUSTRATION,
+            ScoreCriteria.SOURCED_DATA_EVIDENCE,
+            ScoreCriteria.CLEARLY_STATED_OUTLIERS,
+        ],
+    }
 
     assessment_registry = models.ForeignKey(
         AssessmentRegistry,
@@ -470,7 +501,7 @@ class Answer(UserResource):
 
 
 class Summary(UserResource):
-    class Sector(models.IntegerChoices):
+    class Pillar(models.IntegerChoices):
         CONTEXT = 0, 'Context'
         EVENT_SHOCK = 1, 'Event/Shock'
         DISPLACEMENT = 2, 'Displacement'
@@ -490,7 +521,7 @@ class Summary(UserResource):
     percentage_of_people_facing_hum_access_cons = models.IntegerField(null=True, blank=True)
 
 
-class SummarySubSectorIssue(UserResource):
+class SummarySubPillarIssue(UserResource):
     assessment_registry = models.ForeignKey(
         AssessmentRegistry,
         on_delete=models.CASCADE,
@@ -539,7 +570,7 @@ class SummaryFocus(UserResource):
 
 
 class SummaryIssue(models.Model):
-    class SubSector(models.IntegerChoices):
+    class SubPillar(models.IntegerChoices):
         POLITICS = 0, 'Politics'
         DEMOGRAPHY = 1, 'Demography'
         SOCIO_CULTURAL = 2, 'Socio-Cultural'
@@ -580,7 +611,7 @@ class SummaryIssue(models.Model):
         PEOPLE_AT_RISKS = 13, 'People At Risks'
         FOCAL_ISSUES = 14, 'Focal Issues'
 
-    sub_sector = models.IntegerField(choices=SubSector.choices, blank=True, null=True)
+    sub_sector = models.IntegerField(choices=SubPillar.choices, blank=True, null=True)
     focus_sub_sector = models.IntegerField(choices=FocusSubSector.choices, blank=True, null=True)
     parent = models.ForeignKey(
         'SummaryIssue',

@@ -17,7 +17,7 @@ from .models import (
     MethodologyAttribute,
     AdditionalDocument,
     Summary,
-    SummarySubSectorIssue,
+    SummarySubPillarIssue,
     SummaryIssue,
     SummaryFocus,
     SummaryFocusSubSectorIssue,
@@ -54,8 +54,8 @@ from .enums import (
     AssessmentRegistryAnalysisFigureTypeEnum,
     AssessmentRegistryCNAQuestionSectorTypeEnum,
     AssessmentRegistryCNAQuestionSubSectorTypeEnum,
-    AssessmentRegistrySummarySectorTypeEnum,
-    AssessmentRegistrySummarySubSectorTypeEnum,
+    AssessmentRegistrySummaryPillarTypeEnum,
+    AssessmentRegistrySummarySubPillarTypeEnum,
     AssessmentRegistrySummaryFocusSectorTypeEnum,
     AssessmentRegistrySummaryFocusSubSectorTypeEnum,
 )
@@ -79,8 +79,8 @@ class SummarySubSectorType(graphene.ObjectType):
 
 
 class SummaryOptionType(graphene.ObjectType):
-    sector = graphene.Field(AssessmentRegistrySummarySectorTypeEnum, required=True)
-    sub_sector = graphene.List(graphene.NonNull(AssessmentRegistrySummarySubSectorTypeEnum), required=True)
+    sector = graphene.Field(AssessmentRegistrySummaryPillarTypeEnum, required=True)
+    sub_sector = graphene.List(graphene.NonNull(AssessmentRegistrySummarySubPillarTypeEnum), required=True)
 
 
 class SummaryFocusOptionType(graphene.ObjectType):
@@ -90,7 +90,9 @@ class SummaryFocusOptionType(graphene.ObjectType):
 
 class ScoreOptionsType(graphene.ObjectType):
     analytical_statement = graphene.Field(AssessmentRegistryScoreAnalyticalStatementTypeEnum, required=True)
-    score_criteria = graphene.List(graphene.NonNull(AssessmentRegistryScoreCriteriaTypeEnum), required=True)
+    analytical_statement_display = EnumDescription(required=True)
+    score_criteria = graphene.Field(AssessmentRegistryScoreCriteriaTypeEnum, required=True)
+    score_criteria_display = EnumDescription(required=True)
 
 
 class AssessmentRegistryOptionsType(graphene.ObjectType):
@@ -103,32 +105,13 @@ class AssessmentRegistryOptionsType(graphene.ObjectType):
     def resolve_score_options(root, info, **kwargs):
         return [
             ScoreOptionsType(
-                analytical_statement=enum,
-                score_criteria=[
-                    enum for enum, _ in ScoreRating.ScoreCriteria.choices if 0 <= enum <= 4
-                ]
-            )for enum, _ in ScoreRating.AnalyticalStatement.choices if enum == 0
-        ] + [
-            ScoreOptionsType(
-                analytical_statement=enum,
-                score_criteria=[
-                    enum for enum, _ in ScoreRating.ScoreCriteria.choices if 5 <= enum <= 9
-                ]
-            )for enum, _ in ScoreRating.AnalyticalStatement.choices if enum == 1
-        ] + [
-            ScoreOptionsType(
-                analytical_statement=enum,
-                score_criteria=[
-                    enum for enum, _ in ScoreRating.ScoreCriteria.choices if 10 <= enum <= 14
-                ]
-            )for enum, _ in ScoreRating.AnalyticalStatement.choices if enum == 2
-        ] + [
-            ScoreOptionsType(
-                analytical_statement=enum,
-                score_criteria=[
-                    enum for enum, _ in ScoreRating.ScoreCriteria.choices if 15 <= enum <= 19
-                ]
-            )for enum, _ in ScoreRating.AnalyticalStatement.choices if enum == 3
+                analytical_statement=statement.value,
+                analytical_statement_display=statement.label,
+                score_criteria=score_criteria.value,
+                score_criteria_display=score_criteria.label,
+            )
+            for statement, score_criterias in ScoreRating.ANALYTICAL_STATEMENT_SCORE_CRITERIA_MAP.items()
+            for score_criteria in score_criterias
         ]
 
     @staticmethod
@@ -141,37 +124,37 @@ class AssessmentRegistryOptionsType(graphene.ObjectType):
             SummaryOptionType(
                 sector=enum,
                 sub_sector=[
-                    enum for enum, _ in SummaryIssue.SubSector.choices if 0 <= enum <= 5
+                    enum for enum, _ in SummaryIssue.SubPillar.choices if 0 <= enum <= 5
                 ]
-            ) for enum, _ in Summary.Sector.choices if enum == 0
+            ) for enum, _ in Summary.Pillar.choices if enum == 0
         ] + [
             SummaryOptionType(
                 sector=enum,
                 sub_sector=[
-                    enum for enum, _ in SummaryIssue.SubSector.choices if 6 <= enum <= 9
+                    enum for enum, _ in SummaryIssue.SubPillar.choices if 6 <= enum <= 9
                 ]
-            ) for enum, _ in Summary.Sector.choices if enum == 1
+            ) for enum, _ in Summary.Pillar.choices if enum == 1
         ] + [
             SummaryOptionType(
                 sector=enum,
                 sub_sector=[
-                    enum for enum, _ in SummaryIssue.SubSector.choices if 10 <= enum <= 14
+                    enum for enum, _ in SummaryIssue.SubPillar.choices if 10 <= enum <= 14
                 ]
-            ) for enum, _ in Summary.Sector.choices if enum == 2
+            ) for enum, _ in Summary.Pillar.choices if enum == 2
         ] + [
             SummaryOptionType(
                 sector=enum,
                 sub_sector=[
-                    enum for enum, _ in SummaryIssue.SubSector.choices if 15 <= enum <= 18
+                    enum for enum, _ in SummaryIssue.SubPillar.choices if 15 <= enum <= 18
                 ]
-            ) for enum, _ in Summary.Sector.choices if enum == 3
+            ) for enum, _ in Summary.Pillar.choices if enum == 3
         ] + [
             SummaryOptionType(
                 sector=enum,
                 sub_sector=[
-                    enum for enum, _ in SummaryIssue.SubSector.choices if 19 <= enum <= 21
+                    enum for enum, _ in SummaryIssue.SubPillar.choices if 19 <= enum <= 21
                 ]
-            ) for enum, _ in Summary.Sector.choices if enum == 4
+            ) for enum, _ in Summary.Pillar.choices if enum == 4
         ]
 
     @staticmethod
@@ -180,30 +163,30 @@ class AssessmentRegistryOptionsType(graphene.ObjectType):
             SummaryFocusOptionType(
                 sector=enum,
                 sub_sector=[
-                    enum for enum, _ in SummaryIssue.SubSector.choices if 0 <= enum <= 2
+                    enum for enum, _ in SummaryIssue.SubPillar.choices if 0 <= enum <= 2
                 ]
-            ) for enum, _ in Summary.Sector.choices if enum == 0
+            ) for enum, _ in Summary.Pillar.choices if enum == 0
         ] + [
             SummaryFocusOptionType(
                 sector=enum,
                 sub_sector=[
-                    enum for enum, _ in SummaryIssue.SubSector.choices if 3 <= enum <= 5
+                    enum for enum, _ in SummaryIssue.SubPillar.choices if 3 <= enum <= 5
                 ]
-            ) for enum, _ in Summary.Sector.choices if enum == 1
+            ) for enum, _ in Summary.Pillar.choices if enum == 1
         ] + [
             SummaryFocusOptionType(
                 sector=enum,
                 sub_sector=[
-                    enum for enum, _ in SummaryIssue.SubSector.choices if 6 <= enum <= 9
+                    enum for enum, _ in SummaryIssue.SubPillar.choices if 6 <= enum <= 9
                 ]
-            ) for enum, _ in Summary.Sector.choices if enum == 2
+            ) for enum, _ in Summary.Pillar.choices if enum == 2
         ] + [
             SummaryFocusOptionType(
                 sector=enum,
                 sub_sector=[
-                    enum for enum, _ in SummaryIssue.SubSector.choices if 10 <= enum <= 14
+                    enum for enum, _ in SummaryIssue.SubPillar.choices if 10 <= enum <= 14
                 ]
-            ) for enum, _ in Summary.Sector.choices if enum == 3
+            ) for enum, _ in Summary.Pillar.choices if enum == 3
         ]
 
 
@@ -282,7 +265,7 @@ class CNAType(DjangoObjectType, UserResourceMixin):
 
 
 class IssueType(DjangoObjectType, UserResourceMixin):
-    sub_sector = graphene.Field(AssessmentRegistrySummarySubSectorTypeEnum, required=False)
+    sub_sector = graphene.Field(AssessmentRegistrySummarySubPillarTypeEnum, required=False)
     sub_sector_display = graphene.String(required=False)
     focus_sub_sector = graphene.Field(AssessmentRegistrySummaryFocusSubSectorTypeEnum, required=False)
     focus_sub_sector_display = graphene.String(required=False)
@@ -321,11 +304,11 @@ class SummaryType(DjangoObjectType, UserResourceMixin):
         ]
 
 
-class SummarySubSectorIssueType(DjangoObjectType, UserResourceMixin):
+class SummarySubPillarIssueType(DjangoObjectType, UserResourceMixin):
     issue = graphene.Field(IssueType, required=False)
 
     class Meta:
-        model = SummarySubSectorIssue
+        model = SummarySubPillarIssue
         fields = [
             "id", "text", "order", "lead_preview_text_ref"
         ]
@@ -394,7 +377,7 @@ class AssessmentRegistryType(
     summary = graphene.List(graphene.NonNull(SummaryType), required=False)
     cna = graphene.List(graphene.NonNull(CNAType), required=False)
     summary_meta = graphene.Field(SummaryType, required=False)
-    summary_subsector_issue = graphene.List(graphene.NonNull(SummarySubSectorIssueType), required=False)
+    summary_subsector_issue = graphene.List(graphene.NonNull(SummarySubPillarIssueType), required=False)
     summary_focus_meta = graphene.List(graphene.NonNull(SummaryFocusType), required=False)
     summary_focus_subsector_issue = graphene.List(graphene.NonNull(SummaryFocusSubSectorIssueType), required=False)
     lead = graphene.NonNull(LeadDetailType)
@@ -433,7 +416,7 @@ class AssessmentRegistryType(
 
     @staticmethod
     def resolve_summary_subsector_issue(root, info, **kwargs):
-        return SummarySubSectorIssue.objects.filter(assessment_registry=root)
+        return SummarySubPillarIssue.objects.filter(assessment_registry=root)
 
     @staticmethod
     def resolve_summary_focus_meta(root, info, **kwargs):
