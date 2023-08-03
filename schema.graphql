@@ -3400,7 +3400,7 @@ input HIDLoginInputType {
 }
 
 input IssueCreateInputType {
-  subSector: AssessmentRegistrySummarySubSectorTypeEnum
+  subSector: AssessmentRegistrySummarySubPillarTypeEnum
   focusSubSector: AssessmentRegistrySummaryFocusSubSectorTypeEnum
   parent: ID
   label: String!
@@ -3422,7 +3422,7 @@ type IssueType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  subSector: AssessmentRegistrySummarySubSectorTypeEnum
+  subSector: AssessmentRegistrySummarySubPillarTypeEnum
   subSectorDisplay: String
   focusSubSector: AssessmentRegistrySummaryFocusSubSectorTypeEnum
   focusSubSectorDisplay: String
