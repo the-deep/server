@@ -20,7 +20,7 @@ from .models import (
     SummarySubPillarIssue,
     SummaryIssue,
     SummaryFocus,
-    SummaryFocusSubSectorIssue,
+    SummarySubDimmensionIssue,
     ScoreRating,
     ScoreAnalyticalDensity,
     Question,
@@ -324,7 +324,7 @@ class SummaryFocusSubDimmensionIssueType(DjangoObjectType, UserResourceMixin):
     focus_display = graphene.String(required=False)
 
     class Meta:
-        model = SummaryFocusSubSectorIssue
+        model = SummarySubDimmensionIssue
 
 
 class AssessmentRegistryType(
@@ -419,7 +419,7 @@ class AssessmentRegistryType(
 
     @staticmethod
     def resolve_summary_sub_dimmension_issue(root, info, **kwargs):
-        return SummaryFocusSubSectorIssue.objects.filter(assessment_registry=root)
+        return SummarySubDimmensionIssue.objects.filter(assessment_registry=root)
 
 
 class AssessmentRegistryListType(CustomDjangoListObjectType):
