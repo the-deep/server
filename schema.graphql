@@ -1532,7 +1532,7 @@ input AssessmentRegistryCreateInputType {
   scoreAnalyticalDensity: [ScoreAnalyticalDensityInputType!]
   cna: [CNAAnswerInputType!]
   summaryMeta: [SummaryInputType!]
-  summarySubsectorIssue: [SummarySubSectorIssueInputType!]
+  summarySubsectorIssue: [SummarySubPillarIssueInputType!]
   summaryFocusMeta: [SummaryFocusInputType!]
   summaryFocusIssue: [SummaryFocusIssueInputType!]
 }
@@ -1760,7 +1760,7 @@ enum AssessmentRegistrySummaryFocusSubSectorTypeEnum {
   FOCAL_ISSUES
 }
 
-enum AssessmentRegistrySummarySectorTypeEnum {
+enum AssessmentRegistrySummaryPillarTypeEnum {
   CONTEXT
   EVENT_SHOCK
   DISPLACEMENT
@@ -1768,7 +1768,7 @@ enum AssessmentRegistrySummarySectorTypeEnum {
   HUMANITARIAN_ACCESS
 }
 
-enum AssessmentRegistrySummarySubSectorTypeEnum {
+enum AssessmentRegistrySummarySubPillarTypeEnum {
   POLITICS
   DEMOGRAPHY
   SOCIO_CULTURAL
@@ -1850,7 +1850,7 @@ type AssessmentRegistryType {
   summary: [SummaryType!]
   cna: [CNAType!]
   summaryMeta: SummaryType
-  summarySubsectorIssue: [SummarySubSectorIssueType!]
+  summarySubsectorIssue: [SummarySubPillarIssueType!]
   summaryFocusMeta: [SummaryFocusType!]
   summaryFocusSubsectorIssue: [SummaryFocusSubSectorIssueType!]
 }
@@ -3245,7 +3245,7 @@ input HIDLoginInputType {
 }
 
 input IssueCreateInputType {
-  subSector: AssessmentRegistrySummarySubSectorTypeEnum
+  subSector: AssessmentRegistrySummarySubPillarTypeEnum
   focusSubSector: AssessmentRegistrySummaryFocusSubSectorTypeEnum
   parent: ID
   label: String!
@@ -3267,7 +3267,7 @@ type IssueType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  subSector: AssessmentRegistrySummarySubSectorTypeEnum
+  subSector: AssessmentRegistrySummarySubPillarTypeEnum
   subSectorDisplay: String
   focusSubSector: AssessmentRegistrySummaryFocusSubSectorTypeEnum
   focusSubSectorDisplay: String
@@ -4437,7 +4437,7 @@ type PublicProjectWithMembershipData {
 type Query {
   publicAnalysisReportSnapshot(slug: String!): AnalysisReportSnapshotType
   issue(id: ID!): IssueType
-  issues(label: String, parent: ID, subSector: AssessmentRegistrySummarySubSectorTypeEnum, focusSubSector: AssessmentRegistrySummaryFocusSubSectorTypeEnum, page: Int = 1, ordering: String, pageSize: Int): IssueListType
+  issues(label: String, parent: ID, subSector: AssessmentRegistrySummarySubPillarTypeEnum, focusSubSector: AssessmentRegistrySummaryFocusSubSectorTypeEnum, page: Int = 1, ordering: String, pageSize: Int): IssueListType
   deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
   publicDeepExploreYearlySnapshots: [PublicExploreSnapshotType!]
   publicDeepExploreGlobalSnapshots: [PublicExploreSnapshotType!]
@@ -4626,7 +4626,9 @@ type ScoreAnalyticalDensityType {
 
 type ScoreOptionsType {
   analyticalStatement: AssessmentRegistryScoreAnalyticalStatementTypeEnum!
-  scoreCriteria: [AssessmentRegistryScoreCriteriaTypeEnum!]!
+  analyticalStatementDisplay: EnumDescription!
+  scoreCriteria: AssessmentRegistryScoreCriteriaTypeEnum!
+  scoreCriteriaDisplay: EnumDescription!
 }
 
 input ScoreRatingInputType {
@@ -4754,18 +4756,18 @@ input SummaryInputType {
 }
 
 type SummaryOptionType {
-  sector: AssessmentRegistrySummarySectorTypeEnum!
-  subSector: [AssessmentRegistrySummarySubSectorTypeEnum!]!
+  sector: AssessmentRegistrySummaryPillarTypeEnum!
+  subSector: [AssessmentRegistrySummarySubPillarTypeEnum!]!
 }
 
-input SummarySubSectorIssueInputType {
+input SummarySubPillarIssueInputType {
   summaryIssue: ID!
   text: String
   order: Int
   leadPreviewTextRef: GenericScalar
 }
 
-type SummarySubSectorIssueType {
+type SummarySubPillarIssueType {
   id: ID!
   text: String!
   order: Int
