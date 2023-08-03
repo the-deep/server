@@ -4,6 +4,7 @@ schema {
 }
 
 input AdditionalDocumentInputType {
+  id: ID
   clientId: String
   documentType: AssessmentRegistryDocumentTypeEnum!
   file: ID
@@ -1534,7 +1535,7 @@ input AssessmentRegistryCreateInputType {
   summaryPillarMeta: [SummaryMetaInputType!]
   summarySubPillarIssue: [SummarySubPillarIssueInputType!]
   summaryDimmensionMeta: [SummaryFocusMetaInputType!]
-  summarySubDimmensionIssue: [SummaryFocusIssueInputType!]
+  summarySubDimmensionIssue: [SummarySubDimmensionInputType!]
 }
 
 enum AssessmentRegistryCrisisTypeEnum {
@@ -2112,6 +2113,7 @@ input BulkUserGroupMembershipInputType {
 }
 
 input CNAAnswerInputType {
+  id: ID
   clientId: String
   question: ID!
   answer: Boolean!
@@ -3652,6 +3654,7 @@ type MergedAsOrganizationType {
 }
 
 input MethodologyAttributeInputType {
+  id: ID
   clientId: String
   dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
   samplingApproach: AssessmentRegistrySamplingApproachTypeEnum
@@ -4604,6 +4607,7 @@ type SaveUserSavedLeadFilter {
 }
 
 input ScoreAnalyticalDensityInputType {
+  id: ID
   clientId: String
   sector: AssessmentRegistrySectorTypeEnum!
   analysisLevelCovered: [AssessmentRegistryAnalysisLevelTypeEnum!]
@@ -4631,6 +4635,7 @@ type ScoreOptionsType {
 }
 
 input ScoreRatingInputType {
+  id: ID
   clientId: String
   scoreType: AssessmentRegistryScoreCriteriaTypeEnum!
   rating: AssessmentRegistryRatingType
@@ -4669,15 +4674,8 @@ type SectionType {
   widgets: [WidgetType!]
 }
 
-input SummaryFocusIssueInputType {
-  summaryIssue: ID!
-  focus: AssessmentRegistryFocusTypeEnum!
-  text: String
-  order: Int
-  leadPreviewTextRef: GenericScalar
-}
-
 input SummaryFocusMetaInputType {
+  id: ID
   percentageOfPeopleAffected: Int
   totalPeopleAffected: Int
   percentageOfModerate: Int
@@ -4746,6 +4744,7 @@ type SummaryFocusSubDimmensionIssueType {
 }
 
 input SummaryMetaInputType {
+  id: ID
   totalPeopleAssessed: Int
   totalDead: Int
   totalInjured: Int
@@ -4773,7 +4772,17 @@ type SummaryOptionType {
   subPillar: [AssessmentRegistrySummarySubPillarTypeEnum!]!
 }
 
+input SummarySubDimmensionInputType {
+  id: ID
+  summaryIssue: ID!
+  focus: AssessmentRegistryFocusTypeEnum!
+  text: String
+  order: Int
+  leadPreviewTextRef: GenericScalar
+}
+
 input SummarySubPillarIssueInputType {
+  id: ID
   summaryIssue: ID!
   text: String
   order: Int

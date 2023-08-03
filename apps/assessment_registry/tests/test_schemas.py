@@ -15,10 +15,10 @@ from assessment_registry.factories import (
     ScoreAnalyticalDensityFactory,
     AnswerFactory,
     SummaryMetaFactory,
-    SummarySubSectorIssueFactory,
+    SummarySubPillarIssueFactory,
     SummaryIssueFactory,
     SummaryFocusFactory,
-    SummaryFocusSubSectorIssueFactory,
+    SummarySubDimmensionIssueFactory,
 )
 from lead.models import Lead
 from project.models import Project
@@ -104,16 +104,16 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
                     }
                   }
 
-                   summaryFocusMeta {
+                   summaryDimmensionMeta {
                       id
                    }
-                   summaryFocusSubsectorIssue {
+                   summarySubDimmensionIssue {
                       id
                    }
-                   summaryMeta {
+                   summaryPillarMeta {
                       id
                    }
-                   summarySubsectorIssue {
+                   summarySubPillarIssue {
                       id
                    }
                 }
@@ -149,35 +149,33 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         # Add some additional Document
         AdditionalDocumentFactory.create(
             assessment_registry=assessment_registry,
-            document_type=AdditionalDocument.DocumentType.EXECUTIVE_SUMMARY,
+            document_type=AdditionalDocument.DocumentType.ASSESSMENT_DATABASE,
             file=FileFactory()
         )
         # Add Score Ratings
         ScoreRatingFactory.create(
             assessment_registry=assessment_registry,
-            score_type=ScoreRating.ScoreType.RELEVANCE,
+            score_type=ScoreRating.ScoreCriteria.RELEVANCE,
             rating=ScoreRating.RatingType.GOOD
         )
         ScoreRatingFactory.create(
             assessment_registry=assessment_registry,
-            score_type=ScoreRating.ScoreType.TIMELINESS,
+            score_type=ScoreRating.ScoreCriteria.TIMELINESS,
             rating=ScoreRating.RatingType.GOOD
         )
         ScoreRatingFactory.create(
             assessment_registry=assessment_registry,
-            score_type=ScoreRating.ScoreType.GRANULARITY,
+            score_type=ScoreRating.ScoreCriteria.GRANULARITY,
             rating=ScoreRating.RatingType.GOOD
         )
         # Add Score Analytical Density
         ScoreAnalyticalDensityFactory.create(
             assessment_registry=assessment_registry,
             sector=AssessmentRegistry.SectorType.FOOD_SECURITY,
-            value=1
         )
         ScoreAnalyticalDensityFactory.create(
             assessment_registry=assessment_registry,
             sector=AssessmentRegistry.SectorType.SHELTER,
-            value=5
         )
         # Add Answer to the question
         AnswerFactory.create(
@@ -193,14 +191,14 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         SummaryMetaFactory.create(
             assessment_registry=assessment_registry,
         )
-        SummarySubSectorIssueFactory.create(
+        SummarySubPillarIssueFactory.create(
             assessment_registry=assessment_registry,
             summary_issue=summary_issue1
         )
         SummaryFocusFactory.create(
             assessment_registry=assessment_registry,
         )
-        SummaryFocusSubSectorIssueFactory.create(
+        SummarySubDimmensionIssueFactory.create(
             assessment_registry=assessment_registry,
             summary_issue=summary_issue2,
             focus=AssessmentRegistry.FocusType.CONTEXT
@@ -240,10 +238,10 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['scoreAnalyticalDensity']), 2)
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['cna']), 2)
 
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summaryMeta']), 1)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summarySubsectorIssue']), 1)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summaryFocusMeta']), 1)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summaryFocusSubsectorIssue']), 1)
+        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summaryPillarMeta']), 1)
+        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summarySubPillarIssue']), 1)
+        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summaryDimmensionMeta']), 1)
+        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summarySubDimmensionIssue']), 1)
 
     def test_list_assessment_registry_query(self):
         query = '''
