@@ -3729,7 +3729,9 @@ type SummaryFocusMetaType {
 
 type SummaryFocusOptionType {
   dimmension: AssessmentRegistrySummaryFocusDimmensionTypeEnum
-  subDimmension: [AssessmentRegistrySummarySubDimmensionTypeEnum!]
+  dimmensionDisplay: EnumDescription!
+  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
+  subDimmensionDisplay: EnumDescription!
 }
 
 type SummaryFocusSubDimmensionIssueType {
@@ -3743,7 +3745,7 @@ type SummaryFocusSubDimmensionIssueType {
   focus: AssessmentRegistryFocusTypeEnum
   summaryIssue: IssueType!
   text: String!
-  order: Int
+  order: Int!
   leadPreviewTextRef: GenericScalar
   focusDisplay: String
 }
@@ -3774,7 +3776,9 @@ type SummaryMetaType {
 
 type SummaryOptionType {
   pillar: AssessmentRegistrySummaryPillarTypeEnum!
-  subPillar: [AssessmentRegistrySummarySubPillarTypeEnum!]!
+  pillarDisplay: EnumDescription!
+  subPillar: AssessmentRegistrySummarySubPillarTypeEnum!
+  subPillarDisplay: EnumDescription!
 }
 
 input SummarySubDimmensionInputType {
@@ -3782,7 +3786,7 @@ input SummarySubDimmensionInputType {
   summaryIssue: ID!
   focus: AssessmentRegistryFocusTypeEnum!
   text: String
-  order: Int
+  order: Int!
   leadPreviewTextRef: GenericScalar
 }
 
@@ -3790,20 +3794,20 @@ input SummarySubPillarIssueInputType {
   id: ID
   summaryIssue: ID!
   text: String
-  order: Int
+  order: Int!
   leadPreviewTextRef: GenericScalar
 }
 
 type SummarySubPillarIssueType {
   id: ID!
+  summaryIssue: IssueType!
   text: String!
-  order: Int
+  order: Int!
   leadPreviewTextRef: GenericScalar
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  issue: IssueType
 }
 
 enum TopicModelStatusEnum {
