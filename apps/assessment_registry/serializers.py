@@ -45,6 +45,7 @@ class IssueSerializer(UserResourceSerializer):
         )
 
     def validate(self, data):
+        from utils.common import get_hierarchy_level
         if data.get('sub_pillar') is not None and data.get('sub_dimmension') is not None:
             raise serializers.ValidationError("Cannot select both sub_pillar and sub_dimmension field.")
         if data.get('parent') is not None:
@@ -55,6 +56,11 @@ class IssueSerializer(UserResourceSerializer):
             if data.get('sub_dimmension') is not None:
                 if data.get('sub_dimmension') != data.get('parent').sub_dimmension:
                     raise serializers.ValidationError("sub_dimmension does not match between child and parent.")
+        if data.get('parent'):
+            hierarchy_level = get_hierarchy_level(data.get('parent'))
+            if hierarchy_level > 2:
+                raise serializers.ValidationError("Cannot create issue more than two level of hierarchy")
+
         return data
 
 
