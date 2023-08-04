@@ -533,7 +533,7 @@ class SummarySubPillarIssue(UserResource):
         related_name='summary_subsector_issue'
     )
     text = models.TextField(blank=True)
-    order = models.IntegerField(blank=True, null=True)
+    order = models.IntegerField()
     lead_preview_text_ref = models.JSONField(default=None, blank=True, null=True)
 
 
@@ -611,6 +611,67 @@ class SummaryIssue(models.Model):
         PEOPLE_AT_RISKS = 13, 'People At Risks'
         FOCAL_ISSUES = 14, 'Focal Issues'
 
+    PILLAR_SUB_PILLAR_MAP = {
+        Summary.Pillar.CONTEXT: [
+            SubPillar.POLITICS,
+            SubPillar.DEMOGRAPHY,
+            SubPillar.SOCIO_CULTURAL,
+            SubPillar.ENVIRONMENT,
+            SubPillar.SECURITY_AND_STABILITY,
+            SubPillar.ECONOMICS,
+        ],
+        Summary.Pillar.EVENT_SHOCK: [
+            SubPillar.CHARACTERISTICS,
+            SubPillar.DRIVERS_AND_AGGRAVATING_FACTORS,
+            SubPillar.MITIGATING_FACTORS,
+            SubPillar.HAZARDS_AND_THREATS,
+        ],
+        Summary.Pillar.DISPLACEMENT: [
+            SubPillar.DISPLACEMENT_CHARACTERISTICS,
+            SubPillar.PUSH_FACTORS,
+            SubPillar.PULL_FACTORS,
+            SubPillar.INTENTIONS,
+            SubPillar.LOCAL_INTREGATIONS,
+        ],
+        Summary.Pillar.INFORMATION_AND_COMMUNICATION: [
+            SubPillar.SOURCE_AND_MEANS,
+            SubPillar.CHALLANGES_AND_BARRIERS,
+            SubPillar.KNOWLEDGE_AND_INFO_GAPS_HUMAN,
+            SubPillar.KNOWLEDGE_AND_INFO_GAPS_POP,
+        ],
+        Summary.Pillar.INFORMATION_AND_COMMUNICATION: [
+            SubPillar.POPULATION_TO_RELIEF,
+            SubPillar.RELIEF_TO_POPULATION,
+            SubPillar.PHYSICAL_AND_SECURITY,
+        ]
+    }
+
+    DIMMENSION_SUB_DIMMENSION_MAP = {
+        SummaryFocus.Dimmension.IMPACT: [
+            SubDimmension.DRIVERS,
+            SubDimmension.IMPACT_ON_PEOPLE,
+            SubDimmension.IMPACT_ON_SYSTEM,
+        ],
+        SummaryFocus.Dimmension.HUMANITARIAN_CONDITIONS: [
+            SubDimmension.LIVING_STANDARDS,
+            SubDimmension.COPING_MECHANISMS,
+            SubDimmension.PHYSICAL_AND_MENTAL_WELL_BEING,
+        ],
+        SummaryFocus.Dimmension.PRIORITIES_AND_PREFERENCES: [
+            SubDimmension.NEEDS_POP,
+            SubDimmension.NEEDS_HUMAN,
+            SubDimmension.INTERVENTIONS_HUMAN,
+            SubDimmension.INTERVENTIONS_POP,
+        ],
+        SummaryFocus.Dimmension.CONCLUSIONS: [
+            SubDimmension.DEMOGRAPHIC_GROUPS,
+            SubDimmension.GROUPS_WITH_SPECIFIC_NEEDS,
+            SubDimmension.GEOGRAPHICAL_AREAS,
+            SubDimmension.PEOPLE_AT_RISKS,
+            SubDimmension.FOCAL_ISSUES,
+        ],
+    }
+
     sub_pillar = models.IntegerField(choices=SubPillar.choices, blank=True, null=True)
     sub_dimmension = models.IntegerField(choices=SubDimmension.choices, blank=True, null=True)
     parent = models.ForeignKey(
@@ -636,5 +697,5 @@ class SummarySubDimmensionIssue(UserResource):
         related_name='summary_focus_subsector_issue'
     )
     text = models.TextField(blank=True)
-    order = models.IntegerField(blank=True, null=True)
+    order = models.IntegerField()
     lead_preview_text_ref = models.JSONField(default=None, blank=True, null=True)
