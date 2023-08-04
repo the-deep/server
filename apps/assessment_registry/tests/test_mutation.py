@@ -242,6 +242,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
             summarySubPillarIssue=[
                 dict(
                     summaryIssue=self.summary_issue1.id,
+                    order=1,
                 )
             ],
             summaryDimmensionMeta=[
@@ -253,6 +254,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                 dict(
                     summaryIssue=self.summary_issue2.id,
                     focus=self.genum(AssessmentRegistry.FocusType.CONTEXT),
+                    order=1,
                 )
             ]
         )

@@ -193,7 +193,8 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         )
         SummarySubPillarIssueFactory.create(
             assessment_registry=assessment_registry,
-            summary_issue=summary_issue1
+            summary_issue=summary_issue1,
+            order=1,
         )
         SummaryFocusFactory.create(
             assessment_registry=assessment_registry,
@@ -201,7 +202,8 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         SummarySubDimmensionIssueFactory.create(
             assessment_registry=assessment_registry,
             summary_issue=summary_issue2,
-            focus=AssessmentRegistry.FocusType.CONTEXT
+            focus=AssessmentRegistry.FocusType.CONTEXT,
+            order=1,
         )
 
         def _query_check(assessment_registry, **kwargs):
