@@ -264,7 +264,7 @@ class SummarySubPillarIssueType(DjangoObjectType, UserResourceMixin):
     class Meta:
         model = SummarySubPillarIssue
         fields = [
-            "id", "text", "order","summary_issue", "lead_preview_text_ref"
+            "id", "text", "order", "summary_issue", "lead_preview_text_ref"
         ]
 
     @staticmethod
