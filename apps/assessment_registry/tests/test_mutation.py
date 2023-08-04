@@ -241,7 +241,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
             ],
             summarySubPillarIssue=[
                 dict(
-                    summaryIssue=self.summary_issue1.id
+                    summaryIssue=self.summary_issue1.id,
                 )
             ],
             summaryDimmensionMeta=[

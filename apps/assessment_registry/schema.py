@@ -80,12 +80,16 @@ class SummarySubSectorType(graphene.ObjectType):
 
 class SummaryOptionType(graphene.ObjectType):
     pillar = graphene.Field(AssessmentRegistrySummaryPillarTypeEnum, required=True)
-    sub_pillar = graphene.List(graphene.NonNull(AssessmentRegistrySummarySubPillarTypeEnum), required=True)
+    pillar_display = EnumDescription(required=True)
+    sub_pillar = graphene.Field(AssessmentRegistrySummarySubPillarTypeEnum, required=True)
+    sub_pillar_display = EnumDescription(required=True)
 
 
 class SummaryFocusOptionType(graphene.ObjectType):
     dimmension = graphene.Field(AssessmentRegistrySummaryFocusDimmensionTypeEnum, required=False)
-    sub_dimmension = graphene.List(graphene.NonNull(AssessmentRegistrySummarySubDimmensionTypeEnum), required=False)
+    dimmension_display = EnumDescription(required=True)
+    sub_dimmension = graphene.Field(AssessmentRegistrySummarySubDimmensionTypeEnum, required=False)
+    sub_dimmension_display = EnumDescription(required=True)
 
 
 class ScoreOptionsType(graphene.ObjectType):
@@ -115,79 +119,34 @@ class AssessmentRegistryOptionsType(graphene.ObjectType):
         ]
 
     @staticmethod
-    def resolve_cna_questions(root, info, **kwargs):
-        return Question.objects.all()
-
-    @staticmethod
     def resolve_summary_options(root, info, **kwargs):
         return [
             SummaryOptionType(
-                pillar=enum,
-                sub_pillar=[
-                    enum for enum, _ in SummaryIssue.SubPillar.choices if 0 <= enum <= 5
-                ]
-            ) for enum, _ in Summary.Pillar.choices if enum == 0
-        ] + [
-            SummaryOptionType(
-                pillar=enum,
-                sub_pillar=[
-                    enum for enum, _ in SummaryIssue.SubPillar.choices if 6 <= enum <= 9
-                ]
-            ) for enum, _ in Summary.Pillar.choices if enum == 1
-        ] + [
-            SummaryOptionType(
-                pillar=enum,
-                sub_pillar=[
-                    enum for enum, _ in SummaryIssue.SubPillar.choices if 10 <= enum <= 14
-                ]
-            ) for enum, _ in Summary.Pillar.choices if enum == 2
-        ] + [
-            SummaryOptionType(
-                pillar=enum,
-                sub_pillar=[
-                    enum for enum, _ in SummaryIssue.SubPillar.choices if 15 <= enum <= 18
-                ]
-            ) for enum, _ in Summary.Pillar.choices if enum == 3
-        ] + [
-            SummaryOptionType(
-                pillar=enum,
-                sub_pillar=[
-                    enum for enum, _ in SummaryIssue.SubPillar.choices if 19 <= enum <= 21
-                ]
-            ) for enum, _ in Summary.Pillar.choices if enum == 4
+                pillar=pillar.value,
+                pillar_display=pillar.label,
+                sub_pillar=sub_pillar.value,
+                sub_pillar_display=sub_pillar.label,
+            )
+            for pillar, sub_pillars in SummaryIssue.PILLAR_SUB_PILLAR_MAP.items()
+            for sub_pillar in sub_pillars
         ]
 
     @staticmethod
     def resolve_summary_focus_options(root, info, **kwargs):
         return [
             SummaryFocusOptionType(
-                dimmension=enum,
-                sub_dimmension=[
-                    enum for enum, _ in SummaryIssue.SubDimmension.choices if 0 <= enum <= 2
-                ]
-            ) for enum, _ in SummaryFocus.Dimmension.choices if enum == 0
-        ] + [
-            SummaryFocusOptionType(
-                dimmension=enum,
-                sub_dimmension=[
-                    enum for enum, _ in SummaryIssue.SubDimmension.choices if 3 <= enum <= 5
-                ]
-            ) for enum, _ in SummaryFocus.Dimmension.choices if enum == 1
-        ] + [
-            SummaryFocusOptionType(
-                dimmension=enum,
-                sub_dimmension=[
-                    enum for enum, _ in SummaryIssue.SubDimmension.choices if 6 <= enum <= 9
-                ]
-            ) for enum, _ in SummaryFocus.Dimmension.choices if enum == 2
-        ] + [
-            SummaryFocusOptionType(
-                dimmension=enum,
-                sub_dimmension=[
-                    enum for enum, _ in SummaryIssue.SubDimmension.choices if 10 <= enum <= 14
-                ]
-            ) for enum, _ in SummaryFocus.Dimmension.choices if enum == 3
+                dimmension=dimmension.value,
+                dimmension_display=dimmension.label,
+                sub_dimmension=sub_dimmension.value,
+                sub_dimmension_display=sub_dimmension.label,
+            )
+            for dimmension, sub_dimmensions in SummaryIssue.DIMMENSION_SUB_DIMMENSION_MAP.items()
+            for sub_dimmension in sub_dimmensions
         ]
+
+    @staticmethod
+    def resolve_cna_questions(root, info, **kwargs):
+        return Question.objects.all()
 
 
 class ScoreRatingType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
@@ -301,12 +260,11 @@ class SummaryMetaType(DjangoObjectType, UserResourceMixin):
 
 
 class SummarySubPillarIssueType(DjangoObjectType, UserResourceMixin):
-    issue = graphene.Field(IssueType, required=False)
 
     class Meta:
         model = SummarySubPillarIssue
         fields = [
-            "id", "text", "order", "lead_preview_text_ref"
+            "id", "text", "order","summary_issue", "lead_preview_text_ref"
         ]
 
     @staticmethod
