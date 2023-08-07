@@ -595,6 +595,101 @@ class Question(UserResource):
         ],
     }
 
+    QUESTION_SECTOR_SUB_SECTOR_MAP = {
+        QuestionSector.RELEVANCE: [
+            QuestionSubSector.RELEVANCE,
+        ],
+        QuestionSector.COMPREHENSIVENESS: [
+            QuestionSubSector.GEOGRAPHIC_COMPREHENSIVENESS,
+            QuestionSubSector.SECTORAL_COMPREHENSIVENESS,
+            QuestionSubSector.AFFECTED_AND_VULNERABLE_GROUPS_COMPREHENSIVENESS,
+        ],
+        QuestionSector.ETHICS: [
+            QuestionSubSector.SAFETY_AND_PROTECTION,
+            QuestionSubSector.HUMANITARIAN_PRINCIPLES,
+            QuestionSubSector.CONTRIBUTION,
+        ],
+        QuestionSector.METHODOLOGICAL_RIGOR: [
+            QuestionSubSector.TRANSPARENCY,
+            QuestionSubSector.MITIGATING_BIAS,
+            QuestionSubSector.PARTICIPATION,
+            QuestionSubSector.CONTEXT_SPECIFICITY,
+        ],
+        QuestionSector.ANALYTICAL_VALUE: [
+            QuestionSubSector.ANALYTICAL_STANDARDS,
+            QuestionSubSector.DESCRIPTIONS,
+            QuestionSubSector.EXPLANATION,
+            QuestionSubSector.INTERPRETATION,
+            QuestionSubSector.ANTICIPATION,
+            QuestionSubSector.TIMELINESS,
+        ],
+        QuestionSector.EFFECTIVE_COMMUNICATION: [
+            QuestionSubSector.USER_FRIENDLY_PRESENTATION,
+            QuestionSubSector.ACTIVE_DISSEMINATION,
+        ],
+        QuestionSector.USE: [
+            QuestionSubSector.USE_FOR_COLLECTIVE_PLANNING,
+            QuestionSubSector.BUY_IN_AND_USE_BY_HUMANITARIAN_CLUSTERS_SECTORS,
+            QuestionSubSector.BUY_IN_AND_USE_BY_UN_AGENCIES,
+            QuestionSubSector.BUY_IN_AND_USE_BY_INTERNATIONAL_NGO,
+            QuestionSubSector.BUY_IN_AND_USE_BY_LOCAL_NGO,
+            QuestionSubSector.BUY_IN_AND_USE_BY_MEMBER_OF_RED_CROSS_RED_CRESENT_MOVEMENT,
+            QuestionSubSector.BUY_IN_AND_USE_BY_DONORS,
+            QuestionSubSector.BUY_IN_AND_USE_BY_NATIONAL_AND_LOCAL_GOVERNMENT_AGENCIES,
+            QuestionSubSector.BUY_IN_AND_USE_BY_DEVELOPMENT_AND_STABILIZATION_ACTORS,
+        ],
+        QuestionSector.PEOPLE_CENTERED_AND_INCLUSIVE: [
+            QuestionSubSector.AFFECTED_AND_VULNERABLE_GROUPS_COMPREHENSIVENESS,
+            QuestionSubSector.SAFETY_AND_PROTECTION,
+            QuestionSubSector.PARTICIPATION,
+            QuestionSubSector.CONTEXT_SPECIFICITY,
+        ],
+        QuestionSector.ACCOUNTABILITY_TO_AFFECTED_POPULATIONS: [
+            QuestionSubSector.PARTICIPATION,
+            QuestionSubSector.CONTEXT_SPECIFICITY,
+            QuestionSubSector.DESCRIPTIONS,
+            QuestionSubSector.ACTIVE_DISSEMINATION,
+        ],
+        QuestionSector.DO_NOT_HARM: [
+            QuestionSubSector.SAFETY_AND_PROTECTION,
+        ],
+        QuestionSector.DESIGNED_WITH_PURPOSE: [
+            QuestionSubSector.RELEVANCE,
+        ],
+        QuestionSector.COMPETENCY_AND_CAPACITY: [
+            QuestionSubSector.SAFETY_AND_PROTECTION,
+            QuestionSubSector.CONTEXT_SPECIFICITY,
+        ],
+        QuestionSector.IMPARTIALITY: [
+            QuestionSubSector.HUMANITARIAN_PRINCIPLES,
+        ],
+        QuestionSector.COORDINATION_AND_DATA_MINIMIZATION: [
+            QuestionSubSector.RELEVANCE,
+            QuestionSubSector.CONTRIBUTION,
+        ],
+        QuestionSector.JOINT_ANALYSIS: [
+            QuestionSubSector.MITIGATING_BIAS,
+            QuestionSubSector.ANALYTICAL_STANDARDS,
+        ],
+        QuestionSector.ACKNOWLEDGE_DISSENTING_VOICES_IN_JOINT_NEEDS_ANALYSIS: [
+            QuestionSubSector.ANALYTICAL_STANDARDS,
+        ],
+        QuestionSector.IFORMED_CONSENT_CONFIDENTIALITY_AND_DATA_SECURITY: [
+            QuestionSubSector.SAFETY_AND_PROTECTION,
+        ],
+        QuestionSector.SHARING_RESULTS: [
+            QuestionSubSector.ACTIVE_DISSEMINATION,
+        ],
+        QuestionSector.TRANSPARENCY_BETWEEN_ACTORS: [
+            QuestionSubSector.TRANSPARENCY,
+            QuestionSubSector.ANALYTICAL_STANDARDS,
+        ],
+        QuestionSector.MINIMUM_TECHNICAL_STANDARDS: [
+            QuestionSubSector.MITIGATING_BIAS,
+            QuestionSubSector.ANALYTICAL_STANDARDS,
+        ],
+    }
+
     sector = models.IntegerField(choices=QuestionSector.choices)
     sub_sector = models.IntegerField(choices=QuestionSubSector.choices)
     question = models.CharField(max_length=500)
@@ -701,6 +796,9 @@ class SummaryFocus(UserResource):
 
     class Meta:
         verbose_name = _("SummaryDimension")
+
+    class Meta:
+        verbose_name = _("SummaryDimmension")
 
 
 class SummaryIssue(models.Model):
