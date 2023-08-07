@@ -88,8 +88,6 @@ class AssessmentRegistryFactory(DjangoModelFactory):
     focuses = factory.List(AssessmentRegistry.FocusType)
     sectors = factory.List(AssessmentRegistry.SectorType)
     protection_info_mgmts = factory.List(AssessmentRegistry.ProtectionInfoType)
-    matrix_score = fuzzy.FuzzyInteger(0, 10)
-    final_score = fuzzy.FuzzyInteger(0, 10)
 
     class Meta:
         model = AssessmentRegistry

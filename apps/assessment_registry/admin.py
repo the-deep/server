@@ -5,9 +5,12 @@ from .models import (
     MethodologyAttribute,
     Question,
     Answer,
-    SummaryIssue,
     ScoreRating,
     ScoreAnalyticalDensity,
+    Summary,
+    SummarySubPillarIssue,
+    SummaryFocus,
+    SummarySubDimmensionIssue,
 )
 
 
@@ -22,12 +25,6 @@ class QuestionAdmin(admin.ModelAdmin):
         else:
             obj.modified_by = request.user
         super().save_model(request, obj, form, change)
-
-
-@admin.register(Answer)
-class AnswerAdmin(admin.ModelAdmin):
-    list_display = ('id', 'question')
-    readonly_fields = ('created_by', 'modified_by', 'client_id',)
 
 
 class MethodologyAttributeInline(admin.TabularInline):
@@ -54,16 +51,56 @@ class AnalyticalDensityInline(admin.TabularInline):
     exclude = ('created_by', 'modified_by', 'client_id')
 
 
+class SummaryInline(admin.TabularInline):
+    model = Summary
+    extra = 0
+    exclude = ('created_by', 'modified_by', 'client_id')
+
+
+class SummarySubPillarIssueInline(admin.TabularInline):
+    model = SummarySubPillarIssue
+    extra = 0
+    exclude = ('created_by', 'modified_by', 'client_id')
+
+
+class SummaryFocusInline(admin.TabularInline):
+    model = SummaryFocus
+    extra = 0
+    exclude = ('created_by', 'modified_by', 'client_id')
+
+
+class SummarySubDimmensionIssueInline(admin.TabularInline):
+    model = SummarySubDimmensionIssue
+    extra = 0
+    exclude = ('created_by', 'modified_by', 'client_id')
+
+
 @admin.register(AssessmentRegistry)
 class AssessmentRegistryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'lead', 'project')
-
+    list_display = ('id', 'project', 'lead', 'created_at', 'publication_date')
+    readonly_fields = ('created_at','modified_at')
+    autocomplete_fields = (
+        'created_by',
+        'modified_by',
+        'project',
+        'bg_countries',
+        'lead_organizations',
+        'international_partners',
+        'donors',
+        'national_partners',
+        'governments',
+        'locations',
+    )
     inlines = [
         MethodologyAttributeInline,
         ScoreInline,
         AnalyticalDensityInline,
         AnswerInline,
+        SummaryInline,
+        SummarySubPillarIssueInline,
+        SummaryFocusInline,
+        SummarySubDimmensionIssueInline,
     ]
 
-
-admin.site.register(SummaryIssue)
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related('project', 'lead')

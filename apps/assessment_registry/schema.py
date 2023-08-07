@@ -73,11 +73,6 @@ class QuestionType(DjangoObjectType, UserResourceMixin):
     sub_sector_display = EnumDescription(source='get_sub_sector_display', required=False)
 
 
-class SummarySubSectorType(graphene.ObjectType):
-    sub_sector = graphene.String()
-    sub_sector_value = graphene.Int()
-
-
 class SummaryOptionType(graphene.ObjectType):
     pillar = graphene.Field(AssessmentRegistrySummaryPillarTypeEnum, required=True)
     pillar_display = EnumDescription(required=True)
@@ -219,11 +214,11 @@ class CNAType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
         fields = ("id", "question", "answer",)
 
 
-class IssueType(DjangoObjectType, UserResourceMixin):
+class AssessmentRegistrySummaryIssueType(DjangoObjectType, UserResourceMixin):
     sub_pillar = graphene.Field(AssessmentRegistrySummarySubPillarTypeEnum, required=False)
-    sub_pillar_display = graphene.String(required=False)
+    sub_pillar_display = EnumDescription(required=False)
     sub_dimmension = graphene.Field(AssessmentRegistrySummarySubDimmensionTypeEnum, required=False)
-    sub_dimmension_display = graphene.String(required=False)
+    sub_dimmension_display = EnumDescription(required=False)
 
     class Meta:
         model = SummaryIssue
@@ -244,7 +239,7 @@ class IssueType(DjangoObjectType, UserResourceMixin):
         return None
 
 
-class IssueListType(CustomDjangoListObjectType):
+class AssessmentRegistrySummaryIssueListType(CustomDjangoListObjectType):
     class Meta:
         model = SummaryIssue
         filterset_class = IssueGQFilterSet
@@ -279,7 +274,7 @@ class SummaryFocusMetaType(DjangoObjectType, UserResourceMixin):
 
 class SummaryFocusSubDimmensionIssueType(DjangoObjectType, UserResourceMixin):
     focus = graphene.Field(AssessmentRegistryFocusTypeEnum, required=False)
-    focus_display = graphene.String(required=False)
+    focus_display = EnumDescription(required=False)
 
     class Meta:
         model = SummarySubDimmensionIssue
@@ -298,7 +293,6 @@ class AssessmentRegistryType(
             "data_collection_start_date", "data_collection_end_date", "publication_date", "executive_summary",
             "lead_organizations", "international_partners", "donors", "national_partners",
             "governments", "objectives", "data_collection_techniques", "sampling", "limitations", "locations",
-            "matrix_score", "final_score",
         )
 
     bg_crisis_type = graphene.Field(AssessmentRegistryCrisisTypeEnum, required=True)
@@ -406,9 +400,9 @@ class ProjectQuery:
 
 
 class Query():
-    issue = DjangoObjectField(IssueType)
-    issues = DjangoPaginatedListObjectField(
-        IssueListType,
+    assessment_reg_summary_issue = DjangoObjectField(AssessmentRegistrySummaryIssueType)
+    assessment_reg_summary_issues = DjangoPaginatedListObjectField(
+        AssessmentRegistrySummaryIssueListType,
         pagination=PageGraphqlPagination(
             page_size_query_param='pageSize'
         )
