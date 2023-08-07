@@ -1528,8 +1528,6 @@ input AssessmentRegistryCreateInputType {
   methodologyAttributes: [MethodologyAttributeInputType!]
   additionalDocuments: [AdditionalDocumentInputType!]
   scoreRatings: [ScoreRatingInputType!]
-  matrixScore: Int
-  finalScore: Int
   scoreAnalyticalDensity: [ScoreAnalyticalDensityInputType!]
   cna: [CNAAnswerInputType!]
   summaryPillarMeta: [SummaryMetaInputType!]
@@ -1743,6 +1741,35 @@ enum AssessmentRegistrySummaryFocusDimmensionTypeEnum {
   HUMANITARIAN_POPULATION_FIGURES
 }
 
+input AssessmentRegistrySummaryIssueCreateInputType {
+  subPillar: AssessmentRegistrySummarySubPillarTypeEnum
+  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
+  parent: ID
+  label: String!
+}
+
+type AssessmentRegistrySummaryIssueListType {
+  results: [AssessmentRegistrySummaryIssueType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AssessmentRegistrySummaryIssueType {
+  id: ID!
+  parent: AssessmentRegistrySummaryIssueType
+  label: String!
+  fullLabel: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  subPillar: AssessmentRegistrySummarySubPillarTypeEnum
+  subPillarDisplay: EnumDescription
+  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
+  subDimmensionDisplay: EnumDescription
+}
+
 enum AssessmentRegistrySummaryPillarTypeEnum {
   CONTEXT
   EVENT_SHOCK
@@ -1816,8 +1843,6 @@ type AssessmentRegistryType {
   sampling: String
   limitations: String
   locations: [ProjectGeoAreaType!]
-  matrixScore: Int!
-  finalScore: Int!
   clientId: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
@@ -2327,7 +2352,7 @@ type CreateEntryReviewComment {
 type CreateIssue {
   errors: [GenericScalar!]
   ok: Boolean
-  result: IssueType
+  result: AssessmentRegistrySummaryIssueType
 }
 
 type CreateLead {
@@ -3247,35 +3272,6 @@ input HIDLoginInputType {
   state: Int
 }
 
-input IssueCreateInputType {
-  subPillar: AssessmentRegistrySummarySubPillarTypeEnum
-  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
-  parent: ID
-  label: String!
-}
-
-type IssueListType {
-  results: [IssueType!]
-  totalCount: Int
-  page: Int
-  pageSize: Int
-}
-
-type IssueType {
-  id: ID!
-  parent: IssueType
-  label: String!
-  fullLabel: String!
-  createdAt: DateTime!
-  modifiedAt: DateTime!
-  createdBy: UserType
-  modifiedBy: UserType
-  subPillar: AssessmentRegistrySummarySubPillarTypeEnum
-  subPillarDisplay: String
-  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
-  subDimmensionDisplay: String
-}
-
 type JwtTokenType {
   accessToken: String
   expiresIn: String
@@ -3700,7 +3696,7 @@ type MissingPredictionReviewType {
 }
 
 type Mutation {
-  createIssue(data: IssueCreateInputType): CreateIssue
+  createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType): CreateIssue
   fileUpload(data: FileUploadInputType!): UploadFile
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
   genericExportCancel(id: ID!): CancelUserGenericExport
@@ -3912,7 +3908,7 @@ type ProjectDetailType {
   hasAnalysisFramework: Boolean!
   hasAssessmentTemplate: Boolean!
   assessmentRegistry(id: ID!): AssessmentRegistryType
-  assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
+  assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], publicationDate_Lte: Date, publicationDate_Gte: Date, search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
   assessmentRegistryOptions: AssessmentRegistryOptionsType
   analysisOverview: AnalysisOverviewType
   analysis(id: ID!): AnalysisType
@@ -4051,7 +4047,7 @@ type ProjectMembershipType {
 type ProjectMutationType {
   id: ID!
   title: String!
-  createAssessmentRegistry(data: AssessmentRegistryCreateInputType): CreateAssessmentRegistry
+  createAssessmentRegistry(data: AssessmentRegistryCreateInputType!): CreateAssessmentRegistry
   updateAssessmentRegistry(data: AssessmentRegistryCreateInputType, id: ID): UpdateAssessmentRegistry
   analysisPillarUpdate(data: AnalysisPillarUpdateInputType!, id: ID!): UpdateAnalysisPillar
   discardedEntryCreate(data: DiscardedEntryCreateInputType!): CreateAnalysisPillarDiscardedEntry
@@ -4438,8 +4434,8 @@ type PublicProjectWithMembershipData {
 
 type Query {
   publicAnalysisReportSnapshot(slug: String!): AnalysisReportSnapshotType
-  issue(id: ID!): IssueType
-  issues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum, page: Int = 1, ordering: String, pageSize: Int): IssueListType
+  assessmentRegSummaryIssue(id: ID!): AssessmentRegistrySummaryIssueType
+  assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
   deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
   publicDeepExploreYearlySnapshots: [PublicExploreSnapshotType!]
   publicDeepExploreGlobalSnapshots: [PublicExploreSnapshotType!]
@@ -4736,11 +4732,11 @@ type SummaryFocusSubDimmensionIssueType {
   clientId: String
   assessmentRegistry: AssessmentRegistryType!
   focus: AssessmentRegistryFocusTypeEnum
-  summaryIssue: IssueType!
+  summaryIssue: AssessmentRegistrySummaryIssueType!
   text: String!
   order: Int!
   leadPreviewTextRef: GenericScalar
-  focusDisplay: String
+  focusDisplay: EnumDescription
 }
 
 input SummaryMetaInputType {
@@ -4793,7 +4789,7 @@ input SummarySubPillarIssueInputType {
 
 type SummarySubPillarIssueType {
   id: ID!
-  summaryIssue: IssueType!
+  summaryIssue: AssessmentRegistrySummaryIssueType!
   text: String!
   order: Int!
   leadPreviewTextRef: GenericScalar

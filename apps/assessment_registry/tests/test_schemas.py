@@ -36,10 +36,12 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         self.question1 = QuestionFactory.create(
             sector=Question.QuestionSector.RELEVANCE,
             sub_sector=Question.QuestionSubSector.RELEVANCE,
+            question='test question'
         )
         self.question2 = QuestionFactory.create(
             sector=Question.QuestionSector.COMPREHENSIVENESS,
             sub_sector=Question.QuestionSubSector.GEOGRAPHIC_COMPREHENSIVENESS,
+            question='test question',
         )
         self.country1, self.country2 = RegionFactory.create_batch(2)
         self.organization1, self.organization2 = OrganizationFactory.create_batch(2)
