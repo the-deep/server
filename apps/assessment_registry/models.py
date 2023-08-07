@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 from user_resource.models import UserResource
 from geo.models import Region
@@ -11,7 +13,8 @@ from geo.models import GeoArea
 
 class AssessmentRegistry(UserResource):
     class CrisisType(models.IntegerChoices):
-        EARTH_QUAKE = 0, 'Earth Quake'
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        EARTH_QUAKE = 100, 'Earth Quake'
         GROUND_SHAKING = 1, 'Ground Shaking'
         TSUNAMI = 2, 'Tsunami'
         VOLCANO = 3, 'Volcano'
@@ -39,27 +42,28 @@ class AssessmentRegistry(UserResource):
         CONFLICT = 25, 'Conflict'
 
     class PreparednessType(models.IntegerChoices):
-        WITH_PREPAREDNESS = 0, 'With Preparedness'
-        WITHOUT_PREPAREDNESS = 1, 'Without Preparedness'
+        WITH_PREPAREDNESS = 1, 'With Preparedness'
+        WITHOUT_PREPAREDNESS = 2, 'Without Preparedness'
 
     class ExternalSupportType(models.IntegerChoices):
-        EXTERNAL_SUPPORT_RECIEVED = 0, 'External Support Received'
-        NO_EXTERNAL_SUPPORT_RECEIVED = 1, 'No External Support Received'
+        EXTERNAL_SUPPORT_RECIEVED = 1, 'External Support Received'
+        NO_EXTERNAL_SUPPORT_RECEIVED = 2, 'No External Support Received'
 
     class CoordinationType(models.IntegerChoices):
-        COORDINATED = 0, 'Coordinated Joint'
-        HARMONIZED = 1, 'Coordinated Harmonized'
-        UNCOORDINATED = 2, 'Uncoordinated'
+        COORDINATED = 1, 'Coordinated Joint'
+        HARMONIZED = 2, 'Coordinated Harmonized'
+        UNCOORDINATED = 3, 'Uncoordinated'
 
     class Type(models.IntegerChoices):
-        INITIAL = 0, 'Initial'
-        RAPID = 1, 'Rapid'
-        IN_DEPTH = 2, 'In depth'
-        MONITORING = 3, 'Monitoring'
-        OTHER = 4, 'Other'
+        INITIAL = 1, 'Initial'
+        RAPID = 2, 'Rapid'
+        IN_DEPTH = 3, 'In depth'
+        MONITORING = 4, 'Monitoring'
+        OTHER = 5, 'Other'
 
     class FamilyType(models.IntegerChoices):
-        DISPLACEMENT_TRAKING_MATRIX = 0, 'Displacement Traking Matrix'
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        DISPLACEMENT_TRAKING_MATRIX = 100, 'Displacement Traking Matrix'
         MULTI_CLUSTER_INITIAL_AND_RAPID_ASSESSMENT = 1, 'Multi Cluster Initial and Rapid Assessment (MIRA)'
         MULTI_SECTORIAL_NEEDS_ASSESSMENT = 2, 'Multi sectorial Needs Assessment (MSNA)'
         EMERGENCY_FOOD_SECURITY_ASSESSMENT = 3, 'Emergency Food Security Assessment (EFSA)'
@@ -77,22 +81,23 @@ class AssessmentRegistry(UserResource):
         OTHER = 14, 'Other'
 
     class FrequencyType(models.IntegerChoices):
-        ONE_OFF = 0, 'One off'
-        REGULAR = 1, 'Regular'
+        ONE_OFF = 1, 'One off'
+        REGULAR = 2, 'Regular'
 
     class ConfidentialityType(models.IntegerChoices):
-        UNPROTECTED = 0, 'Unprotected'
-        CONFIDENTIAL = 1, 'Confidential'
+        UNPROTECTED = 1, 'Unprotected'
+        CONFIDENTIAL = 2, 'Confidential'
 
     class Language(models.IntegerChoices):
-        ENGLISH = 0, 'English'
-        FRENCH = 1, 'French'
-        SPANISH = 2, 'Spanish'
-        PORTUGESE = 3, 'Portugese'
-        ARABIC = 4, 'Arabic'
+        ENGLISH = 1, 'English'
+        FRENCH = 2, 'French'
+        SPANISH = 3, 'Spanish'
+        PORTUGESE = 4, 'Portugese'
+        ARABIC = 5, 'Arabic'
 
     class FocusType(models.IntegerChoices):
-        CONTEXT = 0, 'Context'
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        CONTEXT = 100, 'Context'
         SHOCK_EVENT = 1, 'Shock/Event'
         DISPLACEMENT = 2, 'Displacement'
         CASUALTIES = 3, 'Casualties'
@@ -105,7 +110,8 @@ class AssessmentRegistry(UserResource):
         RESPONSE_AND_CAPACITIES = 10, 'Response and Capacities'
 
     class SectorType(models.IntegerChoices):
-        FOOD_SECURITY = 0, 'Food Security'
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        FOOD_SECURITY = 100, 'Food Security'
         HEALTH = 1, 'Heath'
         SHELTER = 2, 'Shelter'
         WASH = 3, 'Wash'
@@ -117,7 +123,8 @@ class AssessmentRegistry(UserResource):
         INTER_CROSS_SECTOR = 9, 'Inter/Cross Sector'
 
     class ProtectionInfoType(models.IntegerChoices):
-        PROTECTION_MONITORING = 0, 'Protection Monitoring'
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        PROTECTION_MONITORING = 100, 'Protection Monitoring'
         PROTECTION_NEEDS_ASSESSMENT = 1, 'Protection Needs Assessment'
         CASE_MANAGEMENT = 2, 'Case Management'
         POPULATION_DATA = 3, 'Population Data'
@@ -127,7 +134,8 @@ class AssessmentRegistry(UserResource):
         SECTORAL_SYSTEM_OTHER = 7, 'Sectoral System/Other'
 
     class AffectedGroupType(models.IntegerChoices):
-        ALL = 0, 'All'
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        ALL = 100, 'All'
         ALL_AFFECTED = 1, 'All/Affected'
         ALL_NOT_AFFECTED = 2, 'All/Not Affected'
         ALL_AFFECTED_NOT_DISPLACED = 3, 'All/Affected/Not Displaced'
@@ -195,7 +203,7 @@ class AssessmentRegistry(UserResource):
     sectors = ArrayField(models.IntegerField(choices=SectorType.choices), default=list)
     protection_info_mgmts = ArrayField(
         models.IntegerField(choices=ProtectionInfoType.choices),
-        blank=True, null=True
+        default=list, blank=True
     )
     affected_groups = ArrayField(
         models.IntegerField(choices=AffectedGroupType.choices),
@@ -204,20 +212,17 @@ class AssessmentRegistry(UserResource):
 
     locations = models.ManyToManyField(GeoArea, related_name='focus_location_assessment_reg', blank=True)
 
-    # Score Fields
-    matrix_score = models.IntegerField(default=0)
-    final_score = models.IntegerField(default=0)
-
     class Meta:
         ordering = ["id"]
 
     def __str__(self):
-        return self.project.title
+        return self.lead.title
 
 
 class MethodologyAttribute(UserResource):
     class CollectionTechniqueType(models.IntegerChoices):
-        SECONDARY_DATA_REVIEW = 0, 'Secondary Data Review'
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        SECONDARY_DATA_REVIEW = 100, 'Secondary Data Review'
         KEY_INFORMAT_INTERVIEW = 1, 'Key Informant Interview'
         DIRECT_OBSERVATION = 2, 'Direct Observation'
         COMMUNITY_GROUP_DISCUSSION = 3, 'Community Group Discussion'
@@ -227,17 +232,18 @@ class MethodologyAttribute(UserResource):
         SATELLITE_IMAGERY = 7, 'Satellite Imagery'
 
     class SamplingApproachType(models.IntegerChoices):
-        NON_RANDOM_SELECTION = 0, 'Non-Random Selection'
-        RANDOM_SELECTION = 1, 'Random Selection'
-        FULL_ENUMERATION = 2, 'Full Enumeration'
+        NON_RANDOM_SELECTION = 1, 'Non-Random Selection'
+        RANDOM_SELECTION = 2, 'Random Selection'
+        FULL_ENUMERATION = 3, 'Full Enumeration'
 
     class ProximityType(models.IntegerChoices):
-        FACE_TO_FACE = 0, 'Face-to-Face'
-        REMOTE = 1, 'Remote'
-        MIXED = 2, 'Mixed'
+        FACE_TO_FACE = 1, 'Face-to-Face'
+        REMOTE = 2, 'Remote'
+        MIXED = 3, 'Mixed'
 
     class UnitOfAnalysisType(models.IntegerChoices):
-        CRISIS = 0, 'Crisis'
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        CRISIS = 100, 'Crisis'
         COUNTRY = 1, 'Country'
         REGION = 2, 'Region'
         PROVINCE_GOV_PREFECTURE = 3, 'Province/governorate/prefecture'
@@ -251,7 +257,8 @@ class MethodologyAttribute(UserResource):
         INDIVIDUAL = 11, 'Individual'
 
     class UnitOfReportingType(models.IntegerChoices):
-        CRISIS = 0, 'Crisis'
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        CRISIS = 100, 'Crisis'
         COUNTRY = 1, 'Country'
         REGION = 2, 'Region'
         PROVINCE_GOV_PREFECTURE = 3, 'Province/governorate/prefecture'
@@ -279,9 +286,9 @@ class MethodologyAttribute(UserResource):
 
 class AdditionalDocument(UserResource):
     class DocumentType(models.IntegerChoices):
-        ASSESSMENT_DATABASE = 0, 'Assessment database'
-        QUESTIONNAIRE = 1, 'Questionnaire'
-        MISCELLANEOUS = 2, 'Miscellaneous'
+        ASSESSMENT_DATABASE = 1, 'Assessment database'
+        QUESTIONNAIRE = 2, 'Questionnaire'
+        MISCELLANEOUS = 3, 'Miscellaneous'
 
     assessment_registry = models.ForeignKey(
         AssessmentRegistry,
@@ -297,16 +304,20 @@ class AdditionalDocument(UserResource):
     )
     external_link = models.URLField(max_length=500, blank=True)
 
+    def __str__(self):
+        return self.file.title
+
 
 class ScoreRating(UserResource):
     class AnalyticalStatement(models.IntegerChoices):
-        FIT_FOR_PURPOSE = 0, 'Fit for purpose'
-        TRUSTWORTHINESS = 1, 'Trustworthiness'
-        ANALYTICAL_RIGOR = 2, 'Analytical Rigor'
-        ANALYTICAL_WRITING = 3, 'Analytical Writing'
+        FIT_FOR_PURPOSE = 1, 'Fit for purpose'
+        TRUSTWORTHINESS = 2, 'Trustworthiness'
+        ANALYTICAL_RIGOR = 3, 'Analytical Rigor'
+        ANALYTICAL_WRITING = 4, 'Analytical Writing'
 
     class ScoreCriteria(models.IntegerChoices):
-        RELEVANCE = 0, "Relevance"
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        RELEVANCE = 100, "Relevance"
         COMPREHENSIVENESS = 1, "Comprehensiveness"
         TIMELINESS = 2, "Timeliness"
         GRANULARITY = 3, "Granularity"
@@ -377,7 +388,8 @@ class ScoreRating(UserResource):
 
 class ScoreAnalyticalDensity(UserResource):
     class AnalysisLevelCovered(models.IntegerChoices):
-        ISSUE_UNMET_NEEDS_ARE_DETAILED = 0, 'Issues/unmet needs are detailed'
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        ISSUE_UNMET_NEEDS_ARE_DETAILED = 100, 'Issues/unmet needs are detailed'
         ISSUE_UNMET_NEEDS_ARE_PRIOTIZED_RANKED = 1, 'Issues/unmet needs are priotized/ranked'
         CAUSES_OR_UNDERLYING_MECHANISMS_BEHIND_ISSUES_UNMET_NEEDS_ARE_DETAILED = 2,\
             'Causes or underlying mechanisms behind issues/unmet needs are detailed'
@@ -394,7 +406,8 @@ class ScoreAnalyticalDensity(UserResource):
             'Recommnedations/interventions are priotized/ranked'
 
     class FigureProvidedByAssessement(models.IntegerChoices):
-        TOTAL_POP_IN_THE_ASSESSED_AREAS = 0, 'Total population in the assessed areas'
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        TOTAL_POP_IN_THE_ASSESSED_AREAS = 100, 'Total population in the assessed areas'
         TOTAL_POP_EXPOSED_TO_THE_SHOCK_EVENT = 1, 'Total population exposed to the shock/event'
         TOTAL_POP_AFFECTED_LIVING_IN_THE_AFFECTED_AREAS = 2,\
             'Total populaiton affected/living in the affected area'
@@ -418,7 +431,8 @@ class ScoreAnalyticalDensity(UserResource):
 
 class Question(UserResource):
     class QuestionSector(models.IntegerChoices):
-        RELEVANCE = 0, 'Relevance'
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        RELEVANCE = 100, 'Relevance'
         COMPREHENSIVENESS = 1, 'Comprehensiveness'
         ETHICS = 2, 'Ethics'
         METHODOLOGICAL_RIGOR = 3, 'Methodological rigor'
@@ -441,7 +455,8 @@ class Question(UserResource):
         MINIMUM_TECHNICAL_STANDARDS = 20, 'Minimum technical standards'
 
     class QuestionSubSector(models.IntegerChoices):
-        RELEVANCE = 0, 'Relevance'
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        RELEVANCE = 100, 'Relevance'
         GEOGRAPHIC_COMPREHENSIVENESS = 1, 'Geographic comprehensiveness'
         SECTORAL_COMPREHENSIVENESS = 2, 'Sectoral comprehensiveness'
         AFFECTED_AND_VULNERABLE_GROUPS_COMPREHENSIVENESS = 3, 'Affected and vulnerabel groups comprehensiveness'
@@ -472,9 +487,117 @@ class Question(UserResource):
             'Buy-in and use by naional and local government agencies'
         BUY_IN_AND_USE_BY_DEVELOPMENT_AND_STABILIZATION_ACTORS = 27, 'Buy-in and use by development and stabilization actors'
 
+    QUESTION_SECTOR_SUB_SECTOR_MAP = {
+        QuestionSector.RELEVANCE: [
+            QuestionSubSector.RELEVANCE,
+        ],
+        QuestionSector.COMPREHENSIVENESS: [
+            QuestionSubSector.GEOGRAPHIC_COMPREHENSIVENESS,
+            QuestionSubSector.SECTORAL_COMPREHENSIVENESS,
+            QuestionSubSector.AFFECTED_AND_VULNERABLE_GROUPS_COMPREHENSIVENESS,
+        ],
+        QuestionSector.ETHICS: [
+            QuestionSubSector.SAFETY_AND_PROTECTION,
+            QuestionSubSector.HUMANITARIAN_PRINCIPLES,
+            QuestionSubSector.CONTRIBUTION,
+        ],
+        QuestionSector.METHODOLOGICAL_RIGOR: [
+            QuestionSubSector.TRANSPARENCY,
+            QuestionSubSector.MITIGATING_BIAS,
+            QuestionSubSector.PARTICIPATION,
+            QuestionSubSector.CONTEXT_SPECIFICITY,
+        ],
+        QuestionSector.ANALYTICAL_VALUE: [
+            QuestionSubSector.ANALYTICAL_STANDARDS,
+            QuestionSubSector.DESCRIPTIONS,
+            QuestionSubSector.EXPLANATION,
+            QuestionSubSector.INTERPRETATION,
+            QuestionSubSector.ANTICIPATION,
+            QuestionSubSector.TIMELINESS,
+        ],
+        QuestionSector.EFFECTIVE_COMMUNICATION: [
+            QuestionSubSector.USER_FRIENDLY_PRESENTATION,
+            QuestionSubSector.ACTIVE_DISSEMINATION,
+        ],
+        QuestionSector.USE: [
+            QuestionSubSector.USE_FOR_COLLECTIVE_PLANNING,
+            QuestionSubSector.BUY_IN_AND_USE_BY_HUMANITARIAN_CLUSTERS_SECTORS,
+            QuestionSubSector.BUY_IN_AND_USE_BY_UN_AGENCIES,
+            QuestionSubSector.BUY_IN_AND_USE_BY_INTERNATIONAL_NGO,
+            QuestionSubSector.BUY_IN_AND_USE_BY_LOCAL_NGO,
+            QuestionSubSector.BUY_IN_AND_USE_BY_MEMBER_OF_RED_CROSS_RED_CRESENT_MOVEMENT,
+            QuestionSubSector.BUY_IN_AND_USE_BY_DONORS,
+            QuestionSubSector.BUY_IN_AND_USE_BY_NATIONAL_AND_LOCAL_GOVERNMENT_AGENCIES,
+            QuestionSubSector.BUY_IN_AND_USE_BY_DEVELOPMENT_AND_STABILIZATION_ACTORS,
+        ],
+        QuestionSector.PEOPLE_CENTERED_AND_INCLUSIVE: [
+            QuestionSubSector.AFFECTED_AND_VULNERABLE_GROUPS_COMPREHENSIVENESS,
+            QuestionSubSector.SAFETY_AND_PROTECTION,
+            QuestionSubSector.PARTICIPATION,
+            QuestionSubSector.CONTEXT_SPECIFICITY,
+        ],
+        QuestionSector.ACCOUNTABILITY_TO_AFFECTED_POPULATIONS: [
+            QuestionSubSector.PARTICIPATION,
+            QuestionSubSector.CONTEXT_SPECIFICITY,
+            QuestionSubSector.DESCRIPTIONS,
+            QuestionSubSector.ACTIVE_DISSEMINATION,
+        ],
+        QuestionSector.DO_NOT_HARM: [
+            QuestionSubSector.SAFETY_AND_PROTECTION,
+        ],
+        QuestionSector.DESIGNED_WITH_PURPOSE: [
+            QuestionSubSector.RELEVANCE,
+        ],
+        QuestionSector.COMPETENCY_AND_CAPACITY: [
+            QuestionSubSector.SAFETY_AND_PROTECTION,
+            QuestionSubSector.CONTEXT_SPECIFICITY,
+        ],
+        QuestionSector.IMPARTIALITY: [
+            QuestionSubSector.HUMANITARIAN_PRINCIPLES,
+        ],
+        QuestionSector.COORDINATION_AND_DATA_MINIMIZATION: [
+            QuestionSubSector.RELEVANCE,
+            QuestionSubSector.CONTRIBUTION,
+        ],
+        QuestionSector.JOINT_ANALYSIS: [
+            QuestionSubSector.MITIGATING_BIAS,
+            QuestionSubSector.ANALYTICAL_STANDARDS,
+        ],
+        QuestionSector.ACKNOWLEDGE_DISSENTING_VOICES_IN_JOINT_NEEDS_ANALYSIS: [
+            QuestionSubSector.ANALYTICAL_STANDARDS,
+        ],
+        QuestionSector.IFORMED_CONSENT_CONFIDENTIALITY_AND_DATA_SECURITY: [
+            QuestionSubSector.SAFETY_AND_PROTECTION,
+        ],
+        QuestionSector.SHARING_RESULTS: [
+            QuestionSubSector.ACTIVE_DISSEMINATION,
+        ],
+        QuestionSector.TRANSPARENCY_BETWEEN_ACTORS: [
+            QuestionSubSector.TRANSPARENCY,
+            QuestionSubSector.ANALYTICAL_STANDARDS,
+        ],
+        QuestionSector.MINIMUM_TECHNICAL_STANDARDS: [
+            QuestionSubSector.MITIGATING_BIAS,
+            QuestionSubSector.ANALYTICAL_STANDARDS,
+        ],
+    }
+
     sector = models.IntegerField(choices=QuestionSector.choices)
     sub_sector = models.IntegerField(choices=QuestionSubSector.choices)
     question = models.CharField(max_length=500)
+
+    def clean(self):
+        sector = self.sector
+        sub_sector = self.sub_sector
+
+        if hasattr(self, 'sector'):
+            if hasattr(self, 'sub_sector'):
+                if sub_sector not in Question.QUESTION_SECTOR_SUB_SECTOR_MAP[sector]:
+                    raise ValidationError('Invalid sebsector selected for given sector provided')
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["id"]
@@ -499,14 +622,17 @@ class Answer(UserResource):
         ordering = ["id"]
         unique_together = [["assessment_registry", "question"]]
 
+    def __str__(self):
+        return str(self.answer)
+
 
 class Summary(UserResource):
     class Pillar(models.IntegerChoices):
-        CONTEXT = 0, 'Context'
-        EVENT_SHOCK = 1, 'Event/Shock'
-        DISPLACEMENT = 2, 'Displacement'
-        INFORMATION_AND_COMMUNICATION = 3, 'Information & Communication'
-        HUMANITARIAN_ACCESS = 4, 'Humanitarian Access'
+        CONTEXT = 1, 'Context'
+        EVENT_SHOCK = 2, 'Event/Shock'
+        DISPLACEMENT = 3, 'Displacement'
+        INFORMATION_AND_COMMUNICATION = 4, 'Information & Communication'
+        HUMANITARIAN_ACCESS = 5, 'Humanitarian Access'
 
     assessment_registry = models.ForeignKey(
         AssessmentRegistry,
@@ -539,11 +665,11 @@ class SummarySubPillarIssue(UserResource):
 
 class SummaryFocus(UserResource):
     class Dimmension(models.IntegerChoices):
-        IMPACT = 0, 'Impact'
-        HUMANITARIAN_CONDITIONS = 1, 'Humanitarian Conditions'
-        PRIORITIES_AND_PREFERENCES = 2, 'Priorities & Preferences'
-        CONCLUSIONS = 3, 'Conclusions'
-        HUMANITARIAN_POPULATION_FIGURES = 4, 'Humanitarian Population Figures'
+        IMPACT = 1, 'Impact'
+        HUMANITARIAN_CONDITIONS = 2, 'Humanitarian Conditions'
+        PRIORITIES_AND_PREFERENCES = 3, 'Priorities & Preferences'
+        CONCLUSIONS = 4, 'Conclusions'
+        HUMANITARIAN_POPULATION_FIGURES = 5, 'Humanitarian Population Figures'
 
     assessment_registry = models.ForeignKey(
         AssessmentRegistry,
@@ -568,10 +694,14 @@ class SummaryFocus(UserResource):
     total_people_severly_in_need = models.IntegerField(null=True, blank=True)
     total_people_critically_in_need = models.IntegerField(null=True, blank=True)
 
+    class Meta:
+        verbose_name = _("SummaryDimmension")
+
 
 class SummaryIssue(models.Model):
     class SubPillar(models.IntegerChoices):
-        POLITICS = 0, 'Politics'
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        POLITICS = 100, 'Politics'
         DEMOGRAPHY = 1, 'Demography'
         SOCIO_CULTURAL = 2, 'Socio-Cultural'
         ENVIRONMENT = 3, 'Environment'
@@ -595,7 +725,8 @@ class SummaryIssue(models.Model):
         PHYSICAL_AND_SECURITY = 21, 'Physical & Security'
 
     class SubDimmension(models.IntegerChoices):
-        DRIVERS = 0, 'Drivers'
+        # NOTE: key 100 has to be changed to 1 for every enum and increment in ascending order.
+        DRIVERS = 100, 'Drivers'
         IMPACT_ON_PEOPLE = 1, 'Impact on People'
         IMPACT_ON_SYSTEM = 2, 'Impact On System, Network And Services'
         LIVING_STANDARDS = 3, 'Living Standards'
@@ -682,6 +813,9 @@ class SummaryIssue(models.Model):
     )
     label = models.CharField(max_length=220)
     full_label = models.CharField(max_length=220, blank=True)
+
+    def __str__(self):
+        return self.label
 
 
 class SummarySubDimmensionIssue(UserResource):

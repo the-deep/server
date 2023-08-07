@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from .utils import get_hierarchy_level
 from user_resource.serializers import UserResourceSerializer
 from deep.serializers import ProjectPropertySerializerMixin, TempClientIdMixin, IntegerIDField
 
@@ -45,22 +46,24 @@ class IssueSerializer(UserResourceSerializer):
         )
 
     def validate(self, data):
-        from utils.common import get_hierarchy_level
-        if data.get('sub_pillar') is not None and data.get('sub_dimmension') is not None:
-            raise serializers.ValidationError("Cannot select both sub_pillar and sub_dimmension field.")
-        if data.get('parent') is not None:
-            if data.get('sub_pillar') is not None:
-                if data.get('sub_pillar') != data.get('parent').sub_pillar:
-                    raise serializers.ValidationError("sub_pillar does not match between parent and child.")
+        sub_pillar = data.get('sub_pillar')
+        sub_dimmension = data.get('sub_dimmension')
+        parent = data.get('parent')
 
-            if data.get('sub_dimmension') is not None:
-                if data.get('sub_dimmension') != data.get('parent').sub_dimmension:
-                    raise serializers.ValidationError("sub_dimmension does not match between child and parent.")
-        if data.get('parent'):
-            hierarchy_level = get_hierarchy_level(data.get('parent'))
+        if all([sub_pillar, sub_dimmension]):
+            raise serializers.ValidationError("Cannot select both sub_pillar and sub_dimmension field.")
+        if not any([sub_pillar, sub_dimmension]):
+            raise serializers.ValidationError("Either sub_pillar or sub_dimmension must be selected")
+
+        if parent:
+            if sub_pillar and sub_pillar != parent.sub_pillar:
+                raise serializers.ValidationError("sub_pillar does not match between parent and child.")
+            if sub_dimmension and sub_dimmension != parent.sub_dimmension:
+                raise serializers.ValidationError("sub_dimmension does not match between child and parent.")
+
+            hierarchy_level = get_hierarchy_level(parent)
             if hierarchy_level > 2:
                 raise serializers.ValidationError("Cannot create issue more than two level of hierarchy")
-
         return data
 
 
@@ -113,7 +116,7 @@ class ScoreRatingSerializer(UserResourceSerializer, TempClientIdMixin):
         fields = ("id", "client_id", "score_type", "rating", "reason",)
 
 
-class ScoreAnalyticalDensitySerializer(UserResourceSerializer):
+class ScoreAnalyticalDensitySerializer(UserResourceSerializer, TempClientIdMixin):
     id = IntegerIDField(required=False)
 
     class Meta:
@@ -198,8 +201,6 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             "methodology_attributes",
             "additional_documents",
             "score_ratings",
-            "matrix_score",
-            "final_score",
             "score_analytical_density",
             "cna",
             "summary_pillar_meta",
