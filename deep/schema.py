@@ -23,8 +23,8 @@ from notification import schema as notification_schema, mutation as notification
 from assisted_tagging import schema as assisted_tagging_schema
 from unified_connector import schema as unified_connector_schema
 from export import schema as export_schema, mutation as export_mutation
-from assessment_registry import mutation as issue_mutation
-from assessment_registry import schema as issue_schema
+from assessment_registry import mutation as assessment_registry_mutation
+from assessment_registry import schema as assessment_registry_schema
 from deep_explore import schema as deep_explore_schema
 from gallery import mutations as gallery_mutation
 
@@ -45,6 +45,7 @@ class Query(
     deep_explore_schema.Query,
     analysis_public_schema.Query,
     issue_schema.Query,
+    assessment_registry_schema.Query,
     # --
     graphene.ObjectType
 ):
@@ -71,7 +72,7 @@ class Mutation(
     notification_mutation.Mutation,
     export_mutation.Mutation,
     gallery_mutation.Mutation,
-    issue_mutation.Mutation,
+    assessment_registry_mutation.Mutation,
     # --
     graphene.ObjectType
 ):
