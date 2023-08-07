@@ -3,11 +3,12 @@ import graphene
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
     PsGrapheneMutation,
+    GrapheneMutation,
 )
 from deep.permissions import ProjectPermissions as PP
 
 from .models import AssessmentRegistry, SummaryIssue
-from .schema import AssessmentRegistryType, IssueType
+from .schema import AssessmentRegistryType, AssessmentRegistrySummaryIssueType
 from .serializers import (
     AssessmentRegistrySerializer,
     IssueSerializer,
@@ -17,25 +18,28 @@ AssessmentRegistryCreateInputType = generate_input_type_for_serializer(
     'AssessmentRegistryCreateInputType',
     serializer_class=AssessmentRegistrySerializer
 )
-IssueCreateInputType = generate_input_type_for_serializer(
-    'IssueCreateInputType',
+AssessmentRegistrySummaryIssueCreateInputType = generate_input_type_for_serializer(
+    'AssessmentRegistrySummaryIssueCreateInputType',
     serializer_class=IssueSerializer
 )
 
 
-class CreateIssue(PsGrapheneMutation):
+class CreateIssue(GrapheneMutation):
     class Arguments:
-        data = IssueCreateInputType()
+        data = AssessmentRegistrySummaryIssueCreateInputType()
 
-    result = graphene.Field(IssueType)
+    result = graphene.Field(AssessmentRegistrySummaryIssueType)
     serializer_class = IssueSerializer
     model = SummaryIssue
-    permissions = []
+
+    @classmethod
+    def check_permissions(cls, *args, **_):
+        return True  # Allow all to create New Issue
 
 
 class CreateAssessmentRegistry(PsGrapheneMutation):
     class Arguments:
-        data = AssessmentRegistryCreateInputType()
+        data = AssessmentRegistryCreateInputType(required=True)
 
     result = graphene.Field(AssessmentRegistryType)
     serializer_class = AssessmentRegistrySerializer
@@ -60,4 +64,4 @@ class ProjectMutation():
 
 
 class Mutation():
-    create_issue = CreateIssue.Field()
+    create_assessment_reg_summary_issue = CreateIssue.Field()

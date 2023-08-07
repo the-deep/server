@@ -32,9 +32,9 @@ class TestUploadFileMutation(GraphQLFileUploadTestCase, GraphQLTestCase):
         self.user = UserFactory.create()
         self.force_login(self.user)
 
-    def test_upload_preview_image(self):
+    def test_upload_file(self):
         file_text = b'preview image text'
-        with NamedTemporaryFile(suffix='.png') as t_file:
+        with NamedTemporaryFile(suffix='.jpeg') as t_file:
             t_file.write(file_text)
             t_file.seek(0)
             response = self._client.post(
@@ -57,5 +57,5 @@ class TestUploadFileMutation(GraphQLFileUploadTestCase, GraphQLTestCase):
         self.assertTrue(content['data']['fileUpload']['result']['file']["name"])
         file_name = content['data']['fileUpload']['result']['file']["name"]
         file_url = content['data']['fileUpload']['result']['file']["url"]
-        self.assertTrue(file_name.endswith('.png'))
+        self.assertTrue(file_name.endswith('.jpeg'))
         self.assertTrue(file_url.endswith(file_name))
