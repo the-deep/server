@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="d_f1db731bb411b912_schema_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.2.7">coverage.py v7.2.7</a>,
-            created at 2023-07-19 03:23 +0000
+            created at 2023-08-07 05:50 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"/>
@@ -268,7 +268,7 @@
     <p class="run"><span class="n"><a id="t184" href="#t184">184</a></span><span class="t">        <span class="key">return</span> <span class="key">True</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t185" href="#t185">185</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t186" href="#t186">186</a></span><span class="t">    <span class="key">def</span> <span class="nam">has_object_permission</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">request</span><span class="op">,</span> <span class="nam">view</span><span class="op">,</span> <span class="nam">obj</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t187" href="#t187">187</a></span><span class="t">        <span class="key">if</span> <span class="nam">type</span><span class="op">(</span><span class="nam">obj</span><span class="op">)</span> <span class="op">==</span> <span class="nam">Project</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t187" href="#t187">187</a></span><span class="t">        <span class="key">if</span> <span class="nam">isinstance</span><span class="op">(</span><span class="nam">obj</span><span class="op">,</span> <span class="nam">Project</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t188" href="#t188">188</a></span><span class="t">            <span class="key">return</span> <span class="nam">obj</span><span class="op">.</span><span class="nam">members</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">id</span><span class="op">=</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">.</span><span class="nam">id</span><span class="op">)</span><span class="op">.</span><span class="nam">exists</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t189" href="#t189">189</a></span><span class="t">        <span class="key">return</span> <span class="key">True</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t190" href="#t190">190</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -528,7 +528,7 @@
             <a id="nextFileLink" class="nav" href="d_f1db731bb411b912_schema_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.2.7">coverage.py v7.2.7</a>,
-            created at 2023-07-19 03:23 +0000
+            created at 2023-08-07 05:50 +0000
         </p>
     </div>
 </footer>

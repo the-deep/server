@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="d_0417f5a93597b1c5_stats_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.2.7">coverage.py v7.2.7</a>,
-            created at 2023-07-19 03:23 +0000
+            created at 2023-08-07 05:50 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"/>
@@ -358,7 +358,7 @@
     <p class="pln"><span class="n"><a id="t274" href="#t274">274</a></span><span class="t">                <span class="nam">lead</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t275" href="#t275">275</a></span><span class="t">                <span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t276" href="#t276">276</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="par run show_par"><span class="n"><a id="t277" href="#t277">277</a></span><span class="t">            <span class="key">if</span> <span class="nam">type</span><span class="op">(</span><span class="nam">generated_image</span><span class="op">)</span> <span class="op">==</span> <span class="nam">File</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">277&#x202F;&#x219B;&#x202F;279</span><span class="annotate long">line 277 didn't jump to line 279, because the condition on line 277 was never false</span></span></p>
+    <p class="par run show_par"><span class="n"><a id="t277" href="#t277">277</a></span><span class="t">            <span class="key">if</span> <span class="nam">isinstance</span><span class="op">(</span><span class="nam">generated_image</span><span class="op">,</span> <span class="nam">File</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">277&#x202F;&#x219B;&#x202F;279</span><span class="annotate long">line 277 didn't jump to line 279, because the condition on line 277 was never false</span></span></p>
     <p class="run"><span class="n"><a id="t278" href="#t278">278</a></span><span class="t">                <span class="nam">data</span><span class="op">[</span><span class="str">'image'</span><span class="op">]</span> <span class="op">=</span> <span class="nam">generated_image</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t279" href="#t279">279</a></span><span class="t">        <span class="key">return</span> <span class="nam">data</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t280" href="#t280">280</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -777,7 +777,7 @@
     <p class="mis show_mis"><span class="n"><a id="t693" href="#t693">693</a></span><span class="t">            <span class="nam">data</span><span class="op">[</span><span class="str">'image'</span><span class="op">]</span> <span class="op">=</span> <span class="nam">lead_image</span><span class="op">.</span><span class="nam">clone_as_deep_file</span><span class="op">(</span><span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t694" href="#t694">694</a></span><span class="t">        <span class="key">elif</span> <span class="nam">image_raw</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t695" href="#t695">695</a></span><span class="t">            <span class="nam">generated_image</span> <span class="op">=</span> <span class="nam">base64_to_deep_image</span><span class="op">(</span><span class="nam">image_raw</span><span class="op">,</span> <span class="nam">lead</span><span class="op">,</span> <span class="nam">request</span><span class="op">.</span><span class="nam">user</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t696" href="#t696">696</a></span><span class="t">            <span class="key">if</span> <span class="nam">type</span><span class="op">(</span><span class="nam">generated_image</span><span class="op">)</span> <span class="op">==</span> <span class="nam">File</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t696" href="#t696">696</a></span><span class="t">            <span class="key">if</span> <span class="nam">isinstance</span><span class="op">(</span><span class="nam">generated_image</span><span class="op">,</span> <span class="nam">File</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t697" href="#t697">697</a></span><span class="t">                <span class="nam">data</span><span class="op">[</span><span class="str">'image'</span><span class="op">]</span> <span class="op">=</span> <span class="nam">generated_image</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t698" href="#t698">698</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t699" href="#t699">699</a></span><span class="t">        <span class="key">return</span> <span class="nam">data</span>&nbsp;</span><span class="r"></span></p>
@@ -797,7 +797,7 @@
             <a id="nextFileLink" class="nav" href="d_0417f5a93597b1c5_stats_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.2.7">coverage.py v7.2.7</a>,
-            created at 2023-07-19 03:23 +0000
+            created at 2023-08-07 05:50 +0000
         </p>
     </div>
 </footer>
