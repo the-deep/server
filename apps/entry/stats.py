@@ -231,7 +231,7 @@ def get_project_entries_stats(project, skip_geo_data=False):
 
     # Make sure this are array
     for key in ['widget1d', 'widget2d']:
-        if type(config[key]) is not list:
+        if not isinstance(config[key], list):
             config[key] = [config[key]]
 
     w_reliability_default = w_severity_default = w_multiselect_widget_default = w_organigram_widget_default = {

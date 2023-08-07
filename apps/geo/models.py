@@ -3,6 +3,7 @@ import json
 from typing import List, Union
 from django.contrib.gis.db import models
 from django.core.serializers import serialize
+from django.db import transaction, connection
 from django.contrib.gis.gdal import Envelope
 from django.contrib.gis.db.models.aggregates import Union as PgUnion
 from django.contrib.gis.db.models.functions import Centroid
@@ -191,12 +192,60 @@ class AdminLevel(models.Model):
         return self.geo_area_titles
 
     def calc_cache(self, save=True):
-        # GeoJSON
+        # Update geo parent_titles data
+        with transaction.atomic():
+            GEO_PARENT_DATA_CALC_SQL = f'''
+                WITH geo_parents_data as (
+                  SELECT
+                    id,
+                    title,
+                    (
+                      WITH RECURSIVE parents AS (
+                       SELECT
+                        sub_g.id,
+                        sub_g.title,
+                        sub_g.parent_id,
+                        sub_g.admin_level_id,
+                        sub_adminlevel.level
+                       FROM {GeoArea._meta.db_table} sub_g
+                         INNER JOIN {AdminLevel._meta.db_table} AS sub_adminlevel
+                            ON sub_adminlevel.id = sub_g.admin_level_id
+                       WHERE sub_g.id = outer_g.parent_id
+                       UNION
+                       SELECT
+                        sub_parent_g.id,
+                        sub_parent_g.title,
+                        sub_parent_g.parent_id,
+                        sub_parent_g.admin_level_id,
+                        sub_parent_adminlevel.level
+                       FROM {GeoArea._meta.db_table} AS sub_parent_g
+                         INNER JOIN parents ON sub_parent_g.id = parents.parent_id
+                         INNER JOIN {AdminLevel._meta.db_table} AS sub_parent_adminlevel
+                            ON sub_parent_adminlevel.id = sub_parent_g.admin_level_id
+                      ) SELECT array_agg(title ORDER BY level) from parents
+                    ) as parent_titles
+                  FROM {GeoArea._meta.db_table} as outer_g
+                  WHERE admin_level_id = %(admin_level_id)s
+                )
+                UPDATE {GeoArea._meta.db_table} AS G
+                SET
+                    cached_data = JSONB_SET(
+                        COALESCE(G.cached_data, '{{}}'),
+                        '{{parent_titles}}',
+                        TO_JSONB(GP.parent_titles), true
+                    )
+                FROM geo_parents_data GP
+                WHERE
+                    G.id = GP.id
+            '''
+            with connection.cursor() as cursor:
+                cursor.execute(GEO_PARENT_DATA_CALC_SQL, {'admin_level_id': self.pk})
+
         geojson = json.loads(serialize(
             'geojson',
             self.geoarea_set.all(),
             geometry_field='polygons',
-            fields=('pk', 'title', 'code', 'parent'),
+            fields=('pk', 'title', 'code', 'cached_data'),
         ))
 
         # Titles
@@ -286,18 +335,21 @@ class GeoArea(models.Model):
     An actual geo area in a given admin level
     """
     admin_level = models.ForeignKey(AdminLevel, on_delete=models.CASCADE)
-    parent = models.ForeignKey('GeoArea',
-                               on_delete=models.SET_NULL,
-                               null=True, blank=True, default=None)
+    parent = models.ForeignKey(
+        'GeoArea',
+        on_delete=models.SET_NULL,
+        null=True, blank=True, default=None,
+    )
     title = models.CharField(max_length=255)
     code = models.CharField(max_length=255, blank=True)
-    data = models.JSONField(default=None, blank=True, null=True)
 
     # TODO Rename to geometry
     polygons = models.GeometryField(null=True, blank=True, default=None)
 
     # Cache
     centroid = models.PointField(blank=True, null=True)
+    # -- Used to store additional data
+    cached_data = models.JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -316,10 +368,11 @@ class GeoArea(models.Model):
 
     @classmethod
     def get_for_project(cls, project, is_published=True):
-        return cls.objects.filter(
-            admin_level__region__is_published=is_published,
-            admin_level__region__project=project,
+        admin_levels_qs = AdminLevel.objects.filter(
+            region__is_published=is_published,
+            region__project=project,
         )
+        return cls.objects.filter(admin_level__in=admin_levels_qs)
 
     def clone_to(self, admin_level, parent=None):
         geo_area = GeoArea(
@@ -363,5 +416,4 @@ class GeoArea(models.Model):
         return self.admin_level.can_modify(user)
 
     def get_label(self):
-        return '{} / {}'.format(self.admin_level.title,
-                                self.title)
+        return '{} / {}'.format(self.admin_level.title, self.title)

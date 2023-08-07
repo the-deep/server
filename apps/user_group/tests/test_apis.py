@@ -92,7 +92,7 @@ class UserGroupApiTest(TestCase):
         self.assert_200(response)
         data = response.json()
         assert data['count'] == 2
-        assert data['results'][0]['id'] == user_group1.id,\
+        assert data['results'][0]['id'] == user_group1.id, \
             "'MyTestUserGroup' matches more to search query 'test'"
         assert data['results'][1]['id'] == user_group2.id
 

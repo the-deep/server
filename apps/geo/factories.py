@@ -18,7 +18,7 @@ class RegionFactory(DjangoModelFactory):
 
 
 class AdminLevelFactory(DjangoModelFactory):
-    title = factory.Sequence(lambda n: f'Region-{n}')
+    title = factory.Sequence(lambda n: f'Admin-Level-{n}')
 
     class Meta:
         model = AdminLevel

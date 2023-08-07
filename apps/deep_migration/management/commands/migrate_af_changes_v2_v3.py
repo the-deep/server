@@ -275,7 +275,7 @@ def multiselect_property_convertor(properties):
         ('order', 'order', True),
     ]
     options = (
-        properties if type(properties) == list
+        properties if isinstance(properties, list)
         else properties['options']
     )
     new_options = []
@@ -461,7 +461,7 @@ def geo_attribute_data_convertor(data):
     polygons = []
     points = []
     for value in values:
-        if type(value) is dict:
+        if isinstance(value, dict):
             value_type = value.get('type')
             if value_type == 'Point':
                 points.append(value)

@@ -5,9 +5,7 @@ from django.utils.functional import cached_property
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
-from .models import (
-    AdminLevel,
-)
+from .models import AdminLevel
 
 
 class AdminLevelLoader(DataLoaderWithContext):

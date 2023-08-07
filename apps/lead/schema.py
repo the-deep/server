@@ -96,7 +96,7 @@ def get_lead_filter_data(filters, context):
             int(_id) for _id in ids
         ]
 
-    if filters is None or type(filters) != dict:
+    if filters is None or not isinstance(filters, dict):
         return {}
 
     entry_filter_data = filters.get('entries_filter_data') or {}

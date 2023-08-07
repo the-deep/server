@@ -293,7 +293,7 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
             assert _filter_by_keys(excepted, keys=only_keys) == _filter_by_keys(real, keys=only_keys), message
         elif ignore_keys:
             assert _filter_by_keys(excepted, keys=ignore_keys, exclude=True) \
-                == _filter_by_keys(real, keys=ignore_keys, exclude=True),\
+                == _filter_by_keys(real, keys=ignore_keys, exclude=True), \
                 message
         else:
             assert excepted == real, message
@@ -329,7 +329,7 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
     def assert_http_code(self, response, status_code):
         error_resp = getattr(response, 'data', None)
         mesg = error_resp
-        if type(error_resp) is dict and 'errors' in error_resp:
+        if isinstance(error_resp, dict) and 'errors' in error_resp:
             mesg = error_resp['errors']
         return self.assertEqual(response.status_code, status_code, mesg)
 

@@ -184,7 +184,7 @@ class IsProjectMember(permissions.BasePermission):
         return True
 
     def has_object_permission(self, request, view, obj):
-        if type(obj) == Project:
+        if isinstance(obj, Project):
             return obj.members.filter(id=request.user.id).exists()
         return True
 

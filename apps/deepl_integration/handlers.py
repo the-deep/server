@@ -71,9 +71,9 @@ def generate_file_url_for_new_deepl_server(file):
 
 
 def custom_error_handler(exception, url=None):
-    if type(exception) == requests.exceptions.ConnectionError:
+    if isinstance(exception, requests.exceptions.ConnectionError):
         raise serializers.ValidationError(f'ConnectionError on provided file: {url}')
-    if type(exception) == json.decoder.JSONDecodeError:
+    if isinstance(exception, json.decoder.JSONDecodeError):
         raise serializers.ValidationError(f'Failed to parse provided json file: {url}')
     raise serializers.ValidationError(f'Failed to handle the provided file: <error={type(exception)}>: {url}')
 

@@ -51,7 +51,7 @@ class ProjectLogMiddleware:
     def resolve(self, next, root, info, **args):
         if (
             info.operation.operation == 'mutation' and
-            type(root) == Project and
+            isinstance(root, Project) and
             info.path in self.WATCHED_PATH
         ):
             with ProjectChangeManager(info.context.request, root.id):

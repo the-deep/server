@@ -20,11 +20,18 @@ def get_users_adminlevel_qs(info):
     return AdminLevel.get_for(info.context.user).defer('geo_area_titles')
 
 
-def get_geo_area_queryset_for_project_geo_area_type(queryset=None):
-    return (queryset or GeoArea.objects).annotate(
+def get_geo_area_queryset_for_project_geo_area_type(queryset=None, defer_fields=('polygons', 'centroid')):
+    _queryset = queryset
+    if _queryset is None:
+        _queryset = GeoArea.objects
+    _queryset = _queryset.annotate(
         region_title=models.F('admin_level__region__title'),
         admin_level_title=models.F('admin_level__title'),
+        admin_level_level=models.F('admin_level__level'),
     )
+    if defer_fields:
+        _queryset = _queryset.defer(*defer_fields)
+    return _queryset
 
 
 class AdminLevelType(DjangoObjectType):
@@ -106,6 +113,11 @@ class ProjectGeoAreaType(DjangoObjectType):
 
     region_title = graphene.String(required=True)
     admin_level_title = graphene.String(required=True)
+    admin_level_level = graphene.Int()
+    parent_titles = graphene.List(graphene.NonNull(graphene.String), required=True)
+
+    def resolve_parent_titles(root, info, **kwargs):
+        return (root.cached_data or {}).get('parent_titles') or []
 
 
 class ProjectGeoAreaListType(CustomDjangoListObjectType):

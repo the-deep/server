@@ -5,7 +5,7 @@ from django.db.models.fields.files import FieldFile as DjangoFieldFile
 def custom_dict_or_attr_resolver(*args, **kwargs):
     value = dict_or_attr_resolver(*args, **kwargs)
     # NOTE: Custom check for DjangoFieldFile
-    if type(value) == DjangoFieldFile:
+    if isinstance(value, DjangoFieldFile):
         # Empty DjangoFieldFile are not handled as None by graphene resolver.
         # Returning None instead of empty DjangoFieldFile
         if value:
