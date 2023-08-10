@@ -81,9 +81,9 @@ class SummaryOptionType(graphene.ObjectType):
 
 
 class SummaryFocusOptionType(graphene.ObjectType):
-    dimmension = graphene.Field(AssessmentRegistrySummaryFocusDimmensionTypeEnum, required=False)
+    dimmension = graphene.Field(AssessmentRegistrySummaryFocusDimmensionTypeEnum, required=True)
     dimmension_display = EnumDescription(required=True)
-    sub_dimmension = graphene.Field(AssessmentRegistrySummarySubDimmensionTypeEnum, required=False)
+    sub_dimmension = graphene.Field(AssessmentRegistrySummarySubDimmensionTypeEnum, required=True)
     sub_dimmension_display = EnumDescription(required=True)
 
 
@@ -268,6 +268,9 @@ class SummarySubPillarIssueType(DjangoObjectType, UserResourceMixin):
 
 
 class SummaryFocusMetaType(DjangoObjectType, UserResourceMixin):
+    focus = graphene.Field(AssessmentRegistryFocusTypeEnum, required=False)
+    focus_display = EnumDescription(required=False)
+
     class Meta:
         model = SummaryFocus
 
