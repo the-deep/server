@@ -234,11 +234,9 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     question=self.question1.id,
                 )
             ],
-            summaryPillarMeta=[
-                dict(
-                    totalPeopleAssessed=1000
-                )
-            ],
+            summaryPillarMeta=dict(
+                totalPeopleAssessed=1000
+            ),
             summarySubPillarIssue=[
                 dict(
                     summaryIssue=self.summary_issue1.id,
@@ -247,8 +245,13 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
             ],
             summaryDimmensionMeta=[
                 dict(
-                    percentageInNeed=10
-                )
+                    percentageInNeed=10,
+                    focus=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
+                ),
+                dict(
+                    percentageInNeed=10,
+                    focus=self.genum(AssessmentRegistry.SectorType.SHELTER),
+                ),
             ],
             summarySubDimmensionIssue=[
                 dict(
