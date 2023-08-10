@@ -78,7 +78,7 @@ class SummarySubDimmensionIssueInline(admin.TabularInline):
 @admin.register(AssessmentRegistry)
 class AssessmentRegistryAdmin(admin.ModelAdmin):
     list_display = ('id', 'project', 'lead', 'created_at', 'publication_date')
-    readonly_fields = ('created_at','modified_at')
+    readonly_fields = ('created_at', 'modified_at')
     autocomplete_fields = (
         'created_by',
         'modified_by',
