@@ -25,12 +25,12 @@ class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
         queryset=User.objects.all(),
         widget=django_filters.widgets.CSVWidget,
     )
-    publication_date__lte = django_filters.DateFilter(
+    publication_date_lte = django_filters.DateFilter(
         field_name='publication_date',
         lookup_expr='lte',
         input_formats=['%Y-%m-%d%z']
     )
-    publication_date__gte = django_filters.DateFilter(
+    publication_date_gte = django_filters.DateFilter(
         field_name='publication_date',
         lookup_expr='gte',
         input_formats=['%Y-%m-%d%z']

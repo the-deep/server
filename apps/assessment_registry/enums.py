@@ -136,5 +136,6 @@ enum_map = {
         (SummarySubDimmensionIssue.focus, AssessmentRegistryFocusTypeEnum),
         (SummaryIssue.sub_pillar, AssessmentRegistrySummarySubPillarTypeEnum),
         (SummaryIssue.sub_dimmension, AssessmentRegistrySummarySubDimmensionTypeEnum),
+        (SummaryFocus.focus, AssessmentRegistrySectorTypeEnum),
     )
 }
