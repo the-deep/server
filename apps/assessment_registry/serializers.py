@@ -92,7 +92,7 @@ class SummaryFocusMetaSerializer(UserResourceSerializer):
     class Meta:
         model = SummaryFocus
         fields = (
-            "id", "percentage_of_people_affected", "total_people_affected", "percentage_of_moderate",
+            "id", "focus", "percentage_of_people_affected", "total_people_affected", "percentage_of_moderate",
             "percentage_of_severe", "percentage_of_critical", "percentage_in_need", "total_moderate",
             "total_severe", "total_critical", "total_in_need", "total_pop_assessed", "total_not_affected",
             "total_affected", "total_people_in_need", "total_people_moderately_in_need",
@@ -150,7 +150,7 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
         many=True,
         required=False
     )
-    summary_pillar_meta = SummaryMetaSerializer(source='summary', many=True, required=False)
+    summary_pillar_meta = SummaryMetaSerializer(source='summary', required=False)
 
     summary_sub_pillar_issue = SummarySubPillarIssueSerializer(
         source="summary_sub_sector_issue_ary", many=True, required=False
@@ -230,3 +230,12 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
     def validate(self, data):
         data['project'] = self.project
         return data
+
+#    def create(self, data):
+#        summary_data = data.pop('summary')
+#        instance = super().create(data)
+#        Summary.objects.create(
+#            assessment_registry=instance,
+#            **summary_data,
+#        )
+#        return instance

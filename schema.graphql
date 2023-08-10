@@ -652,7 +652,7 @@ input AssessmentRegistryCreateInputType {
   scoreRatings: [ScoreRatingInputType!]
   scoreAnalyticalDensity: [ScoreAnalyticalDensityInputType!]
   cna: [CNAAnswerInputType!]
-  summaryPillarMeta: [SummaryMetaInputType!]
+  summaryPillarMeta: SummaryMetaInputType
   summarySubPillarIssue: [SummarySubPillarIssueInputType!]
   summaryDimmensionMeta: [SummaryFocusMetaInputType!]
   summarySubDimmensionIssue: [SummarySubDimmensionInputType!]
@@ -2938,7 +2938,7 @@ type ProjectDetailType {
   hasAnalysisFramework: Boolean!
   hasAssessmentTemplate: Boolean!
   assessmentRegistry(id: ID!): AssessmentRegistryType
-  assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], publicationDate_Lte: Date, publicationDate_Gte: Date, search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
+  assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], publicationDateLte: Date, publicationDateGte: Date, search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
   assessmentRegistryOptions: AssessmentRegistryOptionsType
   analysisOverview: AnalysisOverviewType
   analysis(id: ID!): AnalysisType
@@ -3677,6 +3677,7 @@ type SectionType {
 
 input SummaryFocusMetaInputType {
   id: ID
+  focus: AssessmentRegistrySectorTypeEnum!
   percentageOfPeopleAffected: Int
   totalPeopleAffected: Int
   percentageOfModerate: Int
@@ -3704,6 +3705,7 @@ type SummaryFocusMetaType {
   modifiedBy: UserType
   clientId: String
   assessmentRegistry: AssessmentRegistryType!
+  focus: AssessmentRegistryFocusTypeEnum
   percentageOfPeopleAffected: Int
   totalPeopleAffected: Int
   percentageOfModerate: Int
@@ -3721,12 +3723,13 @@ type SummaryFocusMetaType {
   totalPeopleModeratelyInNeed: Int
   totalPeopleSeverlyInNeed: Int
   totalPeopleCriticallyInNeed: Int
+  focusDisplay: EnumDescription
 }
 
 type SummaryFocusOptionType {
-  dimmension: AssessmentRegistrySummaryFocusDimmensionTypeEnum
+  dimmension: AssessmentRegistrySummaryFocusDimmensionTypeEnum!
   dimmensionDisplay: EnumDescription!
-  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
+  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum!
   subDimmensionDisplay: EnumDescription!
 }
 
