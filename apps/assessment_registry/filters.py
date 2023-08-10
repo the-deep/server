@@ -14,6 +14,8 @@ from .enums import AssessmentRegistrySummarySubPillarTypeEnum, AssessmentRegistr
 
 
 class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
+    date_from=django_filters.DateFilter(required=False)
+    date_to=django_filters.DateFilter(required=False)
     project = django_filters.ModelMultipleChoiceFilter(
         queryset=Project.objects.all(),
         field_name='lead__project',

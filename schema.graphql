@@ -1567,14 +1567,54 @@ type AppEnumCollectionWidgetWidth {
 
 type AssessmentCountType {
   coordinatedJoint: AssessmentRegistryCoordinationTypeEnum
-  coordinatedJointDisplay: String
+  coordinatedJointDisplay: EnumDescription
   count: Int
 }
 
+input AssessmentDashboardFilterDataInputType {
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  stakeholder: [ID!]
+  leadOrganization: [ID!]
+  location: [ID!]
+  affectedGroup: [AssessmentRegistryAffectedGroupTypeEnum!]
+  family: [AssessmentRegistryFamilyTypeEnum!]
+  frequency: [AssessmentRegistryFrequencyTypeEnum!]
+  coordinationType: [AssessmentRegistryCoordinationTypeEnum!]
+  assessmentType: [AssessmentRegistryDetailTypeEnum!]
+  focuses: [AssessmentRegistryFocusTypeEnum!]
+  sectors: [AssessmentRegistrySectorTypeEnum!]
+}
+
+input AssessmentDashboardFilterInputType {
+  dateFrom: Date!
+  dateTo: Date!
+  assessment: AssessmentDashboardFilterDataInputType
+}
+
+type AssessmentDashboardGeographicalArea {
+  adminLevelId: ID
+  code: ID
+  count: ID
+  assessmentIds: [ID!]
+}
+
 type AssessmentDashboardStatisticsType {
+  totalAssessment: Int!
+  totalStakeholder: Int!
+  totalCollectionTechnique: Int!
   assessmentCount: [AssessmentCountType]
   stakeholderCount: [StakeholderCountType]
   collectionTechniqueCount: [CollectionTechniqueCountType]
+  totalMultisectorAssessment: Int!
+  totalSinglesectorAssessment: Int!
+  assessmentGeographicAreas: [AssessmentDashboardGeographicalArea]
 }
 
 type AssessmentListType {
@@ -2429,9 +2469,9 @@ type ChangeUserPassword {
 }
 
 type CollectionTechniqueCountType {
-  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
-  dataCollectionTechniqueDisplay: String
-  count: Int
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
+  dataCollectionTechniqueDisplay: EnumDescription
+  count: Int!
 }
 
 enum ConnectorLeadExtractionStatusEnum {
@@ -4150,9 +4190,9 @@ type ProjectDetailType {
   organizations: [ProjectOrganizationType!]
   hasAnalysisFramework: Boolean!
   hasAssessmentTemplate: Boolean!
-  assessmentDashboardStatistics: AssessmentDashboardStatisticsType
+  assessmentDashboardStatistics(filter: AssessmentDashboardFilterInputType): AssessmentDashboardStatisticsType
   assessmentRegistry(id: ID!): AssessmentRegistryType
-  assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], publicationDateLte: Date, publicationDateGte: Date, search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
+  assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], dateFrom: Date, dateTo: Date, project: [ID], lead: [ID], publicationDateLte: Date, publicationDateGte: Date, search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
   assessmentRegistryOptions: AssessmentRegistryOptionsType
   analysisOverview: AnalysisOverviewType
   analysis(id: ID!): AnalysisType
@@ -4697,8 +4737,8 @@ type Query {
   region(id: ID!): RegionDetailType
   regions(id: Float, code: String, title: String, public: Boolean, project: [ID], createdAt: DateTime, createdBy: [ID], modifiedAt: DateTime, modifiedBy: [ID], createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, excludeProject: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): RegionListType
   organization(id: ID!): OrganizationType
-  organizations(id: Float, verified: Boolean, search: String, usedInProject: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): OrganizationListType
-  publicOrganizations(id: Float, verified: Boolean, search: String, usedInProject: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): PublicOrganizationListObjectType
+  organizations(id: Float, verified: Boolean, search: String, usedInProject: ID, usedInProjectByAssesment: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): OrganizationListType
+  publicOrganizations(id: Float, verified: Boolean, search: String, usedInProject: ID, usedInProjectByAssesment: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): PublicOrganizationListObjectType
   organizationType(id: ID!): OrganizationTypeType
   organizationTypes(title: String, shortName: String, description: String, reliefWebId: Int, page: Int = 1, ordering: String, pageSize: Int): OrganizationTypeListType
   userGroup(id: ID!): UserGroupType
