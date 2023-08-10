@@ -634,11 +634,13 @@ class Summary(UserResource):
         INFORMATION_AND_COMMUNICATION = 4, 'Information & Communication'
         HUMANITARIAN_ACCESS = 5, 'Humanitarian Access'
 
-    assessment_registry = models.ForeignKey(
-        AssessmentRegistry,
-        on_delete=models.CASCADE,
-        related_name='summary'
-    )
+#    assessment_registry = models.ForeignKey(
+#        AssessmentRegistry,
+#        on_delete=models.CASCADE,
+#        related_name='summary',
+#    )
+    assessment_registry = models.OneToOneField(AssessmentRegistry, related_name='summary', on_delete=models.CASCADE)
+
     total_people_assessed = models.IntegerField(null=True, blank=True)
     total_dead = models.IntegerField(null=True, blank=True)
     total_injured = models.IntegerField(null=True, blank=True)
@@ -676,6 +678,7 @@ class SummaryFocus(UserResource):
         on_delete=models.CASCADE,
         related_name='summary_focus'
     )
+    focus = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
     percentage_of_people_affected = models.IntegerField(null=True, blank=True)
     total_people_affected = models.IntegerField(null=True, blank=True)
     percentage_of_moderate = models.IntegerField(null=True, blank=True)
