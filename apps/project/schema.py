@@ -37,8 +37,7 @@ from analysis.schema import Query as AnalysisQuery
 from assessment_registry.schema import ProjectQuery as AssessmentRegistryQuery
 from unified_connector.schema import UnifiedConnectorQueryType
 from assisted_tagging.schema import AssistedTaggingQueryType
-from assessment_registry import dashboard_schema as assessment_registry_dashboard
-
+from assessment_registry.dashboard_schema import Query as AssessmentRegistryDashboardQuery
 from lead.models import Lead
 from entry.models import Entry
 from geo.models import Region
@@ -394,7 +393,7 @@ class ProjectDetailType(
     AryQuery,
     AnalysisQuery,
     AssessmentRegistryQuery,
-    assessment_registry_dashboard.Query,
+    AssessmentRegistryDashboardQuery,
     # --  End  --Project scopped entities
     ProjectType,
 ):
