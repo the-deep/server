@@ -1,11 +1,17 @@
 from rest_framework import serializers
 
 from .utils import get_hierarchy_level
+from drf_dynamic_fields import DynamicFieldsMixin
 from user_resource.serializers import UserResourceSerializer
 from deep.serializers import (
+    RemoveNullFieldsMixin,
     ProjectPropertySerializerMixin,
     TempClientIdMixin,
     IntegerIDField,
+)
+
+from organization.serializers import (
+    SimpleOrganizationSerializer
 )
 from .models import (
     AssessmentRegistry,
@@ -24,15 +30,17 @@ from .models import (
 
 
 class AssessmentRegistryOrganizationSerializer(
-    TempClientIdMixin,
+    RemoveNullFieldsMixin,
+    DynamicFieldsMixin,
     UserResourceSerializer,
     serializers.ModelSerializer
 ):
-    id = IntegerIDField(required=False)
+    organization_type_display = serializers.CharField(source='get_organization_type_display', read_only=True)
+    organization_details = SimpleOrganizationSerializer(source='organization', read_only=True)
 
     class Meta:
         model = AssessmentRegistryOrganization
-        fields = ('id', 'client_id', 'organization', 'organization_type')
+        fields = ('id', 'organization', 'organization_details', 'organization_type', 'organization_type_display')
 
 
 class MethodologyAttributeSerializer(TempClientIdMixin, serializers.ModelSerializer):
@@ -150,9 +158,8 @@ class CNAAnswerSerializer(TempClientIdMixin, UserResourceSerializer):
 
 class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerializerMixin):
     stakeholders = AssessmentRegistryOrganizationSerializer(
-        source='assessmentregistryorganization_set',
+        source='projectorganization_set',
         many=True,
-        required=False,
     )
     methodology_attributes = MethodologyAttributeSerializer(
         many=True, required=False
@@ -247,3 +254,12 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
     def validate(self, data):
         data['project'] = self.project
         return data
+
+#    def create(self, data):
+#        summary_data = data.pop('summary')
+#        instance = super().create(data)
+#        Summary.objects.create(
+#            assessment_registry=instance,
+#            **summary_data,
+#        )
+#        return instance
