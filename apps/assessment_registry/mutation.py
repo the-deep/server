@@ -24,7 +24,7 @@ AssessmentRegistrySummaryIssueCreateInputType = generate_input_type_for_serializ
 )
 
 
-class CreateIssue(GrapheneMutation):
+class AssessmentRegistryCreateIssue(GrapheneMutation):
     class Arguments:
         data = AssessmentRegistrySummaryIssueCreateInputType()
 
@@ -64,4 +64,4 @@ class ProjectMutation():
 
 
 class Mutation():
-    create_assessment_reg_summary_issue = CreateIssue.Field()
+    create_assessment_reg_summary_issue = AssessmentRegistryCreateIssue.Field()

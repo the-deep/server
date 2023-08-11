@@ -14,6 +14,7 @@ from .models import (
     ScoreAnalyticalDensity,
     Question,
     SummarySubDimmensionIssue,
+    AssessmentRegistryOrganization,
 )
 
 AssessmentRegistryCrisisTypeEnum = convert_enum_to_graphene_enum(
@@ -106,6 +107,9 @@ AssessmentRegistrySummarySubDimmensionTypeEnum = convert_enum_to_graphene_enum(
 AssessmentRegistrySummarySubPillarTypeEnum = convert_enum_to_graphene_enum(
     SummaryIssue.SubPillar, name='AssessmentRegistrySummarySubPillarTypeEnum'
 )
+AssessmentRegistryOrganizationTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistryOrganization.Type, name='AssessmentRegistryOrganizationTypeEnum'
+)
 enum_map = {
     get_enum_name_from_django_field(field): enum
     for field, enum in (
@@ -137,5 +141,6 @@ enum_map = {
         (SummaryIssue.sub_pillar, AssessmentRegistrySummarySubPillarTypeEnum),
         (SummaryIssue.sub_dimmension, AssessmentRegistrySummarySubDimmensionTypeEnum),
         (SummaryFocus.focus, AssessmentRegistrySectorTypeEnum),
+        (AssessmentRegistryOrganization.organization_type, AssessmentRegistryOrganizationTypeEnum),
     )
 }

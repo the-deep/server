@@ -624,11 +624,6 @@ input AssessmentRegistryCreateInputType {
   dataCollectionEndDate: Date
   publicationDate: Date
   executiveSummary: String
-  leadOrganizations: [ID!]
-  internationalPartners: [ID!]
-  donors: [ID!]
-  nationalPartners: [ID!]
-  governments: [ID!]
   objectives: String
   dataCollectionTechniques: String
   sampling: String
@@ -642,6 +637,7 @@ input AssessmentRegistryCreateInputType {
   family: AssessmentRegistryFamilyTypeEnum!
   frequency: AssessmentRegistryFrequencyTypeEnum!
   confidentiality: AssessmentRegistryConfidentialityTypeEnum!
+  stakeholders: [AssessmentRegistryOrganizationInputType!]
   language: [AssessmentRegistryLanguageTypeEnum!]!
   focuses: [AssessmentRegistryFocusTypeEnum!]
   sectors: [AssessmentRegistrySectorTypeEnum!]
@@ -656,6 +652,12 @@ input AssessmentRegistryCreateInputType {
   summarySubPillarIssue: [SummarySubPillarIssueInputType!]
   summaryDimmensionMeta: [SummaryFocusMetaInputType!]
   summarySubDimmensionIssue: [SummarySubDimmensionInputType!]
+}
+
+type AssessmentRegistryCreateIssue {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssessmentRegistrySummaryIssueType
 }
 
 enum AssessmentRegistryCrisisTypeEnum {
@@ -774,6 +776,33 @@ type AssessmentRegistryOptionsType {
   summaryOptions: [SummaryOptionType!]!
   summaryFocusOptions: [SummaryFocusOptionType!]!
   scoreOptions: [ScoreOptionsType!]!
+}
+
+input AssessmentRegistryOrganizationInputType {
+  id: ID
+  clientId: String
+  organization: ID!
+  organizationType: AssessmentRegistryOrganizationTypeEnum!
+}
+
+type AssessmentRegistryOrganizationType {
+  id: ID!
+  organization: OrganizationType!
+  clientId: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  organizationType: AssessmentRegistryOrganizationTypeEnum!
+  organizationTypeDisplay: EnumDescription!
+}
+
+enum AssessmentRegistryOrganizationTypeEnum {
+  LEAD_ORGANIZATION
+  INTERNATIONAL_PARTNER
+  NATIONAL_PARTNER
+  DONOR
+  GOVERNMENT
 }
 
 enum AssessmentRegistryPreparednessTypeEnum {
@@ -954,11 +983,6 @@ type AssessmentRegistryType {
   dataCollectionStartDate: Date
   dataCollectionEndDate: Date
   publicationDate: Date
-  leadOrganizations: [OrganizationType!]!
-  internationalPartners: [OrganizationType!]!
-  donors: [OrganizationType!]!
-  nationalPartners: [OrganizationType!]!
-  governments: [OrganizationType!]!
   executiveSummary: String!
   objectives: String
   dataCollectionTechniques: String
@@ -1000,6 +1024,7 @@ type AssessmentRegistryType {
   summarySubPillarIssue: [SummarySubPillarIssueType!]
   summaryDimmensionMeta: [SummaryFocusMetaType!]
   summarySubDimmensionIssue: [SummaryFocusSubDimmensionIssueType!]
+  stakeholders: [AssessmentRegistryOrganizationType!]
 }
 
 enum AssessmentRegistryUnitOfAnalysisTypeEnum {
@@ -1448,12 +1473,6 @@ type CreateEntryReviewComment {
   errors: [GenericScalar!]
   ok: Boolean
   result: EntryReviewCommentDetailType
-}
-
-type CreateIssue {
-  errors: [GenericScalar!]
-  ok: Boolean
-  result: AssessmentRegistrySummaryIssueType
 }
 
 type CreateLead {
@@ -2727,7 +2746,7 @@ type MissingPredictionReviewType {
 }
 
 type Mutation {
-  createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType): CreateIssue
+  createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType): AssessmentRegistryCreateIssue
   fileUpload(data: FileUploadInputType!): UploadFile
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
   genericExportCancel(id: ID!): CancelUserGenericExport
@@ -3124,7 +3143,7 @@ enum ProjectOrderingEnum {
 }
 
 input ProjectOrganizationGqInputType {
-  id: Int
+  id: ID
   organization: ID!
   organizationType: ProjectOrganizationTypeEnum!
   clientId: String

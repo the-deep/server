@@ -84,11 +84,6 @@ class AssessmentRegistryAdmin(admin.ModelAdmin):
         'modified_by',
         'project',
         'bg_countries',
-        'lead_organizations',
-        'international_partners',
-        'donors',
-        'national_partners',
-        'governments',
         'locations',
     )
     inlines = [
