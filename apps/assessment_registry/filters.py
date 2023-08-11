@@ -59,7 +59,7 @@ class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
         ).distinct()
 
 
-class IssueGQFilterSet(django_filters.FilterSet):
+class AssessmentRegistryIssueGQFilterSet(django_filters.FilterSet):
     sub_pillar = SimpleInputFilter(AssessmentRegistrySummarySubPillarTypeEnum)
     sub_dimmension = SimpleInputFilter(AssessmentRegistrySummarySubDimmensionTypeEnum)
 
