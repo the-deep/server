@@ -784,6 +784,8 @@ class ProjectVizConfigurationSerializer(ProjectPropertySerializerMixin, serializ
 
 
 class ProjectOrganizationGqSerializer(TempClientIdMixin, serializers.ModelSerializer):
+    id = IntegerIDField(required=False)
+
     class Meta:
         model = ProjectOrganization
         fields = (

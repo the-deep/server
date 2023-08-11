@@ -9,6 +9,7 @@ from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.enums import EnumDescription
 from deep.permissions import ProjectPermissions as PP
 from user_resource.schema import UserResourceMixin
+
 from lead.schema import LeadDetailType
 from geo.schema import ProjectGeoAreaType
 
@@ -25,8 +26,9 @@ from .models import (
     ScoreAnalyticalDensity,
     Question,
     Answer,
+    AssessmentRegistryOrganization,
 )
-from .filters import AssessmentRegistryGQFilterSet, IssueGQFilterSet
+from .filters import AssessmentRegistryGQFilterSet, AssessmentRegistryIssueGQFilterSet
 from .enums import (
     AssessmentRegistryCrisisTypeEnum,
     AssessmentRegistryPreparednessTypeEnum,
@@ -58,7 +60,21 @@ from .enums import (
     AssessmentRegistrySummarySubPillarTypeEnum,
     AssessmentRegistrySummaryFocusDimmensionTypeEnum,
     AssessmentRegistrySummarySubDimmensionTypeEnum,
+    AssessmentRegistryOrganizationTypeEnum,
 )
+
+
+class AssessmentRegistryOrganizationType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
+    class Meta:
+        model = AssessmentRegistryOrganization
+        only_fields = ('id', 'client_id', 'organization',)
+
+    organization_type = graphene.Field(AssessmentRegistryOrganizationTypeEnum, required=True)
+    organization_type_display = EnumDescription(source='get_organization_type_display', required=True)
+
+    @staticmethod
+    def resolve_organization(root, info):
+        return info.context.dl.organization.organization.load(root.organization_id)
 
 
 class QuestionType(DjangoObjectType, UserResourceMixin):
@@ -230,19 +246,17 @@ class AssessmentRegistrySummaryIssueType(DjangoObjectType, UserResourceMixin):
     def resolve_sub_pillar_display(root, info, **kwargs):
         if root.sub_pillar is not None:
             return root.get_sub_pillar_display()
-        return None
 
     @staticmethod
     def resolve_sub_dimmension_display(root, info, **kwargs):
         if root.sub_dimmension is not None:
             return root.get_sub_dimmension_display()
-        return None
 
 
 class AssessmentRegistrySummaryIssueListType(CustomDjangoListObjectType):
     class Meta:
         model = SummaryIssue
-        filterset_class = IssueGQFilterSet
+        filterset_class = AssessmentRegistryIssueGQFilterSet
 
 
 class SummaryMetaType(DjangoObjectType, UserResourceMixin):
@@ -294,8 +308,7 @@ class AssessmentRegistryType(
         fields = (
             "id", "lead", "project", "bg_countries", "bg_crisis_start_date", "cost_estimates_usd", "no_of_pages",
             "data_collection_start_date", "data_collection_end_date", "publication_date", "executive_summary",
-            "lead_organizations", "international_partners", "donors", "national_partners",
-            "governments", "objectives", "data_collection_techniques", "sampling", "limitations", "locations",
+            "objectives", "data_collection_techniques", "sampling", "limitations", "locations",
         )
 
     bg_crisis_type = graphene.Field(AssessmentRegistryCrisisTypeEnum, required=True)
@@ -331,6 +344,11 @@ class AssessmentRegistryType(
     summary_dimmension_meta = graphene.List(graphene.NonNull(SummaryFocusMetaType), required=False)
     summary_sub_dimmension_issue = graphene.List(graphene.NonNull(SummaryFocusSubDimmensionIssueType), required=False)
     lead = graphene.NonNull(LeadDetailType)
+    stakeholders = graphene.List(graphene.NonNull(AssessmentRegistryOrganizationType))
+
+    @staticmethod
+    def resolve_stakeholders(root, info):
+        return info.context.dl.assessment_registry.stakeholders.load(root.pk)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
