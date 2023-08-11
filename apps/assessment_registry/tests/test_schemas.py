@@ -64,21 +64,6 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
                   bgCountries {
                     id
                   }
-                  leadOrganizations {
-                    id
-                  }
-                  nationalPartners {
-                      id
-                  }
-                  internationalPartners {
-                      id
-                  }
-                  governments {
-                      id
-                  }
-                  donors {
-                      id
-                  }
                   methodologyAttributes {
                     id
                   }
@@ -137,11 +122,6 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
             lead=lead_1,
             confidentiality=AssessmentRegistry.ConfidentialityType.UNPROTECTED,
             bg_countries=[self.country1.id, self.country2.id],
-            lead_organizations=self.org_list,
-            international_partners=self.org_list,
-            donors=self.org_list,
-            national_partners=self.org_list,
-            governments=self.org_list,
         )
 
         methodology_attribute1, methodology_attribute2 = MethodologyAttributeFactory.create_batch(
@@ -229,11 +209,6 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         self.assertEqual(content['data']['project']['assessmentRegistry']['lead']['id'], str(lead_1.id), )
         self.assertIsNotNone(content['data']['project']['assessmentRegistry']['bgCountries'])
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['bgCountries']), 2)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['leadOrganizations']), 2)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['internationalPartners']), 2)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['governments']), 2)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['nationalPartners']), 2)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['donors']), 2)
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['methodologyAttributes']), 2)
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['additionalDocuments']), 1)
         self.assertIsNotNone(
@@ -286,11 +261,6 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
                 lead=leads[i],
                 confidentiality=AssessmentRegistry.ConfidentialityType.UNPROTECTED,
                 bg_countries=[self.country1.id, self.country2.id],
-                lead_organizations=self.org_list,
-                international_partners=self.org_list,
-                donors=self.org_list,
-                national_partners=self.org_list,
-                governments=self.org_list,
             )
             assessment_registries.append(assessment_reg)
 
@@ -299,11 +269,6 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
             lead=confidential_lead,
             confidentiality=AssessmentRegistry.ConfidentialityType.CONFIDENTIAL,
             bg_countries=[self.country1.id, self.country2.id],
-            lead_organizations=self.org_list,
-            international_partners=self.org_list,
-            donors=self.org_list,
-            national_partners=self.org_list,
-            governments=self.org_list,
         )
 
         def _query_check(**kwargs):

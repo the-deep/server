@@ -182,11 +182,12 @@ class AssessmentRegistry(UserResource):
     publication_date = models.DateField(null=True, blank=True)
 
     # -- Stakeholders
-    lead_organizations = models.ManyToManyField(Organization, related_name='lead_org_assessment_reg', blank=True)
-    international_partners = models.ManyToManyField(Organization, related_name='int_partners_assessment_reg', blank=True)
-    donors = models.ManyToManyField(Organization, related_name='donor_assessment_reg', blank=True)
-    national_partners = models.ManyToManyField(Organization, related_name='national_partner_assessment_reg', blank=True)
-    governments = models.ManyToManyField(Organization, related_name='gov_assessment_reg', blank=True)
+    stakeholders = models.ManyToManyField(
+        Organization,
+        through='AssessmentRegistryOrganization',
+        through_fields=('assessment_registry', 'organization'),
+        blank=True,
+    )
 
     # Additional Documents
     executive_summary = models.TextField(blank=True)
@@ -217,6 +218,22 @@ class AssessmentRegistry(UserResource):
 
     def __str__(self):
         return self.lead.title
+
+
+class AssessmentRegistryOrganization(models.Model):
+    class Type(models.IntegerChoices):
+        LEAD_ORGANIZATION = 1, 'Lead Organization'  # Project Owner
+        INTERNATIONAL_PARTNER = 2, 'International Partner'
+        NATIONAL_PARTNER = 3, 'National Partner'
+        DONOR = 4, 'Donor'
+        GOVERNMENT = 5, 'Government'
+
+    organization_type = models.IntegerField(choices=Type.choices)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    assessment_registry = models.ForeignKey(AssessmentRegistry, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('assessment_registry', 'organization_type', 'organization')
 
 
 class MethodologyAttribute(UserResource):
@@ -590,6 +607,7 @@ class Question(UserResource):
         sector = self.sector
         sub_sector = self.sub_sector
 
+        # NOTE We are adding this validation here because Question are added from Admin Panel.
         if hasattr(self, 'sector'):
             if hasattr(self, 'sub_sector'):
                 if sub_sector not in Question.QUESTION_SECTOR_SUB_SECTOR_MAP[sector]:
@@ -634,13 +652,7 @@ class Summary(UserResource):
         INFORMATION_AND_COMMUNICATION = 4, 'Information & Communication'
         HUMANITARIAN_ACCESS = 5, 'Humanitarian Access'
 
-#    assessment_registry = models.ForeignKey(
-#        AssessmentRegistry,
-#        on_delete=models.CASCADE,
-#        related_name='summary',
-#    )
     assessment_registry = models.OneToOneField(AssessmentRegistry, related_name='summary', on_delete=models.CASCADE)
-
     total_people_assessed = models.IntegerField(null=True, blank=True)
     total_dead = models.IntegerField(null=True, blank=True)
     total_injured = models.IntegerField(null=True, blank=True)

@@ -170,12 +170,8 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                 self.genum(AssessmentRegistry.SectorType.SHELTER),
                 self.genum(AssessmentRegistry.SectorType.WASH)
             ],
-            governments=[self.organization1.id, self.organization2.id],
-            internationalPartners=[self.organization1.id, self.organization2.id],
             lead=self.lead1.id,
-            leadOrganizations=[self.organization1.id, self.organization2.id],
             locations=[self.geo_area1.id, self.geo_area2.id],
-            nationalPartners=[self.organization1.id, self.organization2.id],
             dataCollectionEndDate="2023-01-01",
             dataCollectionStartDate="2023-01-01",
             dataCollectionTechniques="Test Data",
@@ -189,7 +185,6 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                 self.genum(AssessmentRegistry.Language.SPANISH)
             ],
             bgCountries=[self.region.id],
-            donors=[self.organization1.id, self.organization2.id],
             affectedGroups=[self.genum(AssessmentRegistry.AffectedGroupType.ALL_AFFECTED)],
             methodologyAttributes=[
                 dict(
