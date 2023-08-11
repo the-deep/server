@@ -240,6 +240,22 @@ class AssessmentRegistryOrganization(models.Model):
         unique_together = ('assessment_registry', 'organization_type', 'organization')
 
 
+class AssessmentRegistryOrganization(models.Model):
+    class Type(models.IntegerChoices):
+        LEAD_ORGANIZATION = 1, 'Lead Organization'  # Project Owner
+        INTERNATIONAL_PARTNER = 2, 'International Partner'
+        NATIONAL_PARTNER = 3, 'National Partner'
+        DONOR = 4, 'Donor'
+        GOVERNMENT = 5, 'Government'
+
+    organization_type = models.IntegerField(choices=Type.choices)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    assessment_registry = models.ForeignKey(AssessmentRegistry, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('assessment_registry', 'organization_type', 'organization')
+
+
 class MethodologyAttribute(UserResource):
     class CollectionTechniqueType(models.IntegerChoices):
         SECONDARY_DATA_REVIEW = 1, 'Secondary Data Review'

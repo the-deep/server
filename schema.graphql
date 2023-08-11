@@ -1772,7 +1772,6 @@ enum AssessmentRegistrySummaryFocusDimensionTypeEnum {
 
 input AssessmentRegistrySummaryIssueCreateInputType {
   subPillar: AssessmentRegistrySummarySubPillarTypeEnum
-<<<<<<< HEAD
   subDimension: AssessmentRegistrySummarySubDimensionTypeEnum
   parent: ID
   label: String!
@@ -1800,34 +1799,6 @@ type AssessmentRegistrySummaryIssueType {
   subDimensionDisplay: EnumDescription
   childCount: Int!
   level: Int
-||||||| parent of da2c57354 (Add validation for question in admin side.)
-=======
-  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
-  parent: ID
-  label: String!
-}
-
-type AssessmentRegistrySummaryIssueListType {
-  results: [AssessmentRegistrySummaryIssueType!]
-  totalCount: Int
-  page: Int
-  pageSize: Int
-}
-
-type AssessmentRegistrySummaryIssueType {
-  id: ID!
-  parent: AssessmentRegistrySummaryIssueType
-  label: String!
-  fullLabel: String!
-  createdAt: DateTime!
-  modifiedAt: DateTime!
-  createdBy: UserType
-  modifiedBy: UserType
-  subPillar: AssessmentRegistrySummarySubPillarTypeEnum
-  subPillarDisplay: EnumDescription
-  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
-  subDimmensionDisplay: EnumDescription
->>>>>>> da2c57354 (Add validation for question in admin side.)
 }
 
 enum AssessmentRegistrySummaryPillarTypeEnum {
@@ -1895,7 +1866,6 @@ type AssessmentRegistryType {
   dataCollectionTechniques: String
   sampling: String
   limitations: String
-<<<<<<< HEAD
   metadataComplete: Boolean!
   additionalDocumentComplete: Boolean!
   focusComplete: Boolean!
@@ -1904,15 +1874,6 @@ type AssessmentRegistryType {
   cnaComplete: Boolean!
   scoreComplete: Boolean!
   clientId: ID!
-||||||| parent of da2c57354 (Add validation for question in admin side.)
-  locations: [ProjectGeoAreaType!]
-  matrixScore: Int!
-  finalScore: Int!
-  clientId: String!
-=======
-  locations: [ProjectGeoAreaType!]
-  clientId: String!
->>>>>>> da2c57354 (Add validation for question in admin side.)
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -2442,7 +2403,7 @@ type CreateEntryReviewComment {
 type CreateIssue {
   errors: [GenericScalar!]
   ok: Boolean
-  result: AssessmentRegistrySummaryIssueType
+  result: IssueType
 }
 
 type CreateLead {
@@ -3438,6 +3399,35 @@ input HIDLoginInputType {
   state: Int
 }
 
+input IssueCreateInputType {
+  subPillar: AssessmentRegistrySummarySubPillarTypeEnum
+  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
+  parent: ID
+  label: String!
+}
+
+type IssueListType {
+  results: [IssueType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type IssueType {
+  id: ID!
+  parent: IssueType
+  label: String!
+  fullLabel: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  subPillar: AssessmentRegistrySummarySubPillarTypeEnum
+  subPillarDisplay: String
+  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
+  subDimmensionDisplay: String
+}
+
 type JwtTokenType {
   accessToken: String
   expiresIn: String
@@ -3862,13 +3852,7 @@ type MissingPredictionReviewType {
 }
 
 type Mutation {
-<<<<<<< HEAD
   createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType!): AssessmentRegistryCreateIssue
-||||||| parent of da2c57354 (Add validation for question in admin side.)
-  createIssue(data: IssueCreateInputType): CreateIssue
-=======
-  createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType): CreateIssue
->>>>>>> da2c57354 (Add validation for question in admin side.)
   fileUpload(data: FileUploadInputType!): UploadFile
   createIssue(data: IssueCreateInputType!): CreateIssue
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
@@ -4086,13 +4070,7 @@ type ProjectDetailType {
   hasAnalysisFramework: Boolean!
   hasAssessmentTemplate: Boolean!
   assessmentRegistry(id: ID!): AssessmentRegistryType
-<<<<<<< HEAD
   assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], publicationDateLte: Date, publicationDateGte: Date, search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
-||||||| parent of da2c57354 (Add validation for question in admin side.)
-  assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
-=======
-  assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], publicationDate_Lte: Date, publicationDate_Gte: Date, search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
->>>>>>> da2c57354 (Add validation for question in admin side.)
   assessmentRegistryOptions: AssessmentRegistryOptionsType
   analysisOverview: AnalysisOverviewType
   analysis(id: ID!): AnalysisType
@@ -4232,15 +4210,8 @@ type ProjectMutationType {
   id: ID!
   title: String!
   createAssessmentRegistry(data: AssessmentRegistryCreateInputType!): CreateAssessmentRegistry
-<<<<<<< HEAD
   updateAssessmentRegistry(data: AssessmentRegistryCreateInputType!, id: ID): UpdateAssessmentRegistry
   deleteAssessmentRegistry(id: ID!): DeleteAssessmentRegistry
-||||||| parent of da2c57354 (Add validation for question in admin side.)
-  createAssessmentRegistry(data: AssessmentRegistryCreateInputType): CreateAssessmentRegistry
-  updateAssessmentRegistry(data: AssessmentRegistryCreateInputType, id: ID): UpdateAssessmentRegistry
-=======
-  updateAssessmentRegistry(data: AssessmentRegistryCreateInputType, id: ID): UpdateAssessmentRegistry
->>>>>>> da2c57354 (Add validation for question in admin side.)
   analysisPillarUpdate(data: AnalysisPillarUpdateInputType!, id: ID!): UpdateAnalysisPillar
   discardedEntryCreate(data: DiscardedEntryCreateInputType!): CreateAnalysisPillarDiscardedEntry
   discardedEntryUpdate(data: DiscardedEntryUpdateInputType!, id: ID!): UpdateAnalysisPillarDiscardedEntry
@@ -4641,17 +4612,9 @@ type PublicProjectWithMembershipData {
 }
 
 type Query {
-<<<<<<< HEAD
   publicAnalysisReportSnapshot(slug: String!): AnalysisReportSnapshotType
   assessmentRegSummaryIssue(id: ID!): AssessmentRegistrySummaryIssueType
   assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimension: AssessmentRegistrySummarySubDimensionTypeEnum, search: String, isParent: Boolean, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
-||||||| parent of da2c57354 (Add validation for question in admin side.)
-  issue(id: ID!): IssueType
-  issues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum, page: Int = 1, ordering: String, pageSize: Int): IssueListType
-=======
-  assessmentRegSummaryIssue(id: ID!): AssessmentRegistrySummaryIssueType
-  assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
->>>>>>> da2c57354 (Add validation for question in admin side.)
   deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
   publicDeepExploreYearlySnapshots: [PublicExploreSnapshotType!]
   publicDeepExploreGlobalSnapshots: [PublicExploreSnapshotType!]
@@ -4917,7 +4880,6 @@ type SummaryFocusMetaType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-<<<<<<< HEAD
   sector: AssessmentRegistrySectorTypeEnum
   sectorDisplay: EnumDescription
 }
@@ -4931,21 +4893,10 @@ type SummaryFocusOptionType {
 
 type SummaryFocusSubDimensionIssueType {
   id: ID!
-||||||| parent of da2c57354 (Add validation for question in admin side.)
-  clientId: String
-  assessmentRegistry: AssessmentRegistryType!
-  focus: AssessmentRegistryFocusTypeEnum
-  summaryIssue: IssueType!
-=======
-  clientId: String
-  assessmentRegistry: AssessmentRegistryType!
-  focus: AssessmentRegistryFocusTypeEnum
->>>>>>> da2c57354 (Add validation for question in admin side.)
   summaryIssue: AssessmentRegistrySummaryIssueType!
   text: String!
   order: Int!
   leadPreviewTextRef: GenericScalar
-<<<<<<< HEAD
   clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
@@ -4953,11 +4904,6 @@ type SummaryFocusSubDimensionIssueType {
   modifiedBy: UserType
   sector: AssessmentRegistrySectorTypeEnum!
   sectorDisplay: EnumDescription!
-||||||| parent of da2c57354 (Add validation for question in admin side.)
-  focusDisplay: String
-=======
-  focusDisplay: EnumDescription
->>>>>>> da2c57354 (Add validation for question in admin side.)
 }
 
 input SummaryMetaInputType {
