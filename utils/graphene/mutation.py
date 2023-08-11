@@ -289,7 +289,6 @@ class GrapheneMutation(BaseGrapheneMutation):
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
         data = kwargs['data']
-        print('-->', data)
         instance, errors = cls._save_item(data, info, **kwargs)
         return cls(result=instance, errors=errors, ok=not errors)
 
