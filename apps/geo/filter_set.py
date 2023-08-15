@@ -87,8 +87,9 @@ class AdminLevelFilterSet(django_filters.rest_framework.FilterSet):
             },
         }
 
-
 # ------------------------------ Graphql filters -----------------------------------
+
+
 class GeoAreaGqlFilterSet(OrderEnumMixin, django_filters.rest_framework.FilterSet):
     ids = IDListFilter(field_name='id')
     region_ids = IDListFilter(field_name='admin_level__region')
@@ -109,7 +110,7 @@ class GeoAreaGqlFilterSet(OrderEnumMixin, django_filters.rest_framework.FilterSe
 
     def geo_area_label(self, queryset, _, value):
         if value:
-            return queryset.filter(title__icontains=value)
+            return queryset.filter(title__unaccent__icontains=value)
         return queryset
 
     def filter_titles(self, queryset, _, values):
