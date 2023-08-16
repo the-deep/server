@@ -181,10 +181,10 @@ class ProjectStatType(graphene.ObjectType):
         return (root.stats_cache or {}).get('entries_activities') or []
 
 
-class ProjectOrganizationType(DjangoObjectType):
+class ProjectOrganizationType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     class Meta:
         model = ProjectOrganization
-        only_fields = ('id', 'organization',)
+        only_fields = ('id', 'client_id', 'organization',)
 
     organization_type = graphene.Field(ProjectOrganizationTypeEnum, required=True)
     organization_type_display = EnumDescription(source='get_organization_type_display', required=True)
