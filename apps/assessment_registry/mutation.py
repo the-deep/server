@@ -49,7 +49,7 @@ class CreateAssessmentRegistry(PsGrapheneMutation):
 
 class UpdateAssessmentRegistry(PsGrapheneMutation):
     class Arguments:
-        data = AssessmentRegistryCreateInputType()
+        data = AssessmentRegistryCreateInputType(required=True)
         id = graphene.ID(required=False)
 
     result = graphene.Field(AssessmentRegistryType)
