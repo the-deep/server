@@ -278,7 +278,7 @@ class SummarySubPillarIssueType(DjangoObjectType, UserResourceMixin):
 
     @staticmethod
     def resolve_issue(root, info, **kwargs):
-        return root.summary_issue
+        return info.context.dl.assessment_registry.issues.load(root.issue_id)
 
 
 class SummaryFocusMetaType(DjangoObjectType, UserResourceMixin):
