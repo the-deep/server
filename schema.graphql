@@ -4060,7 +4060,7 @@ type ProjectMutationType {
   id: ID!
   title: String!
   createAssessmentRegistry(data: AssessmentRegistryCreateInputType!): CreateAssessmentRegistry
-  updateAssessmentRegistry(data: AssessmentRegistryCreateInputType, id: ID): UpdateAssessmentRegistry
+  updateAssessmentRegistry(data: AssessmentRegistryCreateInputType!, id: ID): UpdateAssessmentRegistry
   analysisPillarUpdate(data: AnalysisPillarUpdateInputType!, id: ID!): UpdateAnalysisPillar
   discardedEntryCreate(data: DiscardedEntryCreateInputType!): CreateAnalysisPillarDiscardedEntry
   discardedEntryUpdate(data: DiscardedEntryUpdateInputType!, id: ID!): UpdateAnalysisPillarDiscardedEntry
@@ -4129,6 +4129,11 @@ input ProjectOrganizationGqInputType {
 type ProjectOrganizationType {
   id: ID!
   organization: OrganizationType!
+  clientId: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
   organizationType: ProjectOrganizationTypeEnum!
   organizationTypeDisplay: EnumDescription!
 }
