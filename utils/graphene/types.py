@@ -21,7 +21,7 @@ from utils.graphene.options import CustomObjectTypeOptions
 
 
 class ClientIdMixin(graphene.ObjectType):
-    client_id = graphene.String(required=True)
+    client_id = graphene.ID(required=True, description='Provides clientID if provided in the mutation. Fallback is id')
 
     @staticmethod
     def resolve_client_id(root, info):

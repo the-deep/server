@@ -26,7 +26,7 @@ AssessmentRegistrySummaryIssueCreateInputType = generate_input_type_for_serializ
 
 class AssessmentRegistryCreateIssue(GrapheneMutation):
     class Arguments:
-        data = AssessmentRegistrySummaryIssueCreateInputType()
+        data = AssessmentRegistrySummaryIssueCreateInputType(required=True)
 
     result = graphene.Field(AssessmentRegistrySummaryIssueType)
     serializer_class = IssueSerializer
