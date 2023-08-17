@@ -67,7 +67,10 @@ from .enums import (
 class AssessmentRegistryOrganizationType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     class Meta:
         model = AssessmentRegistryOrganization
-        only_fields = ('id', 'client_id', 'organization',)
+        only_fields = (
+            'id',
+            'organization',
+        )
 
     organization_type = graphene.Field(AssessmentRegistryOrganizationTypeEnum, required=True)
     organization_type_display = EnumDescription(source='get_organization_type_display', required=True)
@@ -80,7 +83,10 @@ class AssessmentRegistryOrganizationType(DjangoObjectType, UserResourceMixin, Cl
 class QuestionType(DjangoObjectType, UserResourceMixin):
     class Meta:
         model = Question
-        fields = ("id", "question", "sub_sector",)
+        only_fields = (
+            'id',
+            'question',
+        )
 
     sector = graphene.Field(AssessmentRegistryCNAQuestionSectorTypeEnum, required=False)
     sector_display = EnumDescription(source='get_sector_display', required=False)
@@ -163,7 +169,10 @@ class AssessmentRegistryOptionsType(graphene.ObjectType):
 class ScoreRatingType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     class Meta:
         model = ScoreRating
-        fields = ("id", "score_type", "rating", "reason",)
+        only_fields = (
+            'id',
+            'reason',
+        )
 
     score_type = graphene.Field(AssessmentRegistryScoreCriteriaTypeEnum, required=True)
     score_type_display = EnumDescription(source='get_score_type_display', required=True)
@@ -174,7 +183,9 @@ class ScoreRatingType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
 class ScoreAnalyticalDensityType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     class Meta:
         model = ScoreAnalyticalDensity
-        fields = ("id", "client_id", "sector", "analysis_level_covered", "figure_provided",)
+        only_fields = (
+            'id',
+        )
 
     sector = graphene.Field(AssessmentRegistrySectorTypeEnum, required=True)
     sector_display = EnumDescription(source='get_sector_display', required=True)
@@ -195,7 +206,10 @@ def get_assessment_registry_qs(info):
 class MethodologyAttributeType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     class Meta:
         model = MethodologyAttribute
-        fields = ("id", "proximity", "sampling_size",)
+        only_fields = (
+            'id',
+            'sampling_size',
+        )
 
     data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum, required=True)
     data_collection_technique_display = EnumDescription(source='get_data_collection_technique_display', required=True)
@@ -212,7 +226,10 @@ class MethodologyAttributeType(DjangoObjectType, UserResourceMixin, ClientIdMixi
 class AdditionalDocumentType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     class Meta:
         model = AdditionalDocument
-        fields = ("id", "file")
+        only_fields = (
+            'id',
+            'file',
+        )
 
     document_type = graphene.Field(AssessmentRegistryDocumentTypeEnum, required=True)
     document_type_display = EnumDescription(source='get_document_type_display', required=True)
@@ -221,36 +238,36 @@ class AdditionalDocumentType(DjangoObjectType, UserResourceMixin, ClientIdMixin)
     def resolve_external_link(root, info, **kwargs):
         return render_string_for_graphql(root.external_link)
 
+    def resolve_file(root, info, **kwargs):
+        return info.context.dl.deep_gallery.file.load(root.file_id)
+
 
 class CNAType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
-    question = graphene.Field(QuestionType, required=True)
+    question = graphene.Field(QuestionType, required=True)   # TODO: Dataloader
 
     class Meta:
         model = Answer
-        fields = ("id", "question", "answer",)
+        only_fields = (
+            'id',
+            'question',
+            'answer',
+        )
 
 
 class AssessmentRegistrySummaryIssueType(DjangoObjectType, UserResourceMixin):
     sub_pillar = graphene.Field(AssessmentRegistrySummarySubPillarTypeEnum, required=False)
-    sub_pillar_display = EnumDescription(required=False)
+    sub_pillar_display = EnumDescription(source='get_sub_pillar_display', required=False, )
     sub_dimmension = graphene.Field(AssessmentRegistrySummarySubDimmensionTypeEnum, required=False)
-    sub_dimmension_display = EnumDescription(required=False)
+    sub_dimmension_display = EnumDescription(source='get_sub_dimmension_display', required=False)
 
     class Meta:
         model = SummaryIssue
-        fields = [
-            'id', 'parent', 'label', 'full_label',
+        only_fields = [
+            'id',
+            'parent',  # TODO: Dataloader
+            'label',
+            'full_label',
         ]
-
-    @staticmethod
-    def resolve_sub_pillar_display(root, info, **kwargs):
-        if root.sub_pillar is not None:
-            return root.get_sub_pillar_display()
-
-    @staticmethod
-    def resolve_sub_dimmension_display(root, info, **kwargs):
-        if root.sub_dimmension is not None:
-            return root.get_sub_dimmension_display()
 
 
 class AssessmentRegistrySummaryIssueListType(CustomDjangoListObjectType):
@@ -262,39 +279,78 @@ class AssessmentRegistrySummaryIssueListType(CustomDjangoListObjectType):
 class SummaryMetaType(DjangoObjectType, UserResourceMixin):
     class Meta:
         model = Summary
-        fields = [
-            "id", "total_people_assessed", "total_dead", "total_injured", "total_missing",
-            "total_people_facing_hum_access_cons", "percentage_of_people_facing_hum_access_cons",
+        only_fields = [
+            'id',
+            'total_people_assessed',
+            'total_dead',
+            'total_injured',
+            'total_missing',
+            'total_people_facing_hum_access_cons',
+            'percentage_of_people_facing_hum_access_cons',
         ]
 
 
 class SummarySubPillarIssueType(DjangoObjectType, UserResourceMixin):
-
     class Meta:
         model = SummarySubPillarIssue
-        fields = [
-            "id", "text", "order", "summary_issue", "lead_preview_text_ref"
+        only_fields = [
+            'id',
+            'text',
+            'order',
+            'summary_issue',
+            'lead_preview_text_ref',
         ]
 
     @staticmethod
-    def resolve_issue(root, info, **kwargs):
+    def resolve_summary_issue(root, info, **kwargs):
         return info.context.dl.assessment_registry.issues.load(root.issue_id)
 
 
-class SummaryFocusMetaType(DjangoObjectType, UserResourceMixin):
+class SummaryFocusMetaType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     focus = graphene.Field(AssessmentRegistryFocusTypeEnum, required=False)
     focus_display = EnumDescription(required=False)
 
     class Meta:
         model = SummaryFocus
+        only_fields = [
+            'id',
+            'percentage_of_people_affected',
+            'total_people_affected',
+            'percentage_of_moderate',
+            'percentage_of_severe',
+            'percentage_of_critical',
+            'percentage_in_need',
+            'total_moderate',
+            'total_severe',
+            'total_critical',
+            'total_in_need',
+            'total_pop_assessed',
+            'total_not_affected',
+            'total_affected',
+            'total_people_in_need',
+            'total_people_moderately_in_need',
+            'total_people_severly_in_need',
+            'total_people_critically_in_need',
+        ]
 
 
-class SummaryFocusSubDimmensionIssueType(DjangoObjectType, UserResourceMixin):
+class SummaryFocusSubDimmensionIssueType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     focus = graphene.Field(AssessmentRegistryFocusTypeEnum, required=False)
     focus_display = EnumDescription(required=False)
 
     class Meta:
         model = SummarySubDimmensionIssue
+        only_fields = [
+            'id',
+            'summary_issue',
+            'text',
+            'order',
+            'lead_preview_text_ref',
+        ]
+
+    @staticmethod
+    def resolve_summary_issue(root, info, **kwargs):
+        return info.context.dl.assessment_registry.issues.load(root.issue_id)
 
 
 class AssessmentRegistryType(
@@ -302,15 +358,28 @@ class AssessmentRegistryType(
         UserResourceMixin,
         ClientIdMixin,
 ):
-
     class Meta:
         model = AssessmentRegistry
-        fields = (
-            "id", "lead", "project", "bg_countries", "bg_crisis_start_date", "cost_estimates_usd", "no_of_pages",
-            "data_collection_start_date", "data_collection_end_date", "publication_date", "executive_summary",
-            "objectives", "data_collection_techniques", "sampling", "limitations", "locations",
+        only_fields = (
+            'id',
+            'bg_countries',
+            'bg_crisis_start_date',
+            'cost_estimates_usd',
+            'no_of_pages',
+            'data_collection_start_date',
+            'data_collection_end_date',
+            'publication_date',
+            'executive_summary',
+            'objectives',
+            'data_collection_techniques',
+            'sampling',
+            'limitations',
         )
 
+    # TODO: We might need to define dataloaders here for fields which are used for listing in client side
+
+    project = graphene.ID(source='project_id', required=True)
+    lead = graphene.NonNull(LeadDetailType)
     bg_crisis_type = graphene.Field(AssessmentRegistryCrisisTypeEnum, required=True)
     bg_crisis_type_display = EnumDescription(source='get_bg_crisis_type_display', required=True)
     bg_preparedness = graphene.Field(AssessmentRegistryPreparednessTypeEnum, required=True)
@@ -336,7 +405,6 @@ class AssessmentRegistryType(
     additional_documents = graphene.List(graphene.NonNull(AdditionalDocumentType), required=False)
     score_ratings = graphene.List(graphene.NonNull(ScoreRatingType), required=True)
     score_analytical_density = graphene.List(graphene.NonNull(ScoreAnalyticalDensityType), required=True)
-    lead = graphene.NonNull(LeadDetailType)
     locations = graphene.List(graphene.NonNull(ProjectGeoAreaType))
     cna = graphene.List(graphene.NonNull(CNAType), required=False)
     summary_pillar_meta = graphene.Field(SummaryMetaType, required=False)
