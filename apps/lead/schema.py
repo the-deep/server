@@ -404,6 +404,9 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     def resolve_share_view_url(root: Lead, info, **kwargs):
         return Permalink.lead_share_view(root.uuid)
 
+    def resolve_attachment(root, info, **kwargs):
+        return info.context.dl.deep_gallery.file.load(root.attachment_id)
+
 
 class LeadDetailType(LeadType):
     class Meta:
@@ -422,6 +425,9 @@ class LeadDetailType(LeadType):
         return root.entry_set.filter(
             analysis_framework=info.context.active_project.analysis_framework,
         ).all()
+
+    def resolve_attachment(root, info, **kwargs):
+        return info.context.dl.deep_gallery.file.load(root.attachment_id)
 
 
 class LeadListType(CustomDjangoListObjectType):
