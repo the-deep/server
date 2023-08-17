@@ -14,7 +14,7 @@ input AdditionalDocumentInputType {
 type AdditionalDocumentType {
   id: ID!
   file: GalleryFileType
-  clientId: String!
+  clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -131,7 +131,7 @@ type AnalysisFrameworkMembershipType {
   role: AnalysisFrameworkRoleType!
   joinedAt: DateTime!
   addedBy: UserType
-  clientId: String!
+  clientId: ID!
 }
 
 type AnalysisFrameworkMutationType {
@@ -154,7 +154,7 @@ type AnalysisFrameworkPredictionMappingType {
   widget: ID!
   tag: ID
   association: GenericScalar
-  clientId: String!
+  clientId: ID!
   widgetType: WidgetWidgetTypeEnum!
 }
 
@@ -315,7 +315,7 @@ type AnalysisPillarType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  clientId: String!
+  clientId: ID!
   assignee: UserType!
   analysis: ID!
   clonedFrom: ID
@@ -888,7 +888,7 @@ type AnalyticalStatementEntryGeoType {
 type AnalyticalStatementEntryType {
   id: ID!
   order: Int!
-  clientId: String!
+  clientId: ID!
   entry: EntryType!
   entryId: ID!
   analyticalStatement: ID!
@@ -971,7 +971,7 @@ type AnalyticalStatementType {
   order: Int!
   reportText: String!
   informationGaps: String!
-  clientId: String!
+  clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -1666,7 +1666,7 @@ input AssessmentRegistryOrganizationInputType {
 type AssessmentRegistryOrganizationType {
   id: ID!
   organization: OrganizationType!
-  clientId: String!
+  clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -1852,8 +1852,6 @@ enum AssessmentRegistrySummarySubPillarTypeEnum {
 
 type AssessmentRegistryType {
   id: ID!
-  project: ProjectType!
-  lead: LeadDetailType!
   bgCountries: [RegionType!]!
   bgCrisisStartDate: Date!
   costEstimatesUsd: Int
@@ -1866,12 +1864,12 @@ type AssessmentRegistryType {
   dataCollectionTechniques: String
   sampling: String
   limitations: String
-  locations: [ProjectGeoAreaType!]
-  clientId: String!
+  clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
+  project: ID!
   bgCrisisType: AssessmentRegistryCrisisTypeEnum!
   bgCrisisTypeDisplay: EnumDescription!
   bgPreparedness: AssessmentRegistryPreparednessTypeEnum!
@@ -1897,11 +1895,13 @@ type AssessmentRegistryType {
   additionalDocuments: [AdditionalDocumentType!]
   scoreRatings: [ScoreRatingType!]!
   scoreAnalyticalDensity: [ScoreAnalyticalDensityType!]!
+  locations: [ProjectGeoAreaType!]
   cna: [CNAType!]
   summaryPillarMeta: SummaryMetaType
   summarySubPillarIssue: [SummarySubPillarIssueType!]
   summaryDimmensionMeta: [SummaryFocusMetaType!]
   summarySubDimmensionIssue: [SummaryFocusSubDimmensionIssueType!]
+  lead: LeadDetailType!
   stakeholders: [AssessmentRegistryOrganizationType!]
 }
 
@@ -2034,7 +2034,7 @@ type AttributeType {
   id: ID!
   widgetVersion: Int!
   data: GenericScalar
-  clientId: String!
+  clientId: ID!
   widget: ID!
   widgetType: WidgetWidgetTypeEnum!
   widgetTypeDisplay: EnumDescription!
@@ -2173,7 +2173,7 @@ type CNAType {
   id: ID!
   question: QuestionType!
   answer: Boolean!
-  clientId: String!
+  clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -2307,7 +2307,7 @@ type ConnectorSourceType {
   unifiedConnector: ID!
   params: GenericScalar!
   lastFetchedAt: DateTime
-  clientId: String!
+  clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -2841,7 +2841,7 @@ enum EntryTagTypeEnum {
 
 type EntryType {
   id: ID!
-  clientId: String!
+  clientId: ID!
   lead: LeadType!
   project: ProjectType!
   order: Int!
@@ -3279,7 +3279,7 @@ type GroupMembershipType {
   member: UserType!
   joinedAt: DateTime!
   addedBy: UserType
-  clientId: String!
+  clientId: ID!
   role: GroupMembershipRoleEnum!
   roleDisplay: EnumDescription!
 }
@@ -3331,7 +3331,7 @@ input LeadCopyInputType {
 
 type LeadDetailType {
   id: ID!
-  clientId: String!
+  clientId: ID!
   leadGroup: LeadGroupType
   title: String!
   assignee: UserType
@@ -3521,7 +3521,7 @@ enum LeadStatusEnum {
 
 type LeadType {
   id: ID!
-  clientId: String!
+  clientId: ID!
   leadGroup: LeadGroupType
   title: String!
   assignee: UserType
@@ -3680,8 +3680,7 @@ input MethodologyAttributeInputType {
 type MethodologyAttributeType {
   id: ID!
   samplingSize: Int
-  proximity: AssessmentRegistryProximityTypeEnum!
-  clientId: String!
+  clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -3690,6 +3689,7 @@ type MethodologyAttributeType {
   dataCollectionTechniqueDisplay: EnumDescription!
   samplingApproach: AssessmentRegistrySamplingApproachTypeEnum!
   samplingAppraochDisplay: EnumDescription!
+  proximity: AssessmentRegistryProximityTypeEnum!
   proximityDisplay: EnumDescription!
   unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum!
   unitOfAnalysisDisplay: EnumDescription!
@@ -3715,7 +3715,7 @@ type MissingPredictionReviewType {
 }
 
 type Mutation {
-  createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType): AssessmentRegistryCreateIssue
+  createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType!): AssessmentRegistryCreateIssue
   fileUpload(data: FileUploadInputType!): UploadFile
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
   genericExportCancel(id: ID!): CancelUserGenericExport
@@ -4059,7 +4059,7 @@ type ProjectMembershipType {
   linkedGroup: UserGroupType
   joinedAt: DateTime!
   addedBy: UserType
-  clientId: String!
+  clientId: ID!
   badges: [ProjectMembershipBadgeTypeEnum!]
 }
 
@@ -4136,7 +4136,7 @@ input ProjectOrganizationGqInputType {
 type ProjectOrganizationType {
   id: ID!
   organization: OrganizationType!
-  clientId: String!
+  clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -4298,7 +4298,7 @@ type ProjectUserGroupMembershipType {
   role: ProjectRoleType!
   joinedAt: DateTime!
   addedBy: UserType
-  clientId: String!
+  clientId: ID!
   badges: [ProjectMembershipBadgeTypeEnum!]
 }
 
@@ -4500,7 +4500,6 @@ type Query {
 
 type QuestionType {
   id: ID!
-  subSector: AssessmentRegistryCNAQuestionSubSectorTypeEnum
   question: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
@@ -4508,6 +4507,7 @@ type QuestionType {
   modifiedBy: UserType
   sector: AssessmentRegistryCNAQuestionSectorTypeEnum
   sectorDisplay: EnumDescription
+  subSector: AssessmentRegistryCNAQuestionSubSectorTypeEnum
   subSectorDisplay: EnumDescription
 }
 
@@ -4634,15 +4634,15 @@ input ScoreAnalyticalDensityInputType {
 
 type ScoreAnalyticalDensityType {
   id: ID!
-  clientId: String!
-  sector: AssessmentRegistrySectorTypeEnum!
-  analysisLevelCovered: [AssessmentRegistryAnalysisLevelTypeEnum!]!
-  figureProvided: [AssessmentRegistryAnalysisFigureTypeEnum!]!
+  clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
+  sector: AssessmentRegistrySectorTypeEnum!
   sectorDisplay: EnumDescription!
+  analysisLevelCovered: [AssessmentRegistryAnalysisLevelTypeEnum!]!
+  figureProvided: [AssessmentRegistryAnalysisFigureTypeEnum!]!
 }
 
 type ScoreOptionsType {
@@ -4662,15 +4662,15 @@ input ScoreRatingInputType {
 
 type ScoreRatingType {
   id: ID!
-  scoreType: AssessmentRegistryScoreCriteriaTypeEnum!
-  rating: AssessmentRegistryRatingType!
   reason: String
-  clientId: String!
+  clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
+  scoreType: AssessmentRegistryScoreCriteriaTypeEnum!
   scoreTypeDisplay: EnumDescription!
+  rating: AssessmentRegistryRatingType!
   ratingDisplay: EnumDescription!
 }
 
@@ -4688,7 +4688,7 @@ type SectionType {
   title: String!
   order: Int!
   tooltip: String
-  clientId: String!
+  clientId: ID!
   widgets: [WidgetType!]
 }
 
@@ -4716,13 +4716,6 @@ input SummaryFocusMetaInputType {
 
 type SummaryFocusMetaType {
   id: ID!
-  createdAt: DateTime!
-  modifiedAt: DateTime!
-  createdBy: UserType
-  modifiedBy: UserType
-  clientId: String
-  assessmentRegistry: AssessmentRegistryType!
-  focus: AssessmentRegistryFocusTypeEnum
   percentageOfPeopleAffected: Int
   totalPeopleAffected: Int
   percentageOfModerate: Int
@@ -4740,6 +4733,12 @@ type SummaryFocusMetaType {
   totalPeopleModeratelyInNeed: Int
   totalPeopleSeverlyInNeed: Int
   totalPeopleCriticallyInNeed: Int
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  focus: AssessmentRegistryFocusTypeEnum
   focusDisplay: EnumDescription
 }
 
@@ -4752,17 +4751,16 @@ type SummaryFocusOptionType {
 
 type SummaryFocusSubDimmensionIssueType {
   id: ID!
-  createdAt: DateTime!
-  modifiedAt: DateTime!
-  createdBy: UserType
-  modifiedBy: UserType
-  clientId: String
-  assessmentRegistry: AssessmentRegistryType!
-  focus: AssessmentRegistryFocusTypeEnum
   summaryIssue: AssessmentRegistrySummaryIssueType!
   text: String!
   order: Int!
   leadPreviewTextRef: GenericScalar
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  focus: AssessmentRegistryFocusTypeEnum
   focusDisplay: EnumDescription
 }
 
@@ -4919,7 +4917,7 @@ type UnifiedConnectorType {
   id: ID!
   title: String!
   isActive: Boolean!
-  clientId: String!
+  clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -5282,7 +5280,7 @@ type WidgetType {
   properties: GenericScalar
   order: Int!
   version: Int!
-  clientId: String!
+  clientId: ID!
   widgetId: WidgetWidgetTypeEnum!
   widgetIdDisplay: EnumDescription!
   width: WidgetWidthTypeEnum!
