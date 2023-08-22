@@ -213,6 +213,9 @@ class AssessmentRegistry(UserResource):
     def __str__(self):
         return self.lead.title
 
+    def can_delete(self, user):
+        return self.project.is_member(user)
+
 
 class AssessmentRegistryOrganization(models.Model):
     class Type(models.IntegerChoices):

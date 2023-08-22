@@ -6,6 +6,7 @@ from utils.graphene.mutation import (
     GrapheneMutation,
 )
 from deep.permissions import ProjectPermissions as PP
+from utils.graphene.mutation import PsDeleteMutation
 
 from .models import AssessmentRegistry, SummaryIssue
 from .schema import AssessmentRegistryType, AssessmentRegistrySummaryIssueType
@@ -22,6 +23,12 @@ AssessmentRegistrySummaryIssueCreateInputType = generate_input_type_for_serializ
     'AssessmentRegistrySummaryIssueCreateInputType',
     serializer_class=IssueSerializer
 )
+
+
+class AssessmentRegsitryMutationMixin():
+    @classmethod
+    def filter_queryset(cls, qs, info):
+        return qs.filter(project=info.context.active_project)
 
 
 class AssessmentRegistryCreateIssue(GrapheneMutation):
@@ -47,7 +54,7 @@ class CreateAssessmentRegistry(PsGrapheneMutation):
     permissions = [PP.Permission.CREATE_ASSESSMENT_REGISTRY]
 
 
-class UpdateAssessmentRegistry(PsGrapheneMutation):
+class UpdateAssessmentRegistry(AssessmentRegsitryMutationMixin, PsGrapheneMutation):
     class Arguments:
         data = AssessmentRegistryCreateInputType(required=True)
         id = graphene.ID(required=False)
@@ -58,9 +65,18 @@ class UpdateAssessmentRegistry(PsGrapheneMutation):
     permissions = [PP.Permission.UPDATE_ASSESSMENT_REGISTRY]
 
 
+class DeleteAssessmentRegistry(AssessmentRegsitryMutationMixin, PsDeleteMutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+    model = AssessmentRegistry
+    result = graphene.Field(AssessmentRegistryType)
+    permissions = [PP.Permission.DELETE_LEAD]
+
+
 class ProjectMutation():
     create_assessment_registry = CreateAssessmentRegistry.Field()
     update_assessment_registry = UpdateAssessmentRegistry.Field()
+    delete_assessment_registry = DeleteAssessmentRegistry.Field()
 
 
 class Mutation():
