@@ -256,7 +256,7 @@ class CNAType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
 
 class AssessmentRegistrySummaryIssueType(DjangoObjectType, UserResourceMixin):
     sub_pillar = graphene.Field(AssessmentRegistrySummarySubPillarTypeEnum, required=False)
-    sub_pillar_display = EnumDescription(source='get_sub_pillar_display', required=False, )
+    sub_pillar_display = EnumDescription(source='get_sub_pillar_display', required=False)
     sub_dimmension = graphene.Field(AssessmentRegistrySummarySubDimmensionTypeEnum, required=False)
     sub_dimmension_display = EnumDescription(source='get_sub_dimmension_display', required=False)
 
@@ -290,7 +290,7 @@ class SummaryMetaType(DjangoObjectType, UserResourceMixin):
         ]
 
 
-class SummarySubPillarIssueType(DjangoObjectType, UserResourceMixin):
+class SummarySubPillarIssueType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     class Meta:
         model = SummarySubPillarIssue
         only_fields = [
@@ -303,7 +303,7 @@ class SummarySubPillarIssueType(DjangoObjectType, UserResourceMixin):
 
     @staticmethod
     def resolve_summary_issue(root, info, **kwargs):
-        return info.context.dl.assessment_registry.issues.load(root.issue_id)
+        return info.context.dl.assessment_registry.issues.load(root.summary_issue_id)
 
 
 class SummaryFocusMetaType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
@@ -350,7 +350,7 @@ class SummaryFocusSubDimmensionIssueType(DjangoObjectType, UserResourceMixin, Cl
 
     @staticmethod
     def resolve_summary_issue(root, info, **kwargs):
-        return info.context.dl.assessment_registry.issues.load(root.issue_id)
+        return info.context.dl.assessment_registry.issues.load(root.summary_issue_id)
 
 
 class AssessmentRegistryType(
