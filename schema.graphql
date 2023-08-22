@@ -4687,6 +4687,7 @@ type SectionType {
 
 input SummaryFocusMetaInputType {
   id: ID
+  clientId: String
   focus: AssessmentRegistrySectorTypeEnum!
   percentageOfPeopleAffected: Int
   totalPeopleAffected: Int
@@ -4790,6 +4791,7 @@ type SummaryOptionType {
 
 input SummarySubDimmensionInputType {
   id: ID
+  clientId: String
   summaryIssue: ID!
   focus: AssessmentRegistryFocusTypeEnum!
   text: String
@@ -4799,6 +4801,7 @@ input SummarySubDimmensionInputType {
 
 input SummarySubPillarIssueInputType {
   id: ID
+  clientId: String
   summaryIssue: ID!
   text: String
   order: Int!
@@ -4811,6 +4814,7 @@ type SummarySubPillarIssueType {
   text: String!
   order: Int!
   leadPreviewTextRef: GenericScalar
+  clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
