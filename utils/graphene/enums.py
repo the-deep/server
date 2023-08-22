@@ -106,10 +106,12 @@ class EnumDescription(graphene.Scalar):
     def coerce_string(value):
         """
         Here value should always be callable get_FOO_display
+        TODO: Try to return with None instead of N/A which doesn't work right now
         """
+        _value = value
         if callable(value):
-            return value()
-        return value
+            _value = value()
+        return _value or ''
 
     serialize = coerce_string
     parse_value = coerce_string
