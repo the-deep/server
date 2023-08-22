@@ -7,7 +7,7 @@ from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
 from .models import (
     AssessmentRegistryOrganization,
-    SummarySubPillarIssue,
+    SummaryIssue,
 )
 
 
@@ -22,10 +22,11 @@ class AssessmentRegistryOrganizationsLoader(DataLoaderWithContext):
 
 class AssessmentRegistryIssueLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        qs = SummarySubPillarIssue.objects.filter(assessment_registry__in=keys)
-        _map = defaultdict(list)
-        for issue in qs.all():
-            _map[issue.assessment_registry_id].append(issue)
+        qs = SummaryIssue.objects.filter(id__in=keys)
+        _map = {
+            issue.pk: issue
+            for issue in qs
+        }
         return Promise.resolve([_map.get(key) for key in keys])
 
 
