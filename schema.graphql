@@ -2467,6 +2467,12 @@ type DeleteAssessment {
   result: AssessmentType
 }
 
+type DeleteAssessmentRegistry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssessmentRegistryType
+}
+
 type DeleteEntry {
   errors: [GenericScalar!]
   ok: Boolean
@@ -4068,6 +4074,7 @@ type ProjectMutationType {
   title: String!
   createAssessmentRegistry(data: AssessmentRegistryCreateInputType!): CreateAssessmentRegistry
   updateAssessmentRegistry(data: AssessmentRegistryCreateInputType!, id: ID): UpdateAssessmentRegistry
+  deleteAssessmentRegistry(id: ID!): DeleteAssessmentRegistry
   analysisPillarUpdate(data: AnalysisPillarUpdateInputType!, id: ID!): UpdateAnalysisPillar
   discardedEntryCreate(data: DiscardedEntryCreateInputType!): CreateAnalysisPillarDiscardedEntry
   discardedEntryUpdate(data: DiscardedEntryUpdateInputType!, id: ID!): UpdateAnalysisPillarDiscardedEntry
@@ -4459,7 +4466,7 @@ type PublicProjectWithMembershipData {
 type Query {
   publicAnalysisReportSnapshot(slug: String!): AnalysisReportSnapshotType
   assessmentRegSummaryIssue(id: ID!): AssessmentRegistrySummaryIssueType
-  assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
+  assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum, search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
   deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
   publicDeepExploreYearlySnapshots: [PublicExploreSnapshotType!]
   publicDeepExploreGlobalSnapshots: [PublicExploreSnapshotType!]
