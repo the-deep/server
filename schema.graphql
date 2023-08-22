@@ -4614,7 +4614,13 @@ type PublicProjectWithMembershipData {
 type Query {
   publicAnalysisReportSnapshot(slug: String!): AnalysisReportSnapshotType
   assessmentRegSummaryIssue(id: ID!): AssessmentRegistrySummaryIssueType
+<<<<<<< HEAD
   assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimension: AssessmentRegistrySummarySubDimensionTypeEnum, search: String, isParent: Boolean, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
+||||||| parent of 67165a716 (Add filter search in issues list.)
+  assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
+=======
+  assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum, search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
+>>>>>>> 67165a716 (Add filter search in issues list.)
   deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
   publicDeepExploreYearlySnapshots: [PublicExploreSnapshotType!]
   publicDeepExploreGlobalSnapshots: [PublicExploreSnapshotType!]
