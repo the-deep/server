@@ -405,7 +405,8 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
         return Permalink.lead_share_view(root.uuid)
 
     def resolve_attachment(root, info, **kwargs):
-        return info.context.dl.deep_gallery.file.load(root.attachment_id)
+        if root.attachment_id:
+            return info.context.dl.deep_gallery.file.load(root.attachment_id)
 
 
 class LeadDetailType(LeadType):
@@ -427,7 +428,8 @@ class LeadDetailType(LeadType):
         ).all()
 
     def resolve_attachment(root, info, **kwargs):
-        return info.context.dl.deep_gallery.file.load(root.attachment_id)
+        if root.attachment_id:
+            return info.context.dl.deep_gallery.file.load(root.attachment_id)
 
 
 class LeadListType(CustomDjangoListObjectType):
