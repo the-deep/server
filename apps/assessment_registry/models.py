@@ -696,7 +696,7 @@ class SummaryFocus(UserResource):
     total_people_critically_in_need = models.IntegerField(null=True, blank=True)
 
     class Meta:
-        verbose_name = _("SummaryDimmension")
+        verbose_name = _("SummaryDimension")
 
 
 class SummaryIssue(models.Model):
