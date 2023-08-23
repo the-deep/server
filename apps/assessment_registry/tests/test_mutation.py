@@ -101,11 +101,11 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                       }
                    }
                    cnaComplete
-                   summaryDimmensionMeta {
+                   summaryDimensionMeta {
                       id
                       percentageInNeed
                    }
-                   summarySubDimmensionIssue {
+                   summarySubDimensionIssue {
                       id
                    }
                    summaryPillarMeta {
@@ -248,7 +248,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     order=1,
                 )
             ],
-            summaryDimmensionMeta=[
+            summaryDimensionMeta=[
                 dict(
                     percentageInNeed=10,
                     focus=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
@@ -258,7 +258,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     focus=self.genum(AssessmentRegistry.SectorType.SHELTER),
                 ),
             ],
-            summarySubDimmensionIssue=[
+            summarySubDimensionIssue=[
                 dict(
                     summaryIssue=self.summary_issue2.id,
                     focus=self.genum(AssessmentRegistry.FocusType.CONTEXT),
@@ -274,7 +274,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
         self.assertIsNotNone(data['additionalDocuments'])
         self.assertIsNotNone(data['cna'])
         self.assertIsNotNone(data['summaryPillarMeta'])
-        self.assertIsNotNone(data['summaryDimmensionMeta'])
+        self.assertIsNotNone(data['summaryDimensionMeta'])
         self.assertIsNotNone(data['summarySubPillarIssue'])
-        self.assertIsNotNone(data['summarySubDimmensionIssue'])
+        self.assertIsNotNone(data['summarySubDimensionIssue'])
         self.assertEqual(data['metadataComplete'], True)

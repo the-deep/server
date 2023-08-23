@@ -15,7 +15,7 @@ from .models import (
     Summary,
     SummarySubPillarIssue,
     SummaryFocus,
-    SummarySubDimmensionIssue,
+    SummarySubDimensionIssue,
     ScoreRating,
     ScoreAnalyticalDensity,
     Answer,
@@ -58,24 +58,24 @@ class IssueSerializer(UserResourceSerializer):
     class Meta:
         model = SummaryIssue
         fields = (
-            'sub_pillar', 'sub_dimmension', 'parent', 'label'
+            'sub_pillar', 'sub_dimension', 'parent', 'label'
         )
 
     def validate(self, data):
         sub_pillar = data.get('sub_pillar')
-        sub_dimmension = data.get('sub_dimmension')
+        sub_dimension = data.get('sub_dimension')
         parent = data.get('parent')
 
-        if all([sub_pillar, sub_dimmension]):
-            raise serializers.ValidationError("Cannot select both sub_pillar and sub_dimmension field.")
-        if not any([sub_pillar, sub_dimmension]):
-            raise serializers.ValidationError("Either sub_pillar or sub_dimmension must be selected")
+        if all([sub_pillar, sub_dimension]):
+            raise serializers.ValidationError("Cannot select both sub_pillar and sub_dimension field.")
+        if not any([sub_pillar, sub_dimension]):
+            raise serializers.ValidationError("Either sub_pillar or sub_dimension must be selected")
 
         if parent:
             if sub_pillar and sub_pillar != parent.sub_pillar:
                 raise serializers.ValidationError("sub_pillar does not match between parent and child.")
-            if sub_dimmension and sub_dimmension != parent.sub_dimmension:
-                raise serializers.ValidationError("sub_dimmension does not match between child and parent.")
+            if sub_dimension and sub_dimension != parent.sub_dimension:
+                raise serializers.ValidationError("sub_dimension does not match between child and parent.")
 
             hierarchy_level = get_hierarchy_level(parent)
             if hierarchy_level > 2:
@@ -116,11 +116,11 @@ class SummaryFocusMetaSerializer(UserResourceSerializer, TempClientIdMixin):
         )
 
 
-class SummarySubDimmensionSerializer(UserResourceSerializer, TempClientIdMixin):
+class SummarySubDimensionSerializer(UserResourceSerializer, TempClientIdMixin):
     id = IntegerIDField(required=False)
 
     class Meta:
-        model = SummarySubDimmensionIssue
+        model = SummarySubDimensionIssue
         fields = ("id", "client_id", "summary_issue", "focus", "text", "order", "lead_preview_text_ref",)
 
 
@@ -176,10 +176,10 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
     summary_sub_pillar_issue = SummarySubPillarIssueSerializer(
         source="summary_sub_sector_issue_ary", many=True, required=False
     )
-    summary_dimmension_meta = SummaryFocusMetaSerializer(
+    summary_dimension_meta = SummaryFocusMetaSerializer(
         source='summary_focus', many=True, required=False
     )
-    summary_sub_dimmension_issue = SummarySubDimmensionSerializer(
+    summary_sub_dimension_issue = SummarySubDimensionSerializer(
         source="summary_focus_subsector_issue_ary", many=True, required=False
     )
 
@@ -222,8 +222,8 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             "cna",
             "summary_pillar_meta",
             "summary_sub_pillar_issue",
-            "summary_dimmension_meta",
-            "summary_sub_dimmension_issue",
+            "summary_dimension_meta",
+            "summary_sub_dimension_issue",
             "metadata_complete",
             "additional_document_complete",
             "focus_complete",
