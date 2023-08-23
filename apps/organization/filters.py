@@ -54,12 +54,12 @@ class OrganizationFilterSet(django_filters.FilterSet):
     def search_filter(self, qs, _, value):
         if value:
             return qs.filter(
-                models.Q(title__icontains=value) |
-                models.Q(short_name__icontains=value) |
-                models.Q(long_name__icontains=value) |
-                models.Q(related_childs__title__icontains=value) |
-                models.Q(related_childs__short_name__icontains=value) |
-                models.Q(related_childs__long_name__icontains=value)
+                models.Q(title__unaccent__icontains=value) |
+                models.Q(short_name__unaccent__icontains=value) |
+                models.Q(long_name__unaccent__icontains=value) |
+                models.Q(related_childs__title__unaccent__icontains=value) |
+                models.Q(related_childs__short_name__unaccent__icontains=value) |
+                models.Q(related_childs__long_name__unaccent__icontains=value)
             ).distinct()
         return qs
 
