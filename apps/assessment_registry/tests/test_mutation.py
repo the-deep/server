@@ -45,6 +45,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     externalSupportDisplay
                     family
                     familyDisplay
+                    metadataComplete
                     focuses
                     frequency
                     frequencyDisplay
@@ -57,6 +58,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     publicationDate
                     sampling
                     sectors
+                    focusComplete
                     lead {
                       id
                     }
@@ -73,6 +75,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                       dataCollectionTechniqueDisplay
                       dataCollectionTechnique
                     }
+                    methodologyComplete
                     additionalDocuments {
                         documentType
                         documentTypeDisplay
@@ -84,6 +87,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                             metadata
                         }
                     }
+                    additionalDocumentComplete
                    cna {
                       answer
                       id
@@ -96,6 +100,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                         subSectorDisplay
                       }
                    }
+                   cnaComplete
                    summaryDimmensionMeta {
                       id
                       percentageInNeed
@@ -110,6 +115,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                    summarySubPillarIssue {
                       id
                    }
+                   summaryComplete
                 }
             }
         }
@@ -186,6 +192,10 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
             ],
             bgCountries=[self.region.id],
             affectedGroups=[self.genum(AssessmentRegistry.AffectedGroupType.ALL_AFFECTED)],
+            metadataComplete=True,
+            additionalDocumentComplete=True,
+            focusComplete=True,
+            methodologyComplete=True,
             methodologyAttributes=[
                 dict(
                     dataCollectionTechnique=self.genum(MethodologyAttribute.CollectionTechniqueType.SECONDARY_DATA_REVIEW),
@@ -267,3 +277,4 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
         self.assertIsNotNone(data['summaryDimmensionMeta'])
         self.assertIsNotNone(data['summarySubPillarIssue'])
         self.assertIsNotNone(data['summarySubDimmensionIssue'])
+        self.assertEqual(data['metadataComplete'], True)

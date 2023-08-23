@@ -206,6 +206,13 @@ class AssessmentRegistry(UserResource):
     )
 
     locations = models.ManyToManyField(GeoArea, related_name='focus_location_assessment_reg', blank=True)
+    metadata_complete = models.BooleanField(default=False)
+    additional_document_complete = models.BooleanField(default=False)
+    focus_complete = models.BooleanField(default=False)
+    methodology_complete = models.BooleanField(default=False)
+    summary_complete = models.BooleanField(default=False)
+    cna_complete = models.BooleanField(default=False)
+    score_complete = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["id"]
