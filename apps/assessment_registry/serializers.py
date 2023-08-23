@@ -63,22 +63,9 @@ class IssueSerializer(UserResourceSerializer):
 
     def validate(self, data):
         sub_pillar = data.get('sub_pillar')
-<<<<<<< HEAD
         sub_dimension = data.get('sub_dimension')
-||||||| parent of da2c57354 (Add validation for question in admin side.)
-        from utils.common import get_hierarchy_level
-        if data.get('sub_pillar') is not None and data.get('sub_dimmension') is not None:
-            raise serializers.ValidationError("Cannot select both sub_pillar and sub_dimmension field.")
-        if data.get('parent') is not None:
-            if data.get('sub_pillar') is not None:
-                if data.get('sub_pillar') != data.get('parent').sub_pillar:
-                    raise serializers.ValidationError("sub_pillar does not match between parent and child.")
-=======
-        sub_dimmension = data.get('sub_dimmension')
->>>>>>> da2c57354 (Add validation for question in admin side.)
         parent = data.get('parent')
 
-<<<<<<< HEAD
         if all([sub_pillar, sub_dimension]):
             raise serializers.ValidationError("Cannot select both sub_pillar and sub_dimension field.")
         if not any([sub_pillar, sub_dimension]):
@@ -89,24 +76,6 @@ class IssueSerializer(UserResourceSerializer):
                 raise serializers.ValidationError("sub_pillar does not match between parent and child.")
             if sub_dimension and sub_dimension != parent.sub_dimension:
                 raise serializers.ValidationError("sub_dimension does not match between child and parent.")
-||||||| parent of da2c57354 (Add validation for question in admin side.)
-            if data.get('sub_dimmension') is not None:
-                if data.get('sub_dimmension') != data.get('parent').sub_dimmension:
-                    raise serializers.ValidationError("sub_dimmension does not match between child and parent.")
-        if data.get('parent'):
-            hierarchy_level = get_hierarchy_level(data.get('parent'))
-=======
-        if all([sub_pillar, sub_dimmension]):
-            raise serializers.ValidationError("Cannot select both sub_pillar and sub_dimmension field.")
-        if not any([sub_pillar, sub_dimmension]):
-            raise serializers.ValidationError("Either sub_pillar or sub_dimmension must be selected")
-
-        if parent:
-            if sub_pillar and sub_pillar != parent.sub_pillar:
-                raise serializers.ValidationError("sub_pillar does not match between parent and child.")
-            if sub_dimmension and sub_dimmension != parent.sub_dimmension:
-                raise serializers.ValidationError("sub_dimmension does not match between child and parent.")
->>>>>>> da2c57354 (Add validation for question in admin side.)
 
             hierarchy_level = get_hierarchy_level(parent)
             if hierarchy_level > 2:
