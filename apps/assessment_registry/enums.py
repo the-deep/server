@@ -13,7 +13,7 @@ from .models import (
     ScoreRating,
     ScoreAnalyticalDensity,
     Question,
-    SummarySubDimmensionIssue,
+    SummarySubDimensionIssue,
     AssessmentRegistryOrganization,
 )
 
@@ -98,11 +98,11 @@ AssessmentRegistryCNAQuestionSubSectorTypeEnum = convert_enum_to_graphene_enum(
 AssessmentRegistrySummaryPillarTypeEnum = convert_enum_to_graphene_enum(
     Summary.Pillar, name='AssessmentRegistrySummaryPillarTypeEnum'
 )
-AssessmentRegistrySummaryFocusDimmensionTypeEnum = convert_enum_to_graphene_enum(
-    SummaryFocus.Dimmension, name='AssessmentRegistrySummaryFocusDimmensionTypeEnum'
+AssessmentRegistrySummaryFocusDimensionTypeEnum = convert_enum_to_graphene_enum(
+    SummaryFocus.Dimension, name='AssessmentRegistrySummaryFocusDimensionTypeEnum'
 )
-AssessmentRegistrySummarySubDimmensionTypeEnum = convert_enum_to_graphene_enum(
-    SummaryIssue.SubDimmension, name='AssessmentRegistrySummarySubDimmensionTypeEnum'
+AssessmentRegistrySummarySubDimensionTypeEnum = convert_enum_to_graphene_enum(
+    SummaryIssue.SubDimension, name='AssessmentRegistrySummarySubDimensionTypeEnum'
 )
 AssessmentRegistrySummarySubPillarTypeEnum = convert_enum_to_graphene_enum(
     SummaryIssue.SubPillar, name='AssessmentRegistrySummarySubPillarTypeEnum'
@@ -137,9 +137,9 @@ enum_map = {
         (ScoreAnalyticalDensity.sector, AssessmentRegistrySectorTypeEnum),
         (ScoreAnalyticalDensity.analysis_level_covered, AssessmentRegistryAnalysisLevelTypeEnum),
         (ScoreAnalyticalDensity.figure_provided, AssessmentRegistryAnalysisFigureTypeEnum),
-        (SummarySubDimmensionIssue.focus, AssessmentRegistryFocusTypeEnum),
+        (SummarySubDimensionIssue.focus, AssessmentRegistryFocusTypeEnum),
         (SummaryIssue.sub_pillar, AssessmentRegistrySummarySubPillarTypeEnum),
-        (SummaryIssue.sub_dimmension, AssessmentRegistrySummarySubDimmensionTypeEnum),
+        (SummaryIssue.sub_dimension, AssessmentRegistrySummarySubDimensionTypeEnum),
         (SummaryFocus.focus, AssessmentRegistrySectorTypeEnum),
         (AssessmentRegistryOrganization.organization_type, AssessmentRegistryOrganizationTypeEnum),
     )
