@@ -103,6 +103,8 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
                    summarySubPillarIssue {
                       id
                    }
+                   metadataComplete
+                   cnaComplete
                 }
               }
             }
@@ -122,6 +124,8 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
             lead=lead_1,
             confidentiality=AssessmentRegistry.ConfidentialityType.UNPROTECTED,
             bg_countries=[self.country1.id, self.country2.id],
+            metadata_complete=True,
+            cna_complete=False,
         )
 
         methodology_attribute1, methodology_attribute2 = MethodologyAttributeFactory.create_batch(
@@ -222,6 +226,7 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['summarySubPillarIssue']), 1)
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['summaryDimmensionMeta']), 1)
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['summarySubDimmensionIssue']), 1)
+        self.assertEqual(content['data']['project']['assessmentRegistry']['cnaComplete'], False)
 
     def test_list_assessment_registry_query(self):
         query = '''
