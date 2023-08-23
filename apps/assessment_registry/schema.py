@@ -21,7 +21,7 @@ from .models import (
     SummarySubPillarIssue,
     SummaryIssue,
     SummaryFocus,
-    SummarySubDimmensionIssue,
+    SummarySubDimensionIssue,
     ScoreRating,
     ScoreAnalyticalDensity,
     Question,
@@ -58,8 +58,8 @@ from .enums import (
     AssessmentRegistryCNAQuestionSubSectorTypeEnum,
     AssessmentRegistrySummaryPillarTypeEnum,
     AssessmentRegistrySummarySubPillarTypeEnum,
-    AssessmentRegistrySummaryFocusDimmensionTypeEnum,
-    AssessmentRegistrySummarySubDimmensionTypeEnum,
+    AssessmentRegistrySummaryFocusDimensionTypeEnum,
+    AssessmentRegistrySummarySubDimensionTypeEnum,
     AssessmentRegistryOrganizationTypeEnum,
 )
 
@@ -103,10 +103,10 @@ class SummaryOptionType(graphene.ObjectType):
 
 
 class SummaryFocusOptionType(graphene.ObjectType):
-    dimmension = graphene.Field(AssessmentRegistrySummaryFocusDimmensionTypeEnum, required=True)
-    dimmension_display = EnumDescription(required=True)
-    sub_dimmension = graphene.Field(AssessmentRegistrySummarySubDimmensionTypeEnum, required=True)
-    sub_dimmension_display = EnumDescription(required=True)
+    dimension = graphene.Field(AssessmentRegistrySummaryFocusDimensionTypeEnum, required=True)
+    dimension_display = EnumDescription(required=True)
+    sub_dimension = graphene.Field(AssessmentRegistrySummarySubDimensionTypeEnum, required=True)
+    sub_dimension_display = EnumDescription(required=True)
 
 
 class ScoreOptionsType(graphene.ObjectType):
@@ -152,13 +152,13 @@ class AssessmentRegistryOptionsType(graphene.ObjectType):
     def resolve_summary_focus_options(root, info, **kwargs):
         return [
             SummaryFocusOptionType(
-                dimmension=dimmension.value,
-                dimmension_display=dimmension.label,
-                sub_dimmension=sub_dimmension.value,
-                sub_dimmension_display=sub_dimmension.label,
+                dimension=dimension.value,
+                dimension_display=dimension.label,
+                sub_dimension=sub_dimension.value,
+                sub_dimension_display=sub_dimension.label,
             )
-            for dimmension, sub_dimmensions in SummaryIssue.DIMMENSION_SUB_DIMMENSION_MAP.items()
-            for sub_dimmension in sub_dimmensions
+            for dimension, sub_dimensions in SummaryIssue.DIMMENSION_SUB_DIMMENSION_MAP.items()
+            for sub_dimension in sub_dimensions
         ]
 
     @staticmethod
@@ -257,8 +257,8 @@ class CNAType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
 class AssessmentRegistrySummaryIssueType(DjangoObjectType, UserResourceMixin):
     sub_pillar = graphene.Field(AssessmentRegistrySummarySubPillarTypeEnum, required=False)
     sub_pillar_display = EnumDescription(source='get_sub_pillar_display', required=False)
-    sub_dimmension = graphene.Field(AssessmentRegistrySummarySubDimmensionTypeEnum, required=False)
-    sub_dimmension_display = EnumDescription(source='get_sub_dimmension_display', required=False)
+    sub_dimension = graphene.Field(AssessmentRegistrySummarySubDimensionTypeEnum, required=False)
+    sub_dimension_display = EnumDescription(source='get_sub_dimension_display', required=False)
 
     class Meta:
         model = SummaryIssue
@@ -334,12 +334,12 @@ class SummaryFocusMetaType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
         ]
 
 
-class SummaryFocusSubDimmensionIssueType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
+class SummaryFocusSubDimensionIssueType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     focus = graphene.Field(AssessmentRegistryFocusTypeEnum, required=False)
     focus_display = EnumDescription(required=False)
 
     class Meta:
-        model = SummarySubDimmensionIssue
+        model = SummarySubDimensionIssue
         only_fields = [
             'id',
             'summary_issue',
@@ -416,8 +416,8 @@ class AssessmentRegistryType(
     cna = graphene.List(graphene.NonNull(CNAType), required=False)
     summary_pillar_meta = graphene.Field(SummaryMetaType, required=False)
     summary_sub_pillar_issue = graphene.List(graphene.NonNull(SummarySubPillarIssueType), required=False)
-    summary_dimmension_meta = graphene.List(graphene.NonNull(SummaryFocusMetaType), required=False)
-    summary_sub_dimmension_issue = graphene.List(graphene.NonNull(SummaryFocusSubDimmensionIssueType), required=False)
+    summary_dimension_meta = graphene.List(graphene.NonNull(SummaryFocusMetaType), required=False)
+    summary_sub_dimension_issue = graphene.List(graphene.NonNull(SummaryFocusSubDimensionIssueType), required=False)
     lead = graphene.NonNull(LeadDetailType)
     stakeholders = graphene.List(graphene.NonNull(AssessmentRegistryOrganizationType))
 
@@ -462,12 +462,12 @@ class AssessmentRegistryType(
         return SummarySubPillarIssue.objects.filter(assessment_registry=root)
 
     @staticmethod
-    def resolve_summary_dimmension_meta(root, info, **kwargs):
+    def resolve_summary_dimension_meta(root, info, **kwargs):
         return SummaryFocus.objects.filter(assessment_registry=root)
 
     @staticmethod
-    def resolve_summary_sub_dimmension_issue(root, info, **kwargs):
-        return SummarySubDimmensionIssue.objects.filter(assessment_registry=root)
+    def resolve_summary_sub_dimension_issue(root, info, **kwargs):
+        return SummarySubDimensionIssue.objects.filter(assessment_registry=root)
 
 
 class AssessmentRegistryListType(CustomDjangoListObjectType):

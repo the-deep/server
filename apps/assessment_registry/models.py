@@ -674,7 +674,7 @@ class SummarySubPillarIssue(UserResource):
 
 
 class SummaryFocus(UserResource):
-    class Dimmension(models.IntegerChoices):
+    class Dimension(models.IntegerChoices):
         IMPACT = 1, 'Impact'
         HUMANITARIAN_CONDITIONS = 2, 'Humanitarian Conditions'
         PRIORITIES_AND_PREFERENCES = 3, 'Priorities & Preferences'
@@ -734,7 +734,7 @@ class SummaryIssue(models.Model):
         RELIEF_TO_POPULATION = 21, 'Relief To Population'
         PHYSICAL_AND_SECURITY = 22, 'Physical & Security'
 
-    class SubDimmension(models.IntegerChoices):
+    class SubDimension(models.IntegerChoices):
         DRIVERS = 1, 'Drivers'
         IMPACT_ON_PEOPLE = 2, 'Impact on People'
         IMPACT_ON_SYSTEM = 3, 'Impact On System, Network And Services'
@@ -787,33 +787,33 @@ class SummaryIssue(models.Model):
     }
 
     DIMMENSION_SUB_DIMMENSION_MAP = {
-        SummaryFocus.Dimmension.IMPACT: [
-            SubDimmension.DRIVERS,
-            SubDimmension.IMPACT_ON_PEOPLE,
-            SubDimmension.IMPACT_ON_SYSTEM,
+        SummaryFocus.Dimension.IMPACT: [
+            SubDimension.DRIVERS,
+            SubDimension.IMPACT_ON_PEOPLE,
+            SubDimension.IMPACT_ON_SYSTEM,
         ],
-        SummaryFocus.Dimmension.HUMANITARIAN_CONDITIONS: [
-            SubDimmension.LIVING_STANDARDS,
-            SubDimmension.COPING_MECHANISMS,
-            SubDimmension.PHYSICAL_AND_MENTAL_WELL_BEING,
+        SummaryFocus.Dimension.HUMANITARIAN_CONDITIONS: [
+            SubDimension.LIVING_STANDARDS,
+            SubDimension.COPING_MECHANISMS,
+            SubDimension.PHYSICAL_AND_MENTAL_WELL_BEING,
         ],
-        SummaryFocus.Dimmension.PRIORITIES_AND_PREFERENCES: [
-            SubDimmension.NEEDS_POP,
-            SubDimmension.NEEDS_HUMAN,
-            SubDimmension.INTERVENTIONS_HUMAN,
-            SubDimmension.INTERVENTIONS_POP,
+        SummaryFocus.Dimension.PRIORITIES_AND_PREFERENCES: [
+            SubDimension.NEEDS_POP,
+            SubDimension.NEEDS_HUMAN,
+            SubDimension.INTERVENTIONS_HUMAN,
+            SubDimension.INTERVENTIONS_POP,
         ],
-        SummaryFocus.Dimmension.CONCLUSIONS: [
-            SubDimmension.DEMOGRAPHIC_GROUPS,
-            SubDimmension.GROUPS_WITH_SPECIFIC_NEEDS,
-            SubDimmension.GEOGRAPHICAL_AREAS,
-            SubDimmension.PEOPLE_AT_RISKS,
-            SubDimmension.FOCAL_ISSUES,
+        SummaryFocus.Dimension.CONCLUSIONS: [
+            SubDimension.DEMOGRAPHIC_GROUPS,
+            SubDimension.GROUPS_WITH_SPECIFIC_NEEDS,
+            SubDimension.GEOGRAPHICAL_AREAS,
+            SubDimension.PEOPLE_AT_RISKS,
+            SubDimension.FOCAL_ISSUES,
         ],
     }
 
     sub_pillar = models.IntegerField(choices=SubPillar.choices, blank=True, null=True)
-    sub_dimmension = models.IntegerField(choices=SubDimmension.choices, blank=True, null=True)
+    sub_dimension = models.IntegerField(choices=SubDimension.choices, blank=True, null=True)
     parent = models.ForeignKey(
         'SummaryIssue',
         on_delete=models.CASCADE,
@@ -827,7 +827,7 @@ class SummaryIssue(models.Model):
         return self.label
 
 
-class SummarySubDimmensionIssue(UserResource):
+class SummarySubDimensionIssue(UserResource):
     assessment_registry = models.ForeignKey(
         AssessmentRegistry,
         on_delete=models.CASCADE,
