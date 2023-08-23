@@ -484,6 +484,17 @@ type AnalyticalStatementType {
   entries: [AnalyticalStatementEntryType!]
 }
 
+type AssessmentAffectedGroupCountByDateType {
+  date: Date
+  count: Int
+  affectedGroup: AssessmentRegistryAffectedGroupTypeEnum
+}
+
+type AssessmentCountByDateType {
+  date: Date
+  count: Int
+}
+
 type AssessmentCountType {
   coordinatedJoint: AssessmentRegistryCoordinationTypeEnum
   coordinatedJointDisplay: EnumDescription
@@ -534,6 +545,23 @@ type AssessmentDashboardStatisticsType {
   totalMultisectorAssessment: Int!
   totalSinglesectorAssessment: Int!
   assessmentGeographicAreas: [AssessmentDashboardGeographicalArea]
+  assessmentByOverTime: [AssessmentCountByDateType]
+  assessmentPerFrameworkPiller: [AssessmentFocusCountByDateType]
+  assessmentPerAffectedGroup: [AssessmentAffectedGroupCountByDateType]
+  assessmentPerHumanitarianSector: [AssessmentHumanitrainSectorCountByDateType]
+  assessmentPerProtectionManagement: [AssessmentProtectionInformationCountByDateType]
+}
+
+type AssessmentFocusCountByDateType {
+  date: Date
+  count: Int
+  focus: AssessmentRegistryFocusTypeEnum
+}
+
+type AssessmentHumanitrainSectorCountByDateType {
+  date: Date
+  count: Int
+  sector: AssessmentRegistrySectorTypeEnum
 }
 
 type AssessmentListType {
@@ -552,6 +580,12 @@ enum AssessmentMethodologyProtectionInfoEnum {
   COMMUNICATING_WITH_OR_IN_AFFECTED_COMMUNITIES
   SECURITY_AND_SITUATIONAL_AWARENESS
   SECTORAL_SYSTEMS_OR_OTHER
+}
+
+type AssessmentProtectionInformationCountByDateType {
+  date: Date
+  count: Int
+  protectionManagement: AssessmentRegistryProtectionInfoTypeEnum
 }
 
 enum AssessmentRegistryAffectedGroupTypeEnum {
