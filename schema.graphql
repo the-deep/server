@@ -1521,8 +1521,8 @@ input AssessmentRegistryCreateInputType {
   cna: [CNAAnswerInputType!]
   summaryPillarMeta: SummaryMetaInputType
   summarySubPillarIssue: [SummarySubPillarIssueInputType!]
-  summaryDimmensionMeta: [SummaryFocusMetaInputType!]
-  summarySubDimmensionIssue: [SummarySubDimmensionInputType!]
+  summaryDimensionMeta: [SummaryFocusMetaInputType!]
+  summarySubDimensionIssue: [SummarySubDimensionInputType!]
   metadataComplete: Boolean
   additionalDocumentComplete: Boolean
   focusComplete: Boolean
@@ -1762,7 +1762,7 @@ enum AssessmentRegistrySectorTypeEnum {
   INTER_CROSS_SECTOR
 }
 
-enum AssessmentRegistrySummaryFocusDimmensionTypeEnum {
+enum AssessmentRegistrySummaryFocusDimensionTypeEnum {
   IMPACT
   HUMANITARIAN_CONDITIONS
   PRIORITIES_AND_PREFERENCES
@@ -1772,7 +1772,7 @@ enum AssessmentRegistrySummaryFocusDimmensionTypeEnum {
 
 input AssessmentRegistrySummaryIssueCreateInputType {
   subPillar: AssessmentRegistrySummarySubPillarTypeEnum
-  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
+  subDimension: AssessmentRegistrySummarySubDimensionTypeEnum
   parent: ID
   label: String!
 }
@@ -1795,8 +1795,8 @@ type AssessmentRegistrySummaryIssueType {
   modifiedBy: UserType
   subPillar: AssessmentRegistrySummarySubPillarTypeEnum
   subPillarDisplay: EnumDescription
-  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum
-  subDimmensionDisplay: EnumDescription
+  subDimension: AssessmentRegistrySummarySubDimensionTypeEnum
+  subDimensionDisplay: EnumDescription
 }
 
 enum AssessmentRegistrySummaryPillarTypeEnum {
@@ -1807,7 +1807,7 @@ enum AssessmentRegistrySummaryPillarTypeEnum {
   HUMANITARIAN_ACCESS
 }
 
-enum AssessmentRegistrySummarySubDimmensionTypeEnum {
+enum AssessmentRegistrySummarySubDimensionTypeEnum {
   DRIVERS
   IMPACT_ON_PEOPLE
   IMPACT_ON_SYSTEM
@@ -1906,8 +1906,8 @@ type AssessmentRegistryType {
   cna: [CNAType!]
   summaryPillarMeta: SummaryMetaType
   summarySubPillarIssue: [SummarySubPillarIssueType!]
-  summaryDimmensionMeta: [SummaryFocusMetaType!]
-  summarySubDimmensionIssue: [SummaryFocusSubDimmensionIssueType!]
+  summaryDimensionMeta: [SummaryFocusMetaType!]
+  summarySubDimensionIssue: [SummaryFocusSubDimensionIssueType!]
   lead: LeadDetailType!
   stakeholders: [AssessmentRegistryOrganizationType!]
 }
@@ -4473,7 +4473,7 @@ type PublicProjectWithMembershipData {
 type Query {
   publicAnalysisReportSnapshot(slug: String!): AnalysisReportSnapshotType
   assessmentRegSummaryIssue(id: ID!): AssessmentRegistrySummaryIssueType
-  assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum, search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
+  assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimension: AssessmentRegistrySummarySubDimensionTypeEnum, search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
   deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
   publicDeepExploreYearlySnapshots: [PublicExploreSnapshotType!]
   publicDeepExploreGlobalSnapshots: [PublicExploreSnapshotType!]
@@ -4758,13 +4758,13 @@ type SummaryFocusMetaType {
 }
 
 type SummaryFocusOptionType {
-  dimmension: AssessmentRegistrySummaryFocusDimmensionTypeEnum!
-  dimmensionDisplay: EnumDescription!
-  subDimmension: AssessmentRegistrySummarySubDimmensionTypeEnum!
-  subDimmensionDisplay: EnumDescription!
+  dimension: AssessmentRegistrySummaryFocusDimensionTypeEnum!
+  dimensionDisplay: EnumDescription!
+  subDimension: AssessmentRegistrySummarySubDimensionTypeEnum!
+  subDimensionDisplay: EnumDescription!
 }
 
-type SummaryFocusSubDimmensionIssueType {
+type SummaryFocusSubDimensionIssueType {
   id: ID!
   summaryIssue: AssessmentRegistrySummaryIssueType!
   text: String!
@@ -4810,7 +4810,7 @@ type SummaryOptionType {
   subPillarDisplay: EnumDescription!
 }
 
-input SummarySubDimmensionInputType {
+input SummarySubDimensionInputType {
   id: ID
   clientId: String
   summaryIssue: ID!

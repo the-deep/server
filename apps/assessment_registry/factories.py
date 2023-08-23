@@ -15,7 +15,7 @@ from assessment_registry.models import (
     Summary,
     SummaryFocus,
     SummarySubPillarIssue,
-    SummarySubDimmensionIssue,
+    SummarySubDimensionIssue,
 )
 
 
@@ -39,9 +39,9 @@ class SummaryFocusFactory(DjangoModelFactory):
         model = SummaryFocus
 
 
-class SummarySubDimmensionIssueFactory(DjangoModelFactory):
+class SummarySubDimensionIssueFactory(DjangoModelFactory):
     class Meta:
-        model = SummarySubDimmensionIssue
+        model = SummarySubDimensionIssue
 
 
 class QuestionFactory(DjangoModelFactory):

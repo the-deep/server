@@ -10,7 +10,7 @@ from .models import (
     Summary,
     SummarySubPillarIssue,
     SummaryFocus,
-    SummarySubDimmensionIssue,
+    SummarySubDimensionIssue,
 )
 
 
@@ -69,8 +69,8 @@ class SummaryFocusInline(admin.TabularInline):
     exclude = ('created_by', 'modified_by', 'client_id')
 
 
-class SummarySubDimmensionIssueInline(admin.TabularInline):
-    model = SummarySubDimmensionIssue
+class SummarySubDimensionIssueInline(admin.TabularInline):
+    model = SummarySubDimensionIssue
     extra = 0
     exclude = ('created_by', 'modified_by', 'client_id')
 
@@ -94,7 +94,7 @@ class AssessmentRegistryAdmin(admin.ModelAdmin):
         SummaryInline,
         SummarySubPillarIssueInline,
         SummaryFocusInline,
-        SummarySubDimmensionIssueInline,
+        SummarySubDimensionIssueInline,
     ]
 
     def get_queryset(self, request):

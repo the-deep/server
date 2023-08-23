@@ -18,7 +18,7 @@ from assessment_registry.factories import (
     SummarySubPillarIssueFactory,
     SummaryIssueFactory,
     SummaryFocusFactory,
-    SummarySubDimmensionIssueFactory,
+    SummarySubDimensionIssueFactory,
 )
 from lead.models import Lead
 from project.models import Project
@@ -91,10 +91,10 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
                     }
                   }
 
-                   summaryDimmensionMeta {
+                   summaryDimensionMeta {
                       id
                    }
-                   summarySubDimmensionIssue {
+                   summarySubDimensionIssue {
                       id
                    }
                    summaryPillarMeta {
@@ -186,7 +186,7 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
             assessment_registry=assessment_registry,
             focus=AssessmentRegistry.SectorType.FOOD_SECURITY,
         )
-        SummarySubDimmensionIssueFactory.create(
+        SummarySubDimensionIssueFactory.create(
             assessment_registry=assessment_registry,
             summary_issue=summary_issue2,
             focus=AssessmentRegistry.FocusType.CONTEXT,
@@ -224,8 +224,8 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
 
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['summaryPillarMeta']), 1)
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['summarySubPillarIssue']), 1)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summaryDimmensionMeta']), 1)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summarySubDimmensionIssue']), 1)
+        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summaryDimensionMeta']), 1)
+        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summarySubDimensionIssue']), 1)
         self.assertEqual(content['data']['project']['assessmentRegistry']['cnaComplete'], False)
 
     def test_list_assessment_registry_query(self):
