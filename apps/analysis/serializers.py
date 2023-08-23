@@ -1,3 +1,4 @@
+import logging
 from typing import Callable
 from django.conf import settings
 from django.shortcuts import get_object_or_404
@@ -5,9 +6,11 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
 from drf_writable_nested import UniqueFieldsMixin, NestedCreateMixin
-from django.db import transaction
+from django.db import transaction, models
 
+from deep.graphene_context import GQLContext
 from utils.graphene.fields import generate_serializer_field_class
+from commons.schema_snapshots import generate_query_snapshot, SnapshotQuery
 from deep.writable_nested_serializers import NestedUpdateMixin as CustomNestedUpdateMixin
 from deep.serializers import (
     RemoveNullFieldsMixin,
@@ -15,6 +18,7 @@ from deep.serializers import (
     IntegerIDField,
     IdListField,
     GraphqlSupportDrfSerializerJSONField,
+    ProjectPropertySerializerMixin,
 )
 from user_resource.serializers import UserResourceSerializer
 from user.serializers import NanoUserSerializer
@@ -32,6 +36,12 @@ from .models import (
     AutomaticSummary,
     AnalyticalStatementNGram,
     AnalyticalStatementGeoTask,
+    # Report
+    AnalysisReport,
+    AnalysisReportUpload,
+    AnalysisReportContainerData,
+    AnalysisReportContainer,
+    AnalysisReportSnapshot,
 )
 from .tasks import (
     trigger_topic_model,
@@ -39,6 +49,9 @@ from .tasks import (
     trigger_automatic_ngram,
     trigger_geo_location,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 class AnalyticalEntriesSerializer(UniqueFieldsMixin, UserResourceSerializer):
@@ -528,3 +541,329 @@ class AnalyticalStatementGeoTaskSerializer(EntriesCollectionNlpTriggerBaseSerial
         fields = (
             'entries_id',
         )
+
+
+# ReportModule
+class ReportEnum:
+    class VariableType(models.TextChoices):
+        TEXT = 'text'
+        NUMBER = 'number'
+        DATE = 'date'
+
+    class TextStypeAlign(models.TextChoices):
+        START = 'start'
+        END = 'end'
+        CENTER = 'center'
+        JUSTIFIED = 'justified'
+
+    class BorderStyleStype(models.TextChoices):
+        DOTTED = 'dotted'
+        DASHED = 'dashed'
+        SOLID = 'solid'
+        DOUBLE = 'double'
+        NONE = 'none'
+
+    class ImageContentStyleFit(models.TextChoices):
+        FILL = 'fill'
+        CONTAIN = 'contain'
+        COVER = 'cover'
+        SCALE_DOWN = 'scale-down'
+        NONE = 'none'
+
+    class HeadingConfigurationVariant(models.TextChoices):
+        H1 = 'h1'
+        H2 = 'h2'
+        H3 = 'h3'
+        H4 = 'h4'
+
+
+class AnalysisReportVariableSerializer(serializers.Serializer):
+    name = serializers.CharField(required=False)
+    type = serializers.ChoiceField(choices=ReportEnum.VariableType.choices, required=False)
+    completeness = serializers.IntegerField(required=False)
+
+
+class AnalysisReportTextStyleSerializer(serializers.Serializer):
+    color = serializers.CharField(required=False)
+    family = serializers.CharField(required=False)
+    size = serializers.IntegerField(required=False)
+    weight = serializers.IntegerField(required=False)
+    align = serializers.ChoiceField(choices=ReportEnum.TextStypeAlign.choices, required=False)
+
+
+class AnalysisReportMarginStyleSerializer(serializers.Serializer):
+    top = serializers.IntegerField(required=False)
+    bottom = serializers.IntegerField(required=False)
+    left = serializers.IntegerField(required=False)
+    right = serializers.IntegerField(required=False)
+
+
+class AnalysisReportPaddingStyleSerializer(serializers.Serializer):
+    top = serializers.IntegerField(required=False)
+    bottom = serializers.IntegerField(required=False)
+    left = serializers.IntegerField(required=False)
+    right = serializers.IntegerField(required=False)
+
+
+class AnalysisReportBorderStyleSerializer(serializers.Serializer):
+    color = serializers.CharField(required=False)
+    width = serializers.IntegerField(required=False)
+    opacity = serializers.IntegerField(required=False)
+    style = serializers.ChoiceField(choices=ReportEnum.BorderStyleStype.choices, required=False)
+
+
+class AnalysisReportBackgroundStyleSerializer(serializers.Serializer):
+    color = serializers.CharField(required=False)
+    opacity = serializers.IntegerField(required=False)
+
+
+class AnalysisReportPageStyleSerializer(serializers.Serializer):
+    margin = AnalysisReportMarginStyleSerializer(required=False)
+    background = AnalysisReportBackgroundStyleSerializer(required=False)
+
+
+class AnalysisReportHeaderStyleSerializer(serializers.Serializer):
+    padding = AnalysisReportPaddingStyleSerializer(required=False)
+    border = AnalysisReportBorderStyleSerializer(required=False)
+    background = AnalysisReportBackgroundStyleSerializer(required=False)
+
+    title = AnalysisReportTextStyleSerializer(required=False)
+    subTitle = AnalysisReportTextStyleSerializer(required=False)
+
+
+class AnalysisReportBodyStyleSerializer(serializers.Serializer):
+    gap = serializers.IntegerField(required=False)
+
+
+class AnalysisReportContainerStyleSerializer(serializers.Serializer):
+    padding = AnalysisReportPaddingStyleSerializer(required=False)
+    border = AnalysisReportBorderStyleSerializer(required=False)
+    background = AnalysisReportBackgroundStyleSerializer(required=False)
+
+
+class AnalysisReportTextContentStyleSerializer(serializers.Serializer):
+    content = AnalysisReportTextStyleSerializer(required=False)
+
+
+class AnalysisReportHeadingContentStyleSerializer(serializers.Serializer):
+    h1 = AnalysisReportTextStyleSerializer(required=False)
+    h2 = AnalysisReportTextStyleSerializer(required=False)
+    h3 = AnalysisReportTextStyleSerializer(required=False)
+    h4 = AnalysisReportTextStyleSerializer(required=False)
+
+
+class AnalysisReportImageContentStyleSerializer(serializers.Serializer):
+    caption = AnalysisReportTextStyleSerializer(required=False)
+    fit = serializers.ChoiceField(choices=ReportEnum.ImageContentStyleFit.choices, required=False)
+
+
+class AnalysisReportUrlContentStyleSerializer(serializers.Serializer):
+    # TODO: Define fields here
+    noop = serializers.CharField(required=False)
+
+
+# XXX: NOT USED
+class AnalysisReportTextConfigurationSerializer(serializers.Serializer):
+    content = serializers.CharField(required=False)
+    content_style = AnalysisReportTextContentStyleSerializer(required=False)
+
+
+# XXX: NOT USED
+class AnalysisReportHeadingConfigurationSerializer(serializers.Serializer):
+    content = serializers.CharField(required=False)
+    content_style = AnalysisReportTextContentStyleSerializer(required=False)
+    variant = serializers.ChoiceField(choices=ReportEnum.HeadingConfigurationVariant.choices, required=False)
+
+
+class AnalysisReportUrlConfigurationSerializer(serializers.Serializer):
+    url = serializers.CharField(required=False)
+
+
+class AnalysisReportImageConfigurationSerializer(serializers.Serializer):
+    caption = serializers.CharField(required=False)
+    altText = serializers.CharField(required=False)
+
+
+class AnalysisReportConfigurationSerializer(serializers.Serializer):
+    # Configuration for page
+    page_style = AnalysisReportPageStyleSerializer(required=False)
+    # Configuration for page header
+    header_style = AnalysisReportHeaderStyleSerializer(required=False)
+    # Configuration for page body
+    body_style = AnalysisReportBodyStyleSerializer(required=False)
+    # -- Default Configuration for
+    # Container
+    container_style = AnalysisReportContainerStyleSerializer(required=False)
+    # Text content
+    text_content_style = AnalysisReportTextContentStyleSerializer(required=False)
+    # Heading content
+    heading_content_style = AnalysisReportHeadingContentStyleSerializer(required=False)
+    # Image content
+    image_content_style = AnalysisReportImageContentStyleSerializer(required=False)
+    # URL content
+    url_content_style = AnalysisReportUrlConfigurationSerializer(required=False)
+
+
+class AnalysisReportContainerContentStyleSerializer(serializers.Serializer):
+    text = AnalysisReportTextContentStyleSerializer(required=False)
+    heading = AnalysisReportHeaderStyleSerializer(required=False)
+    image = AnalysisReportImageContentStyleSerializer(required=False)
+    url = AnalysisReportUrlContentStyleSerializer(required=False)
+
+
+class AnalysisReportContainerContentConfigurationSerializer(serializers.Serializer):
+    text = AnalysisReportTextConfigurationSerializer(required=False)
+    heading = AnalysisReportHeadingConfigurationSerializer(required=False)
+    image = AnalysisReportImageConfigurationSerializer(required=False)
+    url = AnalysisReportUrlConfigurationSerializer(required=False)
+
+
+class AnalysisReportContainerDataSerializer(serializers.ModelSerializer):
+    id = IntegerIDField(required=False)
+
+    class Meta:
+        model = AnalysisReportContainerData
+        fields = (
+            'id',
+            'upload',  # TODO Validation
+            'data',
+        )
+
+
+class AnalysisReportContainerSerializer(NestedCreateMixin, serializers.ModelSerializer):
+    id = IntegerIDField(required=False)
+
+    class Meta:
+        model = AnalysisReportContainer
+        fields = (
+            'id',
+            'row',
+            'column',
+            'width',
+            'height',
+            'content_type',
+            # Custom
+            'style',
+            'content_style',
+            'content_configuration',
+            'content_data',
+        )
+
+    style = AnalysisReportContainerStyleSerializer(required=False)
+
+    # Content metadata
+    content_style = AnalysisReportContainerContentStyleSerializer(required=False)
+    content_configuration = AnalysisReportContainerContentConfigurationSerializer(required=False)
+
+    # TODO: Model Field, Nested Serializer
+    content_data = AnalysisReportContainerDataSerializer(many=True, source='analysisreportcontainerdata_set')
+
+
+class AnalysisReportSerializer(UserResourceSerializer):
+    class Meta:
+        model = AnalysisReport
+        fields = (
+            'analysis',  # TODO Validation
+            'slug',
+            'title',
+            'sub_title',
+            'is_public',
+            'organizations',
+            # Custom
+            'configuration',
+            'containers',
+        )
+
+    configuration = AnalysisReportConfigurationSerializer(required=False)
+    containers = AnalysisReportContainerSerializer(many=True, source='analysisreportcontainer_set')
+
+
+# -- Snapshot
+class AnalysisReportSnapshotSerializer(ProjectPropertySerializerMixin, serializers.ModelSerializer):
+    class Meta:
+        model = AnalysisReportSnapshot
+        fields = (
+            'report',
+        )
+
+    serializers.FileField()
+
+    def validate_report(self, report):
+        if self.project.id != report.analysis.project_id:
+            raise serializers.ValidationError('Invalid report')
+        return report
+
+    def validate(self, data):
+        report = data['report']
+        snaphost_file, errors = generate_query_snapshot(
+            SnapshotQuery.AnalysisReport.Snapshot,
+            {
+                'projectID': str(self.project.id),
+                'reportID': str(report.id),
+            },
+            data_callback=lambda x: x['project']['analysisReport'],
+            context=GQLContext(self.context['request']),
+        )
+        if snaphost_file is None:
+            logger.error(
+                f'Failed to generate snapshot for report-pk: {report.id}',
+                extra={'context': errors}
+            )
+            raise serializers.ValidationError('Failed to generate snapshot')
+        data['report_data_file'] = snaphost_file
+        data['published_by'] = self.context['request'].user
+        return data
+
+    def create(self, data):
+        instance = super().create(data)
+        # Save file
+        instance.report_data_file.save(f'{instance.report.id}-{instance.report.slug}.json', data['report_data_file'])
+        return instance
+
+    def update(self, _):
+        raise Exception('Not implemented')
+
+
+# -- Uploads
+# -- -- Metadata
+class AnalysisReportUploadMetadataXlsxSheetSerializer(serializers.Serializer):
+    name = serializers.CharField(required=False)
+    header_row = serializers.IntegerField(required=False)
+    variables = AnalysisReportVariableSerializer(many=True)
+
+
+class AnalysisReportUploadMetadataXlsxSerializer(serializers.Serializer):
+    sheets = AnalysisReportUploadMetadataXlsxSheetSerializer(many=True)
+
+
+class AnalysisReportUploadMetadataCsvSerializer(serializers.Serializer):
+    header_row = serializers.IntegerField(required=False)
+    variables = AnalysisReportVariableSerializer(many=True)
+
+
+class AnalysisReportUploadMetadataGeoJsonSerializer(serializers.Serializer):
+    variables = AnalysisReportVariableSerializer(many=True)
+
+
+class AnalysisReportUploadMetadataSerializer(serializers.Serializer):
+    xlsx = AnalysisReportUploadMetadataXlsxSerializer()
+    csv = AnalysisReportUploadMetadataCsvSerializer()
+    geojson = AnalysisReportUploadMetadataGeoJsonSerializer()
+    # image = AnalysisReportUploadMetadataGeoJsonSerializer()
+
+
+# TODO: Seperate mutation
+class AnalysisReportUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AnalysisReportUpload
+        fields = (
+            'id',
+            'report',  # TODO Validation
+            'file',  # TODO Validation
+            'type',
+            # Custom
+            'metadata',
+        )
+
+    metadata = AnalysisReportUploadMetadataSerializer(required=False)
+    # TODO Validations

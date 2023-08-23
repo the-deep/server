@@ -8,6 +8,7 @@ from django.db import connection as django_db_connection
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from utils.common import generate_sha256
 from deep.number_generator import client_id_generator
@@ -18,6 +19,8 @@ from project.models import Project
 from entry.models import Entry
 from lead.models import Lead
 from user_resource.models import UserResource
+from organization.models import Organization
+from gallery.models import File
 from deepl_integration.models import DeeplTrackBaseModel
 
 
@@ -541,3 +544,68 @@ class AnalyticalStatementGeoEntry(models.Model):
     )
     entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name="+")
     data = models.JSONField(default=list)
+
+
+class AnalysisReport(UserResource):
+    analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
+    is_public = models.BooleanField(
+        help_text="A report should be public for \"shareable link\" to be accessible by",
+        default=False,
+    )
+    slug = models.CharField(
+        help_text="For sharing we use this slug to get the permalink",
+        max_length=255,
+        unique=True,
+        db_index=True,
+    )
+    title = models.CharField(max_length=255)
+    sub_title = models.CharField(max_length=255)
+    organizations = models.ManyToManyField(Organization, blank=True)
+    configuration = models.JSONField(default=dict)
+
+
+class AnalysisReportUpload(models.Model):
+    class Type(models.IntegerChoices):
+        CSV = 1, 'CSV'
+        XLSX = 2, 'XLSX'
+        GEOJSON = 3, 'GeoJson'
+        IMAGE = 4, 'Image'
+
+    report = models.ForeignKey(AnalysisReport, on_delete=models.CASCADE)
+    file = models.ForeignKey(File, on_delete=models.PROTECT, related_name='+')
+    # NOTE: No validation required. Client will send this information
+    type = models.SmallIntegerField(choices=Type.choices)
+    metadata = models.JSONField(default=dict)
+
+
+class AnalysisReportContainer(models.Model):
+    class ContentType(models.IntegerChoices):
+        TEXT = 1, 'Text'
+        HEADING = 2, 'Heading'
+        IMAGE = 3, 'Image'
+        URL = 4, 'URL'
+
+    report = models.ForeignKey(AnalysisReport, on_delete=models.CASCADE)
+    row = models.SmallIntegerField()
+    column = models.SmallIntegerField()
+    width = models.SmallIntegerField(validators=[MaxValueValidator(12), MinValueValidator(1)])
+    height = models.SmallIntegerField(null=True, blank=True)
+    style = models.JSONField(default=dict)
+
+    content_type = models.SmallIntegerField(choices=ContentType.choices)
+    content_style = models.JSONField(default=dict)
+    content_configuration = models.JSONField(default=dict)
+
+
+class AnalysisReportContainerData(models.Model):
+    container = models.ForeignKey(AnalysisReportContainer, on_delete=models.CASCADE)
+    upload = models.ForeignKey(AnalysisReportUpload, on_delete=models.PROTECT)
+    # Generic for now. Client will define this later
+    data = models.JSONField(default=dict)
+
+
+class AnalysisReportSnapshot(UserResource):
+    report = models.ForeignKey(AnalysisReport, on_delete=models.CASCADE)
+    published_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    published_on = models.DateTimeField(auto_now_add=True)
+    report_data_file = models.FileField(upload_to='analysis_report_snapshot/')

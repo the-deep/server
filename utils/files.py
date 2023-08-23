@@ -12,7 +12,7 @@ def generate_file_for_upload(file: IO):
     )
 
 
-def generate_json_file_for_upload(data: Union[Dict, List, Tuple], **kwargs):
+def generate_json_file_for_upload(data: Union[Dict, List, Tuple], **kwargs) -> ContentFile:
     return ContentFile(
         json.dumps(
             data,
