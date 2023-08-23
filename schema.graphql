@@ -652,6 +652,13 @@ input AssessmentRegistryCreateInputType {
   summarySubPillarIssue: [SummarySubPillarIssueInputType!]
   summaryDimmensionMeta: [SummaryFocusMetaInputType!]
   summarySubDimmensionIssue: [SummarySubDimmensionInputType!]
+  metadataComplete: Boolean
+  additionalDocumentComplete: Boolean
+  focusComplete: Boolean
+  methodologyComplete: Boolean
+  summaryComplete: Boolean
+  cnaComplete: Boolean
+  scoreComplete: Boolean
 }
 
 type AssessmentRegistryCreateIssue {
@@ -986,6 +993,13 @@ type AssessmentRegistryType {
   dataCollectionTechniques: String
   sampling: String
   limitations: String
+  metadataComplete: Boolean!
+  additionalDocumentComplete: Boolean!
+  focusComplete: Boolean!
+  methodologyComplete: Boolean!
+  summaryComplete: Boolean!
+  cnaComplete: Boolean!
+  scoreComplete: Boolean!
   clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!

@@ -224,6 +224,13 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             "summary_sub_pillar_issue",
             "summary_dimmension_meta",
             "summary_sub_dimmension_issue",
+            "metadata_complete",
+            "additional_document_complete",
+            "focus_complete",
+            "methodology_complete",
+            "summary_complete",
+            "cna_complete",
+            "score_complete"
         )
 
     def validate_score_ratings(self, data):
