@@ -10,7 +10,7 @@ from project.models import Project
 from lead.models import Lead
 
 from .models import AssessmentRegistry, SummaryIssue
-from .enums import AssessmentRegistrySummarySubPillarTypeEnum, AssessmentRegistrySummarySubDimmensionTypeEnum
+from .enums import AssessmentRegistrySummarySubPillarTypeEnum, AssessmentRegistrySummarySubDimensionTypeEnum
 
 
 class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
@@ -61,7 +61,7 @@ class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
 
 class AssessmentRegistryIssueGQFilterSet(django_filters.FilterSet):
     sub_pillar = SimpleInputFilter(AssessmentRegistrySummarySubPillarTypeEnum)
-    sub_dimmension = SimpleInputFilter(AssessmentRegistrySummarySubDimmensionTypeEnum)
+    sub_dimension = SimpleInputFilter(AssessmentRegistrySummarySubDimensionTypeEnum)
     search = django_filters.CharFilter(method='filter_assessment_registry_issues')
 
     class Meta:
