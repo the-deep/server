@@ -374,6 +374,13 @@ class AssessmentRegistryType(
             'data_collection_techniques',
             'sampling',
             'limitations',
+            "metadata_complete",
+            "additional_document_complete",
+            "focus_complete",
+            "methodology_complete",
+            "summary_complete",
+            "cna_complete",
+            "score_complete"
         )
 
     # TODO: We might need to define dataloaders here for fields which are used for listing in client side
