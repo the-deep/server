@@ -58,7 +58,7 @@ class TestGeoSchema(GraphQLTestCase):
         region_1_ad_2_geo_areas = GeoAreaFactory.create_batch(
             5,
             admin_level=region_1_admin_level_2,
-            title='XYZ Geo',
+            title='XYZ Geô'
         )
         region_2_ad_1_geo_areas = GeoAreaFactory.create_batch(4, admin_level=region_2_admin_level_1)
         GeoAreaFactory.create_batch(2, admin_level=region_3_admin_level_0)
