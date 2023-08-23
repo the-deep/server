@@ -1,21 +1,25 @@
-import itertools
 import graphene
 from dataclasses import dataclass
 from collections import defaultdict
 
+
 from django.db.models import Count
 from django.db import models
 from django.contrib.postgres.aggregates.general import ArrayAgg
+from django.db.models.functions import TruncDay
 
 from deep.caches import CacheHelper
-from geo.models import Region, GeoArea
-from utils.graphene.filters import IDListFilter
+from geo.models import GeoArea
 from utils.graphene.enums import EnumDescription
-from utils.graphene.geo_scalars import PointScalar
 from .enums import (
+    AssessmentRegistryAffectedGroupTypeEnum,
     AssessmentRegistryCoordinationTypeEnum,
     AssessmentRegistryDataCollectionTechniqueTypeEnum,
+    AssessmentRegistryFocusTypeEnum,
+    AssessmentRegistryProtectionInfoTypeEnum,
+    AssessmentRegistrySectorTypeEnum,
 )
+from deep_explore.schema import count_by_date_queryset_generator
 from .filter_set import (
     AssessmentDashboardFilterDataInputType,
     AssessmentDashboardFilterSet,
@@ -58,23 +62,40 @@ class StakeholderCountType(graphene.ObjectType):
 
 
 class CollectionTechniqueCountType(graphene.ObjectType):
-    data_collection_technique = graphene.Field(
-        AssessmentRegistryDataCollectionTechniqueTypeEnum, required=True
-    )
+    data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum, required=True)
     data_collection_technique_display = EnumDescription(required=False)
     count = graphene.Int(required=True)
 
     def resolve_data_collection_technique_display(self, info):
-        return MethodologyAttribute.CollectionTechniqueType(
-            self.data_collection_technique
-        ).label
+        return MethodologyAttribute.CollectionTechniqueType(self.data_collection_technique).label
 
 
 class AssessmentDashboardGeographicalArea(graphene.ObjectType):
     admin_level_id = graphene.ID(required=False)
-    code=graphene.ID(required=False)
-    count=graphene.ID(required=False)
+    code = graphene.ID(required=False)
+    count = graphene.ID(required=False)
     assessment_ids = graphene.List(graphene.NonNull(graphene.ID))
+
+
+class AssessmentCountByDateType(graphene.ObjectType):
+    date = graphene.Date(required=False)
+    count = graphene.Int(required=False)
+
+
+class AssessmentFocusCountByDateType(AssessmentCountByDateType):
+    focus = graphene.Field(AssessmentRegistryFocusTypeEnum)
+
+
+class AssessmentAffectedGroupCountByDateType(AssessmentCountByDateType):
+    affected_group = graphene.Field(AssessmentRegistryAffectedGroupTypeEnum)
+
+
+class AssessmentHumanitrainSectorCountByDateType(AssessmentCountByDateType):
+    sector = graphene.Field(AssessmentRegistrySectorTypeEnum)
+
+
+class AssessmentProtectionInformationCountByDateType(AssessmentCountByDateType):
+    protection_management = graphene.Field(AssessmentRegistryProtectionInfoTypeEnum)
 
 
 class AssessmentDashboardStatisticsType(graphene.ObjectType):
@@ -87,6 +108,11 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     total_multisector_assessment = graphene.Int(required=True)
     total_singlesector_assessment = graphene.Int(required=True)
     assessment_geographic_areas = graphene.List(AssessmentDashboardGeographicalArea)
+    assessment_by_over_time = graphene.List(AssessmentCountByDateType)
+    assessment_per_framework_piller = graphene.List(AssessmentFocusCountByDateType)
+    assessment_per_affected_group = graphene.List(AssessmentAffectedGroupCountByDateType)
+    assessment_per_humanitarian_sector = graphene.List(AssessmentHumanitrainSectorCountByDateType)
+    assessment_per_protection_management = graphene.List(AssessmentProtectionInformationCountByDateType)
 
     @staticmethod
     def custom_resolver(root, info, _filter):
@@ -94,12 +120,8 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
             project=info.context.active_project,
             **get_global_filters(_filter),
         )
-        assessment_qs_filter = AssessmentDashboardFilterSet(
-            queryset=assessment_qs, data=_filter.get("assessment")
-        ).qs
-        methodology_attribute_qs = MethodologyAttribute.objects.filter(
-            assessment_registry__in=assessment_qs_filter
-        )
+        assessment_qs_filter = AssessmentDashboardFilterSet(queryset=assessment_qs, data=_filter.get("assessment")).qs
+        methodology_attribute_qs = MethodologyAttribute.objects.filter(assessment_registry__in=assessment_qs_filter)
         cache_key = CacheHelper.generate_hash(_filter.__dict__)
         return AssessmentDashboardStat(
             cache_key=cache_key,
@@ -118,11 +140,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
 
     @staticmethod
     def resolve_total_collection_technique(root: AssessmentDashboardStat, info) -> int:
-        return (
-            root.methodology_attribute_qs.values("data_collection_technique")
-            .distinct()
-            .count()
-        )
+        return root.methodology_attribute_qs.values("data_collection_technique").distinct().count()
 
     @staticmethod
     def resolve_assessment_count(root: AssessmentDashboardStat, info):
@@ -180,23 +198,55 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @staticmethod
     def resolve_total_singlesector_assessment(root: AssessmentDashboardStat, info) -> int:
         return root.assessment_registry_qs.filter(sectors__len=1).count()
-    
+
     @staticmethod
     def resolve_assessment_geographic_areas(root: AssessmentDashboardStat, info):
-        return GeoArea.objects.annotate(
-            assessment_ids=ArrayAgg(
-                'focus_location_assessment_reg',
-                ordering='focus_location_assessment_reg',
-                distinct=True,
-                filter=models.Q(focus_location_assessment_reg__in=root.assessment_registry_qs),
-            ),
-            count=Count('focus_location_assessment_reg',distinct=True)
-        ).filter(focus_location_assessment_reg__isnull=False).values(
-            'admin_level_id',
-            'code',
-            'count',
-            'assessment_ids'
+        return (
+            GeoArea.objects.annotate(
+                assessment_ids=ArrayAgg(
+                    "focus_location_assessment_reg",
+                    ordering="focus_location_assessment_reg",
+                    distinct=True,
+                    filter=models.Q(focus_location_assessment_reg__in=root.assessment_registry_qs),
+                ),
+                count=Count("focus_location_assessment_reg", distinct=True),
+            )
+            .filter(focus_location_assessment_reg__isnull=False)
+            .values("admin_level_id", "code", "count", "assessment_ids")
         )
+
+    @staticmethod
+    def resolve_assessment_by_over_time(root: AssessmentDashboardStat, info):
+        return count_by_date_queryset_generator(root.assessment_registry_qs, TruncDay)
+
+    @staticmethod
+    def resolve_assessment_per_framework_piller(root: AssessmentDashboardStat, info):
+        return root.assessment_registry_qs.values(date=TruncDay("created_at")).annotate(
+            count=Count("id"),
+            focus=models.Func(models.F("focuses"), function="unnest"),
+        )
+
+    @staticmethod
+    def resolve_assessment_per_affected_group(root: AssessmentDashboardStat, info):
+        return root.assessment_registry_qs.values(date=TruncDay("created_at")).annotate(
+            count=Count("id"),
+            affected_group=models.Func(models.F("affected_groups"), function="unnest"),
+        )
+
+    @staticmethod
+    def resolve_assessment_per_humanitarian_sector(root: AssessmentDashboardStat, info):
+        return root.assessment_registry_qs.values(date=TruncDay("created_at")).annotate(
+            count=Count("id"),
+            sector=models.Func(models.F("sectors"), function="unnest"),
+        )
+
+    @staticmethod
+    def resolve_assessment_per_protection_management(root: AssessmentDashboardStat, info):
+        return root.assessment_registry_qs.values(date=TruncDay("created_at")).annotate(
+            count=Count("id"),
+            protection_management=models.Func(models.F("protection_info_mgmts"), function="unnest"),
+        )
+
 
 class Query:
     assessment_dashboard_statistics = graphene.Field(
