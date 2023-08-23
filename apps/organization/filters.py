@@ -97,11 +97,9 @@ class OrganizationFilterSet(django_filters.FilterSet):
             assessment_organizations_queryset = AssessmentRegistry.objects.filter(project=project)
             return qs.filter(
                 # Publishers
-                models.Q(id__in=assessment_organizations_queryset.values('stakeholders')) 
-                # Authors
+                models.Q(id__in=assessment_organizations_queryset.values('stakeholders'))  # Authors
             )
         return qs
-
 
     def ordering_filter(self, qs, _, value):
         if value:
