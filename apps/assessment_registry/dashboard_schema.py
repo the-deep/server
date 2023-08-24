@@ -7,6 +7,7 @@ from django.db.models import Count
 from django.db import models
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db.models.functions import TruncDay
+from django.db import connection as django_db_connection
 
 from deep.caches import CacheHelper
 from geo.models import GeoArea
@@ -24,7 +25,7 @@ from .filter_set import (
     AssessmentDashboardFilterDataInputType,
     AssessmentDashboardFilterSet,
 )
-from .models import AssessmentRegistry, MethodologyAttribute
+from .models import AssessmentRegistry, AssessmentRegistryOrganization, MethodologyAttribute
 
 
 def get_global_filters(_filter: dict, date_field="created_at"):
@@ -52,8 +53,8 @@ class AssessmentCountType(graphene.ObjectType):
     coordinated_joint_display = EnumDescription(required=False)
     count = graphene.Int()
 
-    def resolve_coordinated_joint_display(self, info):
-        return AssessmentRegistry.CoordinationType(self.coordinated_joint).label
+    # def resolve_coordinated_joint_display(self, info):
+    #     return AssessmentRegistry.CoordinationType(self.coordinated_joint).label
 
 
 class StakeholderCountType(graphene.ObjectType):
@@ -63,11 +64,8 @@ class StakeholderCountType(graphene.ObjectType):
 
 class CollectionTechniqueCountType(graphene.ObjectType):
     data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum, required=True)
-    data_collection_technique_display = EnumDescription(required=False)
+    data_collection_technique_display = EnumDescription(source="get_data_collection_techniques_display", required=False)
     count = graphene.Int(required=True)
-
-    def resolve_data_collection_technique_display(self, info):
-        return MethodologyAttribute.CollectionTechniqueType(self.data_collection_technique).label
 
 
 class AssessmentDashboardGeographicalArea(graphene.ObjectType):
@@ -98,6 +96,28 @@ class AssessmentProtectionInformationCountByDateType(AssessmentCountByDateType):
     protection_management = graphene.Field(AssessmentRegistryProtectionInfoTypeEnum)
 
 
+class AssessmentPerAffectedGroupAndSectorCountByDateType(graphene.ObjectType):
+    count = graphene.Int(required=False)
+    affected_group = graphene.Field(AssessmentRegistryAffectedGroupTypeEnum)
+    sector = graphene.Field(AssessmentRegistrySectorTypeEnum)
+
+
+class AssessmentPerAffectedGroupAndGeoAreaCountByDateType(graphene.ObjectType):
+    count = graphene.Int(required=True)
+    affected_group = graphene.Field(AssessmentRegistryAffectedGroupTypeEnum)
+    locations = graphene.Int(required=False)
+
+
+class AssessmentPerSectorAndGeoAreaCountByDateType(graphene.ObjectType):
+    count = graphene.Int(required=True)
+    sector = graphene.Field(AssessmentRegistrySectorTypeEnum)
+    locations = graphene.Int(required=False)
+
+
+class AssessmentByLeadOrganizationCountByDateType(AssessmentCountByDateType):
+    organization = graphene.Int(required=False)
+
+
 class AssessmentDashboardStatisticsType(graphene.ObjectType):
     total_assessment = graphene.Int(required=True)
     total_stakeholder = graphene.Int(required=True)
@@ -113,6 +133,10 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     assessment_per_affected_group = graphene.List(AssessmentAffectedGroupCountByDateType)
     assessment_per_humanitarian_sector = graphene.List(AssessmentHumanitrainSectorCountByDateType)
     assessment_per_protection_management = graphene.List(AssessmentProtectionInformationCountByDateType)
+    assessment_per_affected_group_and_sector = graphene.List(AssessmentPerAffectedGroupAndSectorCountByDateType)
+    assessment_per_affected_group_and_geoarea = graphene.List(AssessmentPerAffectedGroupAndGeoAreaCountByDateType)
+    assessment_per_sector_and_geoarea = graphene.List(AssessmentPerSectorAndGeoAreaCountByDateType)
+    assessment_by_lead_organization = graphene.List(AssessmentByLeadOrganizationCountByDateType)
 
     @staticmethod
     def custom_resolver(root, info, _filter):
@@ -149,14 +173,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
             .annotate(count=Count("coordinated_joint"))
             .order_by("coordinated_joint")
         )
-
-        return [
-            AssessmentCountType(
-                coordinated_joint=assessment["coordinated_joint"],
-                count=assessment["count"],
-            )
-            for assessment in assessment
-        ]
+        return assessment
 
     @staticmethod
     def resolve_stakeholder_count(root: AssessmentDashboardStat, info):
@@ -178,18 +195,11 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
 
     @staticmethod
     def resolve_collection_technique_count(root: AssessmentDashboardStat, info):
-        data_collection_technique = (
+        return (
             root.methodology_attribute_qs.values("data_collection_technique")
             .annotate(count=Count("data_collection_technique"))
             .order_by("data_collection_technique")
         )
-        return [
-            CollectionTechniqueCountType(
-                data_collection_technique=technique["data_collection_technique"],
-                count=technique["count"],
-            )
-            for technique in data_collection_technique
-        ]
 
     @staticmethod
     def resolve_total_multisector_assessment(root: AssessmentDashboardStat, info) -> int:
@@ -245,6 +255,72 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         return root.assessment_registry_qs.values(date=TruncDay("created_at")).annotate(
             count=Count("id"),
             protection_management=models.Func(models.F("protection_info_mgmts"), function="unnest"),
+        )
+
+    @staticmethod
+    def resolve_assessment_per_affected_group_and_sector(root: AssessmentDashboardStat, info):
+        # TODO : Global filter and assessment filter need to implement
+        with django_db_connection.cursor() as cursor:
+            query = """
+                SELECT
+                    sector,
+                    affected_group,
+                    Count(*) as count
+                FROM (
+                    select
+                        -- Only select required fields
+                        id,
+                        sectors,
+                        affected_groups
+                 FROM assessment_registry_assessmentregistry
+                    -- Only process required rows
+                ) as t
+                CROSS JOIN unnest(t.sectors) AS sector
+                CROSS JOIN unnest(t.affected_groups) AS affected_group
+                GROUP BY sector, affected_group
+                ORDER BY sector, affected_group DESC;
+                """
+            cursor.execute(query, {})
+            return [
+                AssessmentPerAffectedGroupAndSectorCountByDateType(
+                    sector=data[0], affected_group=data[1], count=data[2]
+                )
+                for data in cursor.fetchall()
+            ]
+
+    @staticmethod
+    def resolve_assessment_per_affected_group_and_geoarea(root: AssessmentDashboardStat, info):
+        return (
+            root.assessment_registry_qs.values("locations")
+            .annotate(
+                count=Count("id"),
+                affected_group=models.Func(models.F("affected_groups"), function="unnest"),
+            )
+            .filter(locations__admin_level__level=1)
+            .values("locations", "affected_group", "count")
+            .order_by("count")[:10]
+        )
+
+    @staticmethod
+    def resolve_assessment_per_sector_and_geoarea(root: AssessmentDashboardStat, info):
+        return (
+            root.assessment_registry_qs.values("locations")
+            .annotate(
+                count=Count("id"),
+                sector=models.Func(models.F("sectors"), function="unnest"),
+            )
+            .filter(locations__admin_level__level=1)
+            .values("locations", "sector", "count")
+            .order_by("count")[:10]
+        )
+
+    @staticmethod
+    def resolve_assessment_by_lead_organization(root: AssessmentDashboardStat, info):
+        return (
+            AssessmentRegistryOrganization.objects.filter(organization_type=1)
+            .filter(assessment_registry__in=root.assessment_registry_qs)
+            .annotate(count=Count("organization"))
+            .values("organization", "count", date=TruncDay("assessment_registry__created_at"))
         )
 
 
