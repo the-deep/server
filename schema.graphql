@@ -1571,6 +1571,12 @@ type AssessmentAffectedGroupCountByDateType {
   affectedGroup: AssessmentRegistryAffectedGroupTypeEnum
 }
 
+type AssessmentByLeadOrganizationCountByDateType {
+  date: Date
+  count: Int
+  organization: Int
+}
+
 type AssessmentCountByDateType {
   date: Date
   count: Int
@@ -1631,6 +1637,10 @@ type AssessmentDashboardStatisticsType {
   assessmentPerAffectedGroup: [AssessmentAffectedGroupCountByDateType]
   assessmentPerHumanitarianSector: [AssessmentHumanitrainSectorCountByDateType]
   assessmentPerProtectionManagement: [AssessmentProtectionInformationCountByDateType]
+  assessmentPerAffectedGroupAndSector: [AssessmentPerAffectedGroupAndSectorCountByDateType]
+  assessmentPerAffectedGroupAndGeoarea: [AssessmentPerAffectedGroupAndGeoAreaCountByDateType]
+  assessmentPerSectorAndGeoarea: [AssessmentPerSectorAndGeoAreaCountByDateType]
+  assessmentByLeadOrganization: [AssessmentByLeadOrganizationCountByDateType]
 }
 
 type AssessmentFocusCountByDateType {
@@ -1661,6 +1671,24 @@ enum AssessmentMethodologyProtectionInfoEnum {
   COMMUNICATING_WITH_OR_IN_AFFECTED_COMMUNITIES
   SECURITY_AND_SITUATIONAL_AWARENESS
   SECTORAL_SYSTEMS_OR_OTHER
+}
+
+type AssessmentPerAffectedGroupAndGeoAreaCountByDateType {
+  count: Int!
+  affectedGroup: AssessmentRegistryAffectedGroupTypeEnum
+  locations: Int
+}
+
+type AssessmentPerAffectedGroupAndSectorCountByDateType {
+  count: Int
+  affectedGroup: AssessmentRegistryAffectedGroupTypeEnum
+  sector: AssessmentRegistrySectorTypeEnum
+}
+
+type AssessmentPerSectorAndGeoAreaCountByDateType {
+  count: Int!
+  sector: AssessmentRegistrySectorTypeEnum
+  locations: Int
 }
 
 type AssessmentProtectionInformationCountByDateType {
