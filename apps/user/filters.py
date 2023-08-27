@@ -59,7 +59,7 @@ class UserGqlFilterSet(django_filters.FilterSet):
                 models.Q(first_name__unaccent__icontains=value) |
                 models.Q(last_name__unaccent__icontains=value) |
                 models.Q(email__unaccent__icontains=value) |
-                models.Q(username__icontains=value)
+                models.Q(username__unaccent__icontains=value)
             )
         return qs
 
