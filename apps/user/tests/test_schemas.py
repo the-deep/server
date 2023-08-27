@@ -562,13 +562,16 @@ class TestUserSchema(GraphQLTestCase):
 
         user = UserFactory.create(first_name='Normal', last_name='Guy', email='test@testing.com')
         user1 = UserFactory.create(first_name='Admin', last_name='Guy', email='admin@testing.com')
+        user4 = UserFactory.create(first_name='Mártin', last_name='Doe', email='martin@testing.com')
         user2, user3 = UserFactory.create_batch(2)
         project1.add_member(user1)
         project1.add_member(user2)
+        project1.add_member(user4)
         project2.add_member(user2)
         project2.add_member(user)
         af1.add_member(user1)
         af1.add_member(user2)
+        af1.add_member(user4)
         af1.add_member(user)
         af2.add_member(user2)
 
@@ -583,21 +586,22 @@ class TestUserSchema(GraphQLTestCase):
 
         # Without any filters
         for name, filters, users in (
-            ('no-filter', dict(), [user, user1, user2, user3]),
-            ('exclude-project-1', dict(membersExcludeProject=project1.pk), [user, user3]),
-            ('exclude-project-2', dict(membersExcludeProject=project2.pk), [user1, user3]),
+            ('no-filter', dict(), [user, user1, user2, user3, user4]),
+            ('exclude-project-1   ', dict(membersExcludeProject=project1.pk), [user, user3]),
+            ('exclude-project-2', dict(membersExcludeProject=project2.pk), [user1, user3, user4]),
             ('exclude-af-1', dict(membersExcludeFramework=af1.pk), [user3]),
             ('exclude-af-2', dict(membersExcludeFramework=af2.pk), [user, user1, user3]),
             ('search-fist_name', dict(search='Normal'), [user]),
             ('search-last_name', dict(search='Guy'), [user, user1]),
             ('search-email', dict(search='test@testing.com'), [user]),
             ('search-partial_email-01', dict(search='test@'), [user]),
-            ('search-partial_email-02', dict(search='@testing.com'), [user, user1]),
+            ('search-partial_email-02', dict(search='@testing.com'), [user, user1, user4]),
             ('search-full_name', dict(search='Normal Guy'), [user]),
             ('search-with-space-after-first_name', dict(search='Normal '), [user]),
             ('search-with-space-before-first_name', dict(search=' Normal'), [user]),
             ('search-with-space-before-after-last_name', dict(search=' Guy '), [user, user1]),
             ('search-with-space-after-full-name', dict(search='Normal Guy '), [user]),
+            ('search-without-accent', dict(search='Martin'), [user4]),
         ):
             content = _query_check(filters)['data']['users']['results']
             self.assertEqual(len(content), len(users), (name, content))

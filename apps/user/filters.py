@@ -55,10 +55,10 @@ class UserGqlFilterSet(django_filters.FilterSet):
                     output_field=models.CharField(),
                 )
             ).filter(
-                models.Q(full_name__icontains=value) |
-                models.Q(first_name__icontains=value) |
-                models.Q(last_name__icontains=value) |
-                models.Q(email__icontains=value) |
+                models.Q(full_name__unaccent__icontains=value) |
+                models.Q(first_name__unaccent__icontains=value) |
+                models.Q(last_name__unaccent__icontains=value) |
+                models.Q(email__unaccent__icontains=value) |
                 models.Q(username__icontains=value)
             )
         return qs
