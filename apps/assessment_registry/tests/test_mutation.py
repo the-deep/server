@@ -251,17 +251,17 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
             summaryDimensionMeta=[
                 dict(
                     percentageInNeed=10,
-                    focus=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
+                    sector=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
                 ),
                 dict(
                     percentageInNeed=10,
-                    focus=self.genum(AssessmentRegistry.SectorType.SHELTER),
+                    sector=self.genum(AssessmentRegistry.SectorType.SHELTER),
                 ),
             ],
             summarySubDimensionIssue=[
                 dict(
                     summaryIssue=self.summary_issue2.id,
-                    focus=self.genum(AssessmentRegistry.FocusType.CONTEXT),
+                    sector=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
                     order=1,
                 )
             ]

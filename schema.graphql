@@ -3722,7 +3722,7 @@ type SectionType {
 input SummaryFocusMetaInputType {
   id: ID
   clientId: String
-  focus: AssessmentRegistrySectorTypeEnum!
+  sector: AssessmentRegistrySectorTypeEnum!
   percentageOfPeopleAffected: Int
   totalPeopleAffected: Int
   percentageOfModerate: Int
@@ -3766,8 +3766,8 @@ type SummaryFocusMetaType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  focus: AssessmentRegistryFocusTypeEnum
-  focusDisplay: EnumDescription
+  sector: AssessmentRegistrySectorTypeEnum
+  sectorDisplay: EnumDescription
 }
 
 type SummaryFocusOptionType {
@@ -3788,8 +3788,8 @@ type SummaryFocusSubDimensionIssueType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  focus: AssessmentRegistryFocusTypeEnum
-  focusDisplay: EnumDescription
+  sector: AssessmentRegistrySectorTypeEnum!
+  sectorDisplay: EnumDescription!
 }
 
 input SummaryMetaInputType {
@@ -3827,7 +3827,7 @@ input SummarySubDimensionInputType {
   id: ID
   clientId: String
   summaryIssue: ID!
-  focus: AssessmentRegistryFocusTypeEnum!
+  sector: AssessmentRegistrySectorTypeEnum!
   text: String
   order: Int!
   leadPreviewTextRef: GenericScalar
