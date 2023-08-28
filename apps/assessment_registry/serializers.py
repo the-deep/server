@@ -108,7 +108,7 @@ class SummaryFocusMetaSerializer(UserResourceSerializer, TempClientIdMixin):
     class Meta:
         model = SummaryFocus
         fields = (
-            "id", "client_id", "focus", "percentage_of_people_affected", "total_people_affected", "percentage_of_moderate",
+            "id", "client_id", "sector", "percentage_of_people_affected", "total_people_affected", "percentage_of_moderate",
             "percentage_of_severe", "percentage_of_critical", "percentage_in_need", "total_moderate",
             "total_severe", "total_critical", "total_in_need", "total_pop_assessed", "total_not_affected",
             "total_affected", "total_people_in_need", "total_people_moderately_in_need",
@@ -121,7 +121,15 @@ class SummarySubDimensionSerializer(UserResourceSerializer, TempClientIdMixin):
 
     class Meta:
         model = SummarySubDimensionIssue
-        fields = ("id", "client_id", "summary_issue", "focus", "text", "order", "lead_preview_text_ref",)
+        fields = (
+            "id",
+            "client_id",
+            "summary_issue",
+            "sector",
+            "text",
+            "order",
+            "lead_preview_text_ref",
+        )
 
 
 class ScoreRatingSerializer(UserResourceSerializer, TempClientIdMixin):

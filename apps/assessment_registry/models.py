@@ -686,7 +686,8 @@ class SummaryFocus(UserResource):
         on_delete=models.CASCADE,
         related_name='summary_focus'
     )
-    focus = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
+
+    sector = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
     percentage_of_people_affected = models.IntegerField(null=True, blank=True)
     total_people_affected = models.IntegerField(null=True, blank=True)
     percentage_of_moderate = models.IntegerField(null=True, blank=True)
@@ -833,7 +834,7 @@ class SummarySubDimensionIssue(UserResource):
         on_delete=models.CASCADE,
         related_name='summary_focus_subsector_issue_ary'
     )
-    focus = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
+    sector = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
     summary_issue = models.ForeignKey(
         SummaryIssue,
         on_delete=models.CASCADE,
