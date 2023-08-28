@@ -307,8 +307,8 @@ class SummarySubPillarIssueType(DjangoObjectType, UserResourceMixin, ClientIdMix
 
 
 class SummaryFocusMetaType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
-    focus = graphene.Field(AssessmentRegistryFocusTypeEnum, required=False)
-    focus_display = EnumDescription(required=False)
+    sector = graphene.Field(AssessmentRegistrySectorTypeEnum, required=False)
+    sector_display = EnumDescription(source='get_sector_display', required=False)
 
     class Meta:
         model = SummaryFocus
@@ -335,8 +335,8 @@ class SummaryFocusMetaType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
 
 
 class SummaryFocusSubDimensionIssueType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
-    focus = graphene.Field(AssessmentRegistryFocusTypeEnum, required=False)
-    focus_display = EnumDescription(required=False)
+    sector = graphene.Field(AssessmentRegistrySectorTypeEnum, required=True)
+    sector_display = EnumDescription(source='get_sector_display', required=True)
 
     class Meta:
         model = SummarySubDimensionIssue
