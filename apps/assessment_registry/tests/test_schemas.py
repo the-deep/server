@@ -184,12 +184,12 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         )
         SummaryFocusFactory.create(
             assessment_registry=assessment_registry,
-            focus=AssessmentRegistry.SectorType.FOOD_SECURITY,
+            sector=AssessmentRegistry.SectorType.FOOD_SECURITY,
         )
         SummarySubDimensionIssueFactory.create(
             assessment_registry=assessment_registry,
             summary_issue=summary_issue2,
-            focus=AssessmentRegistry.FocusType.CONTEXT,
+            sector=AssessmentRegistry.SectorType.FOOD_SECURITY,
             order=1,
         )
 

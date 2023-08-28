@@ -137,10 +137,10 @@ enum_map = {
         (ScoreAnalyticalDensity.sector, AssessmentRegistrySectorTypeEnum),
         (ScoreAnalyticalDensity.analysis_level_covered, AssessmentRegistryAnalysisLevelTypeEnum),
         (ScoreAnalyticalDensity.figure_provided, AssessmentRegistryAnalysisFigureTypeEnum),
-        (SummarySubDimensionIssue.focus, AssessmentRegistryFocusTypeEnum),
+        (SummarySubDimensionIssue.sector, AssessmentRegistrySectorTypeEnum),
         (SummaryIssue.sub_pillar, AssessmentRegistrySummarySubPillarTypeEnum),
         (SummaryIssue.sub_dimension, AssessmentRegistrySummarySubDimensionTypeEnum),
-        (SummaryFocus.focus, AssessmentRegistrySectorTypeEnum),
+        (SummaryFocus.sector, AssessmentRegistrySectorTypeEnum),
         (AssessmentRegistryOrganization.organization_type, AssessmentRegistryOrganizationTypeEnum),
     )
 }
