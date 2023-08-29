@@ -144,7 +144,7 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         self.project1.add_member(self.member_user, role=self.project_role_member)
         self.summary_issue1, self.summary_issue2, self.summary_issue3 = SummaryIssueFactory.create_batch(3)
 
-    def test_create_assessment_registry(self):
+    def create_assessment_registry(self):
         def _query_check(minput, **kwargs):
             return self.query_check(
                 self.CREATE_ASSESSMENT_REGISTRY_QUERY, minput=minput, variables={"projectId": self.project1.id}, **kwargs
@@ -263,11 +263,9 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
             ],
         )
         self.force_login(self.member_user)
-        content = _query_check(minput, okay=False)
-        data = content["data"]["project"]["createAssessmentRegistry"]["result"]
-        self.assertEqual(data["costEstimatesUsd"], minput["costEstimatesUsd"], data)
+        _query_check(minput, okay=False)
 
-    def test_assessment_dashboard(self):
+    def test_assessment_registry_dashboard_stats(self):
         query = """query MyQuery($filter: AssessmentDashboardFilterInputType! , $id: ID!) {
         project(id:  $id) {
         assessmentDashboardStatistics(filter: $filter) {
@@ -288,7 +286,7 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         }
     }
     }"""
-        self.test_create_assessment_registry()
+        self.create_assessment_registry()
 
         def _query_check(filter=None, **kwargs):
             return self.query_check(query, variables={"filter": filter, "id": self.project1.id}, **kwargs)

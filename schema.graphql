@@ -1615,7 +1615,7 @@ input AssessmentDashboardFilterInputType {
   assessment: AssessmentDashboardFilterDataInputType
 }
 
-type AssessmentDashboardGeographicalArea {
+type AssessmentDashboardGeographicalAreaType {
   adminLevelId: ID
   code: ID
   count: ID
@@ -1631,7 +1631,7 @@ type AssessmentDashboardStatisticsType {
   collectionTechniqueCount: [CollectionTechniqueCountType]
   totalMultisectorAssessment: Int!
   totalSinglesectorAssessment: Int!
-  assessmentGeographicAreas: [AssessmentDashboardGeographicalArea]
+  assessmentGeographicAreas: [AssessmentDashboardGeographicalAreaType]
   assessmentByOverTime: [AssessmentCountByDateType]
   assessmentPerFrameworkPiller: [AssessmentFocusCountByDateType]
   assessmentPerAffectedGroup: [AssessmentAffectedGroupCountByDateType]
@@ -1641,6 +1641,12 @@ type AssessmentDashboardStatisticsType {
   assessmentPerAffectedGroupAndGeoarea: [AssessmentPerAffectedGroupAndGeoAreaCountByDateType]
   assessmentPerSectorAndGeoarea: [AssessmentPerSectorAndGeoAreaCountByDateType]
   assessmentByLeadOrganization: [AssessmentByLeadOrganizationCountByDateType]
+  assessmentPerDatatechnique: [AssessmentPerDataCollectionTechniqueCountByDateType]
+  assessmentPerUnitOfAnalysis: [AssessmentPerUnitofAnalysisCountByDateType]
+  assessmentPerUnitOfReporting: [AssessmentPerUnitofReportingCountByDateType]
+  assessmentPerSamplingApproach: [AssessmentPerSamplingApproachCountByDateType]
+  assessmentPerProximity: [AssessmentPerProximityCountByDateType]
+  sampleSizePerDataCollectionTechnique: [SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType]
 }
 
 type AssessmentFocusCountByDateType {
@@ -1674,21 +1680,54 @@ enum AssessmentMethodologyProtectionInfoEnum {
 }
 
 type AssessmentPerAffectedGroupAndGeoAreaCountByDateType {
-  count: Int!
+  date: Date
+  count: Int
   affectedGroup: AssessmentRegistryAffectedGroupTypeEnum
   locations: Int
 }
 
 type AssessmentPerAffectedGroupAndSectorCountByDateType {
+  date: Date
   count: Int
   affectedGroup: AssessmentRegistryAffectedGroupTypeEnum
   sector: AssessmentRegistrySectorTypeEnum
 }
 
+type AssessmentPerDataCollectionTechniqueCountByDateType {
+  date: Date
+  count: Int
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
+}
+
+type AssessmentPerProximityCountByDateType {
+  date: Date
+  count: Int
+  proximity: AssessmentRegistryProximityTypeEnum
+}
+
+type AssessmentPerSamplingApproachCountByDateType {
+  date: Date
+  count: Int
+  samplingApproach: AssessmentRegistrySamplingApproachTypeEnum
+}
+
 type AssessmentPerSectorAndGeoAreaCountByDateType {
-  count: Int!
+  date: Date
+  count: Int
   sector: AssessmentRegistrySectorTypeEnum
   locations: Int
+}
+
+type AssessmentPerUnitofAnalysisCountByDateType {
+  date: Date
+  count: Int
+  unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum
+}
+
+type AssessmentPerUnitofReportingCountByDateType {
+  date: Date
+  count: Int
+  unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum
 }
 
 type AssessmentProtectionInformationCountByDateType {
@@ -4258,7 +4297,7 @@ type ProjectDetailType {
   statusDisplay: EnumDescription!
   organizations: [ProjectOrganizationType!]
   hasAnalysisFramework: Boolean!
-  assessmentDashboardStatistics(filter: AssessmentDashboardFilterInputType): AssessmentDashboardStatisticsType
+  assessmentDashboardStatistics(filter: AssessmentDashboardFilterInputType!): AssessmentDashboardStatisticsType
   assessmentRegistry(id: ID!): AssessmentRegistryType
   assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], dateFrom: Date, dateTo: Date, project: [ID], lead: [ID], publicationDateLte: Date, publicationDateGte: Date, search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
   assessmentRegistryOptions: AssessmentRegistryOptionsType
@@ -4951,6 +4990,12 @@ input ResetPasswordInputType {
 type RssFieldType {
   key: String
   label: String
+}
+
+type SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType {
+  date: Date
+  samplingSize: Int
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
 }
 
 type SaveUserSavedLeadFilter {

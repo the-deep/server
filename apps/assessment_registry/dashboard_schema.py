@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from collections import defaultdict
 
 
-from django.db.models import Count
+from django.db.models import Count, Sum
 from django.db import models
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db.models.functions import TruncDay
@@ -19,6 +19,10 @@ from .enums import (
     AssessmentRegistryFocusTypeEnum,
     AssessmentRegistryProtectionInfoTypeEnum,
     AssessmentRegistrySectorTypeEnum,
+    AssessmentRegistryUnitOfAnalysisTypeEnum,
+    AssessmentRegistryUnitOfReportingTypeEnum,
+    AssessmentRegistrySamplingApproachTypeEnum,
+    AssessmentRegistryProximityTypeEnum,
 )
 from deep_explore.schema import count_by_date_queryset_generator
 from .filter_set import (
@@ -50,11 +54,8 @@ class AssessmentDashboardFilterInputType(graphene.InputObjectType):
 
 class AssessmentCountType(graphene.ObjectType):
     coordinated_joint = graphene.Field(AssessmentRegistryCoordinationTypeEnum)
-    coordinated_joint_display = EnumDescription(required=False)
+    coordinated_joint_display = EnumDescription(required=False, source="get_coordinated_joint_display")
     count = graphene.Int()
-
-    # def resolve_coordinated_joint_display(self, info):
-    #     return AssessmentRegistry.CoordinationType(self.coordinated_joint).label
 
 
 class StakeholderCountType(graphene.ObjectType):
@@ -68,7 +69,7 @@ class CollectionTechniqueCountType(graphene.ObjectType):
     count = graphene.Int(required=True)
 
 
-class AssessmentDashboardGeographicalArea(graphene.ObjectType):
+class AssessmentDashboardGeographicalAreaType(graphene.ObjectType):
     admin_level_id = graphene.ID(required=False)
     code = graphene.ID(required=False)
     count = graphene.ID(required=False)
@@ -96,26 +97,49 @@ class AssessmentProtectionInformationCountByDateType(AssessmentCountByDateType):
     protection_management = graphene.Field(AssessmentRegistryProtectionInfoTypeEnum)
 
 
-class AssessmentPerAffectedGroupAndSectorCountByDateType(graphene.ObjectType):
-    count = graphene.Int(required=False)
+class AssessmentPerAffectedGroupAndSectorCountByDateType(AssessmentCountByDateType):
     affected_group = graphene.Field(AssessmentRegistryAffectedGroupTypeEnum)
     sector = graphene.Field(AssessmentRegistrySectorTypeEnum)
 
 
-class AssessmentPerAffectedGroupAndGeoAreaCountByDateType(graphene.ObjectType):
-    count = graphene.Int(required=True)
+class AssessmentPerAffectedGroupAndGeoAreaCountByDateType(AssessmentCountByDateType):
     affected_group = graphene.Field(AssessmentRegistryAffectedGroupTypeEnum)
     locations = graphene.Int(required=False)
 
 
-class AssessmentPerSectorAndGeoAreaCountByDateType(graphene.ObjectType):
-    count = graphene.Int(required=True)
+class AssessmentPerSectorAndGeoAreaCountByDateType(AssessmentCountByDateType):
     sector = graphene.Field(AssessmentRegistrySectorTypeEnum)
     locations = graphene.Int(required=False)
 
 
 class AssessmentByLeadOrganizationCountByDateType(AssessmentCountByDateType):
     organization = graphene.Int(required=False)
+
+
+class AssessmentPerDataCollectionTechniqueCountByDateType(AssessmentCountByDateType):
+    data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum)
+
+
+class AssessmentPerUnitofAnalysisCountByDateType(AssessmentCountByDateType):
+    unit_of_analysis = graphene.Field(AssessmentRegistryUnitOfAnalysisTypeEnum)
+
+
+class AssessmentPerUnitofReportingCountByDateType(AssessmentCountByDateType):
+    unit_of_reporting = graphene.Field(AssessmentRegistryUnitOfReportingTypeEnum)
+
+
+class AssessmentPerSamplingApproachCountByDateType(AssessmentCountByDateType):
+    sampling_approach = graphene.Field(AssessmentRegistrySamplingApproachTypeEnum)
+
+
+class AssessmentPerProximityCountByDateType(AssessmentCountByDateType):
+    proximity = graphene.Field(AssessmentRegistryProximityTypeEnum)
+
+
+class SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType(graphene.ObjectType):
+    date = graphene.Date(required=False)
+    sampling_size = graphene.Int(required=False)
+    data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum)
 
 
 class AssessmentDashboardStatisticsType(graphene.ObjectType):
@@ -127,7 +151,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     collection_technique_count = graphene.List(CollectionTechniqueCountType)
     total_multisector_assessment = graphene.Int(required=True)
     total_singlesector_assessment = graphene.Int(required=True)
-    assessment_geographic_areas = graphene.List(AssessmentDashboardGeographicalArea)
+    assessment_geographic_areas = graphene.List(AssessmentDashboardGeographicalAreaType)
     assessment_by_over_time = graphene.List(AssessmentCountByDateType)
     assessment_per_framework_piller = graphene.List(AssessmentFocusCountByDateType)
     assessment_per_affected_group = graphene.List(AssessmentAffectedGroupCountByDateType)
@@ -137,6 +161,14 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     assessment_per_affected_group_and_geoarea = graphene.List(AssessmentPerAffectedGroupAndGeoAreaCountByDateType)
     assessment_per_sector_and_geoarea = graphene.List(AssessmentPerSectorAndGeoAreaCountByDateType)
     assessment_by_lead_organization = graphene.List(AssessmentByLeadOrganizationCountByDateType)
+    assessment_per_datatechnique = graphene.List(AssessmentPerDataCollectionTechniqueCountByDateType)
+    assessment_per_unit_of_analysis = graphene.List(AssessmentPerUnitofAnalysisCountByDateType)
+    assessment_per_unit_of_reporting = graphene.List(AssessmentPerUnitofReportingCountByDateType)
+    assessment_per_sampling_approach = graphene.List(AssessmentPerSamplingApproachCountByDateType)
+    assessment_per_proximity = graphene.List(AssessmentPerProximityCountByDateType)
+    sample_size_per_data_collection_technique = graphene.List(
+        SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType
+    )
 
     @staticmethod
     def custom_resolver(root, info, _filter):
@@ -159,7 +191,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
 
     @staticmethod
     def resolve_total_stakeholder(root: AssessmentDashboardStat, info) -> int:
-        qs = root.assessment_registry_qs.values("stakeholders")
+        qs = root.assessment_registry_qs.values("stakeholders").distinct()
         return qs.count()
 
     @staticmethod
@@ -282,22 +314,20 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
                 """
             cursor.execute(query, {})
             return [
-                AssessmentPerAffectedGroupAndSectorCountByDateType(
-                    sector=data[0], affected_group=data[1], count=data[2]
-                )
+                AssessmentPerAffectedGroupAndSectorCountByDateType(sector=data[0], affected_group=data[1], count=data[2])
                 for data in cursor.fetchall()
             ]
 
     @staticmethod
     def resolve_assessment_per_affected_group_and_geoarea(root: AssessmentDashboardStat, info):
         return (
-            root.assessment_registry_qs.values("locations")
+            root.assessment_registry_qs.values("locations", date=TruncDay("created_at"))
             .annotate(
                 count=Count("id"),
                 affected_group=models.Func(models.F("affected_groups"), function="unnest"),
             )
             .filter(locations__admin_level__level=1)
-            .values("locations", "affected_group", "count")
+            .values("locations", "affected_group", "count", "date")
             .order_by("count")[:10]
         )
 
@@ -317,17 +347,73 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @staticmethod
     def resolve_assessment_by_lead_organization(root: AssessmentDashboardStat, info):
         return (
-            AssessmentRegistryOrganization.objects.filter(organization_type=1)
+            AssessmentRegistryOrganization.objects.filter(
+                organization_type=AssessmentRegistryOrganization.Type.LEAD_ORGANIZATION
+            )
             .filter(assessment_registry__in=root.assessment_registry_qs)
             .annotate(count=Count("organization"))
             .values("organization", "count", date=TruncDay("assessment_registry__created_at"))
+        )
+
+    @staticmethod
+    def resolve_assessment_per_datatechnique(root: AssessmentDashboardStat, info):
+        return (
+            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__created_at"))
+            .annotate(count=Count("data_collection_technique"))
+            .values("data_collection_technique", "count", "date")
+            .order_by("data_collection_technique")
+        )
+
+    @staticmethod
+    def resolve_assessment_per_unit_of_analysis(root: AssessmentDashboardStat, info):
+        return (
+            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__created_at"))
+            .annotate(count=Count("unit_of_analysis"))
+            .values("unit_of_analysis", "count", "date")
+            .order_by("unit_of_analysis")
+        )
+
+    @staticmethod
+    def resolve_assessment_per_unit_of_reporting(root: AssessmentDashboardStat, info):
+        return (
+            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__created_at"))
+            .annotate(count=Count("unit_of_reporting"))
+            .values("unit_of_reporting", "count", "date")
+            .order_by("unit_of_reporting")
+        )
+
+    @staticmethod
+    def resolve_assessment_per_sampling_approach(root: AssessmentDashboardStat, info):
+        return (
+            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__created_at"))
+            .annotate(count=Count("sampling_approach"))
+            .values("sampling_approach", "count", "date")
+            .order_by("sampling_approach")
+        )
+
+    @staticmethod
+    def resolve_assessment_per_proximity(root: AssessmentDashboardStat, info):
+        return (
+            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__created_at"))
+            .annotate(count=Count("proximity"))
+            .values("proximity", "count", "date")
+            .order_by("proximity")
+        )
+
+    @staticmethod
+    def resolve_sample_size_per_data_collection_technique(root: AssessmentDashboardStat, info):
+        return (
+            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__created_at"))
+            .annotate(sampling_size=Sum("sampling_size"))
+            .values("sampling_size", "data_collection_technique", "date")
+            .order_by("data_collection_technique")
         )
 
 
 class Query:
     assessment_dashboard_statistics = graphene.Field(
         AssessmentDashboardStatisticsType,
-        filter=AssessmentDashboardFilterInputType(),
+        filter=AssessmentDashboardFilterInputType(required=True),
     )
 
     @staticmethod
