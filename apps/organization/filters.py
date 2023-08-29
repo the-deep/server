@@ -93,7 +93,6 @@ class OrganizationFilterSet(django_filters.FilterSet):
             project = Project.get_for_gq(user, only_member=True).filter(id=value).first()
             if project is None:
                 return qs
-            # Only using lead for now.
             assessment_organizations_queryset = AssessmentRegistry.objects.filter(project=project)
             return qs.filter(
                 # Publishers
