@@ -307,7 +307,7 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         def _query_check(filter=None, **kwargs):
             return self.query_check(query, variables={"filter": filter, "id": self.project1.id}, **kwargs)
 
-        filter = {"dateFrom": "2019-01-01", "dateTo": str(date.today()+timedelta(1))}
+        filter = {"dateFrom": "2019-01-01", "dateTo": str(date.today() + timedelta(1))}
 
         self.force_login(self.member_user)
         content = _query_check(filter)["data"]["project"]["assessmentDashboardStatistics"]
@@ -321,9 +321,8 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         self.assertEqual(content["collectionTechniqueCount"][1]["dataCollectionTechnique"], "KEY_INFORMAT_INTERVIEW")
         self.assertEqual(content["assessmentByOverTime"][0]["count"], 1)
         self.assertEqual(content["assessmentByOverTime"][0]["date"], str(date.today()))
-        self.assertEqual(content["assessmentGeographicAreas"][0]['geoId'],self.geo_area1.id)
-        self.assertEqual(content["assessmentGeographicAreas"][1]['geoId'],self.geo_area2.id)
-        self.assertEqual(content['assessmentByOverTime'][0]['count'],1)
-        self.assertEqual(content['assessmentByOverTime'][0]['date'],str(date.today()))
-        self.assertEqual(content['assessmentPerFrameworkPiller'][0]['date'],str(date.today()))
-      
+        self.assertEqual(content["assessmentGeographicAreas"][0]["geoId"], self.geo_area1.id)
+        self.assertEqual(content["assessmentGeographicAreas"][1]["geoId"], self.geo_area2.id)
+        self.assertEqual(content["assessmentByOverTime"][0]["count"], 1)
+        self.assertEqual(content["assessmentByOverTime"][0]["date"], str(date.today()))
+        self.assertEqual(content["assessmentPerFrameworkPiller"][0]["date"], str(date.today()))
