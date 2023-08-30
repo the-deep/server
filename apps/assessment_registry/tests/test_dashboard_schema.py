@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from utils.graphene.tests import GraphQLTestCase
 
@@ -163,7 +163,7 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
             focuses=[
                 self.genum(AssessmentRegistry.FocusType.CONTEXT),
                 self.genum(AssessmentRegistry.FocusType.HUMANITERIAN_ACCESS),
-                self.genum(AssessmentRegistry.FocusType.DISPLACEMENT),
+                # self.genum(AssessmentRegistry.FocusType.DISPLACEMENT),
             ],
             frequency=self.genum(AssessmentRegistry.FrequencyType.ONE_OFF),
             protectionInfoMgmts=[
@@ -283,6 +283,32 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         count
         date
       }
+      assessmentGeographicAreas {
+        adminLevelId
+        assessmentIds
+        code
+        count
+        geoId
+      }
+       assessmentByOverTime {
+        count
+        date
+      }
+      assessmentPerFrameworkPiller {
+        count
+        date
+        focus
+      }
+       assessmentByDataCollectionTechniqueAndGeolocation {
+        count
+        dataCollectionTechnique
+        locations
+      }
+      assessmentByProximityAndGeolocation {
+        count
+        locations
+        proximity
+      }
         }
     }
     }"""
@@ -291,10 +317,11 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         def _query_check(filter=None, **kwargs):
             return self.query_check(query, variables={"filter": filter, "id": self.project1.id}, **kwargs)
 
-        filter = {"dateFrom": "2019-01-01", "dateTo": "2023-08-30"}
+        filter = {"dateFrom": "2019-01-01", "dateTo": str(date.today() + timedelta(1))}
 
         self.force_login(self.member_user)
         content = _query_check(filter)["data"]["project"]["assessmentDashboardStatistics"]
+        # assessment dashboard tab 1
         self.assertEqual(content["totalAssessment"], 1)
         self.assertEqual(content["totalCollectionTechnique"], 2)
         self.assertEqual(content["totalMultisectorAssessment"], 1)
@@ -305,3 +332,22 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         self.assertEqual(content["collectionTechniqueCount"][1]["dataCollectionTechnique"], "KEY_INFORMAT_INTERVIEW")
         self.assertEqual(content["assessmentByOverTime"][0]["count"], 1)
         self.assertEqual(content["assessmentByOverTime"][0]["date"], str(date.today()))
+        self.assertEqual(content["assessmentGeographicAreas"][0]["geoId"], self.geo_area1.id)
+        self.assertEqual(content["assessmentGeographicAreas"][1]["geoId"], self.geo_area2.id)
+        self.assertEqual(content["assessmentByOverTime"][0]["count"], 1)
+        self.assertEqual(content["assessmentByOverTime"][0]["date"], str(date.today()))
+        self.assertEqual(content["assessmentPerFrameworkPiller"][0]["date"], str(date.today()))
+        # assessment dashboard tab 2
+        self.assertEqual(
+            content['assessmentByDataCollectionTechniqueAndGeolocation'][0]['dataCollectionTechnique'],
+            "SECONDARY_DATA_REVIEW")
+        self.assertEqual(
+            content['assessmentByDataCollectionTechniqueAndGeolocation'][1]['dataCollectionTechnique'],
+            "KEY_INFORMAT_INTERVIEW")
+        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][0]['locations'], self.geo_area1.id)
+        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][1]['locations'], self.geo_area1.id)
+        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][0]['count'], 1)
+        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][1]['count'], 1)
+        self.assertEqual(content['assessmentByProximityAndGeolocation'][0]['count'], 2)
+        self.assertEqual(content['assessmentByProximityAndGeolocation'][0]['proximity'], "FACE_TO_FACE")
+        self.assertEqual(content['assessmentByProximityAndGeolocation'][0]['locations'], self.geo_area1.id)
