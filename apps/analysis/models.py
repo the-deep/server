@@ -593,7 +593,6 @@ class AnalysisReportContainer(models.Model):
     style = models.JSONField(default=dict)
 
     content_type = models.SmallIntegerField(choices=ContentType.choices)
-    content_style = models.JSONField(default=dict)
     content_configuration = models.JSONField(default=dict)
 
 

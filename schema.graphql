@@ -374,20 +374,6 @@ type AnalysisReportContainerContentConfigurationType {
   url: AnalysisReportUrlConfigurationType
 }
 
-input AnalysisReportContainerContentStyleInputType {
-  text: AnalysisReportTextContentStyleInputType
-  heading: AnalysisReportHeaderStyleInputType
-  image: AnalysisReportImageContentStyleInputType
-  url: AnalysisReportUrlContentStyleInputType
-}
-
-type AnalysisReportContainerContentStyleType {
-  text: AnalysisReportTextContentStyleType
-  heading: AnalysisReportHeaderStyleType
-  image: AnalysisReportImageContentStyleType
-  url: AnalysisReportUrlContentStyleType
-}
-
 enum AnalysisReportContainerContentTypeEnum {
   TEXT
   HEADING
@@ -397,6 +383,7 @@ enum AnalysisReportContainerContentTypeEnum {
 
 input AnalysisReportContainerDataInputType {
   id: ID
+  clientId: String
   upload: ID!
   data: GenericScalar
 }
@@ -405,17 +392,18 @@ type AnalysisReportContainerDataType {
   id: ID!
   upload: AnalysisReportUploadType!
   data: GenericScalar!
+  clientId: String!
 }
 
 input AnalysisReportContainerInputType {
   id: ID
+  clientId: String
   row: Int!
   column: Int!
   width: Int!
   height: Int
   contentType: AnalysisReportContainerContentTypeEnum!
   style: AnalysisReportContainerStyleInputType
-  contentStyle: AnalysisReportContainerContentStyleInputType
   contentConfiguration: AnalysisReportContainerContentConfigurationInputType
   contentData: [AnalysisReportContainerDataInputType!]!
 }
@@ -438,9 +426,9 @@ type AnalysisReportContainerType {
   column: Int!
   width: Int!
   height: Int
+  clientId: String!
   report: ID!
   style: AnalysisReportContainerStyleType
-  contentStyle: AnalysisReportContainerContentStyleType
   contentConfiguration: AnalysisReportContainerContentConfigurationType
   contentData: [AnalysisReportContainerDataType!]!
 }
@@ -463,13 +451,13 @@ type AnalysisReportHeaderStyleType {
 
 input AnalysisReportHeadingConfigurationInputType {
   content: String
-  contentStyle: AnalysisReportTextContentStyleInputType
+  style: AnalysisReportHeadingContentStyleInputType
   variant: AnalysisReportHeadingConfigurationVariantEnum
 }
 
 type AnalysisReportHeadingConfigurationType {
   content: String
-  contentStyle: AnalysisReportTextContentStyleType
+  style: AnalysisReportHeadingContentStyleType
   variant: AnalysisReportHeadingConfigurationVariantEnum
 }
 
@@ -497,11 +485,13 @@ type AnalysisReportHeadingContentStyleType {
 input AnalysisReportImageConfigurationInputType {
   caption: String
   altText: String
+  style: AnalysisReportImageContentStyleInputType
 }
 
 type AnalysisReportImageConfigurationType {
   caption: String
   altText: String
+  style: AnalysisReportImageContentStyleType
 }
 
 enum AnalysisReportImageContentStyleFitEnum {
@@ -603,12 +593,12 @@ type AnalysisReportSnapshotType {
 
 input AnalysisReportTextConfigurationInputType {
   content: String
-  contentStyle: AnalysisReportTextContentStyleInputType
+  style: AnalysisReportTextContentStyleInputType
 }
 
 type AnalysisReportTextConfigurationType {
   content: String
-  contentStyle: AnalysisReportTextContentStyleType
+  style: AnalysisReportTextContentStyleType
 }
 
 input AnalysisReportTextContentStyleInputType {
@@ -736,10 +726,12 @@ enum AnalysisReportUploadTypeEnum {
 
 input AnalysisReportUrlConfigurationInputType {
   url: String
+  style: AnalysisReportUrlContentStyleInputType
 }
 
 type AnalysisReportUrlConfigurationType {
   url: String
+  style: AnalysisReportUrlContentStyleType
 }
 
 input AnalysisReportUrlContentStyleInputType {

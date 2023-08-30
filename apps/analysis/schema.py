@@ -61,7 +61,6 @@ from .filter_set import (
 from .serializers import (
     AnalysisReportConfigurationSerializer,
     AnalysisReportUploadMetadataSerializer,
-    AnalysisReportContainerContentStyleSerializer,
     AnalysisReportContainerContentConfigurationSerializer,
     AnalysisReportContainerStyleSerializer,
 )
@@ -572,7 +571,7 @@ class AnalysisReportUploadType(DjangoObjectType):
         return get_analysis_report_upload_qs(info)
 
 
-class AnalysisReportContainerDataType(DjangoObjectType):
+class AnalysisReportContainerDataType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = AnalysisReportContainerData
         only_fields = (
@@ -582,7 +581,7 @@ class AnalysisReportContainerDataType(DjangoObjectType):
         )
 
 
-class AnalysisReportContainerType(DjangoObjectType):
+class AnalysisReportContainerType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = AnalysisReportContainer
         only_fields = (
@@ -603,12 +602,6 @@ class AnalysisReportContainerType(DjangoObjectType):
         )
     )
     # Content metadata
-    content_style = graphene.Field(
-        generate_type_for_serializer(
-            'AnalysisReportContainerContentStyleType',
-            serializer_class=AnalysisReportContainerContentStyleSerializer,
-        )
-    )
     content_configuration = graphene.Field(
         generate_type_for_serializer(
             'AnalysisReportContainerContentConfigurationType',

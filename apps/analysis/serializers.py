@@ -662,26 +662,26 @@ class AnalysisReportUrlContentStyleSerializer(serializers.Serializer):
     noop = serializers.CharField(required=False)
 
 
-# XXX: NOT USED
 class AnalysisReportTextConfigurationSerializer(serializers.Serializer):
     content = serializers.CharField(required=False)
-    content_style = AnalysisReportTextContentStyleSerializer(required=False)
+    style = AnalysisReportTextContentStyleSerializer(required=False)
 
 
-# XXX: NOT USED
 class AnalysisReportHeadingConfigurationSerializer(serializers.Serializer):
     content = serializers.CharField(required=False)
-    content_style = AnalysisReportTextContentStyleSerializer(required=False)
+    style = AnalysisReportHeadingContentStyleSerializer(required=False)
     variant = serializers.ChoiceField(choices=ReportEnum.HeadingConfigurationVariant.choices, required=False)
 
 
 class AnalysisReportUrlConfigurationSerializer(serializers.Serializer):
     url = serializers.CharField(required=False)
+    style = AnalysisReportUrlContentStyleSerializer(required=False)
 
 
 class AnalysisReportImageConfigurationSerializer(serializers.Serializer):
     caption = serializers.CharField(required=False)
     altText = serializers.CharField(required=False)
+    style = AnalysisReportImageContentStyleSerializer(required=False)
 
 
 class AnalysisReportConfigurationSerializer(serializers.Serializer):
@@ -704,13 +704,6 @@ class AnalysisReportConfigurationSerializer(serializers.Serializer):
     url_content_style = AnalysisReportUrlConfigurationSerializer(required=False)
 
 
-class AnalysisReportContainerContentStyleSerializer(serializers.Serializer):
-    text = AnalysisReportTextContentStyleSerializer(required=False)
-    heading = AnalysisReportHeaderStyleSerializer(required=False)
-    image = AnalysisReportImageContentStyleSerializer(required=False)
-    url = AnalysisReportUrlContentStyleSerializer(required=False)
-
-
 class AnalysisReportContainerContentConfigurationSerializer(serializers.Serializer):
     text = AnalysisReportTextConfigurationSerializer(required=False)
     heading = AnalysisReportHeadingConfigurationSerializer(required=False)
@@ -718,25 +711,27 @@ class AnalysisReportContainerContentConfigurationSerializer(serializers.Serializ
     url = AnalysisReportUrlConfigurationSerializer(required=False)
 
 
-class AnalysisReportContainerDataSerializer(serializers.ModelSerializer):
+class AnalysisReportContainerDataSerializer(TempClientIdMixin, serializers.ModelSerializer):
     id = IntegerIDField(required=False)
 
     class Meta:
         model = AnalysisReportContainerData
         fields = (
             'id',
+            'client_id',
             'upload',  # TODO Validation
             'data',
         )
 
 
-class AnalysisReportContainerSerializer(NestedCreateMixin, serializers.ModelSerializer):
+class AnalysisReportContainerSerializer(TempClientIdMixin, NestedCreateMixin, serializers.ModelSerializer):
     id = IntegerIDField(required=False)
 
     class Meta:
         model = AnalysisReportContainer
         fields = (
             'id',
+            'client_id',
             'row',
             'column',
             'width',
@@ -744,7 +739,6 @@ class AnalysisReportContainerSerializer(NestedCreateMixin, serializers.ModelSeri
             'content_type',
             # Custom
             'style',
-            'content_style',
             'content_configuration',
             'content_data',
         )
@@ -752,7 +746,6 @@ class AnalysisReportContainerSerializer(NestedCreateMixin, serializers.ModelSeri
     style = AnalysisReportContainerStyleSerializer(required=False)
 
     # Content metadata
-    content_style = AnalysisReportContainerContentStyleSerializer(required=False)
     content_configuration = AnalysisReportContainerContentConfigurationSerializer(required=False)
 
     # TODO: Model Field, Nested Serializer

@@ -59,7 +59,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('type', models.SmallIntegerField(choices=[(1, 'CSV'), (2, 'XLSX'), (3, 'GeoJson'), (4, 'Image')])),
                 ('metadata', models.JSONField(default=dict)),
-                ('file', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='+', to='gallery.file')),
+                ('file', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='+', to='gallery.File')),
                 ('report', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='analysis.analysisreport')),
             ],
         ),
