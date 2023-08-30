@@ -1566,25 +1566,55 @@ type AppEnumCollectionWidgetWidth {
 }
 
 type AssessmentAffectedGroupCountByDateType {
-  date: Date
-  count: Int
+  date: Date!
+  count: Int!
   affectedGroup: AssessmentRegistryAffectedGroupTypeEnum
 }
 
+type AssessmentByGeographicalAndDataCollectionTechniqueCountByDateType {
+  locations: Int!
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
+  count: Int!
+}
+
+type AssessmentByGeographicalAndProximityCountByDateType {
+  locations: Int!
+  proximity: AssessmentRegistryProximityTypeEnum
+  count: Int!
+}
+
+type AssessmentByGeographicalAndSamplingApproachCountByDateType {
+  locations: Int!
+  samplingApproach: AssessmentRegistrySamplingApproachTypeEnum
+  count: Int!
+}
+
+type AssessmentByGeographicalAndUnit_Of_AnalysisCountByDateType {
+  locations: Int!
+  unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum
+  count: Int!
+}
+
+type AssessmentByGeographicalAndUnit_Of_ReportingCountByDateType {
+  locations: Int!
+  unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum
+  count: Int!
+}
+
 type AssessmentByLeadOrganizationCountByDateType {
-  date: Date
-  count: Int
-  organization: Int
+  date: Date!
+  count: Int!
+  organization: Int!
 }
 
 type AssessmentCountByDateType {
-  date: Date
-  count: Int
+  date: Date!
+  count: Int!
 }
 
 type AssessmentCountType {
   coordinatedJoint: AssessmentRegistryCoordinationTypeEnum
-  coordinatedJointDisplay: EnumDescription
+  coordinatedJointDisplay: String
   count: Int
 }
 
@@ -1616,9 +1646,10 @@ input AssessmentDashboardFilterInputType {
 }
 
 type AssessmentDashboardGeographicalAreaType {
+  geoId: Int!
   adminLevelId: ID
-  code: ID
-  count: ID
+  code: ID!
+  count: Int!
   assessmentIds: [ID!]
 }
 
@@ -1626,38 +1657,43 @@ type AssessmentDashboardStatisticsType {
   totalAssessment: Int!
   totalStakeholder: Int!
   totalCollectionTechnique: Int!
-  assessmentCount: [AssessmentCountType]
-  stakeholderCount: [StakeholderCountType]
-  collectionTechniqueCount: [CollectionTechniqueCountType]
+  assessmentCount: [AssessmentCountType]!
+  stakeholderCount: [StakeholderCountType]!
+  collectionTechniqueCount: [CollectionTechniqueCountType]!
   totalMultisectorAssessment: Int!
   totalSinglesectorAssessment: Int!
   assessmentGeographicAreas: [AssessmentDashboardGeographicalAreaType]
-  assessmentByOverTime: [AssessmentCountByDateType]
-  assessmentPerFrameworkPiller: [AssessmentFocusCountByDateType]
-  assessmentPerAffectedGroup: [AssessmentAffectedGroupCountByDateType]
-  assessmentPerHumanitarianSector: [AssessmentHumanitrainSectorCountByDateType]
-  assessmentPerProtectionManagement: [AssessmentProtectionInformationCountByDateType]
-  assessmentPerAffectedGroupAndSector: [AssessmentPerAffectedGroupAndSectorCountByDateType]
-  assessmentPerAffectedGroupAndGeoarea: [AssessmentPerAffectedGroupAndGeoAreaCountByDateType]
+  assessmentByOverTime: [AssessmentCountByDateType]!
+  assessmentPerFrameworkPiller: [AssessmentFocusCountByDateType]!
+  assessmentPerAffectedGroup: [AssessmentAffectedGroupCountByDateType]!
+  assessmentPerHumanitarianSector: [AssessmentHumanitrainSectorCountByDateType]!
+  assessmentPerProtectionManagement: [AssessmentProtectionInformationCountByDateType]!
+  assessmentPerAffectedGroupAndSector: [AssessmentPerAffectedGroupAndSectorCountByDateType]!
+  assessmentPerAffectedGroupAndGeoarea: [AssessmentPerAffectedGroupAndGeoAreaCountByDateType]!
   assessmentPerSectorAndGeoarea: [AssessmentPerSectorAndGeoAreaCountByDateType]
-  assessmentByLeadOrganization: [AssessmentByLeadOrganizationCountByDateType]
-  assessmentPerDatatechnique: [AssessmentPerDataCollectionTechniqueCountByDateType]
-  assessmentPerUnitOfAnalysis: [AssessmentPerUnitofAnalysisCountByDateType]
-  assessmentPerUnitOfReporting: [AssessmentPerUnitofReportingCountByDateType]
-  assessmentPerSamplingApproach: [AssessmentPerSamplingApproachCountByDateType]
-  assessmentPerProximity: [AssessmentPerProximityCountByDateType]
-  sampleSizePerDataCollectionTechnique: [SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType]
+  assessmentByLeadOrganization: [AssessmentByLeadOrganizationCountByDateType]!
+  assessmentPerDatatechnique: [AssessmentPerDataCollectionTechniqueCountByDateType]!
+  assessmentPerUnitOfAnalysis: [AssessmentPerUnitofAnalysisCountByDateType]!
+  assessmentPerUnitOfReporting: [AssessmentPerUnitofReportingCountByDateType]!
+  assessmentPerSamplingApproach: [AssessmentPerSamplingApproachCountByDateType]!
+  assessmentPerProximity: [AssessmentPerProximityCountByDateType]!
+  sampleSizePerDataCollectionTechnique: [SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType]!
+  assessmentByDataCollectionTechniqueAndGeolocation: [AssessmentByGeographicalAndDataCollectionTechniqueCountByDateType]!
+  assessmentBySamplingApproachAndGeolocation: [AssessmentByGeographicalAndSamplingApproachCountByDateType]!
+  assessmentByProximityAndGeolocation: [AssessmentByGeographicalAndProximityCountByDateType]!
+  assessmentByUnitOfAnalysisAndGeolocation: [AssessmentByGeographicalAndUnit_Of_AnalysisCountByDateType]!
+  assessmentByUnitOfReportingAndGeolocation: [AssessmentByGeographicalAndUnit_Of_ReportingCountByDateType]!
 }
 
 type AssessmentFocusCountByDateType {
-  date: Date
-  count: Int
+  date: Date!
+  count: Int!
   focus: AssessmentRegistryFocusTypeEnum
 }
 
 type AssessmentHumanitrainSectorCountByDateType {
-  date: Date
-  count: Int
+  date: Date!
+  count: Int!
   sector: AssessmentRegistrySectorTypeEnum
 }
 
@@ -1680,59 +1716,57 @@ enum AssessmentMethodologyProtectionInfoEnum {
 }
 
 type AssessmentPerAffectedGroupAndGeoAreaCountByDateType {
-  date: Date
-  count: Int
+  date: Date!
+  count: Int!
   affectedGroup: AssessmentRegistryAffectedGroupTypeEnum
-  locations: Int
+  locations: Int!
 }
 
 type AssessmentPerAffectedGroupAndSectorCountByDateType {
-  date: Date
-  count: Int
   affectedGroup: AssessmentRegistryAffectedGroupTypeEnum
   sector: AssessmentRegistrySectorTypeEnum
+  count: Int!
 }
 
 type AssessmentPerDataCollectionTechniqueCountByDateType {
-  date: Date
-  count: Int
+  date: Date!
+  count: Int!
   dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
 }
 
 type AssessmentPerProximityCountByDateType {
-  date: Date
-  count: Int
+  date: Date!
+  count: Int!
   proximity: AssessmentRegistryProximityTypeEnum
 }
 
 type AssessmentPerSamplingApproachCountByDateType {
-  date: Date
-  count: Int
+  date: Date!
+  count: Int!
   samplingApproach: AssessmentRegistrySamplingApproachTypeEnum
 }
 
 type AssessmentPerSectorAndGeoAreaCountByDateType {
-  date: Date
-  count: Int
+  count: Int!
   sector: AssessmentRegistrySectorTypeEnum
-  locations: Int
+  locations: Int!
 }
 
 type AssessmentPerUnitofAnalysisCountByDateType {
-  date: Date
-  count: Int
+  date: Date!
+  count: Int!
   unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum
 }
 
 type AssessmentPerUnitofReportingCountByDateType {
-  date: Date
-  count: Int
+  date: Date!
+  count: Int!
   unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum
 }
 
 type AssessmentProtectionInformationCountByDateType {
-  date: Date
-  count: Int
+  date: Date!
+  count: Int!
   protectionManagement: AssessmentRegistryProtectionInfoTypeEnum
 }
 
@@ -2574,7 +2608,7 @@ type ChangeUserPassword {
 
 type CollectionTechniqueCountType {
   dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
-  dataCollectionTechniqueDisplay: EnumDescription
+  dataCollectionTechniqueDisplay: String
   count: Int!
 }
 
@@ -4993,8 +5027,8 @@ type RssFieldType {
 }
 
 type SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType {
-  date: Date
-  samplingSize: Int
+  date: Date!
+  samplingSize: Int!
   dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
 }
 
