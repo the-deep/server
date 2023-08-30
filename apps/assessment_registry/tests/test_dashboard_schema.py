@@ -299,6 +299,16 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         date
         focus
       }
+       assessmentByDataCollectionTechniqueAndGeolocation {
+        count
+        dataCollectionTechnique
+        locations
+      }
+      assessmentByProximityAndGeolocation {
+        count
+        locations
+        proximity
+      }
         }
     }
     }"""
@@ -311,6 +321,7 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
 
         self.force_login(self.member_user)
         content = _query_check(filter)["data"]["project"]["assessmentDashboardStatistics"]
+        # assessment dashboard tab 1
         self.assertEqual(content["totalAssessment"], 1)
         self.assertEqual(content["totalCollectionTechnique"], 2)
         self.assertEqual(content["totalMultisectorAssessment"], 1)
@@ -326,3 +337,17 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         self.assertEqual(content["assessmentByOverTime"][0]["count"], 1)
         self.assertEqual(content["assessmentByOverTime"][0]["date"], str(date.today()))
         self.assertEqual(content["assessmentPerFrameworkPiller"][0]["date"], str(date.today()))
+        # assessment dashboard tab 2
+        self.assertEqual(
+            content['assessmentByDataCollectionTechniqueAndGeolocation'][0]['dataCollectionTechnique'],
+            "SECONDARY_DATA_REVIEW")
+        self.assertEqual(
+            content['assessmentByDataCollectionTechniqueAndGeolocation'][1]['dataCollectionTechnique'],
+            "KEY_INFORMAT_INTERVIEW")
+        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][0]['locations'], self.geo_area1.id)
+        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][1]['locations'], self.geo_area1.id)
+        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][0]['count'], 1)
+        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][1]['count'], 1)
+        self.assertEqual(content['assessmentByProximityAndGeolocation'][0]['count'], 2)
+        self.assertEqual(content['assessmentByProximityAndGeolocation'][0]['proximity'], "FACE_TO_FACE")
+        self.assertEqual(content['assessmentByProximityAndGeolocation'][0]['locations'], self.geo_area1.id)
