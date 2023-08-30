@@ -1571,10 +1571,40 @@ type AssessmentAffectedGroupCountByDateType {
   affectedGroup: AssessmentRegistryAffectedGroupTypeEnum
 }
 
+type AssessmentByGeographicalAndDataCollectionTechniqueCountByDateType {
+  locations: Int
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
+  count: Int
+}
+
+type AssessmentByGeographicalAndProximityCountByDateType {
+  locations: Int
+  proximity: AssessmentRegistryProximityTypeEnum
+  count: Int
+}
+
+type AssessmentByGeographicalAndSamplingApproachCountByDateType {
+  locations: Int
+  samplingApproach: AssessmentRegistrySamplingApproachTypeEnum
+  count: Int
+}
+
+type AssessmentByGeographicalAndUnit_Of_AnalysisCountByDateType {
+  locations: Int
+  unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum
+  count: Int
+}
+
+type AssessmentByGeographicalAndUnit_Of_ReportingCountByDateType {
+  locations: Int
+  unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum
+  count: Int
+}
+
 type AssessmentByLeadOrganizationCountByDateType {
   date: Date
   count: Int
-  organization: Int
+  organization: Int!
 }
 
 type AssessmentCountByDateType {
@@ -1616,6 +1646,7 @@ input AssessmentDashboardFilterInputType {
 }
 
 type AssessmentDashboardGeographicalAreaType {
+  geoId: Int
   adminLevelId: ID
   code: ID
   count: ID
@@ -1647,6 +1678,11 @@ type AssessmentDashboardStatisticsType {
   assessmentPerSamplingApproach: [AssessmentPerSamplingApproachCountByDateType]
   assessmentPerProximity: [AssessmentPerProximityCountByDateType]
   sampleSizePerDataCollectionTechnique: [SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType]
+  assessmentByDataCollectionTechniqueAndGeolocation: [AssessmentByGeographicalAndDataCollectionTechniqueCountByDateType]
+  assessmentBySamplingApproachAndGeolocation: [AssessmentByGeographicalAndSamplingApproachCountByDateType]
+  assessmentByProximityAndGeolocation: [AssessmentByGeographicalAndProximityCountByDateType]
+  assessmentByUnitOfAnalysisAndGeolocation: [AssessmentByGeographicalAndUnit_Of_AnalysisCountByDateType]
+  assessmentByUnitOfReportingAndGeolocation: [AssessmentByGeographicalAndUnit_Of_ReportingCountByDateType]
 }
 
 type AssessmentFocusCountByDateType {
@@ -1683,7 +1719,7 @@ type AssessmentPerAffectedGroupAndGeoAreaCountByDateType {
   date: Date
   count: Int
   affectedGroup: AssessmentRegistryAffectedGroupTypeEnum
-  locations: Int
+  locations: Int!
 }
 
 type AssessmentPerAffectedGroupAndSectorCountByDateType {
@@ -1715,7 +1751,7 @@ type AssessmentPerSectorAndGeoAreaCountByDateType {
   date: Date
   count: Int
   sector: AssessmentRegistrySectorTypeEnum
-  locations: Int
+  locations: Int!
 }
 
 type AssessmentPerUnitofAnalysisCountByDateType {
@@ -4985,8 +5021,8 @@ type RssFieldType {
 }
 
 type SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType {
-  date: Date
-  samplingSize: Int
+  date: Date!
+  samplingSize: Int!
   dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
 }
 
