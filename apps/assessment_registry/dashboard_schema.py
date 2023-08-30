@@ -73,7 +73,7 @@ class AssessmentDashboardGeographicalAreaType(graphene.ObjectType):
     geo_id = graphene.Int(required=False)
     admin_level_id = graphene.ID(required=False)
     code = graphene.ID(required=False)
-    count = graphene.ID(required=False)
+    count = graphene.Int(required=False)
     assessment_ids = graphene.List(graphene.NonNull(graphene.ID))
 
 
