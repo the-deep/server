@@ -10,8 +10,6 @@ from django.db.models.functions import TruncDay
 from django.db import connection as django_db_connection
 
 from deep.caches import CacheHelper
-from geo.models import GeoArea
-from utils.graphene.enums import EnumDescription
 from .enums import (
     AssessmentRegistryAffectedGroupTypeEnum,
     AssessmentRegistryCoordinationTypeEnum,
@@ -29,7 +27,7 @@ from .filter_set import (
     AssessmentDashboardFilterDataInputType,
     AssessmentDashboardFilterSet,
 )
-from .models import AssessmentRegistry, AssessmentRegistryOrganization, MethodologyAttribute
+from .models import AssessmentRegistry, AssessmentRegistryOrganization, MethodologyAttribute, ScoreRating
 
 
 def get_global_filters(_filter: dict, date_field="created_at"):
@@ -44,6 +42,7 @@ class AssessmentDashboardStat:
     cache_key: str
     assessment_registry_qs: models.QuerySet
     methodology_attribute_qs: models.QuerySet
+    score_rating_qs: models.QuerySet
 
 
 class AssessmentDashboardFilterInputType(graphene.InputObjectType):
@@ -53,9 +52,12 @@ class AssessmentDashboardFilterInputType(graphene.InputObjectType):
 
 
 class AssessmentCountType(graphene.ObjectType):
-    coordinated_joint = graphene.Field(AssessmentRegistryCoordinationTypeEnum)
-    coordinated_joint_display = EnumDescription(required=False, source="get_coordinated_joint_display")
+    coordinated_joint = graphene.Field(AssessmentRegistryCoordinationTypeEnum, required=False)
+    coordinated_joint_display = graphene.String()
     count = graphene.Int()
+
+    def resolve_coordinated_joint_display(self, info):
+        return AssessmentRegistry.CoordinationType(self["coordinated_joint"]).label
 
 
 class StakeholderCountType(graphene.ObjectType):
@@ -65,21 +67,24 @@ class StakeholderCountType(graphene.ObjectType):
 
 class CollectionTechniqueCountType(graphene.ObjectType):
     data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum, required=True)
-    data_collection_technique_display = EnumDescription(source="get_data_collection_techniques_display", required=False)
+    data_collection_technique_display = graphene.String()  # Note reolver is used to get the enum values
     count = graphene.Int(required=True)
+
+    def resolve_data_collection_technique_display(self, info):
+        return MethodologyAttribute.CollectionTechniqueType(self["data_collection_technique"]).label
 
 
 class AssessmentDashboardGeographicalAreaType(graphene.ObjectType):
-    geo_id = graphene.Int(required=False)
+    geo_id = graphene.Int(required=True)
     admin_level_id = graphene.ID(required=False)
-    code = graphene.ID(required=False)
-    count = graphene.Int(required=False)
+    code = graphene.ID(required=True)
+    count = graphene.Int(required=True)
     assessment_ids = graphene.List(graphene.NonNull(graphene.ID))
 
 
 class AssessmentCountByDateType(graphene.ObjectType):
-    date = graphene.Date(required=False)
-    count = graphene.Int(required=False)
+    date = graphene.Date(required=True)
+    count = graphene.Int(required=True)
 
 
 class AssessmentFocusCountByDateType(AssessmentCountByDateType):
@@ -98,9 +103,10 @@ class AssessmentProtectionInformationCountByDateType(AssessmentCountByDateType):
     protection_management = graphene.Field(AssessmentRegistryProtectionInfoTypeEnum)
 
 
-class AssessmentPerAffectedGroupAndSectorCountByDateType(AssessmentCountByDateType):
+class AssessmentPerAffectedGroupAndSectorCountByDateType(graphene.ObjectType):
     affected_group = graphene.Field(AssessmentRegistryAffectedGroupTypeEnum)
     sector = graphene.Field(AssessmentRegistrySectorTypeEnum)
+    count = graphene.Int(required=True)
 
 
 class AssessmentPerAffectedGroupAndGeoAreaCountByDateType(AssessmentCountByDateType):
@@ -108,7 +114,8 @@ class AssessmentPerAffectedGroupAndGeoAreaCountByDateType(AssessmentCountByDateT
     locations = graphene.Int(required=True)
 
 
-class AssessmentPerSectorAndGeoAreaCountByDateType(AssessmentCountByDateType):
+class AssessmentPerSectorAndGeoAreaCountByDateType(graphene.ObjectType):
+    count = graphene.Int(required=True)
     sector = graphene.Field(AssessmentRegistrySectorTypeEnum)
     locations = graphene.Int(required=True)
 
@@ -144,74 +151,80 @@ class SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType(graphene.O
 
 
 class AssessmentByGeographicalAndDataCollectionTechniqueCountByDateType(graphene.ObjectType):
-    locations = graphene.Int(required=False)
+    locations = graphene.Int(required=True)
     data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum)
-    count = graphene.Int(required=False)
+    count = graphene.Int(required=True)
 
 
 class AssessmentByGeographicalAndSamplingApproachCountByDateType(graphene.ObjectType):
-    locations = graphene.Int(required=False)
+    locations = graphene.Int(required=True)
     sampling_approach = graphene.Field(AssessmentRegistrySamplingApproachTypeEnum)
-    count = graphene.Int(required=False)
+    count = graphene.Int(required=True)
 
 
 class AssessmentByGeographicalAndProximityCountByDateType(graphene.ObjectType):
-    locations = graphene.Int(required=False)
+    locations = graphene.Int(required=True)
     proximity = graphene.Field(AssessmentRegistryProximityTypeEnum)
-    count = graphene.Int(required=False)
+    count = graphene.Int(required=True)
 
 
 class AssessmentByGeographicalAndUnit_Of_AnalysisCountByDateType(graphene.ObjectType):
-    locations = graphene.Int(required=False)
+    locations = graphene.Int(required=True)
     unit_of_analysis = graphene.Field(AssessmentRegistryUnitOfAnalysisTypeEnum)
-    count = graphene.Int(required=False)
+    count = graphene.Int(required=True)
 
 
 class AssessmentByGeographicalAndUnit_Of_ReportingCountByDateType(graphene.ObjectType):
-    locations = graphene.Int(required=False)
+    locations = graphene.Int(required=True)
     unit_of_reporting = graphene.Field(AssessmentRegistryUnitOfReportingTypeEnum)
-    count = graphene.Int(required=False)
+    count = graphene.Int(required=True)
 
 
 class AssessmentDashboardStatisticsType(graphene.ObjectType):
     total_assessment = graphene.Int(required=True)
     total_stakeholder = graphene.Int(required=True)
     total_collection_technique = graphene.Int(required=True)
-    assessment_count = graphene.List(AssessmentCountType)
-    stakeholder_count = graphene.List(StakeholderCountType)
-    collection_technique_count = graphene.List(CollectionTechniqueCountType)
+    assessment_count = graphene.NonNull(graphene.List(AssessmentCountType))
+    stakeholder_count = graphene.NonNull(graphene.List(StakeholderCountType))
+    collection_technique_count = graphene.NonNull(graphene.List(CollectionTechniqueCountType))
     total_multisector_assessment = graphene.Int(required=True)
     total_singlesector_assessment = graphene.Int(required=True)
     assessment_geographic_areas = graphene.List(AssessmentDashboardGeographicalAreaType)
-    assessment_by_over_time = graphene.List(AssessmentCountByDateType)
-    assessment_per_framework_piller = graphene.List(AssessmentFocusCountByDateType)
-    assessment_per_affected_group = graphene.List(AssessmentAffectedGroupCountByDateType)
-    assessment_per_humanitarian_sector = graphene.List(AssessmentHumanitrainSectorCountByDateType)
-    assessment_per_protection_management = graphene.List(AssessmentProtectionInformationCountByDateType)
-    assessment_per_affected_group_and_sector = graphene.List(AssessmentPerAffectedGroupAndSectorCountByDateType)
-    assessment_per_affected_group_and_geoarea = graphene.List(AssessmentPerAffectedGroupAndGeoAreaCountByDateType)
+    assessment_by_over_time = graphene.NonNull(graphene.List(AssessmentCountByDateType))
+    assessment_per_framework_piller = graphene.NonNull(graphene.List(AssessmentFocusCountByDateType))
+    assessment_per_affected_group = graphene.NonNull(graphene.List(AssessmentAffectedGroupCountByDateType))
+    assessment_per_humanitarian_sector = graphene.NonNull(graphene.List(AssessmentHumanitrainSectorCountByDateType))
+    assessment_per_protection_management = graphene.NonNull(graphene.List(AssessmentProtectionInformationCountByDateType))
+    assessment_per_affected_group_and_sector = graphene.NonNull(
+        graphene.List(AssessmentPerAffectedGroupAndSectorCountByDateType)
+    )
+    assessment_per_affected_group_and_geoarea = graphene.NonNull(
+        graphene.List(AssessmentPerAffectedGroupAndGeoAreaCountByDateType)
+    )
     assessment_per_sector_and_geoarea = graphene.List(AssessmentPerSectorAndGeoAreaCountByDateType)
-    assessment_by_lead_organization = graphene.List(AssessmentByLeadOrganizationCountByDateType)
-    assessment_per_datatechnique = graphene.List(AssessmentPerDataCollectionTechniqueCountByDateType)
-    assessment_per_unit_of_analysis = graphene.List(AssessmentPerUnitofAnalysisCountByDateType)
-    assessment_per_unit_of_reporting = graphene.List(AssessmentPerUnitofReportingCountByDateType)
-    assessment_per_sampling_approach = graphene.List(AssessmentPerSamplingApproachCountByDateType)
-    assessment_per_proximity = graphene.List(AssessmentPerProximityCountByDateType)
-    sample_size_per_data_collection_technique = graphene.List(
-        SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType
+    assessment_by_lead_organization = graphene.NonNull(graphene.List(AssessmentByLeadOrganizationCountByDateType))
+    assessment_per_datatechnique = graphene.NonNull(graphene.List(AssessmentPerDataCollectionTechniqueCountByDateType))
+    assessment_per_unit_of_analysis = graphene.NonNull(graphene.List(AssessmentPerUnitofAnalysisCountByDateType))
+    assessment_per_unit_of_reporting = graphene.NonNull(graphene.List(AssessmentPerUnitofReportingCountByDateType))
+    assessment_per_sampling_approach = graphene.NonNull(graphene.List(AssessmentPerSamplingApproachCountByDateType))
+    assessment_per_proximity = graphene.NonNull(graphene.List(AssessmentPerProximityCountByDateType))
+    sample_size_per_data_collection_technique = graphene.NonNull(
+        graphene.List(SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType)
     )
-    assessment_by_data_collection_technique_and_geolocation = graphene.List(
-        AssessmentByGeographicalAndDataCollectionTechniqueCountByDateType
+    assessment_by_data_collection_technique_and_geolocation = graphene.NonNull(
+        graphene.List(AssessmentByGeographicalAndDataCollectionTechniqueCountByDateType)
     )
-    assessment_by_sampling_approach_and_geolocation = graphene.List(
-        AssessmentByGeographicalAndSamplingApproachCountByDateType
+    assessment_by_sampling_approach_and_geolocation = graphene.NonNull(
+        graphene.List(AssessmentByGeographicalAndSamplingApproachCountByDateType)
     )
-    assessment_by_proximity_and_geolocation = graphene.List(AssessmentByGeographicalAndProximityCountByDateType)
-    assessment_by_unit_of_analysis_and_geolocation = graphene.List(
-        AssessmentByGeographicalAndUnit_Of_AnalysisCountByDateType
+    assessment_by_proximity_and_geolocation = graphene.NonNull(
+        graphene.List(AssessmentByGeographicalAndProximityCountByDateType)
     )
-    assessment_by_unit_of_reporting_and_geolocation = graphene.List(
-        AssessmentByGeographicalAndUnit_Of_ReportingCountByDateType
+    assessment_by_unit_of_analysis_and_geolocation = graphene.NonNull(
+        graphene.List(AssessmentByGeographicalAndUnit_Of_AnalysisCountByDateType)
+    )
+    assessment_by_unit_of_reporting_and_geolocation = graphene.NonNull(
+        graphene.List(AssessmentByGeographicalAndUnit_Of_ReportingCountByDateType)
     )
 
     @staticmethod
@@ -222,11 +235,13 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
         assessment_qs_filter = AssessmentDashboardFilterSet(queryset=assessment_qs, data=_filter.get("assessment")).qs
         methodology_attribute_qs = MethodologyAttribute.objects.filter(assessment_registry__in=assessment_qs_filter)
+        score_rating_qs = ScoreRating.objects.filter(assessment_registry__in=assessment_qs_filter)
         cache_key = CacheHelper.generate_hash(_filter.__dict__)
         return AssessmentDashboardStat(
             cache_key=cache_key,
             assessment_registry_qs=assessment_qs_filter,
             methodology_attribute_qs=methodology_attribute_qs,
+            score_rating_qs=score_rating_qs,
         )
 
     @staticmethod
@@ -287,18 +302,15 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @staticmethod
     def resolve_assessment_geographic_areas(root: AssessmentDashboardStat, info):
         return (
-            GeoArea.objects.annotate(
-                assessment_ids=ArrayAgg(
-                    "focus_location_assessment_reg",
-                    ordering="focus_location_assessment_reg",
-                    distinct=True,
-                    filter=models.Q(focus_location_assessment_reg__in=root.assessment_registry_qs),
-                ),
-                count=Count("focus_location_assessment_reg", distinct=True),
-                geo_id=models.F("id"),
+            root.assessment_registry_qs.values("locations__admin_level_id", "locations__id", "locations__code")
+            .annotate(
+                count=Count("locations__id"),
+                assessment_ids=ArrayAgg("id"),
+                geo_id=models.F("locations__id"),
+                admin_level_id=models.F("locations__admin_level_id"),
+                code=models.F("locations__code"),
             )
-            .filter(focus_location_assessment_reg__isnull=False)
-            .values("admin_level_id", "code", "count", "assessment_ids", "geo_id")
+            .order_by("locations")
         )
 
     @staticmethod
