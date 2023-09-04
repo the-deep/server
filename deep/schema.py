@@ -25,7 +25,6 @@ from export import schema as export_schema, mutation as export_mutation
 from assessment_registry import mutation as assessment_registry_mutation
 from assessment_registry import schema as assessment_registry_schema
 from deep_explore import schema as deep_explore_schema
-from gallery import mutations as gallery_mutation
 from deep.enums import CustomEnum
 
 
@@ -65,7 +64,6 @@ class Mutation(
     pj_mutation.Mutation,
     notification_mutation.Mutation,
     export_mutation.Mutation,
-    gallery_mutation.Mutation,
     assessment_registry_mutation.Mutation,
     # --
     graphene.ObjectType

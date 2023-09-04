@@ -224,8 +224,10 @@ class NewExcelExporter:
             self.wb_sheets[sheet] = self.wb.create_sheet(underscore_to_title(sheet))
             self.sheet_headers[sheet] = {}
             for col, data in sheet_data.items():
-                if data and isinstance(data[0], dict):
-                    self.sheet_headers[sheet][col] = data[0].keys()
+                # if data and isinstance(data[0], dict):
+                if data and isinstance(data, dict):
+                    #self.sheet_headers[sheet][col] = data[0].keys()
+                    self.sheet_headers[sheet][col] = data.keys()
                 else:
                     self.sheet_headers[sheet][col] = []
 
@@ -271,6 +273,8 @@ class NewExcelExporter:
 
     def add_data_rows_to_sheets(self):
         for sheet, sheet_data in self.sheets_data.items():
+            print("***********Sheet\n", sheet)
+            print("***********SheetDataValues", *sheet_data.values())
             zipped = zip(*sheet_data.values())
             for row_data in zipped:
                 row = []

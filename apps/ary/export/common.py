@@ -69,12 +69,28 @@ default_values = {
 
 def get_assessment_meta(assessment):
     lead = assessment.lead
-    metadata = assessment.get_metadata_json()
+#    metadata = assessment.get_metadata_json()
 
-    metadata_bg = get_name_values(metadata, 'Background')
-    metadata_dates = get_name_values(metadata, 'Dates')
+#    metadata_bg = get_name_values(metadata, 'Background')
+    metadata_bg = {
+       "Country":[
+          "Afghanistan"
+       ],
+       "Crisis Type": assessment.bg_crisis_type,
+       "Crisis Start Date": str(assessment.bg_crisis_start_date),
+       "Preparedness":assessment.bg_preparedness,
+       "External Support":assessment.external_support,
+       "Coordination":assessment.coordinated_joint,
+       "Cost estimates in USD":assessment.cost_estimates_usd,
+    }
+#    metadata_dates = get_name_values(metadata, 'Dates')
+    meatadata_dates = {
+        'Data Collection Start Date': None,
+        'Data Collection End Date': None,
+        'Publication Date': None
+    }
 
-    metadata_details = get_name_values_options(metadata, ['Details', 'Status', 'Report Details'])
+#    metadata_details = get_name_values_options(metadata, ['Details', 'Status', 'Report Details'])
 
     return {
         'lead': {
@@ -91,26 +107,41 @@ def get_assessment_meta(assessment):
             'crisis_type': metadata_bg.get('Crisis Type'),
             'crisis_start_date': str_to_dmy_date(metadata_bg.get('Crisis Start Date')),
             'preparedness': metadata_bg.get('Preparedness'),
-            'external_support': ','.join(metadata_bg.get('External Support', [])),
+#            'external_support': ','.join(metadata_bg.get('External Support', [])),
+            'external_support': metadata_bg.get('External Support', []),
             'coordination': metadata_bg.get('Coordination'),
             'cost_estimates_in_USD': metadata_bg.get('Cost estimates in USD'),
         },
 
+#        'details': {
+#            'type': get_value(metadata_details, 'Type'),
+#            'family': get_value(metadata_details, 'Family'),
+#            'status': get_value(metadata_details, 'Status'),
+#            'frequency': get_value(metadata_details, 'Frequency'),
+#            'confidentiality': get_value(metadata_details, 'Confidentiality'),
+#            'number_of_pages': get_value(metadata_details, 'Number of Pages'),
+#        },
         'details': {
-            'type': get_value(metadata_details, 'Type'),
-            'family': get_value(metadata_details, 'Family'),
-            'status': get_value(metadata_details, 'Status'),
-            'frequency': get_value(metadata_details, 'Frequency'),
-            'confidentiality': get_value(metadata_details, 'Confidentiality'),
-            'number_of_pages': get_value(metadata_details, 'Number of Pages'),
+            'type': assessment.details_type,
+            'family': assessment.family,
+        #    'status': assessment.status,
+            'frequency': assessment.frequency,
+            'confidentiality': assessment.confidentiality,
+            'number_of_pages': assessment.no_of_pages,
         },
 
-        'language': populate_with_all_values(metadata_details, 'Language', []),
+#        'language': populate_with_all_values(metadata_details, 'Language', []),
+        'language': {},
 
+#        'dates': {
+#            'data_collection_start_date': str_to_dmy_date(metadata_dates.get('Data Collection Start Date')),
+#            'data_collection_end_date': str_to_dmy_date(metadata_dates.get('Data Collection End Date')),
+#            'publication_date': str_to_dmy_date(metadata_dates.get('Publication Date')),
+#        },
         'dates': {
-            'data_collection_start_date': str_to_dmy_date(metadata_dates.get('Data Collection Start Date')),
-            'data_collection_end_date': str_to_dmy_date(metadata_dates.get('Data Collection End Date')),
-            'publication_date': str_to_dmy_date(metadata_dates.get('Publication Date')),
+            'data_collection_start_date': str_to_dmy_date(str(assessment.data_collection_start_date)),
+            'data_collection_end_date': str_to_dmy_date(str(assessment.data_collection_end_date)),
+            'publication_date': str_to_dmy_date(str(assessment.publication_date)),
         },
     }
 

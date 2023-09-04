@@ -467,93 +467,93 @@ CELERY_EVENT_QUEUE_PREFIX = 'deep-celery-'
 CELERY_ACKS_LATE = True
 
 CELERY_BEAT_SCHEDULE = {
-    'retry_connector_leads': {
-        'task': 'unified_connector.tasks.retry_connector_leads',
-        # Every 2 hour
-        'schedule': crontab(minute=0, hour='*/2'),
-    },
-    'sync_tag_data_with_deepl': {
-        'task': 'assisted_tagging.tasks.sync_tags_with_deepl_task',
-        # Every 6 hour
-        'schedule': crontab(minute=0, hour='*/6'),
-    },
-    'remaining_tabular_generate_columns_image': {
-        'task': 'tabular.tasks.remaining_tabular_generate_columns_image',
-        # Every 6 hour
-        'schedule': crontab(minute=0, hour='*/6'),
-    },
-    'project_generate_stats': {
-        'task': 'project.tasks.generate_project_stats_cache',
-        # Every 5 min
-        'schedule': crontab(minute="*/5"),
-    },
-    # UNIFIED CONNECTORS
-    'schedule_trigger_quick_unified_connectors': {
-        'task': 'unified_connector.tasks.schedule_trigger_quick_unified_connectors',
-        # Every 1 hour
-        'schedule': crontab(hour="*/1"),
-    },
-    'schedule_trigger_heavy_unified_connectors': {
-        'task': 'unified_connector.tasks.schedule_trigger_heavy_unified_connectors',
-        # Every 1 hour
-        'schedule': crontab(hour="*/1"),
-    },
-    'schedule_trigger_super_heavy_unified_connectors': {
-        'task': 'unified_connector.tasks.schedule_trigger_super_heavy_unified_connectors',
-        # Every 6 hours
-        'schedule': crontab(hour="*/6"),
-    },
-    'schedule_trigger_remaining_lead_extract': {
-        'task': 'lead.tasks.remaining_lead_extract',
-        # Every 6 hours
-        'schedule': crontab(hour="*/6"),
-    },
-    # Project Deletion
-    'permanently_delete_projects': {
-        'task': 'project.tasks.permanently_delete_projects',
-        'schedule': crontab(minute=0, hour=0),  # execute every day
-    },
-    # User Deletion
-    'permanently_delete_users': {
-        'task': 'project.tasks.permanently_delete_users',
-        'schedule': crontab(minute=0, hour=0),
-    },
-    # Organization
-    'update_organization_popularity': {
-        'task': 'organization.tasks.update_organization_popularity',
-        'schedule': crontab(minute=0, hour=0),  # execute every day
-    },
-    # Lead indexing for deduplication
-    'index_leads': {
-        'task': 'deduplication.tasks.indexing.create_indices',
-        'schedule': crontab(minute=0, hour=2),  # execute every second hour of the day
-    },
-    # Deep Explore
-    'update_deep_explore_entries_count_by_geo_aggreagate_task': {
-        'task': 'deep_explore.tasks.update_deep_explore_entries_count_by_geo_aggreagate_task',
-        # Every day at 01:00
-        'schedule': crontab(minute=0, hour=1),
-    },
-    'update_public_deep_explore_snapshot': {
-        'task': 'deep_explore.tasks.update_public_deep_explore_snapshot',
-        # Every day at 01:00
-        'schedule': crontab(minute=0, hour=1),
-    },
-    'schedule_tracker_data_handler': {
-        'task': 'deep.trackers.schedule_tracker_data_handler',
-        # Every 6 hours
-        'schedule': crontab(hour="*/6"),
-    },
+#    'retry_connector_leads': {
+#        'task': 'unified_connector.tasks.retry_connector_leads',
+#        # Every 2 hour
+#        'schedule': crontab(minute=0, hour='*/2'),
+#    },
+#    'sync_tag_data_with_deepl': {
+#        'task': 'assisted_tagging.tasks.sync_tags_with_deepl_task',
+#        # Every 6 hour
+#        'schedule': crontab(minute=0, hour='*/6'),
+#    },
+#    'remaining_tabular_generate_columns_image': {
+#        'task': 'tabular.tasks.remaining_tabular_generate_columns_image',
+#        # Every 6 hour
+#        'schedule': crontab(minute=0, hour='*/6'),
+#    },
+#    'project_generate_stats': {
+#        'task': 'project.tasks.generate_project_stats_cache',
+#        # Every 5 min
+#        'schedule': crontab(minute="*/5"),
+#    },
+#    # UNIFIED CONNECTORS
+#    'schedule_trigger_quick_unified_connectors': {
+#        'task': 'unified_connector.tasks.schedule_trigger_quick_unified_connectors',
+#        # Every 1 hour
+#        'schedule': crontab(hour="*/1"),
+#    },
+#    'schedule_trigger_heavy_unified_connectors': {
+#        'task': 'unified_connector.tasks.schedule_trigger_heavy_unified_connectors',
+#        # Every 1 hour
+#        'schedule': crontab(hour="*/1"),
+#    },
+#    'schedule_trigger_super_heavy_unified_connectors': {
+#        'task': 'unified_connector.tasks.schedule_trigger_super_heavy_unified_connectors',
+#        # Every 6 hours
+#        'schedule': crontab(hour="*/6"),
+#    },
+#    'schedule_trigger_remaining_lead_extract': {
+#        'task': 'lead.tasks.remaining_lead_extract',
+#        # Every 6 hours
+#        'schedule': crontab(hour="*/6"),
+#    },
+#    # Project Deletion
+#    'permanently_delete_projects': {
+#        'task': 'project.tasks.permanently_delete_projects',
+#        'schedule': crontab(minute=0, hour=0),  # execute every day
+#    },
+#    # User Deletion
+#    'permanently_delete_users': {
+#        'task': 'project.tasks.permanently_delete_users',
+#        'schedule': crontab(minute=0, hour=0),
+#    },
+#    # Organization
+#    'update_organization_popularity': {
+#        'task': 'organization.tasks.update_organization_popularity',
+#        'schedule': crontab(minute=0, hour=0),  # execute every day
+#    },
+#    # Lead indexing for deduplication
+#    'index_leads': {
+#        'task': 'deduplication.tasks.indexing.create_indices',
+#        'schedule': crontab(minute=0, hour=2),  # execute every second hour of the day
+#    },
+#    # Deep Explore
+#    'update_deep_explore_entries_count_by_geo_aggreagate_task': {
+#        'task': 'deep_explore.tasks.update_deep_explore_entries_count_by_geo_aggreagate_task',
+#        # Every day at 01:00
+#        'schedule': crontab(minute=0, hour=1),
+#    },
+#    'update_public_deep_explore_snapshot': {
+#        'task': 'deep_explore.tasks.update_public_deep_explore_snapshot',
+#        # Every day at 01:00
+#        'schedule': crontab(minute=0, hour=1),
+#    },
+#    'schedule_tracker_data_handler': {
+#        'task': 'deep.trackers.schedule_tracker_data_handler',
+#        # Every 6 hours
+#        'schedule': crontab(hour="*/6"),
+#    },
 }
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 if IN_AWS_COPILOT_ECS:
     CELERY_BEAT_SCHEDULE.update({
-        'push_celery_cloudwatch_metric': {
-            'task': 'deep.tasks.put_celery_query_metric',
-            # Every minute
-            'schedule': crontab(minute='*/1'),
-        },
+#        'push_celery_cloudwatch_metric': {
+#            'task': 'deep.tasks.put_celery_query_metric',
+#            # Every minute
+#            'schedule': crontab(minute='*/1'),
+#        },
     })
 
 CACHES = {
