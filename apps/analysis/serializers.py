@@ -550,13 +550,13 @@ class ReportEnum:
         NUMBER = 'number'
         DATE = 'date'
 
-    class TextStypeAlign(models.TextChoices):
+    class TextStyleAlign(models.TextChoices):
         START = 'start'
         END = 'end'
         CENTER = 'center'
         JUSTIFIED = 'justified'
 
-    class BorderStyleStype(models.TextChoices):
+    class BorderStyleStyle(models.TextChoices):
         DOTTED = 'dotted'
         DASHED = 'dashed'
         SOLID = 'solid'
@@ -588,7 +588,7 @@ class AnalysisReportTextStyleSerializer(serializers.Serializer):
     family = serializers.CharField(required=False)
     size = serializers.IntegerField(required=False)
     weight = serializers.IntegerField(required=False)
-    align = serializers.ChoiceField(choices=ReportEnum.TextStypeAlign.choices, required=False)
+    align = serializers.ChoiceField(choices=ReportEnum.TextStyleAlign.choices, required=False)
 
 
 class AnalysisReportMarginStyleSerializer(serializers.Serializer):
@@ -609,7 +609,7 @@ class AnalysisReportBorderStyleSerializer(serializers.Serializer):
     color = serializers.CharField(required=False)
     width = serializers.IntegerField(required=False)
     opacity = serializers.IntegerField(required=False)
-    style = serializers.ChoiceField(choices=ReportEnum.BorderStyleStype.choices, required=False)
+    style = serializers.ChoiceField(choices=ReportEnum.BorderStyleStyle.choices, required=False)
 
 
 class AnalysisReportBackgroundStyleSerializer(serializers.Serializer):
@@ -645,6 +645,10 @@ class AnalysisReportTextContentStyleSerializer(serializers.Serializer):
     content = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
 
 
+class AnalysisReportHeadingConfigurationStyleSerializer(serializers.Serializer):
+    content = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+
+
 class AnalysisReportHeadingContentStyleSerializer(serializers.Serializer):
     h1 = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
     h2 = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
@@ -669,7 +673,7 @@ class AnalysisReportTextConfigurationSerializer(serializers.Serializer):
 
 class AnalysisReportHeadingConfigurationSerializer(serializers.Serializer):
     content = serializers.CharField(required=False)
-    style = AnalysisReportHeadingContentStyleSerializer(required=False, allow_null=True)
+    style = AnalysisReportHeadingConfigurationStyleSerializer(required=False, allow_null=True)
     variant = serializers.ChoiceField(choices=ReportEnum.HeadingConfigurationVariant.choices, required=False)
 
 

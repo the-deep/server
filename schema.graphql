@@ -320,10 +320,10 @@ input AnalysisReportBorderStyleInputType {
   color: String
   width: Int
   opacity: Int
-  style: AnalysisReportBorderStyleStypeEnum
+  style: AnalysisReportBorderStyleStyleEnum
 }
 
-enum AnalysisReportBorderStyleStypeEnum {
+enum AnalysisReportBorderStyleStyleEnum {
   DOTTED
   DASHED
   SOLID
@@ -335,7 +335,7 @@ type AnalysisReportBorderStyleType {
   color: String
   width: Int
   opacity: Int
-  style: AnalysisReportBorderStyleStypeEnum
+  style: AnalysisReportBorderStyleStyleEnum
 }
 
 input AnalysisReportConfigurationInputType {
@@ -452,13 +452,21 @@ type AnalysisReportHeaderStyleType {
 
 input AnalysisReportHeadingConfigurationInputType {
   content: String
-  style: AnalysisReportHeadingContentStyleInputType
+  style: AnalysisReportHeadingConfigurationStyleInputType
   variant: AnalysisReportHeadingConfigurationVariantEnum
+}
+
+input AnalysisReportHeadingConfigurationStyleInputType {
+  content: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportHeadingConfigurationStyleType {
+  content: AnalysisReportTextStyleType
 }
 
 type AnalysisReportHeadingConfigurationType {
   content: String
-  style: AnalysisReportHeadingContentStyleType
+  style: AnalysisReportHeadingConfigurationStyleType
   variant: AnalysisReportHeadingConfigurationVariantEnum
 }
 
@@ -610,12 +618,19 @@ type AnalysisReportTextContentStyleType {
   content: AnalysisReportTextStyleType
 }
 
+enum AnalysisReportTextStyleAlignEnum {
+  START
+  END
+  CENTER
+  JUSTIFIED
+}
+
 input AnalysisReportTextStyleInputType {
   color: String
   family: String
   size: Int
   weight: Int
-  align: AnalysisReportTextStypeAlignEnum
+  align: AnalysisReportTextStyleAlignEnum
 }
 
 type AnalysisReportTextStyleType {
@@ -623,14 +638,7 @@ type AnalysisReportTextStyleType {
   family: String
   size: Int
   weight: Int
-  align: AnalysisReportTextStypeAlignEnum
-}
-
-enum AnalysisReportTextStypeAlignEnum {
-  START
-  END
-  CENTER
-  JUSTIFIED
+  align: AnalysisReportTextStyleAlignEnum
 }
 
 type AnalysisReportType {

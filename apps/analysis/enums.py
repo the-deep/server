@@ -42,10 +42,10 @@ AnalysisReportContainerContentTypeEnum = convert_enum_to_graphene_enum(
 
 AnalysisReportVariableTypeEnum = convert_enum_to_graphene_enum(
     ReportEnum.VariableType, name='AnalysisReportVariableTypeEnum')
-AnalysisReportTextStypeAlignEnum = convert_enum_to_graphene_enum(
-    ReportEnum.TextStypeAlign, name='AnalysisReportTextStypeAlignEnum')
-AnalysisReportBorderStyleStypeEnum = convert_enum_to_graphene_enum(
-    ReportEnum.BorderStyleStype, name='AnalysisReportBorderStyleStypeEnum')
+AnalysisReportTextStyleAlignEnum = convert_enum_to_graphene_enum(
+    ReportEnum.TextStyleAlign, name='AnalysisReportTextStyleAlignEnum')
+AnalysisReportBorderStyleStyleEnum = convert_enum_to_graphene_enum(
+    ReportEnum.BorderStyleStyle, name='AnalysisReportBorderStyleStyleEnum')
 AnalysisReportImageContentStyleFitEnum = convert_enum_to_graphene_enum(
     ReportEnum.ImageContentStyleFit, name='AnalysisReportImageContentStyleFitEnum')
 AnalysisReportHeadingConfigurationVariantEnum = convert_enum_to_graphene_enum(
@@ -71,8 +71,8 @@ enum_map.update({
     get_enum_name_from_django_field(serializer().fields[field]): enum
     for serializer, field, enum in [
         (AnalysisReportVariableSerializer, 'type', AnalysisReportVariableTypeEnum),
-        (AnalysisReportTextStyleSerializer, 'align', AnalysisReportTextStypeAlignEnum),
-        (AnalysisReportBorderStyleSerializer, 'style', AnalysisReportBorderStyleStypeEnum),
+        (AnalysisReportTextStyleSerializer, 'align', AnalysisReportTextStyleAlignEnum),
+        (AnalysisReportBorderStyleSerializer, 'style', AnalysisReportBorderStyleStyleEnum),
         (AnalysisReportImageContentStyleSerializer, 'fit', AnalysisReportImageContentStyleFitEnum),
         (AnalysisReportHeadingConfigurationSerializer, 'variant', AnalysisReportHeadingConfigurationVariantEnum),
     ]
