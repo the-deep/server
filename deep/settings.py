@@ -936,6 +936,7 @@ GRAPHENE_NODES_WHITELIST = (
     'publicLead',
     'publicDeepExploreYearlySnapshots',
     'publicDeepExploreGlobalSnapshots',
+    'publicAnalysisReportSnapshot',
 )
 
 # https://docs.graphene-python.org/projects/django/en/latest/settings/

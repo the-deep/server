@@ -58,6 +58,7 @@ from .filter_set import (
     AnalysisPillarDiscardedEntryGqlFilterSet,
     AnalysisReportGQFilterSet,
     AnalysisReportUploadGQFilterSet,
+    AnalysisReportSnapshotGQFilterSet,
 )
 from .serializers import (
     AnalysisReportConfigurationSerializer,
@@ -96,6 +97,10 @@ def get_analysis_report_qs(info):
 
 def get_analysis_report_upload_qs(info):
     return _get_qs(AnalysisReportUpload, info, 'report__analysis__project')
+
+
+def get_analysis_report_snaphost_qs(info):
+    return _get_qs(AnalysisReportSnapshot, info, 'report__analysis__project')
 
 
 class AnalyticalStatementEntryType(ClientIdMixin, DjangoObjectType):
@@ -676,6 +681,10 @@ class AnalysisReportSnapshotType(DjangoObjectType):
     def resolve_published_by(root, info, **_):
         return resolve_user_field(root, info, 'published_by')
 
+    @staticmethod
+    def get_custom_queryset(queryset, info, **_):
+        return get_analysis_report_snaphost_qs(info)
+
 
 class AnalysisReportListType(CustomDjangoListObjectType):
     class Meta:
@@ -687,6 +696,12 @@ class AnalysisReportUploadListType(CustomDjangoListObjectType):
     class Meta:
         model = AnalysisReportUpload
         filterset_class = AnalysisReportUploadGQFilterSet
+
+
+class AnalysisReportSnapshotListType(CustomDjangoListObjectType):
+    class Meta:
+        model = AnalysisReportSnapshot
+        filterset_class = AnalysisReportSnapshotGQFilterSet
 
 
 class Query:
@@ -740,10 +755,16 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
-    analysis_report_snapshot = DjangoObjectField(AnalysisReportSnapshotType)
     analysis_report_upload = DjangoObjectField(AnalysisReportUploadType)
     analysis_report_uploads = DjangoPaginatedListObjectField(
         AnalysisReportUploadListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+    analysis_report_snapshot = DjangoObjectField(AnalysisReportSnapshotType)
+    analysis_report_snapshots = DjangoPaginatedListObjectField(
+        AnalysisReportSnapshotListType,
         pagination=PageGraphqlPagination(
             page_size_query_param='pageSize'
         )

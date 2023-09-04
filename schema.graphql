@@ -592,6 +592,13 @@ input AnalysisReportSnapshotInputType {
   report: ID!
 }
 
+type AnalysisReportSnapshotListType {
+  results: [AnalysisReportSnapshotType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
 type AnalysisReportSnapshotType {
   id: ID!
   publishedOn: DateTime!
@@ -2838,9 +2845,10 @@ type ProjectDetailType {
   analysisGeoTask(id: ID!): AnalyticalStatementGeoTaskType
   analysisReport(id: ID!): AnalysisReportType
   analysisReports(search: String, analyses: [ID!], isPublic: Boolean, organizations: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportListType
-  analysisReportSnapshot(id: ID!): AnalysisReportSnapshotType
   analysisReportUpload(id: ID!): AnalysisReportUploadType
   analysisReportUploads(report: [ID!], types: [AnalysisReportUploadTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportUploadListType
+  analysisReportSnapshot(id: ID!): AnalysisReportSnapshotType
+  analysisReportSnapshots(report: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportSnapshotListType
   assessment(id: ID!): AssessmentType
   assessments(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentListType
   reviewComment(id: ID!): EntryReviewCommentDetailType
@@ -3332,6 +3340,7 @@ type PublicProjectWithMembershipData {
 }
 
 type Query {
+  publicAnalysisReportSnapshot(slug: String!): AnalysisReportSnapshotType
   deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
   publicDeepExploreYearlySnapshots: [PublicExploreSnapshotType!]
   publicDeepExploreGlobalSnapshots: [PublicExploreSnapshotType!]

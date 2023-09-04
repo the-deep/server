@@ -13,6 +13,7 @@ from .models import (
     AnalyticalStatement,
     AnalysisReport,
     AnalysisReportUpload,
+    AnalysisReportSnapshot,
 )
 from .enums import (
     DiscardedEntryTagTypeEnum,
@@ -134,4 +135,12 @@ class AnalysisReportUploadGQFilterSet(django_filters.FilterSet):
 
     class Meta:
         model = AnalysisReportUpload
+        fields = []
+
+
+class AnalysisReportSnapshotGQFilterSet(django_filters.FilterSet):
+    report = IDListFilter(field_name='report')
+
+    class Meta:
+        model = AnalysisReportSnapshot
         fields = []
