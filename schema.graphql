@@ -1668,6 +1668,14 @@ type FileFieldType {
   url: String
 }
 
+input FileUploadInputType {
+  clientId: String
+  file: Upload!
+  title: String!
+  isPublic: Boolean
+  projects: [ID!]
+}
+
 type GalleryFileType {
   id: ID!
   title: String!
@@ -2107,6 +2115,7 @@ type MissingPredictionReviewType {
 }
 
 type Mutation {
+  fileUpload(data: FileUploadInputType!): UploadFile
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
   genericExportCancel(id: ID!): CancelUserGenericExport
   notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
@@ -3165,6 +3174,12 @@ type UpdateUserGroup {
 }
 
 scalar Upload
+
+type UploadFile {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: GalleryFileType
+}
 
 type UserDelete {
   errors: [GenericScalar!]
