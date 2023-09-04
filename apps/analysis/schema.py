@@ -46,6 +46,7 @@ from .enums import (
     TopicModelStatusEnum,
     AutomaticSummaryStatusEnum,
     AnalyticalStatementNGramStatusEnum,
+    AnalysisReportContainerContentTypeEnum,
     AnalyticalStatementGeoTaskStatusEnum,
     AnalysisReportUploadTypeEnum,
 )
@@ -592,6 +593,7 @@ class AnalysisReportContainerType(ClientIdMixin, DjangoObjectType):
             'height',
         )
 
+    content_type = graphene.Field(AnalysisReportContainerContentTypeEnum, required=True)
     report = graphene.ID(source='report_id', required=True)
 
     style = graphene.Field(

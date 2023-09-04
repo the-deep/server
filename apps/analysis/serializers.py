@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
-from drf_writable_nested import UniqueFieldsMixin, NestedCreateMixin
+from drf_writable_nested import UniqueFieldsMixin, NestedCreateMixin, WritableNestedModelSerializer
 from django.db import transaction, models
 
 from deep.graphene_context import GQLContext
@@ -543,7 +543,7 @@ class AnalyticalStatementGeoTaskSerializer(EntriesCollectionNlpTriggerBaseSerial
         )
 
 
-# ReportModule
+# -------------------------- ReportModule --------------------------------
 class ReportEnum:
     class VariableType(models.TextChoices):
         TEXT = 'text'
@@ -618,17 +618,17 @@ class AnalysisReportBackgroundStyleSerializer(serializers.Serializer):
 
 
 class AnalysisReportPageStyleSerializer(serializers.Serializer):
-    margin = AnalysisReportMarginStyleSerializer(required=False)
-    background = AnalysisReportBackgroundStyleSerializer(required=False)
+    margin = AnalysisReportMarginStyleSerializer(required=False, allow_null=True)
+    background = AnalysisReportBackgroundStyleSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportHeaderStyleSerializer(serializers.Serializer):
-    padding = AnalysisReportPaddingStyleSerializer(required=False)
-    border = AnalysisReportBorderStyleSerializer(required=False)
-    background = AnalysisReportBackgroundStyleSerializer(required=False)
+    padding = AnalysisReportPaddingStyleSerializer(required=False, allow_null=True)
+    border = AnalysisReportBorderStyleSerializer(required=False, allow_null=True)
+    background = AnalysisReportBackgroundStyleSerializer(required=False, allow_null=True)
 
-    title = AnalysisReportTextStyleSerializer(required=False)
-    subTitle = AnalysisReportTextStyleSerializer(required=False)
+    title = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    subTitle = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportBodyStyleSerializer(serializers.Serializer):
@@ -636,24 +636,24 @@ class AnalysisReportBodyStyleSerializer(serializers.Serializer):
 
 
 class AnalysisReportContainerStyleSerializer(serializers.Serializer):
-    padding = AnalysisReportPaddingStyleSerializer(required=False)
-    border = AnalysisReportBorderStyleSerializer(required=False)
-    background = AnalysisReportBackgroundStyleSerializer(required=False)
+    padding = AnalysisReportPaddingStyleSerializer(required=False, allow_null=True)
+    border = AnalysisReportBorderStyleSerializer(required=False, allow_null=True)
+    background = AnalysisReportBackgroundStyleSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportTextContentStyleSerializer(serializers.Serializer):
-    content = AnalysisReportTextStyleSerializer(required=False)
+    content = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportHeadingContentStyleSerializer(serializers.Serializer):
-    h1 = AnalysisReportTextStyleSerializer(required=False)
-    h2 = AnalysisReportTextStyleSerializer(required=False)
-    h3 = AnalysisReportTextStyleSerializer(required=False)
-    h4 = AnalysisReportTextStyleSerializer(required=False)
+    h1 = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    h2 = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    h3 = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    h4 = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportImageContentStyleSerializer(serializers.Serializer):
-    caption = AnalysisReportTextStyleSerializer(required=False)
+    caption = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
     fit = serializers.ChoiceField(choices=ReportEnum.ImageContentStyleFit.choices, required=False)
 
 
@@ -664,51 +664,51 @@ class AnalysisReportUrlContentStyleSerializer(serializers.Serializer):
 
 class AnalysisReportTextConfigurationSerializer(serializers.Serializer):
     content = serializers.CharField(required=False)
-    style = AnalysisReportTextContentStyleSerializer(required=False)
+    style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportHeadingConfigurationSerializer(serializers.Serializer):
     content = serializers.CharField(required=False)
-    style = AnalysisReportHeadingContentStyleSerializer(required=False)
+    style = AnalysisReportHeadingContentStyleSerializer(required=False, allow_null=True)
     variant = serializers.ChoiceField(choices=ReportEnum.HeadingConfigurationVariant.choices, required=False)
 
 
 class AnalysisReportUrlConfigurationSerializer(serializers.Serializer):
     url = serializers.CharField(required=False)
-    style = AnalysisReportUrlContentStyleSerializer(required=False)
+    style = AnalysisReportUrlContentStyleSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportImageConfigurationSerializer(serializers.Serializer):
     caption = serializers.CharField(required=False)
     altText = serializers.CharField(required=False)
-    style = AnalysisReportImageContentStyleSerializer(required=False)
+    style = AnalysisReportImageContentStyleSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportConfigurationSerializer(serializers.Serializer):
     # Configuration for page
-    page_style = AnalysisReportPageStyleSerializer(required=False)
+    page_style = AnalysisReportPageStyleSerializer(required=False, allow_null=True)
     # Configuration for page header
-    header_style = AnalysisReportHeaderStyleSerializer(required=False)
+    header_style = AnalysisReportHeaderStyleSerializer(required=False, allow_null=True)
     # Configuration for page body
-    body_style = AnalysisReportBodyStyleSerializer(required=False)
+    body_style = AnalysisReportBodyStyleSerializer(required=False, allow_null=True)
     # -- Default Configuration for
     # Container
-    container_style = AnalysisReportContainerStyleSerializer(required=False)
+    container_style = AnalysisReportContainerStyleSerializer(required=False, allow_null=True)
     # Text content
-    text_content_style = AnalysisReportTextContentStyleSerializer(required=False)
+    text_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
     # Heading content
-    heading_content_style = AnalysisReportHeadingContentStyleSerializer(required=False)
+    heading_content_style = AnalysisReportHeadingContentStyleSerializer(required=False, allow_null=True)
     # Image content
-    image_content_style = AnalysisReportImageContentStyleSerializer(required=False)
+    image_content_style = AnalysisReportImageContentStyleSerializer(required=False, allow_null=True)
     # URL content
-    url_content_style = AnalysisReportUrlConfigurationSerializer(required=False)
+    url_content_style = AnalysisReportUrlConfigurationSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportContainerContentConfigurationSerializer(serializers.Serializer):
-    text = AnalysisReportTextConfigurationSerializer(required=False)
-    heading = AnalysisReportHeadingConfigurationSerializer(required=False)
-    image = AnalysisReportImageConfigurationSerializer(required=False)
-    url = AnalysisReportUrlConfigurationSerializer(required=False)
+    text = AnalysisReportTextConfigurationSerializer(required=False, allow_null=True)
+    heading = AnalysisReportHeadingConfigurationSerializer(required=False, allow_null=True)
+    image = AnalysisReportImageConfigurationSerializer(required=False, allow_null=True)
+    url = AnalysisReportUrlConfigurationSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportContainerDataSerializer(TempClientIdMixin, serializers.ModelSerializer):
@@ -724,7 +724,7 @@ class AnalysisReportContainerDataSerializer(TempClientIdMixin, serializers.Model
         )
 
 
-class AnalysisReportContainerSerializer(TempClientIdMixin, NestedCreateMixin, serializers.ModelSerializer):
+class AnalysisReportContainerSerializer(TempClientIdMixin, WritableNestedModelSerializer):
     id = IntegerIDField(required=False)
 
     class Meta:
@@ -743,10 +743,11 @@ class AnalysisReportContainerSerializer(TempClientIdMixin, NestedCreateMixin, se
             'content_data',
         )
 
-    style = AnalysisReportContainerStyleSerializer(required=False)
+    style = AnalysisReportContainerStyleSerializer(required=False, allow_null=True)
 
     # Content metadata
-    content_configuration = AnalysisReportContainerContentConfigurationSerializer(required=False)
+    content_configuration = AnalysisReportContainerContentConfigurationSerializer(
+        required=False, allow_null=True)
 
     # TODO: Model Field, Nested Serializer
     content_data = AnalysisReportContainerDataSerializer(many=True, source='analysisreportcontainerdata_set')
@@ -767,7 +768,7 @@ class AnalysisReportSerializer(UserResourceSerializer):
             'containers',
         )
 
-    configuration = AnalysisReportConfigurationSerializer(required=False)
+    configuration = AnalysisReportConfigurationSerializer(required=False, allow_null=True)
     containers = AnalysisReportContainerSerializer(many=True, source='analysisreportcontainer_set')
 
 
@@ -839,9 +840,9 @@ class AnalysisReportUploadMetadataGeoJsonSerializer(serializers.Serializer):
 
 
 class AnalysisReportUploadMetadataSerializer(serializers.Serializer):
-    xlsx = AnalysisReportUploadMetadataXlsxSerializer()
-    csv = AnalysisReportUploadMetadataCsvSerializer()
-    geojson = AnalysisReportUploadMetadataGeoJsonSerializer()
+    xlsx = AnalysisReportUploadMetadataXlsxSerializer(required=False, allow_null=True)
+    csv = AnalysisReportUploadMetadataCsvSerializer(required=False, allow_null=True)
+    geojson = AnalysisReportUploadMetadataGeoJsonSerializer(required=False, allow_null=True)
     # image = AnalysisReportUploadMetadataGeoJsonSerializer()
 
 
@@ -858,5 +859,5 @@ class AnalysisReportUploadSerializer(serializers.ModelSerializer):
             'metadata',
         )
 
-    metadata = AnalysisReportUploadMetadataSerializer(required=False)
+    metadata = AnalysisReportUploadMetadataSerializer()
     # TODO Validations
