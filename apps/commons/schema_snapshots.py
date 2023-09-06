@@ -183,229 +183,119 @@ class SnapshotQuery:
 
     class AnalysisReport:
         Snapshot = '''
-            query MyQuery($projectID: ID!, $reportID: ID!) {
-              project(id: $projectID) {
-                analysisReport(id: $reportID) {
-                  id
-                  analysis
-                  isPublic
-                  slug
-                  subTitle
-                  title
-                  organizations {
+            fragment OrganizationGeneralResponse on OrganizationType {
+                id
+                title
+                verified
+                shortName
+                logo {
+                    id
+                }
+                mergedAs {
                     id
                     title
                     shortName
-                    mergedAs {
-                      id
-                      title
-                      shortName
-                      longName
-                    }
-                  }
-                  configuration {
-                    bodyStyle {
-                      gap
-                    }
-                    containerStyle {
-                      background {
-                        color
-                        opacity
-                      }
-                      border {
-                        color
-                        opacity
-                        style
-                        width
-                      }
-                      padding {
-                        bottom
-                        left
-                        right
-                        top
-                      }
-                    }
-                    headerStyle {
-                      background {
-                        color
-                        opacity
-                      }
-                      border {
-                        color
-                        opacity
-                        style
-                        width
-                      }
-                      padding {
-                        bottom
-                        left
-                        right
-                        top
-                      }
-                      subTitle {
-                        align
-                        color
-                        family
-                        size
-                        weight
-                      }
-                      title {
-                        align
-                        color
-                        family
-                        size
-                        weight
-                      }
-                    }
-                    headingContentStyle {
-                      h1 {
-                        align
-                        color
-                        family
-                        size
-                        weight
-                      }
-                      h2 {
-                        align
-                        color
-                        family
-                        size
-                        weight
-                      }
-                      h3 {
-                        align
-                        color
-                        family
-                        size
-                        weight
-                      }
-                      h4 {
-                        align
-                        color
-                        family
-                        size
-                        weight
-                      }
-                    }
-                    imageContentStyle {
-                      caption {
-                        align
-                        color
-                        family
-                        size
-                        weight
-                      }
-                      fit
-                    }
-                    pageStyle {
-                      background {
-                        color
-                        opacity
-                      }
-                      margin {
-                        bottom
-                        left
-                        right
-                        top
-                      }
-                    }
-                    textContentStyle {
-                      content {
-                        align
-                        color
-                        family
-                        size
-                        weight
-                      }
-                    }
-                    urlContentStyle {
-                      url
-                    }
-                  }
-                  containers {
-                    id
-                    row
-                    column
-                    width
-                    height
-                    contentConfiguration {
-                      heading {
-                        content
-                        contentStyle {
-                          content {
-                            align
-                            color
-                            family
-                            size
-                            weight
-                          }
-                        }
-                        variant
-                      }
-                      image {
-                        altText
-                        caption
-                      }
-                      text {
-                        content
-                        contentStyle {
-                          content {
-                            align
-                            color
-                            family
-                            size
-                            weight
-                          }
-                        }
-                      }
-                      url {
-                        url
-                      }
-                    }
-                    contentData {
-                      data
-                      id
-                      upload {
+                    logo {
                         id
-                      }
                     }
-                    contentStyle {
-                      heading {
-                        background {
-                          color
-                          opacity
-                        }
-                        border {
-                          color
-                          opacity
-                          style
-                          width
-                        }
-                        padding {
-                          bottom
-                          left
-                          right
-                          top
-                        }
-                        subTitle {
-                          align
-                          color
-                          family
-                          size
-                          weight
-                        }
-                        title {
-                          align
-                          color
-                          family
-                          size
-                          weight
-                        }
-                      }
-                    }
-                  }
                 }
-              }
+            }
+            fragment TextStyle on AnalysisReportTextStyleType {
+                align
+                color
+                family
+                size
+                weight
+            }
+            fragment PaddingStyle on AnalysisReportPaddingStyleType {
+                top
+                bottom
+                right
+                left
+            }
+            fragment BorderStyle on AnalysisReportBorderStyleType {
+                color
+                opacity
+                style
+                width
+            }
+            query MyQuery($projectID: ID!, $reportID: ID!) {
+                project(id: $projectID) {
+                    analysisReport(id: $reportID) {
+                        id
+                        analysis
+                        title
+                        subTitle
+                        slug
+                        organizations {
+                            ...OrganizationGeneralResponse
+                        }
+                        containers {
+                            id
+                            clientId
+                            row
+                            column
+                            width
+                            height
+                            contentType
+                            style {
+                                border {
+                                    ...BorderStyle
+                                }
+                                padding {
+                                    ...PaddingStyle
+                                }
+                                background {
+                                    color
+                                    opacity
+                                }
+                            }
+                            contentData {
+                                clientId
+                                data
+                                id
+                                upload {
+                                    id
+                                    file {
+                                        id
+                                    }
+                                }
+                            }
+                            contentConfiguration {
+                                heading {
+                                    content
+                                    variant
+                                    style {
+                                        content {
+                                            ...TextStyle
+                                        }
+                                    }
+                                }
+                                image {
+                                    altText
+                                    caption
+                                    style {
+                                        caption {
+                                            ...TextStyle
+                                        }
+                                        fit
+                                    }
+                                }
+                                text {
+                                    content
+                                    style {
+                                        content {
+                                            ...TextStyle
+                                        }
+                                    }
+                                }
+                                url {
+                                    url
+                                }
+                            }
+                        }
+                    }
+                }
             }
         '''
 

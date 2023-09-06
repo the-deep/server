@@ -12,5 +12,5 @@ class Query:
     )
 
     @staticmethod
-    def resolve_analysis_report_snapshot(root, info, slug, **kwargs) -> typing.Optional[AnalysisReportSnapshot]:
+    def resolve_public_analysis_report_snapshot(root, info, slug, **kwargs) -> typing.Optional[AnalysisReportSnapshot]:
         return AnalysisReport.get_latest_snapshot(slug=slug)

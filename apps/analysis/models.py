@@ -565,7 +565,7 @@ class AnalysisReport(UserResource):
 
     @staticmethod
     def get_latest_snapshot(slug=None, report_id=None):
-        if slug is None or id is None:
+        if slug is None and report_id is None:
             return
         queryset = AnalysisReportSnapshot.objects.filter(
             report__is_public=True,

@@ -646,7 +646,7 @@ class AnalysisReportSnapshotType(DjangoObjectType):
         return resolve_user_field(root, info, 'published_by')
 
     @staticmethod
-    def resolve_uploads(root, info, **_):
+    def resolve_files(root, info, **_):
         # TODO: Maybe filter this out?
         # For now
         # - organization logos
