@@ -563,6 +563,19 @@ class AnalysisReport(UserResource):
     organizations = models.ManyToManyField(Organization, blank=True)
     configuration = models.JSONField(default=dict)
 
+    @staticmethod
+    def get_latest_snapshot(slug=None, report_id=None):
+        if slug is None or id is None:
+            return
+        queryset = AnalysisReportSnapshot.objects.filter(
+            report__is_public=True,
+        )
+        if slug is not None:
+            queryset = queryset.filter(report__slug=slug)
+        if report_id is not None:
+            queryset = queryset.filter(report_id=report_id)
+        return queryset.order_by('-published_on').first()
+
 
 class AnalysisReportUpload(models.Model):
     class Type(models.IntegerChoices):

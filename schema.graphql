@@ -605,6 +605,7 @@ type AnalysisReportSnapshotType {
   report: ID!
   publishedBy: UserType!
   reportDataFile: FileFieldType
+  files: [GalleryFileType!]!
 }
 
 input AnalysisReportTextConfigurationInputType {
@@ -654,11 +655,16 @@ type AnalysisReportType {
   slug: String!
   title: String!
   subTitle: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
   analysis: ID!
   configuration: AnalysisReportConfigurationType
   containers: [AnalysisReportContainerType!]!
   organizations: [OrganizationType!]!
   uploads: [AnalysisReportUploadType!]!
+  latestSnapshot: AnalysisReportSnapshotType
 }
 
 input AnalysisReportUploadInputType {

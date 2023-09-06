@@ -2,7 +2,7 @@ import typing
 import graphene
 
 from .schema import AnalysisReportSnapshotType
-from .models import AnalysisReportSnapshot
+from .models import AnalysisReport, AnalysisReportSnapshot
 
 
 class Query:
@@ -13,7 +13,4 @@ class Query:
 
     @staticmethod
     def resolve_analysis_report_snapshot(root, info, slug, **kwargs) -> typing.Optional[AnalysisReportSnapshot]:
-        return AnalysisReportSnapshot.objects.filter(
-            report__is_public=True,
-            report__slug=slug,
-        ).order_by('-published_on').first()
+        return AnalysisReport.get_latest_snapshot(slug=slug)

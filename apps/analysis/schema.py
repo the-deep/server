@@ -22,6 +22,8 @@ from entry.schema import get_entry_qs, EntryType
 from entry.filter_set import EntriesFilterDataType
 from user.schema import UserType
 from organization.schema import OrganizationType
+from gallery.schema import GalleryFileType
+from gallery.models import File as GalleryFile
 
 from .models import (
     Analysis,
@@ -622,7 +624,42 @@ class AnalysisReportContainerType(ClientIdMixin, DjangoObjectType):
         return root.analysisreportcontainerdata_set.all()
 
 
-class AnalysisReportType(DjangoObjectType):
+class AnalysisReportSnapshotType(DjangoObjectType):
+    class Meta:
+        model = AnalysisReportSnapshot
+        only_fields = (
+            'id',
+            'published_on',
+        )
+
+    report = graphene.ID(source='report_id', required=True)
+    published_by = graphene.Field(UserType, required=True)
+    report_data_file = graphene.Field(FileFieldType)
+    files = graphene.List(graphene.NonNull(GalleryFileType), required=True)
+
+    @staticmethod
+    def get_custom_queryset(queryset, info, **_):
+        return get_analysis_report_snaphost_qs(info)
+
+    @staticmethod
+    def resolve_published_by(root, info, **_):
+        return resolve_user_field(root, info, 'published_by')
+
+    @staticmethod
+    def resolve_uploads(root, info, **_):
+        # TODO: Maybe filter this out?
+        # For now
+        # - organization logos
+        # - report uploads
+        # TODO: use queryset instead
+        related_file_id = [
+            *list(root.report.analysisreportupload_set.values_list('file_id', flat=True)),
+            *list(root.report.organizations.values_list('logo_id', flat=True)),
+        ]
+        return GalleryFile.objects.filter(id__in=related_file_id).all()
+
+
+class AnalysisReportType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = AnalysisReport
         only_fields = (
@@ -647,43 +684,31 @@ class AnalysisReportType(DjangoObjectType):
     )
     organizations = graphene.List(graphene.NonNull(OrganizationType), required=True)
     uploads = graphene.List(graphene.NonNull(AnalysisReportUploadType), required=True)
+    latest_snapshot = graphene.Field(AnalysisReportSnapshotType, required=False)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **_):
         return get_analysis_report_qs(info)
 
+    @staticmethod
     def resolve_organizations(root, info, **_):
         # TODO: Dataloader
         return root.organizations.all()
 
+    @staticmethod
     def resolve_uploads(root, info, **_):
         # TODO: Dataloader
         return root.analysisreportupload_set.all()
 
+    @staticmethod
     def resolve_containers(root, info, **_):
         # TODO: Dataloader
         return root.analysisreportcontainer_set.all()
 
-
-class AnalysisReportSnapshotType(DjangoObjectType):
-    class Meta:
-        model = AnalysisReportSnapshot
-        only_fields = (
-            'id',
-            'published_on',
-        )
-
-    report = graphene.ID(source='report_id', required=True)
-    published_by = graphene.Field(UserType, required=True)
-    report_data_file = graphene.Field(FileFieldType)
-
     @staticmethod
-    def resolve_published_by(root, info, **_):
-        return resolve_user_field(root, info, 'published_by')
-
-    @staticmethod
-    def get_custom_queryset(queryset, info, **_):
-        return get_analysis_report_snaphost_qs(info)
+    def resolve_latest_snapshot(root, info, **_):
+        # TODO: Dataloader
+        return AnalysisReport.get_latest_snapshot(report_id=root.id)
 
 
 class AnalysisReportListType(CustomDjangoListObjectType):
