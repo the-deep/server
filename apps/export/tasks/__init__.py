@@ -6,7 +6,7 @@ from celery import shared_task
 from deep.celery import CeleryQueue
 from export.models import Export, GenericExport
 from .tasks_entries import export_entries
-from .tasks_assessment import export_assessments, export_planned_assessments
+from .tasks_assessment import export_assessments
 from .tasks_analyses import export_analyses
 from .tasks_projects import export_projects_stats
 
@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 EXPORTER_TYPE = {
     Export.DataType.ENTRIES: export_entries,
     Export.DataType.ASSESSMENTS: export_assessments,
-    Export.DataType.PLANNED_ASSESSMENTS: export_planned_assessments,
     Export.DataType.ANALYSES: export_analyses,
 }
 GENERIC_EXPORTER_TYPE = {
