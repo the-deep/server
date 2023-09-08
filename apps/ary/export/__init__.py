@@ -2,7 +2,6 @@ from functools import reduce
 
 from .common import (
     get_assessment_meta,
-    get_planned_assessment_meta,
     default_values as common_defaults,
 )
 from .stakeholders_info import (
@@ -28,44 +27,17 @@ from .affected_groups_info import (
 
 
 def get_export_data(assessment, planned_assessment=False):
-    if planned_assessment:
-        meta_data = get_planned_assessment_meta(assessment)
-    else:
-        meta_data = get_assessment_meta(assessment)
-
-    planned_assessment_data = {
-        'summary': {
-            **meta_data,
-            **get_assessment_export_summary(assessment, planned_assessment),
-        },
-        'stakeholders': {
-            **meta_data,
-            **get_stakeholders_info(assessment),
-        },
-        'locations': {
-            **meta_data,
-            **get_locations_info(assessment),
-        },
-        'affected_groups': {
-            **meta_data,
-            **get_affected_groups_info(assessment),
-        },
-    }
-
-    if planned_assessment:
-        return planned_assessment_data
-
-    # Planned assessment does not have metadata in summary, so add it now
-    # which will be reused for normal assessment export data
-    planned_assessment_data['summary'].update(meta_data)
-
-    questionnaire = assessment.get_questionnaire_json()
+    meta_data = get_assessment_meta(assessment)
+    # questionnaire = assessment.get_questionnaire_json()
 
     return {
-        **planned_assessment_data,
+        'summary': {
+            **meta_data,
+            #**get_assessment_export_summary(assessment),
+        },
         'data_collection_technique': {
             **meta_data,
-            **get_data_collection_techniques_info(assessment),
+            #**get_data_collection_techniques_info(assessment),
         },
         'stakeholders': {
             **meta_data,
@@ -82,13 +54,13 @@ def get_export_data(assessment, planned_assessment=False):
         # Add HNO and CNA
         'hno': {
             **meta_data,
-            **get_assessment_export_summary(assessment),
-            **(questionnaire.get('hno') or {})
+            #**get_assessment_export_summary(assessment),
+#            **(questionnaire.get('hno') or {})
         },
         'cna': {
             **meta_data,
-            **get_assessment_export_summary(assessment),
-            **(questionnaire.get('cna') or {})
+            #**get_assessment_export_summary(assessment),
+#            **(questionnaire.get('cna') or {})
         }
     }
 
@@ -119,6 +91,7 @@ def normalize_assessment(assessment_export_data, planned_assessment=False):
 
     # Normalize Locations
     locations_sheet = assessment_export_data['locations']
+    print("Locations", locations_sheet)
     new_locations_sheet = replicate_other_col_groups(locations_sheet, 'locations')
 
     # Normalize Affected groups
@@ -136,11 +109,12 @@ def normalize_assessment(assessment_export_data, planned_assessment=False):
 
     # Normailze Data Collection Techniques
     techniques_sheet = assessment_export_data['data_collection_technique']
-    new_techniques_sheet = replicate_other_col_groups(techniques_sheet, 'data_collection_technique')
+    #new_techniques_sheet = replicate_other_col_groups(techniques_sheet, 'data_collection_technique')
 
     return {
         **planned_assessment_data,
-        'data_collection_technique': new_techniques_sheet,
+        #'data_collection_technique': new_techniques_sheet,
+        'data_collection_technique': techniques_sheet,
         'hno': {k: [v] for k, v in assessment_export_data['hno'].items()},
         'cna': {k: [v] for k, v in assessment_export_data['cna'].items()},
     }
@@ -187,7 +161,8 @@ def add_assessment_to_rows(sheets, assessment, planned_assessment=False):
             ]
         return data
 
-    normalized_assessment = normalize_assessment(get_export_data(assessment, planned_assessment), planned_assessment)
+    normalized_assessment = normalize_assessment(get_export_data(assessment))
+    #normalized_assessment = get_export_data(assessment)
 
     new_sheets = {}
 
@@ -274,16 +249,5 @@ def get_export_data_for_assessments(assessments):
     if not assessments:
         return {}
     data = normalize_assessment(get_export_data(assessments[0]))
+    #data = get_export_data(assessments[0])
     return reduce(add_assessment_to_rows, assessments[1:], data)
-
-
-def get_export_data_for_planned_assessments(planned_assessments):
-    if not planned_assessments:
-        return {}
-    data = normalize_assessment(get_export_data(planned_assessments[0], True), True)
-
-    return reduce(
-        lambda a, x: add_assessment_to_rows(a, x, True),
-        planned_assessments[1:],
-        data
-    )
