@@ -170,7 +170,7 @@ COUNTRIES = [
     {"key": "ATA", "label": "Antarctica"},
     {"key": "CYN", "label": "Northern Cyprus"},
     {"key": "CYP", "label": "Cyprus"},
-    {"key": "MAR", "label": "Western Sahara"},
+    {"key": "MAR", "label": "Morocco"},
     {"key": "EGY", "label": "Egypt"},
     {"key": "LBY", "label": "Libya"},
     {"key": "ETH", "label": "Ethiopia"},
