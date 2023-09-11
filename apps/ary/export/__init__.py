@@ -28,7 +28,7 @@ from .affected_groups_info import (
 
 def get_export_data(assessment, planned_assessment=False):
     meta_data = get_assessment_meta(assessment)
-    # questionnaire = assessment.get_questionnaire_json()
+    #questionnaire = assessment.get_questionnaire_json()
 
     return {
         'summary': {
@@ -37,7 +37,7 @@ def get_export_data(assessment, planned_assessment=False):
         },
         'data_collection_technique': {
             **meta_data,
-            #**get_data_collection_techniques_info(assessment),
+            **get_data_collection_techniques_info(assessment),
         },
         'stakeholders': {
             **meta_data,
@@ -60,7 +60,7 @@ def get_export_data(assessment, planned_assessment=False):
         'cna': {
             **meta_data,
             #**get_assessment_export_summary(assessment),
-#            **(questionnaire.get('cna') or {})
+            #**(questionnaire.get('cna') or {})
         }
     }
 
