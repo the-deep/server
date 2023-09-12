@@ -24,11 +24,19 @@ from .affected_groups_info import (
     get_affected_groups_info,
     default_values as affected_defaults
 )
+from assessment_registry.models import Answer
 
 
-def get_export_data(assessment, planned_assessment=False):
+def get_export_data(assessment):
     meta_data = get_assessment_meta(assessment)
-    #questionnaire = assessment.get_questionnaire_json()
+    answers = Answer.objects.filter(assessment_registry=assessment)
+
+    sub_sector_list_set=set([answer.question.sub_sector for answer in answers])
+    questionaire_dict = {}
+    for sub_sector in sub_sector_list_set:
+        questionaire_dict[sub_sector]={
+            answer.question.question:answer.answer for answer in answers if answer.question.sub_sector==sub_sector
+        }
 
     return {
         'summary': {
@@ -51,16 +59,10 @@ def get_export_data(assessment, planned_assessment=False):
             **meta_data,
             **get_affected_groups_info(assessment),
         },
-        # Add HNO and CNA
-        'hno': {
-            **meta_data,
-            #**get_assessment_export_summary(assessment),
-#            **(questionnaire.get('hno') or {})
-        },
         'cna': {
             **meta_data,
             #**get_assessment_export_summary(assessment),
-            #**(questionnaire.get('cna') or {})
+            **(questionaire_dict or {})
         }
     }
 
