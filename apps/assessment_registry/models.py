@@ -323,7 +323,7 @@ class AdditionalDocument(UserResource):
     external_link = models.URLField(max_length=500, blank=True)
 
     def __str__(self):
-        return self.file.title
+        return f'FileID: {self.file_id}'
 
 
 class ScoreRating(UserResource):
@@ -406,28 +406,28 @@ class ScoreRating(UserResource):
 class ScoreAnalyticalDensity(UserResource):
     class AnalysisLevelCovered(models.IntegerChoices):
         ISSUE_UNMET_NEEDS_ARE_DETAILED = 1, 'Issues/unmet needs are detailed'
-        ISSUE_UNMET_NEEDS_ARE_PRIOTIZED_RANKED = 2, 'Issues/unmet needs are priotized/ranked'
+        ISSUE_UNMET_NEEDS_ARE_PRIORITIZED_RANKED = 2, 'Issues/unmet needs are prioritized/ranked'
         CAUSES_OR_UNDERLYING_MECHANISMS_BEHIND_ISSUES_UNMET_NEEDS_ARE_DETAILED = 3, \
             'Causes or underlying mechanisms behind issues/unmet needs are detailed'
-        CAUSES_OR_UNDERLYING_MECHANISMS_BEHIND_ISSUES_UNMET_NEEDS_ARE_PRIOTIZED_RANKED = 4, \
-            'Causes or underlying mechanisms behind issues/unmet needs are priotized/ranked'
+        CAUSES_OR_UNDERLYING_MECHANISMS_BEHIND_ISSUES_UNMET_NEEDS_ARE_PRIORITIZED_RANKED = 4, \
+            'Causes or underlying mechanisms behind issues/unmet needs are prioritized/ranked'
         SEVERITY_OF_SOME_ALL_ISSUE_UNMET_NEEDS_IS_DETAILED = 5, \
             'Severity of some/all issues/unmet_needs_is_detailed'
         FUTURE_ISSUES_UNMET_NEEDS_ARE_DETAILED = 6, 'Future issues/unmet needs are detailed'
-        FUTURE_ISSUES_UNMET_NEEDS_ARE_PRIOTIZED_RANKED = 7, 'Future issues/unmet needs are priotized/ranked'
+        FUTURE_ISSUES_UNMET_NEEDS_ARE_PRIORITIZED_RANKED = 7, 'Future issues/unmet needs are prioritized/ranked'
         SEVERITY_OF_SOME_ALL_FUTURE_ISSUE_UNMET_NEEDS_IS_DETAILED = 8, \
             'Severity of some/all future issues/unmet_needs_is_detailed'
-        RECOMMENDATIONS_INTERVENTIONS_ARE_DETAILED = 9, 'Recommnedations/interventions are detailed'
-        RECOMMENDATIONS_INTERVENTIONS_ARE_PRIOTIZED_RANKED = 10, \
-            'Recommnedations/interventions are priotized/ranked'
+        RECOMMENDATIONS_INTERVENTIONS_ARE_DETAILED = 9, 'Recommendations/interventions are detailed'
+        RECOMMENDATIONS_INTERVENTIONS_ARE_PRIORITIZED_RANKED = 10, \
+            'Recommendations/interventions are prioritized/ranked'
 
-    class FigureProvidedByAssessement(models.IntegerChoices):
+    class FigureProvidedByAssessment(models.IntegerChoices):
         TOTAL_POP_IN_THE_ASSESSED_AREAS = 1, 'Total population in the assessed areas'
         TOTAL_POP_EXPOSED_TO_THE_SHOCK_EVENT = 2, 'Total population exposed to the shock/event'
         TOTAL_POP_AFFECTED_LIVING_IN_THE_AFFECTED_AREAS = 3, \
-            'Total populaiton affected/living in the affected area'
+            'Total population affected/living in the affected area'
         TOTAL_POP_FACING_HUMANITARIAN_ACCESS_CONSTRAINTS = 4, 'Total population facing humanitarian access constraints'
-        TOTAL_POP_IN_NEED = 5, 'Total populaiton in need'
+        TOTAL_POP_IN_NEED = 5, 'Total population in need'
         TOTAL_POP_IN_CRITICAL_NEED = 6, 'Total population in critical need'
         TOTAL_POP_IN_SEVERE_NEED = 7, 'Total population in severe need'
         TOTAL_POP_IN_MODERATE_NEED = 8, 'Total population in moderate need'
@@ -441,7 +441,7 @@ class ScoreAnalyticalDensity(UserResource):
     )
     sector = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
     analysis_level_covered = ArrayField(models.IntegerField(choices=AnalysisLevelCovered.choices), default=list)
-    figure_provided = ArrayField(models.IntegerField(choices=FigureProvidedByAssessement.choices), default=list)
+    figure_provided = ArrayField(models.IntegerField(choices=FigureProvidedByAssessment.choices), default=list)
 
 
 class Question(UserResource):
