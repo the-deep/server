@@ -8,7 +8,7 @@ from .models import Region, AdminLevel, GeoArea
 from .tasks import cal_region_cache, cal_admin_level_cache
 
 
-def trigger_region_cache_reset(modeladmin, request, queryset):
+def trigger_region_cache_reset(_, request, queryset):
     cal_region_cache.delay(
         list(queryset.values_list('id', flat=True).distinct())
     )
@@ -27,7 +27,7 @@ def trigger_region_cache_reset(modeladmin, request, queryset):
 trigger_region_cache_reset.short_description = 'Trigger cache reset for selected Regions'
 
 
-def trigger_admin_level_cache_reset(modeladmin, request, queryset):
+def trigger_admin_level_cache_reset(_, request, queryset):
     cal_admin_level_cache.delay(
         list(queryset.values_list('id', flat=True).distinct())
     )
