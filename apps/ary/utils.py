@@ -3,6 +3,7 @@ from organization.models import Organization
 
 from utils.common import parse_number
 
+from assessment_registry.models import AdditionalDocument
 
 def get_title_or_none(Model):
     def _get_title(val):
@@ -64,6 +65,25 @@ def get_organization_name(did):
         'key': did,
     }
 
+def get_additional_documents(assessment):
+    all_document_types = [choice[0] for choice in AdditionalDocument.DocumentType.choices]
+    documents_by_document_type = {}
+
+    for document_type in all_document_types:
+        doc_list = []
+        docs = AdditionalDocument.objects.filter(
+            assessment_registry=assessment,
+            document_type=document_type
+        )
+        for doc in docs:
+            doc = {
+            "id": doc.id,
+            "url": "test-url",
+            }
+            doc_list.append(doc)
+            documents_by_document_type[document_type]=doc_list
+
+    return documents_by_document_type
 
 FIELDS_KEYS_VALUE_EXTRACTORS = {
     'Country': get_country_name,
