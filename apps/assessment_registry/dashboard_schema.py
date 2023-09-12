@@ -1,12 +1,11 @@
 import graphene
 from dataclasses import dataclass
 from collections import defaultdict
-from graphene_django import DjangoObjectType
 
 from django.db.models import Count, Sum, Avg, Case, Value, When
 from django.db import models
 from django.contrib.postgres.aggregates.general import ArrayAgg
-from django.db.models.functions import TruncDay
+from django.db.models.functions import TruncDay, TruncYear
 from django.db import connection as django_db_connection
 from geo.schema import ProjectGeoAreaType
 
@@ -335,6 +334,12 @@ class MedianScoreOfGeoAreaAndAffectedGroupDateType(graphene.ObjectType):
         return GeoArea.objects.get(id=root["geo_area"])
 
 
+class MedianScoreOfSectorAndAffectedGroup(graphene.ObjectType):
+    final_score = graphene.Float(required=True)
+    sector = graphene.Field(AssessmentRegistrySectorTypeEnum, required=True)
+    affected_group = graphene.Field(AssessmentRegistryAffectedGroupTypeEnum, required=True)
+
+
 class AssessmentDashboardStatisticsType(graphene.ObjectType):
     total_assessment = graphene.Int(required=True)
     total_stakeholder = graphene.Int(required=True)
@@ -388,9 +393,10 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     median_quality_score_of_analytical_density = graphene.List(graphene.NonNull(MedianScoreOfAnalyticalDensityType))
     median_quality_score_by_analytical_density_date = graphene.List(graphene.NonNull(MedianScoreOfAnalyticalDensityDateType))
     median_quality_score_by_geoarea_and_sector = graphene.List(graphene.NonNull(MedianScoreOfGeographicalAndSectorDateType))
-    median_quality_score_by_gearea_and_affected_group = graphene.List(
+    median_quality_score_by_geoarea_and_affected_group = graphene.List(
         graphene.NonNull(MedianScoreOfGeoAreaAndAffectedGroupDateType)
     )
+    median_score_by_sector_and_affected_group = graphene.List(graphene.NonNull(MedianScoreOfSectorAndAffectedGroup))
 
     @staticmethod
     def custom_resolver(root, info, _filter):
@@ -555,7 +561,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
             )
             .filter(locations__admin_level__level=1)
             .values("geo_area", "affected_group", "count", "date")
-            .order_by("count")[:10]
+            .order_by("-count")[:10]
         )
 
     @staticmethod
@@ -569,7 +575,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
             )
             .filter(locations__admin_level__level=1)
             .values("geo_area", "sector", "count")
-            .order_by("count")[:10]
+            .order_by("-count")[:10]
         )
 
     @staticmethod
@@ -577,11 +583,11 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         return (
             AssessmentRegistryOrganization.objects.filter(
                 organization_type=AssessmentRegistryOrganization.Type.LEAD_ORGANIZATION
-            )
+            ).values(date=TruncDay("assessment_registry__created_at"))
             .filter(assessment_registry__in=root.assessment_registry_qs)
             .annotate(count=Count("organization"))
-            .values("organization", "count", date=TruncDay("assessment_registry__created_at"))
-        ).order_by("count")[:10]
+            .values("organization", "count",'date').order_by('-count')[:10]
+        )
 
     @staticmethod
     def resolve_assessment_per_datatechnique(root: AssessmentDashboardStat, info):
@@ -706,17 +712,17 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     def resolve_median_quality_score_by_geo_area(root: AssessmentDashboardStat, info):
         # TODO final score value should be convert into  functions
         score = (
-            root.assessment_registry_qs.annotate(geo_area=models.F("locations"))
+            root.assessment_registry_qs.filter(locations__admin_level__level=1).annotate(geo_area=models.F("locations"))
             .annotate(
                 score_rating_matrix=(
-                    Case(
+                    Sum(Case(
                         When(score_ratings__rating=1, then=(Value(0))),
                         When(score_ratings__rating=2, then=(Value(0.5))),
                         When(score_ratings__rating=3, then=(Value(1))),
                         When(score_ratings__rating=4, then=(Value(1.5))),
                         When(score_ratings__rating=4, then=(Value(2))),
                         output_field=models.FloatField(),
-                    )
+                    ))
                 )
             )
             .values("geo_area")
@@ -730,11 +736,12 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
                         )
                         / models.Value(10)
                     )
-                    + Sum(models.F("score_rating_matrix"))
+                    + (models.F("score_rating_matrix"))
                 )
-                / models.Value(5)
-            )
+                / Count('id')*5
+            ).order_by()
             .values(
+                
                 "final_score",
                 "geo_area",
                 region=models.F("locations__admin_level__region"),
@@ -776,7 +783,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
                     )
                     + Sum(models.F("score_rating_matrix"))
                 )
-                / models.Value(5)
+                /  Count('id')*5
             )
             .values("final_score", "date")
         ).exclude(final_score__isnull=True)
@@ -829,7 +836,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @staticmethod
     def resolve_median_quality_score_of_analytical_density(root: AssessmentDashboardStat, info):
         return (
-            root.assessment_registry_qs.annotate(
+            root.assessment_registry_qs.values('analytical_density__sector').annotate(
                 final_score=(
                     Avg(
                         models.F("analytical_density__figure_provided__len")
@@ -837,7 +844,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
                     )
                 )
                 / models.Value(10)
-            )
+            ).order_by()
             .values("final_score", sector=models.F("analytical_density__sector"))
             .exclude(analytical_density__sector__isnull=True)
         )
@@ -862,7 +869,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @staticmethod
     def resolve_median_quality_score_by_geoarea_and_sector(root: AssessmentDashboardStat, info):
         return (
-            root.assessment_registry_qs.values(
+            root.assessment_registry_qs.filter(locations__admin_level__level=1).values(
                 "locations",
                 date=TruncDay("created_at"),
             )
@@ -880,7 +887,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         ).exclude(analytical_density__sector__isnull=True, analytical_density__analysis_level_covered__isnull=True)
 
     @staticmethod
-    def resolve_median_quality_score_by_gearea_and_affected_group(root: AssessmentDashboardStat, info):
+    def resolve_median_quality_score_by_geoarea_and_affected_group(root: AssessmentDashboardStat, info):
         return (
             root.assessment_registry_qs.values("locations", date=TruncDay("created_at"))
             .annotate(
@@ -903,6 +910,28 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
             .values("final_score", "date", "affected_group", geo_area=models.F("locations"))
             .exclude(final_score__isnull=True)
         )
+
+    @staticmethod
+    def resolve_median_score_by_sector_and_affected_group(root: AssessmentDashboardStat, info):
+        return (
+            root.assessment_registry_qs.values(
+                date=TruncDay("created_at"),
+            )
+            .annotate(
+                final_score=(
+                    Avg(
+                        models.F("analytical_density__figure_provided__len")
+                        * models.F("analytical_density__analysis_level_covered__len")
+                    )
+                )
+                / models.Value(10)
+            )
+            .annotate(
+                affected_groups=models.Func(models.F("affected_groups"), function="unnest"),
+                sector=models.F("analytical_density__sector"),
+            )
+            .values("affected_group", "final_score", "sector", "date")
+        ).exclude(analytical_density__sector__isnull=True, analytical_density__analysis_level_covered__isnull=True)
 
 
 class Query:
