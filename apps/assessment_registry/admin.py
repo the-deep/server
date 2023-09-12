@@ -11,6 +11,7 @@ from .models import (
     SummarySubPillarIssue,
     SummaryFocus,
     SummarySubDimensionIssue,
+    SummaryIssue,
 )
 
 
@@ -73,6 +74,12 @@ class SummarySubDimensionIssueInline(admin.TabularInline):
     model = SummarySubDimensionIssue
     extra = 0
     exclude = ('created_by', 'modified_by', 'client_id')
+
+
+# TODO: Readonly mode
+@admin.register(SummaryIssue)
+class SummaryIssueAdmin(admin.ModelAdmin):
+    pass
 
 
 @admin.register(AssessmentRegistry)

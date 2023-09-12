@@ -1,4 +1,5 @@
 import factory
+import datetime
 from factory import fuzzy
 from factory.django import DjangoModelFactory
 
@@ -15,11 +16,15 @@ from .models import (
 )
 
 
+DEFAULT_START_DATE = datetime.date(year=2017, month=1, day=1)
+
+
 class LeadFactory(DjangoModelFactory):
     title = factory.Sequence(lambda n: f'Lead-{n}')
     text = fuzzy.FuzzyText(length=100)
     project = factory.SubFactory(ProjectFactory)
     attachment = factory.SubFactory(FileFactory)
+    published_on = fuzzy.FuzzyDate(DEFAULT_START_DATE)
 
     class Meta:
         model = Lead
@@ -73,6 +78,8 @@ class LeadEMMTriggerFactory(DjangoModelFactory):
 
 
 class LeadPreviewFactory(DjangoModelFactory):
+    text_extract = factory.Faker('text', max_nb_chars=4000)
+
     class Meta:
         model = LeadPreview
 
