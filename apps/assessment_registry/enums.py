@@ -84,7 +84,7 @@ AssessmentRegistryAnalysisLevelTypeEnum = convert_enum_to_graphene_enum(
     ScoreAnalyticalDensity.AnalysisLevelCovered, name='AssessmentRegistryAnalysisLevelTypeEnum'
 )
 AssessmentRegistryAnalysisFigureTypeEnum = convert_enum_to_graphene_enum(
-    ScoreAnalyticalDensity.FigureProvidedByAssessement, name='AssessmentRegistryAnalysisFigureTypeEnum'
+    ScoreAnalyticalDensity.FigureProvidedByAssessment, name='AssessmentRegistryAnalysisFigureTypeEnum'
 )
 AssessmentRegistryRatingTypeEnum = convert_enum_to_graphene_enum(
     ScoreRating.RatingType, name='AssessmentRegistryRatingType'
