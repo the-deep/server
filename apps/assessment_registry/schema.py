@@ -239,7 +239,8 @@ class AdditionalDocumentType(DjangoObjectType, UserResourceMixin, ClientIdMixin)
         return render_string_for_graphql(root.external_link)
 
     def resolve_file(root, info, **kwargs):
-        return info.context.dl.deep_gallery.file.load(root.file_id)
+        if root.file_id:
+            return info.context.dl.deep_gallery.file.load(root.file_id)
 
 
 class CNAType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
