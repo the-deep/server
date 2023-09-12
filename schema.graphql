@@ -1707,7 +1707,8 @@ type AssessmentDashboardStatisticsType {
   medianQualityScoreOfAnalyticalDensity: [MedianScoreOfAnalyticalDensityType!]
   medianQualityScoreByAnalyticalDensityDate: [MedianScoreOfAnalyticalDensityDateType!]
   medianQualityScoreByGeoareaAndSector: [MedianScoreOfGeographicalAndSectorDateType!]
-  medianQualityScoreByGeareaAndAffectedGroup: [MedianScoreOfGeoAreaAndAffectedGroupDateType!]
+  medianQualityScoreByGeoareaAndAffectedGroup: [MedianScoreOfGeoAreaAndAffectedGroupDateType!]
+  medianScoreBySectorAndAffectedGroup: [MedianScoreOfSectorAndAffectedGroup!]
 }
 
 type AssessmentFocusCountByDateType {
@@ -4138,6 +4139,12 @@ type MedianScoreOfGeographicalAndSectorDateType {
   finalScore: Float!
   geoArea: ProjectGeoAreaType!
   sector: AssessmentRegistrySectorTypeEnum!
+}
+
+type MedianScoreOfSectorAndAffectedGroup {
+  finalScore: Float!
+  sector: AssessmentRegistrySectorTypeEnum!
+  affectedGroup: AssessmentRegistryAffectedGroupTypeEnum!
 }
 
 type MergedAsOrganizationType {
