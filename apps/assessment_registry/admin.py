@@ -12,6 +12,7 @@ from .models import (
     SummaryFocus,
     SummarySubDimensionIssue,
     SummaryIssue,
+    AdditionalDocument,
 )
 
 
@@ -27,6 +28,12 @@ class QuestionAdmin(admin.ModelAdmin):
             obj.modified_by = request.user
         super().save_model(request, obj, form, change)
 
+
+@admin.register(AdditionalDocument)
+class AdditionalDocumentAdmin(admin.ModelAdmin):
+    autocomplete_fields = (
+        'file',
+    )
 
 class MethodologyAttributeInline(admin.TabularInline):
     model = MethodologyAttribute
@@ -98,7 +105,6 @@ class AssessmentRegistryAdmin(admin.ModelAdmin):
         ScoreInline,
         AnalyticalDensityInline,
         AnswerInline,
-        SummaryInline,
         SummarySubPillarIssueInline,
         SummaryFocusInline,
         SummarySubDimensionIssueInline,

@@ -31,11 +31,11 @@ def get_export_data(assessment):
     meta_data = get_assessment_meta(assessment)
     answers = Answer.objects.filter(assessment_registry=assessment)
 
-    sub_sector_list_set=set([answer.question.sub_sector for answer in answers])
+    sub_sector_list_set=set([answer.question.get_sub_sector_display() for answer in answers])
     questionaire_dict = {}
     for sub_sector in sub_sector_list_set:
         questionaire_dict[sub_sector]={
-            answer.question.question:answer.answer for answer in answers if answer.question.sub_sector==sub_sector
+            answer.question.question:answer.answer for answer in answers if answer.question.get_sub_sector_display()==sub_sector
         }
 
     return {
@@ -58,6 +58,11 @@ def get_export_data(assessment):
         'affected_groups': {
             **meta_data,
             **get_affected_groups_info(assessment),
+        },
+        'hno': {
+            **meta_data,
+            #**get_assessment_export_summary(assessment),
+            #**(questionaire_dict or {})
         },
         'cna': {
             **meta_data,
