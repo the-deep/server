@@ -8,10 +8,6 @@ from .stakeholders_info import (
     get_stakeholders_info,
     default_values as stakeholders_defaults
 )
-from .summary import (
-    get_assessment_export_summary,
-    default_values as summary_defaults
-)
 from .locations_info import (
     get_locations_info,
     default_values as locations_defaults
@@ -24,25 +20,14 @@ from .affected_groups_info import (
     get_affected_groups_info,
     default_values as affected_defaults
 )
-from assessment_registry.models import Answer
+from .questionaire import get_questionaire
 
 
 def get_export_data(assessment):
     meta_data = get_assessment_meta(assessment)
-    answers = Answer.objects.filter(assessment_registry=assessment)
-
-    sub_sector_list_set=set([answer.question.get_sub_sector_display() for answer in answers])
-    questionaire_dict = {}
-    for sub_sector in sub_sector_list_set:
-        questionaire_dict[sub_sector]={
-            answer.question.question:answer.answer for answer in answers if answer.question.get_sub_sector_display()==sub_sector
-        }
+    questionaire_dict = get_questionaire(assessment)
 
     return {
-        'summary': {
-            **meta_data,
-            #**get_assessment_export_summary(assessment),
-        },
         'data_collection_technique': {
             **meta_data,
             **get_data_collection_techniques_info(assessment),
@@ -59,14 +44,8 @@ def get_export_data(assessment):
             **meta_data,
             **get_affected_groups_info(assessment),
         },
-        'hno': {
-            **meta_data,
-            #**get_assessment_export_summary(assessment),
-            #**(questionaire_dict or {})
-        },
         'cna': {
             **meta_data,
-            #**get_assessment_export_summary(assessment),
             **(questionaire_dict or {})
         }
     }
@@ -83,7 +62,7 @@ def replicate_other_col_groups(sheet_data, column_group):
     return new_sheet_data
 
 
-def normalize_assessment(assessment_export_data, planned_assessment=False):
+def normalize_assessment(assessment_export_data):
     """
     Normally each field has single value, but when there are multiple values,
     each of the values are replicated that many times
@@ -98,37 +77,30 @@ def normalize_assessment(assessment_export_data, planned_assessment=False):
 
     # Normalize Locations
     locations_sheet = assessment_export_data['locations']
-    print("Locations", locations_sheet)
     new_locations_sheet = replicate_other_col_groups(locations_sheet, 'locations')
 
     # Normalize Affected groups
     affected_sheet = assessment_export_data['affected_groups']
     new_affected_sheet = replicate_other_col_groups(affected_sheet, 'affected_groups_info')
 
-    planned_assessment_data = {
-        'summary': {k: [v] for k, v in assessment_export_data['summary'].items()},
+    assessment_data = {
         'stakeholders': new_stakeholders_sheet,
         'affected_groups': new_affected_sheet,
         'locations': new_locations_sheet,
     }
-    if planned_assessment:
-        return planned_assessment_data
 
     # Normailze Data Collection Techniques
     techniques_sheet = assessment_export_data['data_collection_technique']
-    #new_techniques_sheet = replicate_other_col_groups(techniques_sheet, 'data_collection_technique')
+    new_techniques_sheet = replicate_other_col_groups(techniques_sheet, 'data_collection_technique')
 
     return {
-        **planned_assessment_data,
-        #'data_collection_technique': new_techniques_sheet,
-        'data_collection_technique': techniques_sheet,
-        'hno': {k: [v] for k, v in assessment_export_data['hno'].items()},
+        **assessment_data,
+        'data_collection_technique': new_techniques_sheet,
         'cna': {k: [v] for k, v in assessment_export_data['cna'].items()},
     }
 
 
 DEFAULTS = {
-    'summary': summary_defaults,
     'stakeholders': stakeholders_defaults,
     'data_collection_technique': collection_defaults,
     'locations': locations_defaults,
@@ -169,7 +141,6 @@ def add_assessment_to_rows(sheets, assessment, planned_assessment=False):
         return data
 
     normalized_assessment = normalize_assessment(get_export_data(assessment))
-    #normalized_assessment = get_export_data(assessment)
 
     new_sheets = {}
 
@@ -256,5 +227,4 @@ def get_export_data_for_assessments(assessments):
     if not assessments:
         return {}
     data = normalize_assessment(get_export_data(assessments[0]))
-    #data = get_export_data(assessments[0])
     return reduce(add_assessment_to_rows, assessments[1:], data)
