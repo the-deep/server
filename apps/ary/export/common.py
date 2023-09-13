@@ -1,5 +1,6 @@
 from datetime import datetime
 from utils.common import combine_dicts as _combine_dicts, deep_date_format
+from assessment_registry.models import AssessmentRegistry
 
 ISO_FORMAT = '%Y-%m-%d'
 
@@ -67,6 +68,18 @@ default_values = {
 }
 
 
+def get_languages(assessment):
+    all_language = {choice.value: choice.label for choice in AssessmentRegistry.Language}
+    languages_raw = [all_language.get(lang) for lang in assessment.language]
+    assessment_language = {}
+    for k, lang in all_language.items():
+        if lang in languages_raw:
+            assessment_language[all_language[k]] = 1
+        else:
+            assessment_language[all_language[k]] = 0
+    return assessment_language
+
+
 def get_assessment_meta(assessment):
     lead = assessment.lead
 
@@ -98,7 +111,7 @@ def get_assessment_meta(assessment):
             'number_of_pages': assessment.no_of_pages,
         },
 
-        'language': {'Language': 'English'},
+        'language': get_languages(assessment),
 
         'dates': {
             'data_collection_start_date': assessment.data_collection_start_date,
