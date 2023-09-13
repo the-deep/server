@@ -29,12 +29,6 @@ class QuestionAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-@admin.register(AdditionalDocument)
-class AdditionalDocumentAdmin(admin.ModelAdmin):
-    autocomplete_fields = (
-        'file',
-    )
-
 class MethodologyAttributeInline(admin.TabularInline):
     model = MethodologyAttribute
     extra = 0
