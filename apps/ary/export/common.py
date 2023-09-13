@@ -82,19 +82,19 @@ def get_assessment_meta(assessment):
 
         'background': {
             'country': 'Afghanistan',
-            'crisis_type': assessment.bg_crisis_type,
+            'crisis_type': assessment.get_bg_crisis_type_display(),
             'crisis_start_date': assessment.bg_crisis_start_date,
-            'preparedness': assessment.bg_preparedness,
-            'external_support': assessment.external_support,
-            'coordination': assessment.coordinated_joint,
+            'preparedness': assessment.get_bg_preparedness_display(),
+            'external_support': assessment.get_external_support_display(),
+            'coordination': assessment.get_coordinated_joint_display(),
             'cost_estimates_in_USD': assessment.cost_estimates_usd,
         },
 
         'details': {
-            'type': assessment.details_type,
-            'family': assessment.family,
-            'frequency': assessment.frequency,
-            'confidentiality': assessment.confidentiality,
+            'type': assessment.get_details_type_display(),
+            'family': assessment.get_family_display(),
+            'frequency': assessment.get_frequency_display(),
+            'confidentiality': assessment.get_confidentiality_display(),
             'number_of_pages': assessment.no_of_pages,
         },
 
