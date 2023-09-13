@@ -89,7 +89,6 @@ class SummaryIssueLevelLoader(DataLoaderWithContext):
 
 
 class DataLoaders(WithContextMixin):
-
     @cached_property
     def stakeholders(self):
         return AssessmentRegistryOrganizationsLoader(context=self.context)

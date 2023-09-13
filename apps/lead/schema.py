@@ -439,7 +439,7 @@ class LeadDetailType(LeadType):
     @staticmethod
     def resolve_draft_entry_stat(root, info, **kwargs):
         return info.context.dl.lead.draftentry_count.load(root.pk)
-    
+
     @staticmethod
     def resolve_attachment(root, info, **kwargs):
         if root.attachment_id:

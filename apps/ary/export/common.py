@@ -94,7 +94,7 @@ def get_assessment_meta(assessment):
         },
 
         'background': {
-            'country': 'Afghanistan',
+            'country': ', '.join(country.title for country in assessment.locations.all()),
             'crisis_type': assessment.get_bg_crisis_type_display(),
             'crisis_start_date': assessment.bg_crisis_start_date,
             'preparedness': assessment.get_bg_preparedness_display(),
