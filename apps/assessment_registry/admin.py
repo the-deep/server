@@ -12,7 +12,6 @@ from .models import (
     SummaryFocus,
     SummarySubDimensionIssue,
     SummaryIssue,
-    AdditionalDocument,
 )
 
 

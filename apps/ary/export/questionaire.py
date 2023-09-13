@@ -8,7 +8,7 @@ def get_questionaire(assessment):
     questionaire_dict = {}
     for sub_sector in sub_sector_list_set:
         questionaire_dict[sub_sector] = {
-            answer.question.question: answer.answer
+            answer.question.question: 1 if answer.answer else 0
             for answer in answers if answer.question.get_sub_sector_display() == sub_sector
         }
     return questionaire_dict

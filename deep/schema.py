@@ -44,7 +44,6 @@ class Query(
     export_schema.Query,
     deep_explore_schema.Query,
     analysis_public_schema.Query,
-    issue_schema.Query,
     assessment_registry_schema.Query,
     # --
     graphene.ObjectType
