@@ -5,7 +5,7 @@ from collections import defaultdict
 from django.db.models import Count, Sum, Avg, Case, Value, When
 from django.db import models
 from django.contrib.postgres.aggregates.general import ArrayAgg
-from django.db.models.functions import TruncDay, TruncYear
+from django.db.models.functions import TruncDay
 from django.db import connection as django_db_connection
 from geo.schema import ProjectGeoAreaType
 
@@ -144,7 +144,7 @@ class AssessmentPerAffectedGroupAndGeoAreaCountByDateType(AssessmentCountByDateT
     affected_group_display = graphene.String(required=True)
 
     def resolve_geo_area(root, info):
-        return GeoArea.objects.get(id=root["geo_area"])
+        return info.context.dl.geo.geo_area.load(root['geo_area'])
 
     def resolve_affected_group_display(root, info):
         return AssessmentRegistry.AffectedGroupType(root["affected_group"]).label
@@ -157,7 +157,7 @@ class AssessmentPerSectorAndGeoAreaCountByDateType(graphene.ObjectType):
     sector_display = graphene.String(required=True)
 
     def resolve_geo_area(root, info):
-        return GeoArea.objects.get(id=root["geo_area"])
+        return info.context.dl.geo.geo_area.load(root['geo_area'])
 
     def resolve_sector_display(root, info):
         return AssessmentRegistry.SectorType(root["sector"]).label
@@ -167,7 +167,7 @@ class AssessmentByLeadOrganizationCountByDateType(AssessmentCountByDateType):
     organization = graphene.Field(OrganizationObjectType, required=True)
 
     def resolve_organization(root, info):
-        return Organization.objects.get(id=root["organization"])
+        return info.context.dl.organization.organization.load(root['organization'])
 
 
 class AssessmentPerDataCollectionTechniqueCountByDateType(AssessmentCountByDateType):
@@ -320,8 +320,8 @@ class MedianScoreOfGeographicalAndSectorDateType(graphene.ObjectType):
     geo_area = graphene.Field(ProjectGeoAreaType, required=True)
     sector = graphene.Field(AssessmentRegistrySectorTypeEnum, required=True)
 
-    def resolve_geo_area(root, info):
-        return GeoArea.objects.get(id=root["geo_area"])
+    def resolve_geo_area(root, info, **kwargs):
+        return info.context.dl.geo.geo_area.load(root['geo_area'])
 
 
 class MedianScoreOfGeoAreaAndAffectedGroupDateType(graphene.ObjectType):
@@ -331,7 +331,7 @@ class MedianScoreOfGeoAreaAndAffectedGroupDateType(graphene.ObjectType):
     affected_group = graphene.Field(AssessmentRegistryAffectedGroupTypeEnum, required=True)
 
     def resolve_geo_area(root, info):
-        return GeoArea.objects.get(id=root["geo_area"])
+        return info.context.dl.geo.geo_area.load(root['geo_area'])
 
 
 class MedianScoreOfSectorAndAffectedGroup(graphene.ObjectType):
@@ -904,7 +904,17 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
             )
             .values("date")
             .annotate(
-                final_score=Sum("score_rating_matrix"),
+                 final_score=(
+                    Avg(
+                        (
+                            models.F("analytical_density__figure_provided__len")
+                            * models.F("analytical_density__analysis_level_covered__len")
+                        )
+                        / models.Value(10)
+                    )
+                    + Sum(models.F("score_rating_matrix"))
+                )
+                /  Count('id')*5,
                 affected_group=models.Func(models.F("affected_groups"), function="unnest"),
             )
             .values("final_score", "date", "affected_group", geo_area=models.F("locations"))
@@ -927,7 +937,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
                 / models.Value(10)
             )
             .annotate(
-                affected_groups=models.Func(models.F("affected_groups"), function="unnest"),
+                affected_group=models.Func(models.F("affected_groups"), function="unnest"),
                 sector=models.F("analytical_density__sector"),
             )
             .values("affected_group", "final_score", "sector", "date")
