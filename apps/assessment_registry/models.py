@@ -780,7 +780,7 @@ class SummaryIssue(models.Model):
             SubPillar.KNOWLEDGE_AND_INFO_GAPS_HUMAN,
             SubPillar.KNOWLEDGE_AND_INFO_GAPS_POP,
         ],
-        Summary.Pillar.INFORMATION_AND_COMMUNICATION: [
+        Summary.Pillar.HUMANITARIAN_ACCESS: [
             SubPillar.POPULATION_TO_RELIEF,
             SubPillar.RELIEF_TO_POPULATION,
             SubPillar.PHYSICAL_AND_SECURITY,
