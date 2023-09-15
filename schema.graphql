@@ -4722,13 +4722,6 @@ input SummaryFocusMetaInputType {
   totalSevere: Int
   totalCritical: Int
   totalInNeed: Int
-  totalPopAssessed: Int
-  totalNotAffected: Int
-  totalAffected: Int
-  totalPeopleInNeed: Int
-  totalPeopleModeratelyInNeed: Int
-  totalPeopleSeverlyInNeed: Int
-  totalPeopleCriticallyInNeed: Int
 }
 
 type SummaryFocusMetaType {
@@ -4743,13 +4736,6 @@ type SummaryFocusMetaType {
   totalSevere: Int
   totalCritical: Int
   totalInNeed: Int
-  totalPopAssessed: Int
-  totalNotAffected: Int
-  totalAffected: Int
-  totalPeopleInNeed: Int
-  totalPeopleModeratelyInNeed: Int
-  totalPeopleSeverlyInNeed: Int
-  totalPeopleCriticallyInNeed: Int
   clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!

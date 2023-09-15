@@ -110,9 +110,7 @@ class SummaryFocusMetaSerializer(UserResourceSerializer, TempClientIdMixin):
         fields = (
             "id", "client_id", "sector", "percentage_of_people_affected", "total_people_affected", "percentage_of_moderate",
             "percentage_of_severe", "percentage_of_critical", "percentage_in_need", "total_moderate",
-            "total_severe", "total_critical", "total_in_need", "total_pop_assessed", "total_not_affected",
-            "total_affected", "total_people_in_need", "total_people_moderately_in_need",
-            "total_people_severly_in_need", "total_people_critically_in_need",
+            "total_severe", "total_critical", "total_in_need",
         )
 
 
