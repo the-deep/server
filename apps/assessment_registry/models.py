@@ -698,13 +698,6 @@ class SummaryFocus(UserResource):
     total_severe = models.IntegerField(null=True, blank=True)
     total_critical = models.IntegerField(null=True, blank=True)
     total_in_need = models.IntegerField(null=True, blank=True)
-    total_pop_assessed = models.IntegerField(null=True, blank=True)
-    total_not_affected = models.IntegerField(null=True, blank=True)
-    total_affected = models.IntegerField(null=True, blank=True)
-    total_people_in_need = models.IntegerField(null=True, blank=True)
-    total_people_moderately_in_need = models.IntegerField(null=True, blank=True)
-    total_people_severly_in_need = models.IntegerField(null=True, blank=True)
-    total_people_critically_in_need = models.IntegerField(null=True, blank=True)
 
     class Meta:
         verbose_name = _("SummaryDimension")

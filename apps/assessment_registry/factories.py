@@ -90,13 +90,6 @@ class SummaryFocusFactory(DjangoModelFactory):
     total_severe = fuzzy.FuzzyInteger(low=0)
     total_critical = fuzzy.FuzzyInteger(low=0)
     total_in_need = fuzzy.FuzzyInteger(low=0)
-    total_pop_assessed = fuzzy.FuzzyInteger(low=0)
-    total_not_affected = fuzzy.FuzzyInteger(low=0)
-    total_affected = fuzzy.FuzzyInteger(low=0)
-    total_people_in_need = fuzzy.FuzzyInteger(low=0)
-    total_people_moderately_in_need = fuzzy.FuzzyInteger(low=0)
-    total_people_severly_in_need = fuzzy.FuzzyInteger(low=0)
-    total_people_critically_in_need = fuzzy.FuzzyInteger(low=0)
 
     class Meta:
         model = SummaryFocus
