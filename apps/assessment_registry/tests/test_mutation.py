@@ -213,14 +213,6 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     file=str(self.file.id)
                 ),
             ],
-            scoreAnalyticalDensity=[
-                dict(
-                    sector=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
-                ),
-                dict(
-                    sector=self.genum(AssessmentRegistry.SectorType.SHELTER),
-                )
-            ],
             scoreRatings=[
                 dict(
                     scoreType=self.genum(ScoreRating.ScoreCriteria.ASSUMPTIONS),
@@ -231,6 +223,16 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     scoreType=self.genum(ScoreRating.ScoreCriteria.RELEVANCE),
                     rating=self.genum(ScoreRating.RatingType.VERY_POOR),
                     reason="test"
+                )
+            ],
+            scoreAnalyticalDensity=[
+                dict(
+                    sector=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
+                    score=1,
+                ),
+                dict(
+                    sector=self.genum(AssessmentRegistry.SectorType.SHELTER),
+                    score=2
                 )
             ],
             cna=[
