@@ -13,7 +13,7 @@ from geo.models import GeoArea
 
 class AssessmentRegistry(UserResource):
     class CrisisType(models.IntegerChoices):
-        EARTH_QUAKE = 1, 'Earth Quake'
+        EARTH_QUAKE = 1, 'Earthquake'
         GROUND_SHAKING = 2, 'Ground Shaking'
         TSUNAMI = 3, 'Tsunami'
         VOLCANO = 4, 'Volcano'
@@ -28,48 +28,51 @@ class AssessmentRegistry(UserResource):
         LOCAL_STROM = 13, 'Local/Convective Strom'
         FLOOD_RAIN = 14, 'Flood/Rain'
         GENERAL_RIVER_FLOOD = 15, 'General River Flood'
-        FLASH_FLOOD = 16, 'Flash flood'
-        STROM_SURGE_FLOOD = 17, 'Strom Surge/Coastal Flood'
-        MASS_MOVEMENT_WET = 18, 'Mass Movement (Wet)'
+        FLASH_FLOOD = 16, 'Flash Flood'
+        STROM_SURGE_FLOOD = 17, 'Strom surge/Coastal Flood'
+        MASS_MOVEMENT_WET = 18, 'Mass Movement (wet)'
         EXTREME_TEMPERATURE = 19, 'Extreme Temperature'
         HEAT_WAVE = 20, 'Heat Wave'
         COLD_WAVE = 21, 'Cold Wave'
-        EXTREME_WEATHER_CONDITION = 22, 'Extreme Weather Condition'
+        EXTREME_WEATHER_CONDITION = 22, 'Extreme Weather Conditions'
         DROUGHT = 23, 'Drought'
         WILDFIRE = 24, 'Wildfire'
-        POPULATION_DISPLACEMENT = 25, 'Population Displacement'
+        POPULATION_DISPLACEMENT = 25, 'Population displacement'
         CONFLICT = 26, 'Conflict'
+        ECONOMIC = 27, 'Economic'
+        EPIDEMIC = 28, 'Epidemic'
 
     class PreparednessType(models.IntegerChoices):
-        WITH_PREPAREDNESS = 1, 'With Preparedness'
-        WITHOUT_PREPAREDNESS = 2, 'Without Preparedness'
+        WITH_PREPAREDNESS = 1, 'With preparedness'
+        WITHOUT_PREPAREDNESS = 2, 'Without preparedness'
 
     class ExternalSupportType(models.IntegerChoices):
-        EXTERNAL_SUPPORT_RECIEVED = 1, 'External Support Received'
-        NO_EXTERNAL_SUPPORT_RECEIVED = 2, 'No External Support Received'
+        EXTERNAL_SUPPORT_RECIEVED = 1, 'External support received'
+        NO_EXTERNAL_SUPPORT_RECEIVED = 2, 'No external support received'
 
     class CoordinationType(models.IntegerChoices):
-        COORDINATED = 1, 'Coordinated Joint'
-        HARMONIZED = 2, 'Coordinated Harmonized'
+        COORDINATED = 1, 'Coordinated - Joint'
+        HARMONIZED = 2, 'Coordinated - Harmonized'
         UNCOORDINATED = 3, 'Uncoordinated'
 
     class Type(models.IntegerChoices):
-        INITIAL = 1, 'Initial'
+        INITIAL = 3, 'Initial'
         RAPID = 2, 'Rapid'
-        IN_DEPTH = 3, 'In depth'
+        IN_DEPTH = 1, 'In-depth'
         MONITORING = 4, 'Monitoring'
+        REGISTRATION = 6, 'Registration'
         OTHER = 5, 'Other'
 
     class FamilyType(models.IntegerChoices):
-        DISPLACEMENT_TRAKING_MATRIX = 1, 'Displacement Traking Matrix'
+        DISPLACEMENT_TRAKING_MATRIX = 1, 'Displacement Tracking Matrix'
         MULTI_CLUSTER_INITIAL_AND_RAPID_ASSESSMENT = 2, 'Multi Cluster Initial and Rapid Assessment (MIRA)'
-        MULTI_SECTORIAL_NEEDS_ASSESSMENT = 3, 'Multi sectorial Needs Assessment (MSNA)'
+        MULTI_SECTORIAL_NEEDS_ASSESSMENT = 3, 'Multi Sectoral Needs Assessment (MSNA)'
         EMERGENCY_FOOD_SECURITY_ASSESSMENT = 4, 'Emergency Food Security Assessment (EFSA)'
         COMPREHENSIVE_FOOD_SECURITY_AND_VULNERABILITY_ANALYSIS = \
-            5, 'Comprehensive Food Security and Vulnerability Analysis(CFSVA)'
+            5, 'Comprehensive Food Security and Vulnerability Analysis (CFSVA)'
         PROTECTION_MONITORING = 6, 'Protection Monitoring'
         HUMANITARIAN_NEEDS_OVERVIEW = 7, 'Humanitarian Needs Overview (HNO)'
-        BRIEFING_NOTE = 8, 'Briefing note'
+        BRIEFING_NOTE = 8, 'Briefing Note'
         REGISTRATION = 9, 'Registration'
         IDP_PROFILING_EXERCISE = 10, 'IDPs profiling exercise'
         CENSUS = 11, 'Census'
@@ -90,25 +93,25 @@ class AssessmentRegistry(UserResource):
         ENGLISH = 1, 'English'
         FRENCH = 2, 'French'
         SPANISH = 3, 'Spanish'
-        PORTUGESE = 4, 'Portugese'
-        ARABIC = 5, 'Arabic'
+        ARABIC = 4, 'Arabic'
+        PORTUGESE = 5, 'Portugese'
 
     class FocusType(models.IntegerChoices):
         CONTEXT = 1, 'Context'
         SHOCK_EVENT = 2, 'Shock/Event'
         DISPLACEMENT = 3, 'Displacement'
         CASUALTIES = 4, 'Casualties'
-        INFORMATION_AND_COMMUNICATION = 5, 'Information and Communication'
-        HUMANITERIAN_ACCESS = 6, 'Humaniterian Access'
-        IMPACT = 7, 'Impact'
+        INFORMATION_AND_COMMUNICATION = 5, 'Information & Communication'
+        HUMANITERIAN_ACCESS = 6, 'Humanitarian Access'
+        IMPACT = 7, 'Impact (scope & Scale)'
         HUMANITARIAN_CONDITIONS = 8, 'Humanitarian Conditions'
         PEOPLE_AT_RISK = 9, 'People at risk'
         PRIORITIES_AND_PREFERENCES = 10, 'Priorities & Preferences'
-        RESPONSE_AND_CAPACITIES = 11, 'Response and Capacities'
+        RESPONSE_AND_CAPACITIES = 11, 'Response & Capacities'
 
     class SectorType(models.IntegerChoices):
         FOOD_SECURITY = 1, 'Food Security'
-        HEALTH = 2, 'Heath'
+        HEALTH = 2, 'Health'
         SHELTER = 3, 'Shelter'
         WASH = 4, 'Wash'
         PROTECTION = 5, 'Protection'
@@ -126,7 +129,7 @@ class AssessmentRegistry(UserResource):
         PROTECTION_RESPONSE_M_E = 5, 'Protection Response M&E'
         COMMUNICATING_WITH_IN_AFFECTED_COMMUNITIES = 6, 'Communicating with(in) Affected Communities'
         SECURITY_AND_SITUATIONAL_AWARENESS = 7, 'Security & Situational Awareness'
-        SECTORAL_SYSTEM_OTHER = 8, 'Sectoral System/Other'
+        SECTORAL_SYSTEM_OTHER = 8, 'Sectoral Systems/Other'
 
     class AffectedGroupType(models.IntegerChoices):
         ALL = 1, 'All'
@@ -137,14 +140,14 @@ class AssessmentRegistry(UserResource):
         ALL_AFFECTED_DISPLACED_IN_TRANSIT = 6, 'All/Affected/Displaced/In Transit'
         ALL_AFFECTED_DISPLACED_MIGRANTS = 7, 'All/Affected/Displaced/Migrants'
         ALL_AFFECTED_DISPLACED_IDPS = 8, 'All/Affected/Displaced/IDPs'
-        ALL_AFFECTED_DISPLACED_ASYLUM_SEEKER = 9, 'All/Affected/Displced/Asylum Seeker'
+        ALL_AFFECTED_DISPLACED_ASYLUM_SEEKER = 9, 'All/Affected/Displaced/Asylum Seeker'
         ALL_AFFECTED_DISPLACED_OTHER_OF_CONCERN = 10, 'All/Affected/Displaced/Other of concerns'
         ALL_AFFECTED_DISPLACED_RETURNEES = 11, 'All/Affected/Displaced/Returnees'
         ALL_AFFECTED_DISPLACED_REFUGEES = 12, 'All/Affected/Displaced/Refugees'
         ALL_AFFECTED_DISPLACED_MIGRANTS_IN_TRANSIT = 13, 'All/Affected/Displaced/Migrants/In transit'
         ALL_AFFECTED_DISPLACED_MIGRANTS_PERMANENTS = 14, 'All/Affected/Displaced/Migrants/Permanents'
         ALL_AFFECTED_DISPLACED_MIGRANTS_PENDULAR = 15, 'All/Affected/Displaced/Migrants/Pendular'
-        ALL_AFFECTED_NOT_DISPLACED_NO_HOST = 16, 'All/Affected/Not Displaced/No Host'
+        ALL_AFFECTED_NOT_DISPLACED_NO_HOST = 16, 'All/Affected/Not Displaced/Not Host'
         ALL_AFFECTED_NOT_DISPLACED_HOST = 17, 'All/Affected/Not Displaced/Host'
 
     project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
@@ -156,11 +159,11 @@ class AssessmentRegistry(UserResource):
     # -- Background Fields
     bg_countries = models.ManyToManyField(Region)
     bg_crisis_type = models.IntegerField(choices=CrisisType.choices)
-    bg_crisis_start_date = models.DateField()
+    bg_crisis_start_date = models.DateField(blank=True, null=True)
     bg_preparedness = models.IntegerField(choices=PreparednessType.choices)
+    cost_estimates_usd = models.IntegerField(null=True, blank=True)
     external_support = models.IntegerField(choices=ExternalSupportType.choices)
     coordinated_joint = models.IntegerField(choices=CoordinationType.choices)
-    cost_estimates_usd = models.IntegerField(null=True, blank=True)
 
     # -- Details Field
     details_type = models.IntegerField(choices=Type.choices)
@@ -227,8 +230,8 @@ class AssessmentRegistry(UserResource):
 class AssessmentRegistryOrganization(models.Model):
     class Type(models.IntegerChoices):
         LEAD_ORGANIZATION = 1, 'Lead Organization'  # Project Owner
-        INTERNATIONAL_PARTNER = 2, 'International Partner'
-        NATIONAL_PARTNER = 3, 'National Partner'
+        INTERNATIONAL_PARTNER = 2, 'International Partners'
+        NATIONAL_PARTNER = 3, 'National Partners'
         DONOR = 4, 'Donor'
         GOVERNMENT = 5, 'Government'
 
@@ -355,19 +358,19 @@ class ScoreRating(UserResource):
         TIMELINESS = 3, "Timeliness"
         GRANULARITY = 4, "Granularity"
         COMPARABILITY = 5, "Comparability"
-        SOURCE_REABILITY = 6, "Source reability"
+        SOURCE_REABILITY = 6, "Source reliability"
         METHODS = 7, "Methods"
         TRIANGULATION = 8, "Triangulation"
         PLAUSIBILITY = 9, "Plausibility"
         INCLUSIVENESS = 10, "Inclusiveness"
         ASSUMPTIONS = 11, "Assumptions"
         CORROBORATION = 12, "Corroboration"
-        STRUCTURED_ANALYTICAL_TECHNIQUE = 13, "Structured Ananlytical Technique"
+        STRUCTURED_ANALYTICAL_TECHNIQUE = 13, "Structured Analytical Techniques"
         CONSENSUS = 14, "Consensus"
         REPRODUCIBILITY = 15, "Reproducibility"
-        CLEARLY_ARTICULATED_RESULT = 16, "Clearly Articulated Result"
-        LEVEL_OF_CONFIDENCE = 17, "Level Of Confidence"
-        ILLUSTRATION = 18, "Illustration"
+        CLEARLY_ARTICULATED_RESULT = 16, "Clearly Articulated Results"
+        LEVEL_OF_CONFIDENCE = 17, "Levels Of Confidence"
+        ILLUSTRATION = 18, "Illustrations"
         SOURCED_DATA_EVIDENCE = 19, "Sourced data and evidence"
         CLEARLY_STATED_OUTLIERS = 20, "Clearly stated outliers"
 
@@ -458,6 +461,7 @@ class ScoreAnalyticalDensity(UserResource):
     sector = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
     analysis_level_covered = ArrayField(models.IntegerField(choices=AnalysisLevelCovered.choices), default=list)
     figure_provided = ArrayField(models.IntegerField(choices=FigureProvidedByAssessment.choices), default=list)
+    score = models.IntegerField(blank=True, null=True)
 
 
 class Question(UserResource):
@@ -468,36 +472,36 @@ class Question(UserResource):
         METHODOLOGICAL_RIGOR = 4, 'Methodological rigor'
         ANALYTICAL_VALUE = 5, 'Analytical value'
         TIMELINESS = 6, 'Timeliness'
-        EFFECTIVE_COMMUNICATION = 7, 'Effective Communication'
+        EFFECTIVE_COMMUNICATION = 7, 'Effective communication'
         USE = 8, 'Use',
-        PEOPLE_CENTERED_AND_INCLUSIVE = 9, 'People-centered and inclusive'
-        ACCOUNTABILITY_TO_AFFECTED_POPULATIONS = 10, 'Accountability to affected populations'
-        DO_NOT_HARM = 11, 'Do not harm'
+        PEOPLE_CENTERED_AND_INCLUSIVE = 9, 'People-centred and inclusive'
+        ACCOUNTABILITY_TO_AFFECTED_POPULATIONS = 10, 'Accountability to Affected Populations'
+        DO_NOT_HARM = 11, 'Do no harm'
         DESIGNED_WITH_PURPOSE = 12, 'Designed with a purpose'
         COMPETENCY_AND_CAPACITY = 13, 'Competency and capacity'
         IMPARTIALITY = 14, 'Impartiality'
         COORDINATION_AND_DATA_MINIMIZATION = 15, 'Coordination and data minimization'
-        JOINT_ANALYSIS = 16, 'Joint Analysis'
+        JOINT_ANALYSIS = 16, 'Joint analysis'
         ACKNOWLEDGE_DISSENTING_VOICES_IN_JOINT_NEEDS_ANALYSIS = 17, 'Acknowledge dissenting voices in joint needs analysis'
         IFORMED_CONSENT_CONFIDENTIALITY_AND_DATA_SECURITY = 18, 'Informed consent, confidentiality and data security'
         SHARING_RESULTS = 19, 'Sharing results (data and analysis)'
-        TRANSPARENCY_BETWEEN_ACTORS = 20, 'Tranparency between actors'
+        TRANSPARENCY_BETWEEN_ACTORS = 20, 'Transparency between actors'
         MINIMUM_TECHNICAL_STANDARDS = 21, 'Minimum technical standards'
 
     class QuestionSubSector(models.IntegerChoices):
         RELEVANCE = 1, 'Relevance'
         GEOGRAPHIC_COMPREHENSIVENESS = 2, 'Geographic comprehensiveness'
         SECTORAL_COMPREHENSIVENESS = 3, 'Sectoral comprehensiveness'
-        AFFECTED_AND_VULNERABLE_GROUPS_COMPREHENSIVENESS = 4, 'Affected and vulnerabel groups comprehensiveness'
+        AFFECTED_AND_VULNERABLE_GROUPS_COMPREHENSIVENESS = 4, 'Affected and vulnerable groups comprehensiveness'
         SAFETY_AND_PROTECTION = 5, 'Safety and protection'
-        HUMANITARIAN_PRINCIPLES = 6, 'Humanitarian Principles'
+        HUMANITARIAN_PRINCIPLES = 6, 'Humanitarian principles'
         CONTRIBUTION = 7, 'Contribution'
         TRANSPARENCY = 8, 'Transparency'
-        MITIGATING_BIAS = 9, 'Mitigating Bias'
+        MITIGATING_BIAS = 9, 'Mitigating bias'
         PARTICIPATION = 10, 'Participation'
         CONTEXT_SPECIFICITY = 11, 'Context specificity'
-        ANALYTICAL_STANDARDS = 12, 'Ananlytical standards'
-        DESCRIPTIONS = 13, 'Descriptions'
+        ANALYTICAL_STANDARDS = 12, 'Analytical standards'
+        DESCRIPTIONS = 13, 'Description'
         EXPLANATION = 14, 'Explanation'
         INTERPRETATION = 15, 'Interpretation'
         ANTICIPATION = 16, 'Anticipation'
@@ -505,15 +509,15 @@ class Question(UserResource):
         USER_FRIENDLY_PRESENTATION = 18, 'User-friendly presentation'
         ACTIVE_DISSEMINATION = 19, 'Active dissemination'
         USE_FOR_COLLECTIVE_PLANNING = 20, 'Use for collective planning'
-        BUY_IN_AND_USE_BY_HUMANITARIAN_CLUSTERS_SECTORS = 21, 'Buy-in and use by humanitarian clusters/sectors'
+        BUY_IN_AND_USE_BY_HUMANITARIAN_CLUSTERS_SECTORS = 21, 'Buy-in and use by humanitarian clusters / sectors'
         BUY_IN_AND_USE_BY_UN_AGENCIES = 22, 'Buy-in and use by UN agencies'
-        BUY_IN_AND_USE_BY_INTERNATIONAL_NGO = 23, 'Buy-in and use by international non-governmental organizations (NGOs)'
-        BUY_IN_AND_USE_BY_LOCAL_NGO = 24, 'Buy-in and use by local non-governmental organization (local NGOs)'
+        BUY_IN_AND_USE_BY_INTERNATIONAL_NGO = 23, 'Buy-in and use by international non-governmental organizations (INGOs)'
+        BUY_IN_AND_USE_BY_LOCAL_NGO = 24, 'Buy-in and use by local non-governmental organizations (local NGOs)'
         BUY_IN_AND_USE_BY_MEMBER_OF_RED_CROSS_RED_CRESENT_MOVEMENT = 25, \
-            'Buy-in and use by member of Red Cross/Red Cresent Movement'
+            'Buy-in and use by members of the Red Cross / Red Crescent Movement'
         BUY_IN_AND_USE_BY_DONORS = 26, 'Buy-in and use by donors'
         BUY_IN_AND_USE_BY_NATIONAL_AND_LOCAL_GOVERNMENT_AGENCIES = 27, \
-            'Buy-in and use by naional and local government agencies'
+            'Buy-in and use by national and local government agencies'
         BUY_IN_AND_USE_BY_DEVELOPMENT_AND_STABILIZATION_ACTORS = 28, 'Buy-in and use by development and stabilization actors'
 
     QUESTION_SECTOR_SUB_SECTOR_MAP = {
@@ -542,6 +546,8 @@ class Question(UserResource):
             QuestionSubSector.EXPLANATION,
             QuestionSubSector.INTERPRETATION,
             QuestionSubSector.ANTICIPATION,
+        ],
+        QuestionSector.TIMELINESS: [
             QuestionSubSector.TIMELINESS,
         ],
         QuestionSector.EFFECTIVE_COMMUNICATION: [
@@ -716,9 +722,11 @@ class Question(UserResource):
 
         # NOTE We are adding this validation here because Question are added from Admin Panel.
         if hasattr(self, 'sector'):
+            print("Sector Str", str(sector))
             if hasattr(self, 'sub_sector'):
+                print("Sub Sector Str", str(sub_sector))
                 if sub_sector not in Question.QUESTION_SECTOR_SUB_SECTOR_MAP[sector]:
-                    raise ValidationError('Invalid sebsector selected for given sector provided')
+                    raise ValidationError('Invalid sub-sector selected for given sector provided')
 
     def save(self, *args, **kwargs):
         self.full_clean()

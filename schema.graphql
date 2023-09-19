@@ -1488,7 +1488,7 @@ enum AssessmentRegistryCoordinationTypeEnum {
 input AssessmentRegistryCreateInputType {
   lead: ID!
   bgCountries: [ID!]!
-  bgCrisisStartDate: Date!
+  bgCrisisStartDate: Date
   costEstimatesUsd: Int
   noOfPages: Int
   dataCollectionStartDate: Date
@@ -1565,6 +1565,8 @@ enum AssessmentRegistryCrisisTypeEnum {
   WILDFIRE
   POPULATION_DISPLACEMENT
   CONFLICT
+  ECONOMIC
+  EPIDEMIC
 }
 
 enum AssessmentRegistryDataCollectionTechniqueTypeEnum {
@@ -1583,6 +1585,7 @@ enum AssessmentRegistryDetailTypeEnum {
   RAPID
   IN_DEPTH
   MONITORING
+  REGISTRATION
   OTHER
 }
 
@@ -1638,8 +1641,8 @@ enum AssessmentRegistryLanguageTypeEnum {
   ENGLISH
   FRENCH
   SPANISH
-  PORTUGESE
   ARABIC
+  PORTUGESE
 }
 
 type AssessmentRegistryListType {
@@ -1855,7 +1858,7 @@ enum AssessmentRegistrySummarySubPillarTypeEnum {
 type AssessmentRegistryType {
   id: ID!
   bgCountries: [RegionType!]!
-  bgCrisisStartDate: Date!
+  bgCrisisStartDate: Date
   costEstimatesUsd: Int
   noOfPages: Int
   dataCollectionStartDate: Date
@@ -3822,16 +3825,16 @@ type MethodologyAttributeType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
-  dataCollectionTechniqueDisplay: EnumDescription!
-  samplingApproach: AssessmentRegistrySamplingApproachTypeEnum!
-  samplingAppraochDisplay: EnumDescription!
-  proximity: AssessmentRegistryProximityTypeEnum!
-  proximityDisplay: EnumDescription!
-  unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum!
-  unitOfAnalysisDisplay: EnumDescription!
-  unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum!
-  unitOfReportingDisplay: EnumDescription!
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
+  dataCollectionTechniqueDisplay: EnumDescription
+  samplingApproach: AssessmentRegistrySamplingApproachTypeEnum
+  samplingAppraochDisplay: EnumDescription
+  proximity: AssessmentRegistryProximityTypeEnum
+  proximityDisplay: EnumDescription
+  unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum
+  unitOfAnalysisDisplay: EnumDescription
+  unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum
+  unitOfReportingDisplay: EnumDescription
 }
 
 input MissingPredictionReviewInputType {
@@ -4785,10 +4788,12 @@ input ScoreAnalyticalDensityInputType {
   sector: AssessmentRegistrySectorTypeEnum!
   analysisLevelCovered: [AssessmentRegistryAnalysisLevelTypeEnum!]
   figureProvided: [AssessmentRegistryAnalysisFigureTypeEnum!]
+  score: Int
 }
 
 type ScoreAnalyticalDensityType {
   id: ID!
+  score: Int
   clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
