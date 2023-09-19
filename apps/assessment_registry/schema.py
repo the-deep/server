@@ -184,7 +184,7 @@ class ScoreAnalyticalDensityType(DjangoObjectType, UserResourceMixin, ClientIdMi
     class Meta:
         model = ScoreAnalyticalDensity
         only_fields = (
-            'id',
+            'id', 'score',
         )
 
     sector = graphene.Field(AssessmentRegistrySectorTypeEnum, required=True)
@@ -211,16 +211,16 @@ class MethodologyAttributeType(DjangoObjectType, UserResourceMixin, ClientIdMixi
             'sampling_size',
         )
 
-    data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum, required=True)
-    data_collection_technique_display = EnumDescription(source='get_data_collection_technique_display', required=True)
-    sampling_approach = graphene.Field(AssessmentRegistrySamplingApproachTypeEnum, required=True)
-    sampling_appraoch_display = EnumDescription(source='get_sampling_approach_display', required=True)
-    proximity = graphene.Field(AssessmentRegistryProximityTypeEnum, required=True)
-    proximity_display = EnumDescription(source='get_proximity_display', required=True)
-    unit_of_analysis = graphene.Field(AssessmentRegistryUnitOfAnalysisTypeEnum, required=True)
-    unit_of_analysis_display = EnumDescription(source='get_unit_of_analysis_display', required=True)
-    unit_of_reporting = graphene.Field(AssessmentRegistryUnitOfReportingTypeEnum, required=True)
-    unit_of_reporting_display = EnumDescription(source='get_unit_of_reporting_display', required=True)
+    data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum, required=False)
+    data_collection_technique_display = EnumDescription(source='get_data_collection_technique_display', required=False)
+    sampling_approach = graphene.Field(AssessmentRegistrySamplingApproachTypeEnum, required=False)
+    sampling_appraoch_display = EnumDescription(source='get_sampling_approach_display', required=False)
+    proximity = graphene.Field(AssessmentRegistryProximityTypeEnum, required=False)
+    proximity_display = EnumDescription(source='get_proximity_display', required=False)
+    unit_of_analysis = graphene.Field(AssessmentRegistryUnitOfAnalysisTypeEnum, required=False)
+    unit_of_analysis_display = EnumDescription(source='get_unit_of_analysis_display', required=False)
+    unit_of_reporting = graphene.Field(AssessmentRegistryUnitOfReportingTypeEnum, required=False)
+    unit_of_reporting_display = EnumDescription(source='get_unit_of_reporting_display', required=False)
 
 
 class AdditionalDocumentType(DjangoObjectType, UserResourceMixin, ClientIdMixin):

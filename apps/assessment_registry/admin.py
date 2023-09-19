@@ -92,6 +92,8 @@ class AssessmentRegistryAdmin(admin.ModelAdmin):
         'project',
         'bg_countries',
         'locations',
+        'lead',
+        'project',
     )
     inlines = [
         MethodologyAttributeInline,
