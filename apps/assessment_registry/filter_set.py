@@ -30,10 +30,10 @@ class AssessmentDashboardFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
         fields = ()
 
     def filter_stakeholder(self, qs, _, value):
-        return qs if value is None else qs.filter(stakeholder__in=value)
+        return qs if value is None else qs.filter(stakeholders__in=value)
 
     def filter_lead_organization(self, qs, _, value):
-        return qs if value is None else qs.filter(stakeholder__in=value)
+        return qs if value is None else qs.filter(stakeholders__in=value)
 
     def filter_location(self, qs, _, value):
         return (
