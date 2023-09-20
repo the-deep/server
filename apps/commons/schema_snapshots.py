@@ -230,6 +230,47 @@ class SnapshotQuery:
                         organizations {
                             ...OrganizationGeneralResponse
                         }
+                        configuration {
+                            containerStyle {
+                                border {
+                                    ...BorderStyle
+                                }
+                                padding {
+                                    ...PaddingStyle
+                                }
+                                background {
+                                    color
+                                    opacity
+                                }
+                            }
+                            textContentStyle {
+                                content {
+                                    ...TextStyle
+                                }
+                            }
+                            imageContentStyle {
+                                caption {
+                                    ...TextStyle
+                                }
+                            }
+                            headingContentStyle {
+                                h1 {
+                                    ...TextStyle
+                                }
+                                h2 {
+                                    ...TextStyle
+                                }
+                                h3 {
+                                    ...TextStyle
+                                }
+                                h4 {
+                                    ...TextStyle
+                                }
+                            }
+                            bodyStyle {
+                                gap
+                            }
+                        }
                         containers {
                             id
                             clientId
