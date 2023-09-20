@@ -95,8 +95,7 @@ class OrganizationFilterSet(django_filters.FilterSet):
                 return qs
             assessment_organizations_queryset = AssessmentRegistry.objects.filter(project=project)
             return qs.filter(
-                # Stakeholders
-                models.Q(id__in=assessment_organizations_queryset.values('stakeholders'))  # Authors
+                models.Q(id__in=assessment_organizations_queryset.values('stakeholders'))
             )
         return qs
 
