@@ -35,7 +35,7 @@ class AssessmentRegistryGeoAreaLoader(DataLoaderWithContext):
 
 class GeoAreaLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        geo_area_qs = GeoArea.objects.filter(id__in=keys).defer('polygons')
+        geo_area_qs = GeoArea.objects.filter(id__in=keys).defer('polygons','centroid','cached_data')
         _map = defaultdict()
         for geo_area in geo_area_qs:
             _map[geo_area.id] = geo_area
