@@ -228,12 +228,12 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
             scoreRatings=[
                 dict(
                     scoreType=self.genum(ScoreRating.ScoreCriteria.ASSUMPTIONS),
-                    rating=self.genum(ScoreRating.RatingType.VERY_POOR),
+                    rating=self.genum(ScoreRating.RatingType.VERY_GOOD),
                     reason="test",
                 ),
                 dict(
                     scoreType=self.genum(ScoreRating.ScoreCriteria.RELEVANCE),
-                    rating=self.genum(ScoreRating.RatingType.VERY_POOR),
+                    rating=self.genum(ScoreRating.RatingType.GOOD),
                     reason="test",
                 ),
             ],
@@ -247,17 +247,17 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
             summaryDimensionMeta=[
                 dict(
                     percentageInNeed=10,
-                    focus=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
+                    sector=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
                 ),
                 dict(
                     percentageInNeed=10,
-                    focus=self.genum(AssessmentRegistry.SectorType.SHELTER),
+                    sector=self.genum(AssessmentRegistry.SectorType.SHELTER),
                 ),
             ],
             summarySubDimensionIssue=[
                 dict(
                     summaryIssue=self.summary_issue2.id,
-                    focus=self.genum(AssessmentRegistry.FocusType.CONTEXT),
+                    sector=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
                     order=1,
                 )
             ],
@@ -288,13 +288,13 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         assessmentIds
         code
         count
-        geoId
+        geoArea
       }
        assessmentByOverTime {
         count
         date
       }
-      assessmentPerFrameworkPiller {
+      assessmentPerFrameworkPillar {
         count
         date
         focus
@@ -302,14 +302,26 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
        assessmentByDataCollectionTechniqueAndGeolocation {
         count
         dataCollectionTechnique
-        locations
+        geoArea
       }
       assessmentByProximityAndGeolocation {
         count
-        locations
+        geoArea
         proximity
+      },
+      medianQualityScoreByAnalyticalDensityDate {
+        date
+        finalScore
+        sector
+        sectorDisplay
+      },
+      medianQualityScoreByGeoArea {
+        adminLevelId
+        finalScore
+        geoArea
+        region
       }
-        }
+    }
     }
     }"""
         self.create_assessment_registry()
@@ -321,6 +333,7 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
 
         self.force_login(self.member_user)
         content = _query_check(filter)["data"]["project"]["assessmentDashboardStatistics"]
+        print("...........",content)
         # assessment dashboard tab 1
         self.assertEqual(content["totalAssessment"], 1)
         self.assertEqual(content["totalCollectionTechnique"], 2)
@@ -332,11 +345,11 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         self.assertEqual(content["collectionTechniqueCount"][1]["dataCollectionTechnique"], "KEY_INFORMAT_INTERVIEW")
         self.assertEqual(content["assessmentByOverTime"][0]["count"], 1)
         self.assertEqual(content["assessmentByOverTime"][0]["date"], str(date.today()))
-        self.assertEqual(content["assessmentGeographicAreas"][0]["geoId"], self.geo_area1.id)
-        self.assertEqual(content["assessmentGeographicAreas"][1]["geoId"], self.geo_area2.id)
+        self.assertEqual(content["assessmentGeographicAreas"][0]["geoArea"], self.geo_area1.id)
+        self.assertEqual(content["assessmentGeographicAreas"][1]["geoArea"], self.geo_area2.id)
         self.assertEqual(content["assessmentByOverTime"][0]["count"], 1)
         self.assertEqual(content["assessmentByOverTime"][0]["date"], str(date.today()))
-        self.assertEqual(content["assessmentPerFrameworkPiller"][0]["date"], str(date.today()))
+        self.assertEqual(content["assessmentPerFrameworkPillar"][0]["date"], str(date.today()))
         # assessment dashboard tab 2
         self.assertEqual(
             content['assessmentByDataCollectionTechniqueAndGeolocation'][0]['dataCollectionTechnique'],
@@ -344,10 +357,16 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         self.assertEqual(
             content['assessmentByDataCollectionTechniqueAndGeolocation'][1]['dataCollectionTechnique'],
             "KEY_INFORMAT_INTERVIEW")
-        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][0]['locations'], self.geo_area1.id)
-        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][1]['locations'], self.geo_area1.id)
+        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][0]['geoArea'], self.geo_area1.id)
+        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][1]['geoArea'], self.geo_area1.id)
         self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][0]['count'], 1)
         self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][1]['count'], 1)
         self.assertEqual(content['assessmentByProximityAndGeolocation'][0]['count'], 2)
         self.assertEqual(content['assessmentByProximityAndGeolocation'][0]['proximity'], "FACE_TO_FACE")
-        self.assertEqual(content['assessmentByProximityAndGeolocation'][0]['locations'], self.geo_area1.id)
+        self.assertEqual(content['assessmentByProximityAndGeolocation'][0]['geoArea'], self.geo_area1.id)
+        # assessment Dashboard tab 3
+        self.assertEqual(content['medianQualityScoreByAnalyticalDensityDate'][0]['sector'], "FOOD_SECURITY")
+        self.assertEqual(content['medianQualityScoreByAnalyticalDensityDate'][0]['sectorDisplay'], "Food Security")
+        self.assertEqual(content['medianQualityScoreByAnalyticalDensityDate'][0]['date'], str(date.today()))
+        self.assertEqual(content['medianQualityScoreByAnalyticalDensityDate'][1]['finalScore'], 0.0)
+        self.assertEqual(content['medianQualityScoreByGeoArea'][0]['geoArea'],self.geo_area1)
