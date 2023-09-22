@@ -63,6 +63,7 @@ class AssessmentRegistryIssueGQFilterSet(django_filters.FilterSet):
     sub_pillar = SimpleInputFilter(AssessmentRegistrySummarySubPillarTypeEnum)
     sub_dimension = SimpleInputFilter(AssessmentRegistrySummarySubDimensionTypeEnum)
     search = django_filters.CharFilter(method='filter_assessment_registry_issues')
+    is_parent = django_filters.BooleanFilter(method='filter_is_parent')
 
     class Meta:
         model = SummaryIssue
@@ -73,4 +74,11 @@ class AssessmentRegistryIssueGQFilterSet(django_filters.FilterSet):
             return qs
         return qs.filter(
             label__icontains=value
+        )
+
+    def filter_is_parent(self, qs, name, value):
+        if not value:
+            return qs
+        return qs.filter(
+            parent__isnull=True
         )
