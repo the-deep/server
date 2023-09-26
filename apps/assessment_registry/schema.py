@@ -28,6 +28,7 @@ from .models import (
     Answer,
     AssessmentRegistryOrganization,
 )
+from .utils import get_hierarchy_level
 from .filters import AssessmentRegistryGQFilterSet, AssessmentRegistryIssueGQFilterSet
 from .enums import (
     AssessmentRegistryCrisisTypeEnum,
@@ -260,6 +261,8 @@ class AssessmentRegistrySummaryIssueType(DjangoObjectType, UserResourceMixin):
     sub_pillar_display = EnumDescription(source='get_sub_pillar_display', required=False)
     sub_dimension = graphene.Field(AssessmentRegistrySummarySubDimensionTypeEnum, required=False)
     sub_dimension_display = EnumDescription(source='get_sub_dimension_display', required=False)
+    child_count = graphene.Int(required=False)
+    level = graphene.Int(required=False)
 
     class Meta:
         model = SummaryIssue
@@ -269,6 +272,12 @@ class AssessmentRegistrySummaryIssueType(DjangoObjectType, UserResourceMixin):
             'label',
             'full_label',
         ]
+
+    def resolve_child_count(root, info, **kwargs):
+        return info.context.dl.assessment_registry.child_issues.load(root.pk)
+
+    def resolve_level(root, info, **kwargs):
+        return get_hierarchy_level(root)
 
 
 class AssessmentRegistrySummaryIssueListType(CustomDjangoListObjectType):
