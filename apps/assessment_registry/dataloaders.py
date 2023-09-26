@@ -1,3 +1,6 @@
+from itertools import count
+from operator import countOf
+from django.db import models
 from collections import defaultdict
 from promise import Promise
 
@@ -21,7 +24,26 @@ class AssessmentRegistryOrganizationsLoader(DataLoaderWithContext):
 
 class AssessmentRegistryIssueLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        qs = SummaryIssue.objects.filter(id__in=keys)
+        qs = SummaryIssue.objects.filter(
+            parent__in=keys
+        ).order_by().values('parent').annotate(
+            count=models.Count('id')
+        ).values_list(
+            'parent', 'count'
+        )
+
+        print("QS*************************", qs)
+        counts = {
+            ass_reg_id: count
+            for ass_reg_id, count in qs
+        }
+
+        return Promise.resolve([counts.get(key, 0) for key in keys])
+
+
+class AssessmentRegistryIssueChildLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = SummaryIssue.objects.filter(parent__id__in=keys)
         _map = {
             issue.pk: issue
             for issue in qs
@@ -38,3 +60,7 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def issues(self):
         return AssessmentRegistryIssueLoader(context=self.context)
+
+    @cached_property
+    def child_issues(self):
+        return AssessmentRegistryIssueChildLoader(context=self.context)

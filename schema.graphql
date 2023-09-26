@@ -1797,6 +1797,8 @@ type AssessmentRegistrySummaryIssueType {
   subPillarDisplay: EnumDescription
   subDimension: AssessmentRegistrySummarySubDimensionTypeEnum
   subDimensionDisplay: EnumDescription
+  childCount: Int!
+  level: Int!
 }
 
 enum AssessmentRegistrySummaryPillarTypeEnum {
