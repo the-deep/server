@@ -301,3 +301,39 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         self.force_login(non_confidential_member_user)
         content = _query_check(okay=False)
         self.assertEqual(content['data']['project']['assessmentRegistries']['totalCount'], 3)
+
+    def test_issue_list_query_filter(self):
+        query = '''
+            query MyQuery (
+                $isParent: Boolean
+                $label: String
+            ) {
+            assessmentRegSummaryIssues(
+                isParent: $isParent
+                label: $label
+                ) {
+                results {
+                    id
+                }
+            }
+        }
+        '''
+
+        member_user = UserFactory.create()
+        self.force_login(member_user)
+
+        parent_issue1, parent_issue2, parent_issue3 = SummaryIssueFactory.create_batch(3, parent=None)
+        child_issue1 = SummaryIssueFactory.create(parent=parent_issue1)
+        child_issue2 = SummaryIssueFactory.create(parent=parent_issue2)
+
+        for filter_data, expected_issues in [
+            ({}, [child_issue1, child_issue2, parent_issue1, parent_issue2, parent_issue3]),
+            ({'isParent': True}, [parent_issue1, parent_issue2, parent_issue3]),
+            ({'isParent': False}, [child_issue1, child_issue2,]),
+        ]:
+            content = self.query_check(query, variables={**filter_data})
+
+            self.assertListIds(
+                content['data']['assessmentRegSummaryIssues']['results'], expected_issues,
+                {'response': content, 'filter': filter_data}
+            )
