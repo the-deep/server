@@ -77,8 +77,10 @@ class AssessmentRegistryIssueGQFilterSet(django_filters.FilterSet):
         )
 
     def filter_is_parent(self, qs, name, value):
-        if not value:
+        if value is None:
             return qs
-        return qs.filter(
-            parent__isnull=True
-        )
+        if value:
+            # for parent
+            return qs.filter(parent__isnull=True)
+        # for child
+        return qs.filter(parent__isnull=False)
