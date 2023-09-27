@@ -70,7 +70,6 @@ class FileSerializer(RemoveNullFieldsMixin,
             validated_data['metadata'] = self._get_metadata(
                 validated_data.get('file')
             )
-            validated_data['created_by'] = self.request.user
         except Exception:
             logger.error('File create Failed!!', exc_info=True)
         return super().create(validated_data)

@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
-from drf_writable_nested import UniqueFieldsMixin, NestedCreateMixin, WritableNestedModelSerializer
+from drf_writable_nested import UniqueFieldsMixin, NestedCreateMixin
 from django.db import transaction, models
 
 from deep.graphene_context import GQLContext
@@ -578,43 +578,43 @@ class ReportEnum:
 
 
 class AnalysisReportVariableSerializer(serializers.Serializer):
-    name = serializers.CharField(required=False)
-    type = serializers.ChoiceField(choices=ReportEnum.VariableType.choices, required=False)
-    completeness = serializers.IntegerField(required=False)
+    name = serializers.CharField(required=False, allow_null=True)
+    type = serializers.ChoiceField(choices=ReportEnum.VariableType.choices, required=False, allow_null=True)
+    completeness = serializers.IntegerField(required=False, allow_null=True)
 
 
 class AnalysisReportTextStyleSerializer(serializers.Serializer):
-    color = serializers.CharField(required=False)
-    family = serializers.CharField(required=False)
-    size = serializers.IntegerField(required=False)
-    weight = serializers.IntegerField(required=False)
-    align = serializers.ChoiceField(choices=ReportEnum.TextStyleAlign.choices, required=False)
+    color = serializers.CharField(required=False, allow_null=True)
+    family = serializers.CharField(required=False, allow_null=True)
+    size = serializers.IntegerField(required=False, allow_null=True)
+    weight = serializers.IntegerField(required=False, allow_null=True)
+    align = serializers.ChoiceField(choices=ReportEnum.TextStyleAlign.choices, required=False, allow_null=True)
 
 
 class AnalysisReportMarginStyleSerializer(serializers.Serializer):
-    top = serializers.IntegerField(required=False)
-    bottom = serializers.IntegerField(required=False)
-    left = serializers.IntegerField(required=False)
-    right = serializers.IntegerField(required=False)
+    top = serializers.IntegerField(required=False, allow_null=True)
+    bottom = serializers.IntegerField(required=False, allow_null=True)
+    left = serializers.IntegerField(required=False, allow_null=True)
+    right = serializers.IntegerField(required=False, allow_null=True)
 
 
 class AnalysisReportPaddingStyleSerializer(serializers.Serializer):
-    top = serializers.IntegerField(required=False)
-    bottom = serializers.IntegerField(required=False)
-    left = serializers.IntegerField(required=False)
-    right = serializers.IntegerField(required=False)
+    top = serializers.IntegerField(required=False, allow_null=True)
+    bottom = serializers.IntegerField(required=False, allow_null=True)
+    left = serializers.IntegerField(required=False, allow_null=True)
+    right = serializers.IntegerField(required=False, allow_null=True)
 
 
 class AnalysisReportBorderStyleSerializer(serializers.Serializer):
-    color = serializers.CharField(required=False)
-    width = serializers.IntegerField(required=False)
-    opacity = serializers.IntegerField(required=False)
+    color = serializers.CharField(required=False, allow_null=True)
+    width = serializers.IntegerField(required=False, allow_null=True)
+    opacity = serializers.IntegerField(required=False, allow_null=True)
     style = serializers.ChoiceField(choices=ReportEnum.BorderStyleStyle.choices, required=False)
 
 
 class AnalysisReportBackgroundStyleSerializer(serializers.Serializer):
-    color = serializers.CharField(required=False)
-    opacity = serializers.IntegerField(required=False)
+    color = serializers.CharField(required=False, allow_null=True)
+    opacity = serializers.IntegerField(required=False, allow_null=True)
 
 
 class AnalysisReportPageStyleSerializer(serializers.Serializer):
@@ -632,7 +632,7 @@ class AnalysisReportHeaderStyleSerializer(serializers.Serializer):
 
 
 class AnalysisReportBodyStyleSerializer(serializers.Serializer):
-    gap = serializers.IntegerField(required=False)
+    gap = serializers.IntegerField(required=False, allow_null=True)
 
 
 class AnalysisReportContainerStyleSerializer(serializers.Serializer):
@@ -658,33 +658,27 @@ class AnalysisReportHeadingContentStyleSerializer(serializers.Serializer):
 
 class AnalysisReportImageContentStyleSerializer(serializers.Serializer):
     caption = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
-    fit = serializers.ChoiceField(choices=ReportEnum.ImageContentStyleFit.choices, required=False)
-
-
-class AnalysisReportUrlContentStyleSerializer(serializers.Serializer):
-    # TODO: Define fields here
-    noop = serializers.CharField(required=False)
+    fit = serializers.ChoiceField(choices=ReportEnum.ImageContentStyleFit.choices, required=False, allow_null=True)
 
 
 class AnalysisReportTextConfigurationSerializer(serializers.Serializer):
-    content = serializers.CharField(required=False)
+    content = serializers.CharField(required=False, allow_null=True)
     style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportHeadingConfigurationSerializer(serializers.Serializer):
-    content = serializers.CharField(required=False)
+    content = serializers.CharField(required=False, allow_null=True)
     style = AnalysisReportHeadingConfigurationStyleSerializer(required=False, allow_null=True)
     variant = serializers.ChoiceField(choices=ReportEnum.HeadingConfigurationVariant.choices, required=False)
 
 
 class AnalysisReportUrlConfigurationSerializer(serializers.Serializer):
-    url = serializers.CharField(required=False)
-    style = AnalysisReportUrlContentStyleSerializer(required=False, allow_null=True)
+    url = serializers.CharField(required=False, allow_null=True)
 
 
 class AnalysisReportImageConfigurationSerializer(serializers.Serializer):
-    caption = serializers.CharField(required=False)
-    altText = serializers.CharField(required=False)
+    caption = serializers.CharField(required=False, allow_null=True)
+    altText = serializers.CharField(required=False, allow_null=True)
     style = AnalysisReportImageContentStyleSerializer(required=False, allow_null=True)
 
 
@@ -723,12 +717,24 @@ class AnalysisReportContainerDataSerializer(TempClientIdMixin, serializers.Model
         fields = (
             'id',
             'client_id',
-            'upload',  # TODO Validation
+            'upload',
             'data',
         )
 
+    def validate_upload(self, upload):
+        report = self.context.get('report')
+        if report is None:
+            raise serializers.ValidationError(
+                'Report needs to be created before assigning uploads to container'
+            )
+        if report.id != upload.report_id:
+            raise serializers.ValidationError(
+                'Upload within report are only allowed'
+            )
+        return upload
 
-class AnalysisReportContainerSerializer(TempClientIdMixin, WritableNestedModelSerializer):
+
+class AnalysisReportContainerSerializer(TempClientIdMixin, UserResourceSerializer):
     id = IntegerIDField(required=False)
 
     class Meta:
@@ -753,15 +759,21 @@ class AnalysisReportContainerSerializer(TempClientIdMixin, WritableNestedModelSe
     content_configuration = AnalysisReportContainerContentConfigurationSerializer(
         required=False, allow_null=True)
 
-    # TODO: Model Field, Nested Serializer
     content_data = AnalysisReportContainerDataSerializer(many=True, source='analysisreportcontainerdata_set')
 
+    # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
+    # This makes sure only scoped (individual Analysis Report) instances (container data) are updated.
+    def _get_prefetch_related_instances_qs(self, qs):
+        if self.instance:
+            return qs.filter(container=self.instance)
+        return qs.none()  # On create throw error if existing id is provided
 
-class AnalysisReportSerializer(UserResourceSerializer):
+
+class AnalysisReportSerializer(ProjectPropertySerializerMixin, UserResourceSerializer):
     class Meta:
         model = AnalysisReport
         fields = (
-            'analysis',  # TODO Validation
+            'analysis',
             'slug',
             'title',
             'sub_title',
@@ -774,6 +786,23 @@ class AnalysisReportSerializer(UserResourceSerializer):
 
     configuration = AnalysisReportConfigurationSerializer(required=False, allow_null=True)
     containers = AnalysisReportContainerSerializer(many=True, source='analysisreportcontainer_set')
+
+    # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
+    # This makes sure only scoped (individual Analysis Report) instances (containers) are updated.
+    def _get_prefetch_related_instances_qs(self, qs):
+        if self.instance:
+            return qs.filter(report=self.instance)
+        return qs.none()  # On create throw error if existing id is provided
+
+    def validate_analysis(self, analysis):
+        existing_analysis_id = self.instance and self.instance.analysis_id
+        # NOTE: if changed, make sure user have access to that analysis
+        if (
+            analysis.id != existing_analysis_id and
+            analysis.project_id != self.project.id
+        ):
+            raise serializers.ValidationError('You need access to analysis')
+        return analysis
 
 
 # -- Snapshot
@@ -847,21 +876,38 @@ class AnalysisReportUploadMetadataSerializer(serializers.Serializer):
     xlsx = AnalysisReportUploadMetadataXlsxSerializer(required=False, allow_null=True)
     csv = AnalysisReportUploadMetadataCsvSerializer(required=False, allow_null=True)
     geojson = AnalysisReportUploadMetadataGeoJsonSerializer(required=False, allow_null=True)
-    # image = AnalysisReportUploadMetadataGeoJsonSerializer()
 
 
-# TODO: Seperate mutation
-class AnalysisReportUploadSerializer(serializers.ModelSerializer):
+class AnalysisReportUploadSerializer(ProjectPropertySerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = AnalysisReportUpload
         fields = (
             'id',
-            'report',  # TODO Validation
-            'file',  # TODO Validation
+            'report',
+            'file',
             'type',
             # Custom
             'metadata',
         )
 
     metadata = AnalysisReportUploadMetadataSerializer()
-    # TODO Validations
+
+    def validate_file(self, file):
+        existing_file_id = self.instance and self.instance.file_id
+        # NOTE: if changed, make sure only owner can assign files
+        if (
+            file.id != existing_file_id and
+            file.created_by != self.context['request'].user
+        ):
+            raise serializers.ValidationError('Only owner can assign file')
+        return file
+
+    def validate_report(self, report):
+        existing_report_id = self.instance and self.instance.report_id
+        # NOTE: if changed, make sure user have access to that report
+        if (
+            report.id != existing_report_id and
+            report.analysis.project_id != self.project.id
+        ):
+            raise serializers.ValidationError('You need access to report')
+        return report

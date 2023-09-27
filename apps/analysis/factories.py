@@ -1,12 +1,15 @@
 import factory
 from factory.django import DjangoModelFactory
 
+from gallery.factories import FileFactory
 from .models import (
     Analysis,
     AnalysisPillar,
     AnalyticalStatement,
     AnalyticalStatementEntry,
     DiscardedEntry,
+    AnalysisReport,
+    AnalysisReportUpload,
 )
 
 
@@ -44,3 +47,16 @@ class AnalyticalStatementEntryFactory(DjangoModelFactory):
 
     class Meta:
         model = AnalyticalStatementEntry
+
+
+class AnalysisReportFactory(DjangoModelFactory):
+    class Meta:
+        model = AnalysisReport
+
+
+class AnalysisReportUploadFactory(DjangoModelFactory):
+    type = AnalysisReportUpload.Type.CSV
+    file = factory.SubFactory(FileFactory)
+
+    class Meta:
+        model = AnalysisReportUpload

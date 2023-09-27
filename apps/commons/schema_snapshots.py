@@ -182,7 +182,7 @@ class SnapshotQuery:
         """
 
     class AnalysisReport:
-        Snapshot = '''
+        SnapshotFragment = '''
             fragment OrganizationGeneralResponse on OrganizationType {
                 id
                 title
@@ -219,126 +219,134 @@ class SnapshotQuery:
                 style
                 width
             }
-            query MyQuery($projectID: ID!, $reportID: ID!) {
-                project(id: $projectID) {
-                    analysisReport(id: $reportID) {
-                        id
-                        analysis
-                        title
-                        subTitle
-                        slug
-                        organizations {
-                            ...OrganizationGeneralResponse
+            fragment AnalysisReportQueryType on AnalysisReportType {
+                id
+                analysis
+                title
+                subTitle
+                slug
+                organizations {
+                    ...OrganizationGeneralResponse
+                }
+                configuration {
+                    containerStyle {
+                        border {
+                            ...BorderStyle
                         }
-                        configuration {
-                            containerStyle {
-                                border {
-                                    ...BorderStyle
-                                }
-                                padding {
-                                    ...PaddingStyle
-                                }
-                                background {
-                                    color
-                                    opacity
-                                }
+                        padding {
+                            ...PaddingStyle
+                        }
+                        background {
+                            color
+                            opacity
+                        }
+                    }
+                    textContentStyle {
+                        content {
+                            ...TextStyle
+                        }
+                    }
+                    imageContentStyle {
+                        caption {
+                            ...TextStyle
+                        }
+                    }
+                    headingContentStyle {
+                        h1 {
+                            ...TextStyle
+                        }
+                        h2 {
+                            ...TextStyle
+                        }
+                        h3 {
+                            ...TextStyle
+                        }
+                        h4 {
+                            ...TextStyle
+                        }
+                    }
+                    bodyStyle {
+                        gap
+                    }
+                }
+                containers {
+                    id
+                    clientId
+                    row
+                    column
+                    width
+                    height
+                    contentType
+                    style {
+                        border {
+                            ...BorderStyle
+                        }
+                        padding {
+                            ...PaddingStyle
+                        }
+                        background {
+                            color
+                            opacity
+                        }
+                    }
+                    contentData {
+                        clientId
+                        data
+                        id
+                        upload {
+                            id
+                            file {
+                                id
                             }
-                            textContentStyle {
+                        }
+                    }
+                    contentConfiguration {
+                        heading {
+                            content
+                            variant
+                            style {
                                 content {
                                     ...TextStyle
                                 }
                             }
-                            imageContentStyle {
+                        }
+                        image {
+                            altText
+                            caption
+                            style {
                                 caption {
                                     ...TextStyle
                                 }
-                            }
-                            headingContentStyle {
-                                h1 {
-                                    ...TextStyle
-                                }
-                                h2 {
-                                    ...TextStyle
-                                }
-                                h3 {
-                                    ...TextStyle
-                                }
-                                h4 {
-                                    ...TextStyle
-                                }
-                            }
-                            bodyStyle {
-                                gap
+                                fit
                             }
                         }
-                        containers {
-                            id
-                            clientId
-                            row
-                            column
-                            width
-                            height
-                            contentType
+                        text {
+                            content
                             style {
-                                border {
-                                    ...BorderStyle
-                                }
-                                padding {
-                                    ...PaddingStyle
-                                }
-                                background {
-                                    color
-                                    opacity
+                                content {
+                                    ...TextStyle
                                 }
                             }
-                            contentData {
-                                clientId
-                                data
-                                id
-                                upload {
-                                    id
-                                    file {
-                                        id
-                                    }
-                                }
-                            }
-                            contentConfiguration {
-                                heading {
-                                    content
-                                    variant
-                                    style {
-                                        content {
-                                            ...TextStyle
-                                        }
-                                    }
-                                }
-                                image {
-                                    altText
-                                    caption
-                                    style {
-                                        caption {
-                                            ...TextStyle
-                                        }
-                                        fit
-                                    }
-                                }
-                                text {
-                                    content
-                                    style {
-                                        content {
-                                            ...TextStyle
-                                        }
-                                    }
-                                }
-                                url {
-                                    url
-                                }
-                            }
+                        }
+                        url {
+                            url
                         }
                     }
                 }
             }
         '''
+        Snapshot = (
+            SnapshotFragment +
+            '''\n
+            query MyQuery($projectID: ID!, $reportID: ID!) {
+                project(id: $projectID) {
+                    analysisReport(id: $reportID) {
+                        ...AnalysisReportQueryType
+                    }
+                }
+            }
+            '''
+        )
 
 
 class DummyContext:

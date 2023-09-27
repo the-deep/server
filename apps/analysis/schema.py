@@ -564,7 +564,7 @@ class AnalysisReportUploadType(DjangoObjectType):
         model = AnalysisReportUpload
         only_fields = (
             'id',
-            'file',  # TODO Dataloader
+            'file',
         )
 
     report = graphene.ID(source='report_id', required=True)
@@ -578,15 +578,23 @@ class AnalysisReportUploadType(DjangoObjectType):
     def get_custom_queryset(queryset, info, **_):
         return get_analysis_report_upload_qs(info)
 
+    @staticmethod
+    def resolve_file(root, info, **_):
+        return info.context.dl.deep_gallery.file.load(root.file_id)
+
 
 class AnalysisReportContainerDataType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = AnalysisReportContainerData
         only_fields = (
             'id',
-            'upload',  # AnalysisReportUploadType  # TODO: Dataloader
+            'upload',  # AnalysisReportUploadType
             'data',  # NOTE: This is Generic for now
         )
+
+    @staticmethod
+    def resolve_upload(root, info, **_):
+        return info.context.dl.analysis.analysis_report_uploads.load(root.upload_id)
 
 
 class AnalysisReportContainerType(ClientIdMixin, DjangoObjectType):
@@ -619,9 +627,9 @@ class AnalysisReportContainerType(ClientIdMixin, DjangoObjectType):
     )
     content_data = graphene.List(graphene.NonNull(AnalysisReportContainerDataType), required=True)
 
+    @staticmethod
     def resolve_content_data(root, info, **_):
-        # TODO: Dataloader
-        return root.analysisreportcontainerdata_set.all()
+        return info.context.dl.analysis.analysis_report_container_data_by_container.load(root.pk)
 
 
 class AnalysisReportSnapshotType(DjangoObjectType):
@@ -647,15 +655,14 @@ class AnalysisReportSnapshotType(DjangoObjectType):
 
     @staticmethod
     def resolve_files(root, info, **_):
-        # TODO: Maybe filter this out?
         # For now
         # - organization logos
         # - report uploads
-        # TODO: use queryset instead
-        related_file_id = [
-            *list(root.report.analysisreportupload_set.values_list('file_id', flat=True)),
-            *list(root.report.organizations.values_list('logo_id', flat=True)),
-        ]
+        related_file_id = (
+            root.report.analysisreportupload_set.values_list('file').union(
+                root.report.organizations.values_list('logo')
+            )
+        )
         return GalleryFile.objects.filter(id__in=related_file_id).all()
 
 
@@ -692,23 +699,19 @@ class AnalysisReportType(UserResourceMixin, DjangoObjectType):
 
     @staticmethod
     def resolve_organizations(root, info, **_):
-        # TODO: Dataloader
-        return root.organizations.all()
+        return info.context.dl.analysis.organization_by_analysis_report.load(root.pk)
 
     @staticmethod
     def resolve_uploads(root, info, **_):
-        # TODO: Dataloader
-        return root.analysisreportupload_set.all()
+        return info.context.dl.analysis.analysis_report_uploads_by_analysis_report.load(root.pk)
 
     @staticmethod
     def resolve_containers(root, info, **_):
-        # TODO: Dataloader
-        return root.analysisreportcontainer_set.all()
+        return info.context.dl.analysis.analysis_report_container_by_analysis_report.load(root.pk)
 
     @staticmethod
     def resolve_latest_snapshot(root, info, **_):
-        # TODO: Dataloader
-        return AnalysisReport.get_latest_snapshot(report_id=root.id)
+        return info.context.dl.analysis.latest_report_snapshot_by_analysis_report.load(root.pk)
 
 
 class AnalysisReportListType(CustomDjangoListObjectType):

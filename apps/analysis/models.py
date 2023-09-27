@@ -546,6 +546,7 @@ class AnalyticalStatementGeoEntry(models.Model):
     data = models.JSONField(default=list)
 
 
+# ---- Analysis Report ----
 class AnalysisReport(UserResource):
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
     is_public = models.BooleanField(
@@ -569,6 +570,7 @@ class AnalysisReport(UserResource):
             return
         queryset = AnalysisReportSnapshot.objects.filter(
             report__is_public=True,
+            report__analysis__project__enable_publicly_viewable_analysis_report_snapshot=True,
         )
         if slug is not None:
             queryset = queryset.filter(report__slug=slug)
@@ -614,6 +616,9 @@ class AnalysisReportContainerData(models.Model):
     upload = models.ForeignKey(AnalysisReportUpload, on_delete=models.PROTECT)
     # Generic for now. Client will define this later
     data = models.JSONField(default=dict)
+
+    # Types
+    container_id: int
 
 
 class AnalysisReportSnapshot(UserResource):

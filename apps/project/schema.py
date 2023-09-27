@@ -414,6 +414,7 @@ class ProjectDetailType(
             'has_publicly_viewable_unprotected_leads',
             'has_publicly_viewable_restricted_leads',
             'has_publicly_viewable_confidential_leads',
+            'enable_publicly_viewable_analysis_report_snapshot',
         )
 
     analysis_framework = graphene.Field(AnalysisFrameworkDetailType)

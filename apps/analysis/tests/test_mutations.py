@@ -1,16 +1,24 @@
+import os
 import datetime
+import json
 from unittest import mock
 from utils.graphene.tests import GraphQLTestCase
 
 from deepl_integration.handlers import AnalysisAutomaticSummaryHandler
 from deepl_integration.serializers import DeeplServerBaseCallbackSerializer
 
+from commons.schema_snapshots import SnapshotQuery
 from user.factories import UserFactory
 from project.factories import ProjectFactory
 from lead.factories import LeadFactory
 from entry.factories import EntryFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
-from analysis.factories import AnalysisFactory, AnalysisPillarFactory
+from analysis.factories import (
+    AnalysisFactory,
+    AnalysisPillarFactory,
+    AnalysisReportFactory,
+    AnalysisReportUploadFactory,
+)
 
 from analysis.models import (
     TopicModel,
@@ -18,6 +26,7 @@ from analysis.models import (
     AutomaticSummary,
     AnalyticalStatementNGram,
     AnalyticalStatementGeoTask,
+    AnalysisReportSnapshot,
 )
 
 
@@ -835,3 +844,440 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
 
         geo_task.refresh_from_db()
         assert geo_task.status == AnalyticalStatementGeoTask.Status.FAILED
+
+
+class TestAnalysisReportQueryAndMutationSchema(GraphQLTestCase):
+    factories_used = [
+        AnalysisReportUploadFactory,
+    ]
+
+    REPORT_SNAPSHOT_FRAGMENT = '''
+        fragment AnalysisReportSnapshotResponse on AnalysisReportSnapshotType {
+            id
+            publishedOn
+            report
+            publishedBy {
+                displayName
+            }
+            reportDataFile {
+              name
+              url
+            }
+            files {
+              id
+              title
+              mimeType
+              metadata
+              file {
+                name
+                url
+              }
+            }
+        }
+    '''
+
+    CREATE_REPORT = (
+        SnapshotQuery.AnalysisReport.SnapshotFragment +
+        '''\n
+        mutation CreateReport($projectId: ID!, $input: AnalysisReportInputType!) {
+          project(id: $projectId) {
+            analysisReportCreate(data: $input) {
+              result {
+                ...AnalysisReportQueryType
+              }
+              errors
+              ok
+            }
+          }
+        }
+        '''
+    )
+
+    CREATE_REPORT_SNAPSHOT = (
+        REPORT_SNAPSHOT_FRAGMENT +
+        '''\n
+        mutation CreateReportSnapshot($projectId: ID!, $input: AnalysisReportSnapshotInputType!) {
+          project(id: $projectId) {
+            analysisReportSnapshotCreate(data: $input) {
+              result {
+                 ...AnalysisReportSnapshotResponse
+              }
+              errors
+              ok
+            }
+          }
+        }
+        '''
+    )
+
+    UPDATE_REPORT = (
+        SnapshotQuery.AnalysisReport.SnapshotFragment +
+        '''\n
+        mutation UpdateReport($projectId: ID!, $reportId: ID!, $input: AnalysisReportInputUpdateType!) {
+          project(id: $projectId) {
+            analysisReportUpdate(id: $reportId, data: $input) {
+              result {
+                ...AnalysisReportQueryType
+              }
+              errors
+              ok
+            }
+          }
+        }
+        '''
+    )
+
+    QUERY_REPORT = (
+        SnapshotQuery.AnalysisReport.SnapshotFragment +
+        '''\n
+        query Report($projectId: ID!, $reportId: ID!) {
+          project(id: $projectId) {
+            analysisReport(id: $reportId) {
+              ...AnalysisReportQueryType
+            }
+          }
+        }
+        '''
+    )
+
+    QUERY_REPORT_SNAPSHOT = (
+        REPORT_SNAPSHOT_FRAGMENT +
+        '''\n
+        query QueryReportSnapshot($projectId: ID!, $snapshotId: ID!) {
+          project(id: $projectId) {
+            analysisReportSnapshot(id: $snapshotId) {
+              ...AnalysisReportSnapshotResponse
+            }
+          }
+        }
+        '''
+    )
+
+    QUERY_PUBLIC_REPORT_SNAPSHOT = (
+        REPORT_SNAPSHOT_FRAGMENT +
+        '''\n
+        query QueryPublicReportSnapshot($slug: String!) {
+          publicAnalysisReportSnapshot(slug: $slug) {
+            ...AnalysisReportSnapshotResponse
+          }
+        }
+        '''
+    )
+
+    def setUp(self):
+        super().setUp()
+        self.project = ProjectFactory.create()
+        # User with role
+        self.non_member_user = UserFactory.create()
+        self.readonly_member_user = UserFactory.create()
+        self.member_user = UserFactory.create()
+        self.project.add_member(self.member_user, role=self.project_role_member)
+        self.project.add_member(self.readonly_member_user, role=self.project_role_reader)
+
+    def test_mutation_and_query(self):
+        analysis = AnalysisFactory.create(
+            project=self.project,
+            team_lead=self.member_user,
+            end_date=datetime.date(2022, 4, 1),
+        )
+
+        def _create_mutation_check(minput, **kwargs):
+            return self.query_check(
+                self.CREATE_REPORT,
+                minput=minput,
+                mnested=['project'],
+                variables={'projectId': self.project.id},
+                **kwargs
+            )
+
+        def _create_snapshot_mutation_check(minput, **kwargs):
+            return self.query_check(
+                self.CREATE_REPORT_SNAPSHOT,
+                minput=minput,
+                mnested=['project'],
+                variables={'projectId': self.project.id},
+                **kwargs
+            )
+
+        def _query_snapshot_check(snapshot_id, **kwargs):
+            return self.query_check(
+                self.QUERY_REPORT_SNAPSHOT,
+                variables={
+                    'projectId': self.project.id,
+                    'snapshotId': snapshot_id
+                },
+                **kwargs,
+            )
+
+        def _query_public_snapshot_check(slug, **kwargs):
+            return self.query_check(
+                self.QUERY_PUBLIC_REPORT_SNAPSHOT,
+                variables={
+                    'slug': slug
+                },
+                **kwargs,
+            )
+
+        def _update_mutation_check(_id, minput, **kwargs):
+            return self.query_check(
+                self.UPDATE_REPORT,
+                minput=minput,
+                mnested=['project'],
+                variables={
+                    'projectId': self.project.id,
+                    'reportId': _id,
+                },
+                **kwargs
+            )
+
+        def _query_check(_id, **kwargs):
+            return self.query_check(
+                self.QUERY_REPORT,
+                variables={
+                    'projectId': self.project.id,
+                    'reportId': _id
+                },
+                **kwargs,
+            )
+
+        test_data_dir = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'analysis_report',
+        )
+        with\
+                open(os.path.join(test_data_dir, 'data.json'), 'r') as test_data_file, \
+                open(os.path.join(test_data_dir, 'error1.json'), 'r') as test_error1_file, \
+                open(os.path.join(test_data_dir, 'error2.json'), 'r') as test_error2_file:
+            test_data = json.load(test_data_file)
+            error_1_data = json.load(test_error1_file)
+            error_2_data = json.load(test_error2_file)
+
+        minput = {
+            'isPublic': False,
+            'analysis': str(analysis.pk),
+            'slug': 'analysis-test-1001',
+            'title': 'Test 2',
+            'subTitle': 'Test 2',
+            **test_data,
+        }
+
+        # Create
+        # -- Without login
+        _create_mutation_check(minput, assert_for_error=True)
+        # -- With login (non-member)
+        self.force_login(self.non_member_user)
+        _create_mutation_check(minput, assert_for_error=True)
+        _create_mutation_check(minput, assert_for_error=True)
+        # --- member user (read-only)
+        self.force_login(self.readonly_member_user)
+        _create_mutation_check(minput, assert_for_error=True)
+
+        # --- member user (All good)
+        self.force_login(self.member_user)
+        response = _create_mutation_check(minput, okay=True)
+        created_report1_data = response['data']['project']['analysisReportCreate']['result']
+        report1_id = created_report1_data['id']
+
+        report1_upload1, report1_upload2 = AnalysisReportUploadFactory.create_batch(2, report_id=report1_id)
+
+        minput['containers'][0]['contentData'] = [
+            {'upload': str(report1_upload1.pk)},
+        ]
+
+        # -- Validation check
+        errors = _create_mutation_check(
+            minput,
+            okay=False,
+        )['data']['project']['analysisReportCreate']['errors']
+        assert errors == error_1_data
+        del errors
+
+        minput['containers'][0]['contentData'] = []
+        minput['slug'] = 'analysis-test-1002'
+        created_report2_data = _create_mutation_check(
+            minput,
+            okay=True,
+        )['data']['project']['analysisReportCreate']['result']
+        report2_id = created_report2_data['id']
+
+        # Update
+        # -- -- Report 1
+        minput = {
+            **created_report1_data,
+        }
+        minput.pop('id')
+        # -- Without login
+        self.logout()
+        _update_mutation_check(report1_id, minput, assert_for_error=True)
+        # -- With login (non-member)
+        self.force_login(self.non_member_user)
+        _update_mutation_check(report1_id, minput, assert_for_error=True)
+        _update_mutation_check(report1_id, minput, assert_for_error=True)
+        # --- member user (read-only)
+        self.force_login(self.readonly_member_user)
+        _update_mutation_check(report1_id, minput, assert_for_error=True)
+
+        # --- member user (error since input is empty)
+        self.force_login(self.member_user)
+        response = _update_mutation_check(report1_id, minput, okay=True)
+        updated_report_data = response['data']['project']['analysisReportUpdate']['result']
+        assert updated_report_data == created_report1_data
+        del updated_report_data
+        # -- -- Report 2
+        minput = {
+            **created_report2_data,
+        }
+        minput.pop('id')
+        # Invalid data
+        minput['containers'][0]['contentData'] = [
+            {'upload': str(report1_upload2.pk)},
+        ]
+        errors = _update_mutation_check(
+            report2_id,
+            minput,
+            okay=False,
+        )['data']['project']['analysisReportUpdate']['errors']
+
+        assert errors == error_2_data
+
+        report2_upload1 = AnalysisReportUploadFactory.create(report_id=report2_id)
+        minput['containers'][0]['contentData'] = [
+            {'upload': str(report2_upload1.pk)},
+        ]
+        response = _update_mutation_check(report2_id, minput, okay=True)
+        updated_report_data = response['data']['project']['analysisReportUpdate']['result']
+        assert updated_report_data != created_report2_data
+
+        # Basic query check
+        # -- Without login
+        self.logout()
+        _query_check(report1_id, assert_for_error=True)
+        _query_check(report2_id, assert_for_error=True)
+        # -- With login (non-member)
+        self.force_login(self.non_member_user)
+        assert _query_check(report1_id)['data']['project']['analysisReport'] is None
+        assert _query_check(report2_id)['data']['project']['analysisReport'] is None
+        # --- member user
+        for user in [
+            self.readonly_member_user,
+            self.member_user
+        ]:
+            self.force_login(user)
+            assert _query_check(report1_id)['data']['project']['analysisReport'] is not None
+            assert _query_check(report2_id)['data']['project']['analysisReport'] is not None
+
+        # Snapshot Mutation
+        minput = {'report': str(report1_id)}
+        self.logout()
+        _create_snapshot_mutation_check(minput, assert_for_error=True)
+        # -- With login (non-member)
+        self.force_login(self.non_member_user)
+        _create_snapshot_mutation_check(minput, assert_for_error=True)
+        # --- member user (read-only)
+        self.force_login(self.readonly_member_user)
+        _create_snapshot_mutation_check(minput, assert_for_error=True)
+
+        # --- member user
+        self.force_login(self.member_user)
+        snapshot_data = _create_snapshot_mutation_check(
+            minput,
+            okay=True,
+        )['data']['project']['analysisReportSnapshotCreate']['result']
+        snapshot_id = snapshot_data['id']
+        assert snapshot_data['report'] == minput['report']
+        assert snapshot_data['reportDataFile']['url'] not in ['', None]
+
+        another_report = AnalysisReportFactory.create(
+            analysis=AnalysisFactory.create(
+                project=ProjectFactory.create(),
+                team_lead=self.member_user,
+                end_date=datetime.date(2022, 4, 1),
+            )
+        )
+        minput = {'report': str(another_report.pk)}
+        _create_snapshot_mutation_check(minput, okay=False)
+
+        # Snapshot Query
+        self.logout()
+        _query_snapshot_check(snapshot_id, assert_for_error=True)
+        # -- With login (non-member)
+        self.force_login(self.non_member_user)
+        assert _query_snapshot_check(
+            snapshot_id,
+        )['data']['project']['analysisReportSnapshot'] is None
+        # --- member user (read-only)
+        self.force_login(self.readonly_member_user)
+        assert _query_snapshot_check(
+            snapshot_id,
+        )['data']['project']['analysisReportSnapshot'] is not None
+        # --- member user
+        self.force_login(self.member_user)
+        assert _query_snapshot_check(
+            snapshot_id,
+        )['data']['project']['analysisReportSnapshot'] is not None
+
+        # Snapshot Public Query
+        snapshot = AnalysisReportSnapshot.objects.get(pk=snapshot_id)
+        snapshot_slug = snapshot.report.slug
+
+        # -- Not Public [Not enabled in project]
+        snapshot.report.is_public = False
+        snapshot.report.save()
+        for user in [
+            None,
+            self.non_member_user,
+            self.readonly_member_user,
+            self.member_user,
+        ]:
+            if user is None:
+                self.logout()
+            else:
+                self.force_login(user)
+            assert _query_public_snapshot_check(snapshot_slug)['data']['publicAnalysisReportSnapshot'] is None
+
+        # -- Public [Not enabled in project]
+        snapshot.report.is_public = True
+        snapshot.report.save()
+        for user in [
+            None,
+            self.non_member_user,
+            self.readonly_member_user,
+            self.member_user,
+        ]:
+            if user is None:
+                self.logout()
+            else:
+                self.force_login(user)
+            assert _query_public_snapshot_check(snapshot_slug)['data']['publicAnalysisReportSnapshot'] is None
+
+        self.project.enable_publicly_viewable_analysis_report_snapshot = True
+        self.project.save(update_fields=('enable_publicly_viewable_analysis_report_snapshot',))
+        # -- Not Public [Enabled in project]
+        snapshot.report.is_public = False
+        snapshot.report.save()
+        for user in [
+            None,
+            self.non_member_user,
+            self.readonly_member_user,
+            self.member_user,
+        ]:
+            if user is None:
+                self.logout()
+            else:
+                self.force_login(user)
+            assert _query_public_snapshot_check(snapshot_slug)['data']['publicAnalysisReportSnapshot'] is None
+
+        # -- Public [Enabled in project]
+        snapshot.report.is_public = True
+        snapshot.report.save()
+        for user in [
+            None,
+            self.non_member_user,
+            self.readonly_member_user,
+            self.member_user,
+        ]:
+            if user is None:
+                self.logout()
+            else:
+                self.force_login(user)
+            assert _query_public_snapshot_check(snapshot_slug)['data']['publicAnalysisReportSnapshot'] is not None

@@ -748,20 +748,10 @@ enum AnalysisReportUploadTypeEnum {
 
 input AnalysisReportUrlConfigurationInputType {
   url: String
-  style: AnalysisReportUrlContentStyleInputType
 }
 
 type AnalysisReportUrlConfigurationType {
   url: String
-  style: AnalysisReportUrlContentStyleType
-}
-
-input AnalysisReportUrlContentStyleInputType {
-  noop: String
-}
-
-type AnalysisReportUrlContentStyleType {
-  noop: String
 }
 
 input AnalysisReportVariableInputType {
@@ -2798,6 +2788,7 @@ input ProjectCreateInputType {
   hasPubliclyViewableUnprotectedLeads: Boolean
   hasPubliclyViewableRestrictedLeads: Boolean
   hasPubliclyViewableConfidentialLeads: Boolean
+  enablePubliclyViewableAnalysisReportSnapshot: Boolean
   organizations: [ProjectOrganizationGqInputType!]
 }
 
@@ -2826,6 +2817,7 @@ type ProjectDetailType {
   hasPubliclyViewableUnprotectedLeads: Boolean!
   hasPubliclyViewableRestrictedLeads: Boolean!
   hasPubliclyViewableConfidentialLeads: Boolean!
+  enablePubliclyViewableAnalysisReportSnapshot: Boolean!
   currentUserRole: ProjectRoleTypeEnum
   allowedPermissions: [ProjectPermission!]!
   stats(filters: LeadsFilterDataInputType): ProjectStatType
@@ -3171,6 +3163,7 @@ input ProjectUpdateInputType {
   hasPubliclyViewableUnprotectedLeads: Boolean
   hasPubliclyViewableRestrictedLeads: Boolean
   hasPubliclyViewableConfidentialLeads: Boolean
+  enablePubliclyViewableAnalysisReportSnapshot: Boolean
   organizations: [ProjectOrganizationGqInputType!]
 }
 

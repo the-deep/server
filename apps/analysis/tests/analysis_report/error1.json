@@ -1,0 +1,44 @@
+[
+    {
+        "arrayErrors": null,
+        "clientId": null,
+        "field": "slug",
+        "messages": "analysis report with this slug already exists.",
+        "objectErrors": null
+    },
+    {
+        "arrayErrors": [
+            {
+                "clientId": "random-client-id",
+                "messages": null,
+                "objectErrors": [
+                    {
+                        "arrayErrors": [
+                            {
+                                "clientId": "NOT_FOUND_0",
+                                "messages": null,
+                                "objectErrors": [
+                                    {
+                                        "arrayErrors": null,
+                                        "clientId": null,
+                                        "field": "upload",
+                                        "messages": "Report needs to be created before assigning uploads to container",
+                                        "objectErrors": null
+                                    }
+                                ]
+                            }
+                        ],
+                        "clientId": "random-client-id",
+                        "field": "contentData",
+                        "messages": null,
+                        "objectErrors": null
+                    }
+                ]
+            }
+        ],
+        "clientId": null,
+        "field": "containers",
+        "messages": null,
+        "objectErrors": null
+    }
+]

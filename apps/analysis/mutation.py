@@ -212,7 +212,7 @@ class TriggerAnalysisAnalyticalGeoTask(RequiredPermissionMixin, PsGrapheneMutati
     result = graphene.Field(AnalyticalStatementGeoTaskType)
 
 
-# Analysis Report
+# ----------------- Analysis Report ------------------------------------------
 class CreateAnalysisReport(AnalysisReportMutationMixin, PsGrapheneMutation):
     class Arguments:
         data = AnalysisReportInputType(required=True)
@@ -228,6 +228,13 @@ class UpdateAnalysisReport(AnalysisReportMutationMixin, PsGrapheneMutation):
     model = AnalysisReport
     serializer_class = AnalysisReportSerializer
     result = graphene.Field(AnalysisReportType)
+
+    @classmethod
+    def get_serializer_context(cls, instance, context):
+        return {
+            **context,
+            'report': instance,
+        }
 
 
 class DeleteAnalysisReport(AnalysisReportMutationMixin, PsDeleteMutation):

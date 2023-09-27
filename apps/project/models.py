@@ -101,6 +101,8 @@ class Project(UserResource):
     has_publicly_viewable_restricted_leads = models.BooleanField(default=False)
     has_publicly_viewable_confidential_leads = models.BooleanField(default=False)
 
+    enable_publicly_viewable_analysis_report_snapshot = models.BooleanField(default=False)
+
     # Store project stats data as cache. View project/tasks for structure
     stats_cache = models.JSONField(default=dict, blank=True)
     # Stores the geo locations data as cache.
