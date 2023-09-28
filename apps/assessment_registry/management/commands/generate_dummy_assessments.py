@@ -110,7 +110,8 @@ class Command(BaseCommand):
         )
         geo_areas = list(
             GeoArea.objects.filter(
-                admin_level__region__project=project
+                admin_level__region__project=project,
+                admin_level__level__in=[1,2],
             ).annotate(
                 region_id=models.F('admin_level__region'),
             ).only('id')
@@ -252,7 +253,7 @@ class Command(BaseCommand):
                 Region.objects.filter(
                     is_published=True,
                     project=project_for_regions,
-                ).distinct().all()
+                ).distinct().only('id')
             )
             assert len(project_regions) > 0, 'There are no regions in selected project'
 
