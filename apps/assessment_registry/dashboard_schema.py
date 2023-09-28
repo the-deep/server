@@ -417,7 +417,10 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         methodology_attribute_qs = MethodologyAttribute.objects.select_related("assessment_registry").filter(
             assessment_registry__in=assessment_qs_filter
         )
-        cache_key = CacheHelper.generate_hash(_filter.__dict__)
+        cache_key = CacheHelper.generate_hash({
+            'project': info.context.active_project.id,
+            'filter': _filter.__dict__,
+        })
         return AssessmentDashboardStat(
             cache_key=cache_key,
             assessment_registry_qs=assessment_qs_filter,
