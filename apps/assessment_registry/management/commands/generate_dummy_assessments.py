@@ -42,6 +42,7 @@ created_at_fuzzy = fuzzy.FuzzyDateTime(DEFAULT_START_DATETIME)
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--delete-existing', dest='delete_existing', action='store_true')
+        parser.add_argument('--regions-from-project', dest='project_for_regions')
         parser.add_argument('--user-email', dest='user_email', required=True)
         parser.add_argument('--leads-counts', dest='leads_count', type=int, default=50)
 
@@ -55,12 +56,13 @@ class Command(BaseCommand):
         user_email = kwargs['user_email']
         leads_count = kwargs['leads_count']
         delete_existing = kwargs['delete_existing']
+        project_for_regions = kwargs['project_for_regions']
         user = User.objects.get(email=user_email)
         self.ur_args = {
             'created_by': user,
             'modified_by': user,
         }
-        self.run(user, leads_count, delete_existing)
+        self.run(user, leads_count, delete_existing, project_for_regions)
 
     @staticmethod
     def _fuzzy_created_at(model, objects):
@@ -212,7 +214,7 @@ class Command(BaseCommand):
             SummaryFocusFactory.create_batch(random.randint(1, 40), **ary_params)
 
     @transaction.atomic
-    def run(self, user: User, leads_count: int, delete_existing: bool):
+    def run(self, user: User, leads_count: int, delete_existing: bool, project_for_regions: typing.Union[int, None]):
         existing_dummy_projects = Project.objects.filter(title__startswith=DUMMY_PROJECT_PREFIX)
         existing_dummy_projects_count = existing_dummy_projects.count()
         if delete_existing:
@@ -220,11 +222,12 @@ class Command(BaseCommand):
                 self.stdout.write(f'There are {existing_dummy_projects_count} existing dummy projects.')
                 for _id, title, creator in existing_dummy_projects.values_list('id', 'title', 'created_by__email'):
                     self.stdout.write(f'{_id}: {title} - {creator}')
-                result = input("%s " % "This will delete above projects. Are you sure? type YES to delete")
+                result = input("%s " % "This will delete above projects. Are you sure? type YES to delete: ")
                 if result == 'YES':
-                    Project.objects.filter(
-                        pk__in=existing_dummy_projects.values('id')
-                    ).delete()
+                    with transaction.atomic():
+                        Project.objects.filter(
+                            pk__in=existing_dummy_projects.values('id')
+                        ).delete()
                     existing_dummy_projects_count = 0
 
         project = ProjectFactory.create(
@@ -234,15 +237,26 @@ class Command(BaseCommand):
         )
         project.created_at = DEFAULT_START_DATETIME
         project.save(update_fields=('created_at',))
-        project.regions.add(
-            *list(
+        if project_for_regions is None:
+            # Using top used regions
+            project_regions = list(
                 Region.objects.filter(
                     is_published=True,
                 ).annotate(
                     project_count=models.Count('project'),
                 ).order_by('-project_count').only('id')[:5]
             )
-        )
+        else:
+            # Using regions from provided project
+            project_regions = list(
+                Region.objects.filter(
+                    is_published=True,
+                    project=project_for_regions,
+                ).distinct().all()
+            )
+            assert len(project_regions) > 0, 'There are no regions in selected project'
+
+        project.regions.add(*project_regions)
         project.add_member(user, role=ProjectRole.objects.get(type=ProjectRole.Type.ADMIN))
         self.stdout.write(f'Generating assessments for new project: <pk: {project.pk}>{project.title}')
         # Leads
