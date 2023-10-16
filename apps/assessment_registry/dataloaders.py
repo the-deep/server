@@ -39,7 +39,7 @@ class AssessmentRegistryIssueChildLoader(DataLoaderWithContext):
             'parent'
         ).annotate(
             child_count=Count(
-                'parent'
+                'id'
             )
         ).values(
             'parent',
