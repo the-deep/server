@@ -27,6 +27,7 @@ from assessment_registry.models import (
     AdditionalDocument,
     ScoreRating,
     Question,
+    SummaryIssue,
 )
 
 
@@ -314,6 +315,8 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
                 ) {
                 results {
                     id
+                    level
+                    childCount
                 }
             }
         }
@@ -324,12 +327,12 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
 
         parent_issue1, parent_issue2, parent_issue3 = SummaryIssueFactory.create_batch(3, parent=None)
         child_issue1 = SummaryIssueFactory.create(parent=parent_issue1)
-        child_issue2 = SummaryIssueFactory.create(parent=parent_issue2)
+        child_issue2, child_issue3 = SummaryIssueFactory.create_batch(2, parent=parent_issue2)
 
         for filter_data, expected_issues in [
-            ({}, [child_issue1, child_issue2, parent_issue1, parent_issue2, parent_issue3]),
+            ({}, [child_issue1, child_issue2, child_issue3, parent_issue1, parent_issue2, parent_issue3]),
             ({'isParent': True}, [parent_issue1, parent_issue2, parent_issue3]),
-            ({'isParent': False}, [child_issue1, child_issue2,]),
+            ({'isParent': False}, [child_issue1, child_issue2, child_issue3]),
         ]:
             content = self.query_check(query, variables={**filter_data})
 
@@ -337,3 +340,13 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
                 content['data']['assessmentRegSummaryIssues']['results'], expected_issues,
                 {'response': content, 'filter': filter_data}
             )
+
+        #  check for child count
+        content = self.query_check(query)['data']['assessmentRegSummaryIssues']['results']
+        parents = [str(parent.id) for parent in SummaryIssue.objects.filter(parent=None)]
+        child_count_list = [item['childCount'] for item in content if item['id'] in parents]
+        self.assertEqual(child_count_list, [1, 2, 0])
+
+        #  check for level
+        self.assertEqual(set([item['level'] for item in content if item['id'] in parents]), {1})
+        self.assertEqual(set([item['level'] for item in content if item['id'] not in parents]), {2})

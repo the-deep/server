@@ -260,7 +260,7 @@ class AssessmentRegistrySummaryIssueType(DjangoObjectType, UserResourceMixin):
     sub_pillar_display = EnumDescription(source='get_sub_pillar_display', required=False)
     sub_dimension = graphene.Field(AssessmentRegistrySummarySubDimensionTypeEnum, required=False)
     sub_dimension_display = EnumDescription(source='get_sub_dimension_display', required=False)
-    child_count = graphene.Int(required=False)
+    child_count = graphene.Int(required=True)
     level = graphene.Int(required=False)
 
     class Meta:
