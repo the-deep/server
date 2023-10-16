@@ -28,7 +28,6 @@ from .models import (
     Answer,
     AssessmentRegistryOrganization,
 )
-from .utils import get_hierarchy_level
 from .filters import AssessmentRegistryGQFilterSet, AssessmentRegistryIssueGQFilterSet
 from .enums import (
     AssessmentRegistryCrisisTypeEnum,
@@ -273,11 +272,13 @@ class AssessmentRegistrySummaryIssueType(DjangoObjectType, UserResourceMixin):
             'full_label',
         ]
 
-    def resolve_child_count(root, info, **kwargs):
+    @staticmethod
+    def resolve_child_count(root, info, **_):
         return info.context.dl.assessment_registry.child_issues.load(root.pk)
 
-    def resolve_level(root, info, **kwargs):
-        return get_hierarchy_level(root)
+    @staticmethod
+    def resolve_level(root, info, **_):
+        return info.context.dl.assessment_registry.summary_issue_level.load(root.pk)
 
 
 class AssessmentRegistrySummaryIssueListType(CustomDjangoListObjectType):
