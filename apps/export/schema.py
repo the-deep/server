@@ -63,7 +63,7 @@ class UserExportType(DjangoObjectType):
     status = graphene.Field(graphene.NonNull(ExportStatusEnum))
     export_type = graphene.Field(graphene.NonNull(ExportExportTypeEnum))
     file = graphene.Field(FileFieldType)
-    file_download_url = graphene.String()
+    file_download_url = graphene.String(required=False)
     # Filter Data
     filters = graphene.Field(LeadsFilterDataType)
     filters_data = graphene.Field(LeadFilterDataType)
@@ -79,14 +79,15 @@ class UserExportType(DjangoObjectType):
 
     @staticmethod
     def resolve_file_download_url(root, info, **kwargs):
-        return info.context.request.build_absolute_uri(
-            URLCachedFileField.generate_url(
-                root.file.name,
-                parameters={
-                    'ResponseContentDisposition': f'filename = "{root.title}.{root.format}"'
-                }
+        if root.file and root.file.name:
+            return info.context.request.build_absolute_uri(
+                URLCachedFileField.generate_url(
+                    root.file.name,
+                    parameters={
+                        'ResponseContentDisposition': f'filename = "{root.title}.{root.format}"'
+                    }
+                )
             )
-        )
 
 
 class UserGenericExportType(DjangoObjectType):
@@ -108,7 +109,7 @@ class UserGenericExportType(DjangoObjectType):
     filters = GenericScalar(required=False)
 
     file = graphene.Field(FileFieldType)
-    file_download_url = graphene.String()
+    file_download_url = graphene.String(required=False)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -116,14 +117,15 @@ class UserGenericExportType(DjangoObjectType):
 
     @staticmethod
     def resolve_file_download_url(root, info, **kwargs):
-        return info.context.request.build_absolute_uri(
-            URLCachedFileField.generate_url(
-                root.file.name,
-                parameters={
-                    'ResponseContentDisposition': f'filename = "{root.title}.{root.format}"'
-                }
+        if root.file and root.file.name:
+            return info.context.request.build_absolute_uri(
+                URLCachedFileField.generate_url(
+                    root.file.name,
+                    parameters={
+                        'ResponseContentDisposition': f'filename = "{root.title}.{root.format}"'
+                    }
+                )
             )
-        )
 
 
 class UserExportListType(CustomDjangoListObjectType):
