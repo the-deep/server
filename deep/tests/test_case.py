@@ -78,7 +78,8 @@ class TestCase(test.APITestCase):
         # This should be called here to access roles later
         self.create_project_roles()
         self.deep_test_files_path = []
-        if not os.path.exists(TEST_MEDIA_ROOT):
+        # NOTE: CI will clean itself
+        if os.environ.get('CI', '').lower() != 'true' and not os.path.exists(TEST_MEDIA_ROOT):
             os.makedirs(TEST_MEDIA_ROOT)
         super().setUp()
 
