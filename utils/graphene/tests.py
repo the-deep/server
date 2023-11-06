@@ -38,11 +38,6 @@ TEST_MEDIA_ROOT = 'media-temp'
 
 class CommonSetupClassMixin:
     @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        # add necessary stuffs
-
-    @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
         # clear the temporary media files
