@@ -2,6 +2,7 @@ import os
 import json
 import pytz
 import shutil
+import inspect
 import datetime
 from enum import Enum
 from unittest.mock import patch
@@ -36,17 +37,13 @@ User = get_user_model()
 TEST_MEDIA_ROOT = 'media-temp'
 
 
-class CommonSetupClassMixin:
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        # clear the temporary media files
-        try:
-            # NOTE: CI will clean itself
-            if os.environ.get('CI', '').lower() != 'true':
-                shutil.rmtree(os.path.join(settings.BASE_DIR, TEST_MEDIA_ROOT), ignore_errors=True)
-        except FileNotFoundError:
-            pass
+def clean_up_test_media_files():
+    try:
+        # NOTE: CI will clean itself
+        if os.environ.get('CI', '').lower() != 'true':
+            shutil.rmtree(os.path.join(settings.BASE_DIR, TEST_MEDIA_ROOT), ignore_errors=True)
+    except FileNotFoundError:
+        pass
 
 
 @override_settings(
@@ -57,7 +54,7 @@ class CommonSetupClassMixin:
     AUTH_PASSWORD_VALIDATORS=TEST_AUTH_PASSWORD_VALIDATORS,
     CELERY_TASK_ALWAYS_EAGER=True,
 )
-class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
+class GraphQLTestCase(BaseGraphQLTestCase):
     """
     GraphQLTestCase with custom helper methods
     """
@@ -65,6 +62,12 @@ class GraphQLTestCase(CommonSetupClassMixin, BaseGraphQLTestCase):
     GRAPHQL_SCHEMA = 'deep.schema.schema'
     ENABLE_NOW_PATCHER = False
     PATCHER_NOW_VALUE = datetime.datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
+
+    @classmethod
+    def tearDownClass(cls):
+        # clear the temporary media files
+        clean_up_test_media_files()
+        super().tearDownClass()
 
     def _setup_premailer_patcher(self, mock):
         mock.get.return_value.text = ''
@@ -367,6 +370,10 @@ class GraphQLSnapShotTestCase(GraphQLTestCase, SnapShotTextCase):
         factory_random.reseed_random(42)
         for factory in self.factories_used:
             factory.reset_sequence()
+        # XXX: Quick hack to make sure _snapshot_file is always defined. Which seems to be missing when running in CI
+        # https://github.com/syrusakbary/snapshottest/blob/770b8f14cd965d923a0183a0e531e9ec0ba20192/snapshottest/unittest.py#L86
+        if not hasattr(self, '_snapshot_file'):
+            self._snapshot_file = inspect.getfile(type(self))
         super().setUp()
 
     def tearDown(self):
@@ -380,5 +387,10 @@ class GraphQLSnapShotTestCase(GraphQLTestCase, SnapShotTextCase):
     CACHES=TEST_CACHES,
     AUTH_PASSWORD_VALIDATORS=TEST_AUTH_PASSWORD_VALIDATORS,
 )
-class CommonTestCase(CommonSetupClassMixin, TestCase):
-    pass
+class CommonTestCase(TestCase):
+
+    @classmethod
+    def tearDownClass(cls):
+        # clear the temporary media files
+        clean_up_test_media_files()
+        super().tearDownClass()

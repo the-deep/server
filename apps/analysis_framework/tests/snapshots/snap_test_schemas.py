@@ -12,7 +12,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
         'analysisFramework': {
             'allowedPermissions': [
                 'CAN_CLONE_FRAMEWORK',
-                'CAN_USE_IN_OTHER_PROJECTS',
+                'CAN_USE_IN_OTHER_PROJECTS'
             ],
             'currentUserRole': 'DEFAULT',
             'description': 'Quality throughout beautiful instead ahead despite measure ago current practice nation determine operation speak.',
@@ -60,8 +60,8 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-2',
-                            'widgetId': 'DATE',
                             'version': 1,
+                            'widgetId': 'NUMBER'
                         },
                         {
                             'id': '4',
@@ -70,8 +70,8 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-1',
-                            'widgetId': 'MULTISELECT',
                             'version': 1,
+                            'widgetId': 'ORGANIGRAM'
                         },
                         {
                             'id': '3',
@@ -80,8 +80,8 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-0',
-                            'widgetId': 'TEXT',
                             'version': 1,
+                            'widgetId': 'MULTISELECT'
                         }
                     ]
                 },
@@ -92,34 +92,14 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'tooltip': 'Some tooltip info 103',
                     'widgets': [
                         {
-                            'id': '6',
-                            'key': 'widget-key-0',
-                            'order': 0,
-                            'properties': {
-                            },
-                            'title': 'Widget-0',
-                            'widgetId': 'SCALE',
-                            'version': 1,
-                        },
-                        {
                             'id': '8',
                             'key': 'widget-key-2',
                             'order': 2,
                             'properties': {
                             },
                             'title': 'Widget-2',
-                            'widgetId': 'MATRIX1D',
                             'version': 1,
-                        },
-                        {
-                            'id': '9',
-                            'key': 'widget-key-3',
-                            'order': 3,
-                            'properties': {
-                            },
-                            'title': 'Widget-3',
-                            'widgetId': 'MULTISELECT',
-                            'version': 1,
+                            'widgetId': 'DATE'
                         }
                     ]
                 },
@@ -130,14 +110,24 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'tooltip': 'Some tooltip info 101',
                     'widgets': [
                         {
+                            'id': '1',
+                            'key': 'widget-key-0',
+                            'order': 0,
+                            'properties': {
+                            },
+                            'title': 'Widget-0',
+                            'version': 1,
+                            'widgetId': 'SELECT'
+                        },
+                        {
                             'id': '2',
                             'key': 'widget-key-1',
                             'order': 1,
                             'properties': {
                             },
                             'title': 'Widget-1',
-                            'widgetId': 'SELECT',
                             'version': 1,
+                            'widgetId': 'TIME_RANGE'
                         }
                     ]
                 }
@@ -150,8 +140,8 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'properties': {
                     },
                     'title': 'Widget-3',
-                    'widgetId': 'TIME_RANGE',
                     'version': 1,
+                    'widgetId': 'SELECT'
                 },
                 {
                     'id': '12',
@@ -160,8 +150,8 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'properties': {
                     },
                     'title': 'Widget-2',
-                    'widgetId': 'MATRIX1D',
                     'version': 1,
+                    'widgetId': 'MATRIX2D'
                 },
                 {
                     'id': '11',
@@ -170,21 +160,11 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'properties': {
                     },
                     'title': 'Widget-1',
-                    'widgetId': 'GEO',
                     'version': 1,
-                },
-                {
-                    'id': '10',
-                    'key': 'widget-key-0',
-                    'order': 20,
-                    'properties': {
-                    },
-                    'title': 'Widget-0',
-                    'widgetId': 'NUMBER',
-                    'version': 1,
+                    'widgetId': 'TIME'
                 }
             ],
-            'title': 'AF-0',
+            'title': 'AF-0'
         }
     }
 }
@@ -194,7 +174,7 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
         'analysisFramework': {
             'allowedPermissions': [
                 'CAN_CLONE_FRAMEWORK',
-                'CAN_USE_IN_OTHER_PROJECTS',
+                'CAN_USE_IN_OTHER_PROJECTS'
             ],
             'currentUserRole': None,
             'description': 'Quality throughout beautiful instead ahead despite measure ago current practice nation determine operation speak.',
@@ -216,8 +196,8 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-2',
-                            'widgetId': 'DATE',
                             'version': 1,
+                            'widgetId': 'NUMBER'
                         },
                         {
                             'id': '4',
@@ -226,8 +206,8 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-1',
-                            'widgetId': 'MULTISELECT',
                             'version': 1,
+                            'widgetId': 'ORGANIGRAM'
                         },
                         {
                             'id': '3',
@@ -236,8 +216,8 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                             'properties': {
                             },
                             'title': 'Widget-0',
-                            'widgetId': 'TEXT',
                             'version': 1,
+                            'widgetId': 'MULTISELECT'
                         }
                     ]
                 },
@@ -248,34 +228,14 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'tooltip': 'Some tooltip info 103',
                     'widgets': [
                         {
-                            'id': '6',
-                            'key': 'widget-key-0',
-                            'order': 0,
-                            'properties': {
-                            },
-                            'title': 'Widget-0',
-                            'widgetId': 'SCALE',
-                            'version': 1,
-                        },
-                        {
                             'id': '8',
                             'key': 'widget-key-2',
                             'order': 2,
                             'properties': {
                             },
                             'title': 'Widget-2',
-                            'widgetId': 'MATRIX1D',
                             'version': 1,
-                        },
-                        {
-                            'id': '9',
-                            'key': 'widget-key-3',
-                            'order': 3,
-                            'properties': {
-                            },
-                            'title': 'Widget-3',
-                            'widgetId': 'MULTISELECT',
-                            'version': 1,
+                            'widgetId': 'DATE'
                         }
                     ]
                 },
@@ -286,14 +246,24 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'tooltip': 'Some tooltip info 101',
                     'widgets': [
                         {
+                            'id': '1',
+                            'key': 'widget-key-0',
+                            'order': 0,
+                            'properties': {
+                            },
+                            'title': 'Widget-0',
+                            'version': 1,
+                            'widgetId': 'SELECT'
+                        },
+                        {
                             'id': '2',
                             'key': 'widget-key-1',
                             'order': 1,
                             'properties': {
                             },
                             'title': 'Widget-1',
-                            'widgetId': 'SELECT',
                             'version': 1,
+                            'widgetId': 'TIME_RANGE'
                         }
                     ]
                 }
@@ -306,8 +276,8 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'properties': {
                     },
                     'title': 'Widget-3',
-                    'widgetId': 'TIME_RANGE',
                     'version': 1,
+                    'widgetId': 'SELECT'
                 },
                 {
                     'id': '12',
@@ -316,8 +286,8 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'properties': {
                     },
                     'title': 'Widget-2',
-                    'widgetId': 'MATRIX1D',
                     'version': 1,
+                    'widgetId': 'MATRIX2D'
                 },
                 {
                     'id': '11',
@@ -326,21 +296,11 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
                     'properties': {
                     },
                     'title': 'Widget-1',
-                    'widgetId': 'GEO',
                     'version': 1,
-                },
-                {
-                    'id': '10',
-                    'key': 'widget-key-0',
-                    'order': 20,
-                    'properties': {
-                    },
-                    'title': 'Widget-0',
-                    'widgetId': 'NUMBER',
-                    'version': 1,
+                    'widgetId': 'TIME'
                 }
             ],
-            'title': 'AF-0',
+            'title': 'AF-0'
         }
     }
 }

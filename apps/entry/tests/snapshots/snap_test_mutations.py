@@ -16,8 +16,8 @@ snapshots['TestEntryMutation::test_entry_bulk error'] = {
                         'attributes': None,
                         'clientId': '1',
                         'droppedExcerpt': '',
-                        'entryType': 'DATA_SERIES',
-                        'excerpt': 'FfWdhjOkYRBMeyyMDHqJaRUhRIWrXPvhsBkDaUUqGWlGgOtOGMmjxWkIXHaMuFbhxZtpdpKffUFeWIXiiQEJkqHMBnIWUSmTtzQP',
+                        'entryType': 'IMAGE',
+                        'excerpt': 'fWdhjOkYRBMeyyMDHqJaRUhRIWrXPvhsBkDaUUqGWlGgOtOGMmjxWkIXHaMuFbhxZtpdpKffUFeWIXiiQEJkqHMBnIWUSmTtzQPx',
                         'highlightHidden': False,
                         'id': '1',
                         'image': {
@@ -76,7 +76,7 @@ snapshots['TestEntryMutation::test_entry_bulk success'] = {
                                 },
                                 'id': '2',
                                 'widget': '1',
-                                'widgetType': 'MATRIX2D'
+                                'widgetType': 'TIME_RANGE'
                             },
                             {
                                 'clientId': 'client-id-old-attribute-1',
@@ -84,7 +84,7 @@ snapshots['TestEntryMutation::test_entry_bulk success'] = {
                                 },
                                 'id': '1',
                                 'widget': '1',
-                                'widgetType': 'MATRIX2D'
+                                'widgetType': 'TIME_RANGE'
                             }
                         ],
                         'clientId': 'entry-old-101 (UPDATED)',
@@ -108,7 +108,7 @@ snapshots['TestEntryMutation::test_entry_bulk success'] = {
                                 },
                                 'id': '3',
                                 'widget': '1',
-                                'widgetType': 'MATRIX2D'
+                                'widgetType': 'TIME_RANGE'
                             }
                         ],
                         'clientId': 'entry-new-102',
@@ -164,7 +164,7 @@ snapshots['TestEntryMutation::test_entry_create success'] = {
                             },
                             'id': '1',
                             'widget': '1',
-                            'widgetType': 'MATRIX2D'
+                            'widgetType': 'TIME_RANGE'
                         },
                         {
                             'clientId': 'client-id-attribute-2',
@@ -172,7 +172,7 @@ snapshots['TestEntryMutation::test_entry_create success'] = {
                             },
                             'id': '2',
                             'widget': '2',
-                            'widgetType': 'SELECT'
+                            'widgetType': 'TIME'
                         },
                         {
                             'clientId': 'client-id-attribute-3',
@@ -180,7 +180,7 @@ snapshots['TestEntryMutation::test_entry_create success'] = {
                             },
                             'id': '3',
                             'widget': '3',
-                            'widgetType': 'NUMBER'
+                            'widgetType': 'GEO'
                         }
                     ],
                     'clientId': 'entry-101',
@@ -235,7 +235,7 @@ snapshots['TestEntryMutation::test_entry_update success'] = {
                             },
                             'id': '3',
                             'widget': '1',
-                            'widgetType': 'MATRIX2D'
+                            'widgetType': 'TIME_RANGE'
                         },
                         {
                             'clientId': 'client-id-attribute-1',
@@ -243,7 +243,7 @@ snapshots['TestEntryMutation::test_entry_update success'] = {
                             },
                             'id': '1',
                             'widget': '1',
-                            'widgetType': 'MATRIX2D'
+                            'widgetType': 'TIME_RANGE'
                         },
                         {
                             'clientId': 'client-id-attribute-2',
@@ -251,7 +251,7 @@ snapshots['TestEntryMutation::test_entry_update success'] = {
                             },
                             'id': '2',
                             'widget': '2',
-                            'widgetType': 'SELECT'
+                            'widgetType': 'TIME'
                         }
                     ],
                     'clientId': 'entry-101',
