@@ -38,16 +38,13 @@ TEST_MEDIA_ROOT = 'media-temp'
 
 class CommonSetupClassMixin:
     @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        # add necessary stuffs
-
-    @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
         # clear the temporary media files
         try:
-            shutil.rmtree(os.path.join(settings.BASE_DIR, TEST_MEDIA_ROOT), ignore_errors=True)
+            # NOTE: CI will clean itself
+            if os.environ.get('CI', '').lower() != 'true':
+                shutil.rmtree(os.path.join(settings.BASE_DIR, TEST_MEDIA_ROOT), ignore_errors=True)
         except FileNotFoundError:
             pass
 

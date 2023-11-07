@@ -12,6 +12,7 @@ class TestDeepExploreStats(GraphQLSnapShotTestCase):
 
     @classmethod
     def setUpClass(cls):
+        super().setUpClass()
         user = UserFactory.create()
         user2, _ = UserFactory.create_batch(2)
         organization1, organization2, _ = OrganizationFactory.create_batch(3)
