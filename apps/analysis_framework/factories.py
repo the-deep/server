@@ -10,6 +10,7 @@ from .models import (
     Widget,
     Filter,
 )
+from .widgets.store import widget_store
 
 
 class AnalysisFrameworkTagFactory(DjangoModelFactory):
@@ -53,7 +54,7 @@ class SectionFactory(DjangoModelFactory):
 class WidgetFactory(DjangoModelFactory):
     title = factory.Sequence(lambda n: f'Widget-{n}')
     key = factory.Sequence(lambda n: f'widget-key-{n}')
-    widget_id = fuzzy.FuzzyChoice(Widget.WidgetType.choices, getter=lambda c: c[0])
+    widget_id = fuzzy.FuzzyChoice(widget_store.keys())
     properties = {}
     version = 1
 
