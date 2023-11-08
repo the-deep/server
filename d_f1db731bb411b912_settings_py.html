@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="d_f1db731bb411b912_tasks_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.3.2">coverage.py v7.3.2</a>,
-            created at 2023-11-07 04:42 +0000
+            created at 2023-11-08 08:34 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"/>
@@ -1020,39 +1020,40 @@
     <p class="pln"><span class="n"><a id="t936" href="#t936">936</a></span><span class="t">    <span class="str">'publicLead'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t937" href="#t937">937</a></span><span class="t">    <span class="str">'publicDeepExploreYearlySnapshots'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t938" href="#t938">938</a></span><span class="t">    <span class="str">'publicDeepExploreGlobalSnapshots'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t939" href="#t939">939</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t940" href="#t940">940</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t941" href="#t941">941</a></span><span class="t"><span class="com"># https://docs.graphene-python.org/projects/django/en/latest/settings/</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t942" href="#t942">942</a></span><span class="t"><span class="nam">GRAPHENE</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t943" href="#t943">943</a></span><span class="t">    <span class="str">'ATOMIC_MUTATIONS'</span><span class="op">:</span> <span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t944" href="#t944">944</a></span><span class="t">    <span class="str">'SCHEMA'</span><span class="op">:</span> <span class="str">'deep.schema.schema'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t945" href="#t945">945</a></span><span class="t">    <span class="str">'SCHEMA_OUTPUT'</span><span class="op">:</span> <span class="str">'schema.json'</span><span class="op">,</span>  <span class="com"># defaults to schema.json,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t946" href="#t946">946</a></span><span class="t">    <span class="str">'CAMELCASE_ERRORS'</span><span class="op">:</span> <span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t947" href="#t947">947</a></span><span class="t">    <span class="str">'SCHEMA_INDENT'</span><span class="op">:</span> <span class="num">2</span><span class="op">,</span>  <span class="com"># Defaults to None (displays all data on a single line)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t948" href="#t948">948</a></span><span class="t">    <span class="str">'MIDDLEWARE'</span><span class="op">:</span> <span class="op">[</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t949" href="#t949">949</a></span><span class="t">        <span class="str">'utils.graphene.middleware.DisableIntrospectionSchemaMiddleware'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t950" href="#t950">950</a></span><span class="t">        <span class="str">'utils.sentry.SentryGrapheneMiddleware'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t951" href="#t951">951</a></span><span class="t">        <span class="str">'utils.graphene.middleware.WhiteListMiddleware'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t952" href="#t952">952</a></span><span class="t">        <span class="str">'utils.graphene.middleware.ProjectLogMiddleware'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t953" href="#t953">953</a></span><span class="t">    <span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t954" href="#t954">954</a></span><span class="t"><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
-    <p class="par run show_par"><span class="n"><a id="t955" href="#t955">955</a></span><span class="t"><span class="key">if</span> <span class="nam">DEBUG</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">955&#x202F;&#x219B;&#x202F;958</span><span class="annotate long">line 955 didn't jump to line 958</span></span></p>
-    <p class="run"><span class="n"><a id="t956" href="#t956">956</a></span><span class="t">    <span class="nam">GRAPHENE</span><span class="op">[</span><span class="str">'MIDDLEWARE'</span><span class="op">]</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="str">'graphene_django.debug.DjangoDebugMiddleware'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t957" href="#t957">957</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t958" href="#t958">958</a></span><span class="t"><span class="nam">GRAPHENE_DJANGO_EXTRAS</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t959" href="#t959">959</a></span><span class="t">    <span class="str">'DEFAULT_PAGINATION_CLASS'</span><span class="op">:</span> <span class="str">'graphene_django_extras.paginations.PageGraphqlPagination'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t960" href="#t960">960</a></span><span class="t">    <span class="str">'DEFAULT_PAGE_SIZE'</span><span class="op">:</span> <span class="num">20</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t961" href="#t961">961</a></span><span class="t">    <span class="str">'MAX_PAGE_SIZE'</span><span class="op">:</span> <span class="num">50</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t962" href="#t962">962</a></span><span class="t"><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t963" href="#t963">963</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t964" href="#t964">964</a></span><span class="t"><span class="nam">UNHCR_PORTAL_API_KEY</span> <span class="op">=</span> <span class="nam">env</span><span class="op">(</span><span class="str">'UNHCR_PORTAL_API_KEY'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t965" href="#t965">965</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t966" href="#t966">966</a></span><span class="t"><span class="com"># Used for project and user deletion</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t967" href="#t967">967</a></span><span class="t"><span class="nam">DELETED_USER_FIRST_NAME</span> <span class="op">=</span> <span class="str">'The Deep'</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t968" href="#t968">968</a></span><span class="t"><span class="nam">DELETED_USER_LAST_NAME</span> <span class="op">=</span> <span class="str">'User'</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t969" href="#t969">969</a></span><span class="t"><span class="nam">USER_AND_PROJECT_DELETE_IN_DAYS</span> <span class="op">=</span> <span class="num">30</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t970" href="#t970">970</a></span><span class="t"><span class="nam">DELETED_USER_ORGANIZATION</span> <span class="op">=</span> <span class="str">'The Deep Organization'</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t971" href="#t971">971</a></span><span class="t"><span class="nam">DELETED_USER_EMAIL_DOMAIN</span> <span class="op">=</span> <span class="str">'deleted.thedeep.io'</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t939" href="#t939">939</a></span><span class="t">    <span class="str">'publicAnalysisReportSnapshot'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t940" href="#t940">940</a></span><span class="t"><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t941" href="#t941">941</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t942" href="#t942">942</a></span><span class="t"><span class="com"># https://docs.graphene-python.org/projects/django/en/latest/settings/</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t943" href="#t943">943</a></span><span class="t"><span class="nam">GRAPHENE</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t944" href="#t944">944</a></span><span class="t">    <span class="str">'ATOMIC_MUTATIONS'</span><span class="op">:</span> <span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t945" href="#t945">945</a></span><span class="t">    <span class="str">'SCHEMA'</span><span class="op">:</span> <span class="str">'deep.schema.schema'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t946" href="#t946">946</a></span><span class="t">    <span class="str">'SCHEMA_OUTPUT'</span><span class="op">:</span> <span class="str">'schema.json'</span><span class="op">,</span>  <span class="com"># defaults to schema.json,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t947" href="#t947">947</a></span><span class="t">    <span class="str">'CAMELCASE_ERRORS'</span><span class="op">:</span> <span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t948" href="#t948">948</a></span><span class="t">    <span class="str">'SCHEMA_INDENT'</span><span class="op">:</span> <span class="num">2</span><span class="op">,</span>  <span class="com"># Defaults to None (displays all data on a single line)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t949" href="#t949">949</a></span><span class="t">    <span class="str">'MIDDLEWARE'</span><span class="op">:</span> <span class="op">[</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t950" href="#t950">950</a></span><span class="t">        <span class="str">'utils.graphene.middleware.DisableIntrospectionSchemaMiddleware'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t951" href="#t951">951</a></span><span class="t">        <span class="str">'utils.sentry.SentryGrapheneMiddleware'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t952" href="#t952">952</a></span><span class="t">        <span class="str">'utils.graphene.middleware.WhiteListMiddleware'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t953" href="#t953">953</a></span><span class="t">        <span class="str">'utils.graphene.middleware.ProjectLogMiddleware'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t954" href="#t954">954</a></span><span class="t">    <span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t955" href="#t955">955</a></span><span class="t"><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p class="par run show_par"><span class="n"><a id="t956" href="#t956">956</a></span><span class="t"><span class="key">if</span> <span class="nam">DEBUG</span><span class="op">:</span>&nbsp;</span><span class="r"><span class="annotate short">956&#x202F;&#x219B;&#x202F;959</span><span class="annotate long">line 956 didn't jump to line 959</span></span></p>
+    <p class="run"><span class="n"><a id="t957" href="#t957">957</a></span><span class="t">    <span class="nam">GRAPHENE</span><span class="op">[</span><span class="str">'MIDDLEWARE'</span><span class="op">]</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="str">'graphene_django.debug.DjangoDebugMiddleware'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t958" href="#t958">958</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t959" href="#t959">959</a></span><span class="t"><span class="nam">GRAPHENE_DJANGO_EXTRAS</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t960" href="#t960">960</a></span><span class="t">    <span class="str">'DEFAULT_PAGINATION_CLASS'</span><span class="op">:</span> <span class="str">'graphene_django_extras.paginations.PageGraphqlPagination'</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t961" href="#t961">961</a></span><span class="t">    <span class="str">'DEFAULT_PAGE_SIZE'</span><span class="op">:</span> <span class="num">20</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t962" href="#t962">962</a></span><span class="t">    <span class="str">'MAX_PAGE_SIZE'</span><span class="op">:</span> <span class="num">50</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t963" href="#t963">963</a></span><span class="t"><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t964" href="#t964">964</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t965" href="#t965">965</a></span><span class="t"><span class="nam">UNHCR_PORTAL_API_KEY</span> <span class="op">=</span> <span class="nam">env</span><span class="op">(</span><span class="str">'UNHCR_PORTAL_API_KEY'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t966" href="#t966">966</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t967" href="#t967">967</a></span><span class="t"><span class="com"># Used for project and user deletion</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t968" href="#t968">968</a></span><span class="t"><span class="nam">DELETED_USER_FIRST_NAME</span> <span class="op">=</span> <span class="str">'The Deep'</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t969" href="#t969">969</a></span><span class="t"><span class="nam">DELETED_USER_LAST_NAME</span> <span class="op">=</span> <span class="str">'User'</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t970" href="#t970">970</a></span><span class="t"><span class="nam">USER_AND_PROJECT_DELETE_IN_DAYS</span> <span class="op">=</span> <span class="num">30</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t971" href="#t971">971</a></span><span class="t"><span class="nam">DELETED_USER_ORGANIZATION</span> <span class="op">=</span> <span class="str">'The Deep Organization'</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t972" href="#t972">972</a></span><span class="t"><span class="nam">DELETED_USER_EMAIL_DOMAIN</span> <span class="op">=</span> <span class="str">'deleted.thedeep.io'</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -1062,7 +1063,7 @@
             <a id="nextFileLink" class="nav" href="d_f1db731bb411b912_tasks_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.3.2">coverage.py v7.3.2</a>,
-            created at 2023-11-07 04:42 +0000
+            created at 2023-11-08 08:34 +0000
         </p>
     </div>
 </footer>
