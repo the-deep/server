@@ -14,6 +14,7 @@ from utils.graphene.resolver import *  # type: ignore # noqa F401
 from project import schema as pj_schema, mutation as pj_mutation
 from lead import public_schema as lead_public_schema
 from analysis_framework import mutation as af_mutation, schema as af_schema
+from analysis import public_schema as analysis_public_schema
 from user import mutation as user_mutation, schema as user_schema
 from user_group import mutation as user_group_mutation, schema as user_group_schema
 from organization import schema as organization_schema
@@ -40,6 +41,7 @@ class Query(
     unified_connector_schema.Query,
     export_schema.Query,
     deep_explore_schema.Query,
+    analysis_public_schema.Query,
     # --
     graphene.ObjectType
 ):

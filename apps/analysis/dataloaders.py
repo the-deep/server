@@ -9,10 +9,15 @@ from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 from .models import (
     Analysis,
     AnalysisPillar,
+    AnalysisReport,
     AnalyticalStatement,
     AnalyticalStatementEntry,
     DiscardedEntry,
     TopicModelCluster,
+    AnalysisReportUpload,
+    AnalysisReportContainerData,
+    AnalysisReportContainer,
+    AnalysisReportSnapshot,
 )
 
 
@@ -140,6 +145,75 @@ class AnalysisTopicModelClusterEntryLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key, []) for key in keys])
 
 
+# -------------- Report Module -------------------------------
+class AnalysisReportUploadsLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = AnalysisReportUpload.objects.filter(
+            id__in=keys,
+        )
+        _map = {
+            item.pk: item
+            for item in qs
+        }
+        return Promise.resolve([_map.get(key, []) for key in keys])
+
+
+class AnalysisReportContainerDataByContainerLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = AnalysisReportContainerData.objects.filter(
+            container__in=keys,
+        )
+        _map = defaultdict(list)
+        for item in qs:
+            _map[item.container_id].append(item)
+        return Promise.resolve([_map.get(key, []) for key in keys])
+
+
+class OrganizationByAnalysisReportLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = AnalysisReport.organizations.through.objects.filter(
+            analysisreport__in=keys,
+        ).select_related('organization')
+        _map = defaultdict(list)
+        for item in qs:
+            _map[item.analysisreport_id].append(item.organization)
+        return Promise.resolve([_map[key] for key in keys])
+
+
+class ReportUploadByAnalysisReportLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = AnalysisReportUpload.objects.filter(
+            report__in=keys,
+        )
+        _map = defaultdict(list)
+        for item in qs:
+            _map[item.report_id].append(item)
+        return Promise.resolve([_map[key] for key in keys])
+
+
+class AnalysisReportContainerByAnalysisReportLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = AnalysisReportContainer.objects.filter(
+            report__in=keys,
+        )
+        _map = defaultdict(list)
+        for item in qs:
+            _map[item.report_id].append(item)
+        return Promise.resolve([_map[key] for key in keys])
+
+
+class LatestReportSnapshotByAnalysisReportLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = AnalysisReportSnapshot.objects.filter(
+            report__in=keys,
+        ).order_by('report_id', '-published_on').distinct('report_id')
+        _map = {
+            snapshot.report_id: snapshot
+            for snapshot in qs
+        }
+        return Promise.resolve([_map.get(key) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def analysis_publication_date(self):
@@ -176,3 +250,27 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def topic_model_cluster_entries(self):
         return AnalysisTopicModelClusterEntryLoader(context=self.context)
+
+    @cached_property
+    def analysis_report_uploads(self):
+        return AnalysisReportUploadsLoader(context=self.context)
+
+    @cached_property
+    def analysis_report_container_data_by_container(self):
+        return AnalysisReportContainerDataByContainerLoader(context=self.context)
+
+    @cached_property
+    def organization_by_analysis_report(self):
+        return OrganizationByAnalysisReportLoader(context=self.context)
+
+    @cached_property
+    def analysis_report_uploads_by_analysis_report(self):
+        return ReportUploadByAnalysisReportLoader(context=self.context)
+
+    @cached_property
+    def analysis_report_container_by_analysis_report(self):
+        return AnalysisReportContainerByAnalysisReportLoader(context=self.context)
+
+    @cached_property
+    def latest_report_snapshot_by_analysis_report(self):
+        return LatestReportSnapshotByAnalysisReportLoader(context=self.context)

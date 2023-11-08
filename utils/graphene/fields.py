@@ -403,6 +403,7 @@ def generate_type_for_serializer(
     name: str,
     serializer_class,
     partial=False,
+    update_cache=False,
 ) -> Type[graphene.InputObjectType]:
     # NOTE: Custom converter are defined in mutation which needs to be set first.
     from utils.graphene import mutation  # noqa:F401
@@ -413,4 +414,9 @@ def generate_type_for_serializer(
         exclude_fields=[],
         partial=partial,
     )
-    return type(name, (graphene.ObjectType,), data_members)
+    _type = type(name, (graphene.ObjectType,), data_members)
+    if update_cache:
+        if name in convert_serializer_to_type.cache:
+            raise Exception(f'<{name}> : <{serializer_class.__name__}> Alreay exists')
+        convert_serializer_to_type.cache[serializer_class.__name__] = _type
+    return _type

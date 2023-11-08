@@ -5,8 +5,8 @@ from django.db.models.functions import Cast
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
-from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
-from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin, FileFieldType
+from utils.graphene.fields import DjangoPaginatedListObjectField, generate_type_for_serializer
 from utils.graphene.enums import EnumDescription
 from utils.graphene.geo_scalars import PointScalar
 from utils.common import has_select_related
@@ -21,6 +21,9 @@ from entry.models import Entry, Attribute
 from entry.schema import get_entry_qs, EntryType
 from entry.filter_set import EntriesFilterDataType
 from user.schema import UserType
+from organization.schema import OrganizationType
+from gallery.schema import GalleryFileType
+from gallery.models import File as GalleryFile
 
 from .models import (
     Analysis,
@@ -34,13 +37,20 @@ from .models import (
     AnalyticalStatementNGram,
     AnalyticalStatementGeoTask,
     AnalyticalStatementGeoEntry,
+    AnalysisReport,
+    AnalysisReportUpload,
+    AnalysisReportContainer,
+    AnalysisReportContainerData,
+    AnalysisReportSnapshot,
 )
 from .enums import (
     DiscardedEntryTagTypeEnum,
     TopicModelStatusEnum,
     AutomaticSummaryStatusEnum,
     AnalyticalStatementNGramStatusEnum,
+    AnalysisReportContainerContentTypeEnum,
     AnalyticalStatementGeoTaskStatusEnum,
+    AnalysisReportUploadTypeEnum,
 )
 from .filter_set import (
     AnalysisGQFilterSet,
@@ -48,6 +58,15 @@ from .filter_set import (
     AnalysisPillarEntryGQFilterSet,
     AnalyticalStatementGQFilterSet,
     AnalysisPillarDiscardedEntryGqlFilterSet,
+    AnalysisReportGQFilterSet,
+    AnalysisReportUploadGQFilterSet,
+    AnalysisReportSnapshotGQFilterSet,
+)
+from .serializers import (
+    AnalysisReportConfigurationSerializer,
+    AnalysisReportUploadMetadataSerializer,
+    AnalysisReportContainerContentConfigurationSerializer,
+    AnalysisReportContainerStyleSerializer,
 )
 
 
@@ -72,6 +91,18 @@ def get_analysis_pillar_qs(info):
 
 def get_analytical_statement_qs(info):
     return _get_qs(AnalyticalStatement, info, 'analysis_pillar__analysis__project')
+
+
+def get_analysis_report_qs(info):
+    return _get_qs(AnalysisReport, info, 'analysis__project')
+
+
+def get_analysis_report_upload_qs(info):
+    return _get_qs(AnalysisReportUpload, info, 'report__analysis__project')
+
+
+def get_analysis_report_snaphost_qs(info):
+    return _get_qs(AnalysisReportSnapshot, info, 'report__analysis__project')
 
 
 class AnalyticalStatementEntryType(ClientIdMixin, DjangoObjectType):
@@ -528,6 +559,179 @@ class EntryGeoCentroidData(graphene.ObjectType):
     count = graphene.Int(required=True)
 
 
+class AnalysisReportUploadType(DjangoObjectType):
+    class Meta:
+        model = AnalysisReportUpload
+        only_fields = (
+            'id',
+            'file',
+        )
+
+    report = graphene.ID(source='report_id', required=True)
+    type = graphene.Field(AnalysisReportUploadTypeEnum, required=True)
+    metadata = graphene.Field(generate_type_for_serializer(
+        'AnalysisReportUploadMetadataType',
+        serializer_class=AnalysisReportUploadMetadataSerializer,
+    ))
+
+    @staticmethod
+    def get_custom_queryset(queryset, info, **_):
+        return get_analysis_report_upload_qs(info)
+
+    @staticmethod
+    def resolve_file(root, info, **_):
+        return info.context.dl.deep_gallery.file.load(root.file_id)
+
+
+class AnalysisReportContainerDataType(ClientIdMixin, DjangoObjectType):
+    class Meta:
+        model = AnalysisReportContainerData
+        only_fields = (
+            'id',
+            'upload',  # AnalysisReportUploadType
+            'data',  # NOTE: This is Generic for now
+        )
+
+    @staticmethod
+    def resolve_upload(root, info, **_):
+        return info.context.dl.analysis.analysis_report_uploads.load(root.upload_id)
+
+
+class AnalysisReportContainerType(ClientIdMixin, DjangoObjectType):
+    class Meta:
+        model = AnalysisReportContainer
+        only_fields = (
+            'id',
+            'row',
+            'column',
+            'width',
+            'height',
+        )
+
+    content_type = graphene.Field(AnalysisReportContainerContentTypeEnum, required=True)
+    report = graphene.ID(source='report_id', required=True)
+
+    style = graphene.Field(
+        generate_type_for_serializer(
+            'AnalysisReportContainerStyleType',
+            serializer_class=AnalysisReportContainerStyleSerializer,
+            update_cache=True,
+        )
+    )
+    # Content metadata
+    content_configuration = graphene.Field(
+        generate_type_for_serializer(
+            'AnalysisReportContainerContentConfigurationType',
+            serializer_class=AnalysisReportContainerContentConfigurationSerializer,
+        )
+    )
+    content_data = graphene.List(graphene.NonNull(AnalysisReportContainerDataType), required=True)
+
+    @staticmethod
+    def resolve_content_data(root, info, **_):
+        return info.context.dl.analysis.analysis_report_container_data_by_container.load(root.pk)
+
+
+class AnalysisReportSnapshotType(DjangoObjectType):
+    class Meta:
+        model = AnalysisReportSnapshot
+        only_fields = (
+            'id',
+            'published_on',
+        )
+
+    report = graphene.ID(source='report_id', required=True)
+    published_by = graphene.Field(UserType, required=True)
+    report_data_file = graphene.Field(FileFieldType)
+    files = graphene.List(graphene.NonNull(GalleryFileType), required=True)
+
+    @staticmethod
+    def get_custom_queryset(queryset, info, **_):
+        return get_analysis_report_snaphost_qs(info)
+
+    @staticmethod
+    def resolve_published_by(root, info, **_):
+        return resolve_user_field(root, info, 'published_by')
+
+    @staticmethod
+    def resolve_files(root, info, **_):
+        # For now
+        # - organization logos
+        # - report uploads
+        related_file_id = (
+            root.report.analysisreportupload_set.values_list('file').union(
+                root.report.organizations.values_list('logo')
+            )
+        )
+        return GalleryFile.objects.filter(id__in=related_file_id).all()
+
+
+class AnalysisReportType(UserResourceMixin, DjangoObjectType):
+    class Meta:
+        model = AnalysisReport
+        only_fields = (
+            'id',
+            'is_public',
+            'slug',
+            'title',
+            'sub_title',
+        )
+
+    analysis = graphene.ID(source='analysis_id', required=True)
+    configuration = graphene.Field(generate_type_for_serializer(
+        'AnalysisReportConfigurationType',
+        serializer_class=AnalysisReportConfigurationSerializer,
+    ))
+
+    containers = graphene.List(
+        graphene.NonNull(
+            AnalysisReportContainerType
+        ),
+        required=True
+    )
+    organizations = graphene.List(graphene.NonNull(OrganizationType), required=True)
+    uploads = graphene.List(graphene.NonNull(AnalysisReportUploadType), required=True)
+    latest_snapshot = graphene.Field(AnalysisReportSnapshotType, required=False)
+
+    @staticmethod
+    def get_custom_queryset(queryset, info, **_):
+        return get_analysis_report_qs(info)
+
+    @staticmethod
+    def resolve_organizations(root, info, **_):
+        return info.context.dl.analysis.organization_by_analysis_report.load(root.pk)
+
+    @staticmethod
+    def resolve_uploads(root, info, **_):
+        return info.context.dl.analysis.analysis_report_uploads_by_analysis_report.load(root.pk)
+
+    @staticmethod
+    def resolve_containers(root, info, **_):
+        return info.context.dl.analysis.analysis_report_container_by_analysis_report.load(root.pk)
+
+    @staticmethod
+    def resolve_latest_snapshot(root, info, **_):
+        return info.context.dl.analysis.latest_report_snapshot_by_analysis_report.load(root.pk)
+
+
+class AnalysisReportListType(CustomDjangoListObjectType):
+    class Meta:
+        model = AnalysisReport
+        filterset_class = AnalysisReportGQFilterSet
+
+
+class AnalysisReportUploadListType(CustomDjangoListObjectType):
+    class Meta:
+        model = AnalysisReportUpload
+        filterset_class = AnalysisReportUploadGQFilterSet
+
+
+class AnalysisReportSnapshotListType(CustomDjangoListObjectType):
+    class Meta:
+        model = AnalysisReportSnapshot
+        filterset_class = AnalysisReportSnapshotGQFilterSet
+
+
 class Query:
     analysis_overview = graphene.Field(AnalysisOverviewType)
     analysis = DjangoObjectField(AnalysisType)
@@ -571,6 +775,29 @@ class Query:
     analysis_automatic_ngram = DjangoObjectField(AnalyticalStatementNGramType)
     analysis_geo_task = DjangoObjectField(AnalyticalStatementGeoTaskType)
 
+    # Report
+    analysis_report = DjangoObjectField(AnalysisReportType)
+    analysis_reports = DjangoPaginatedListObjectField(
+        AnalysisReportListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+    analysis_report_upload = DjangoObjectField(AnalysisReportUploadType)
+    analysis_report_uploads = DjangoPaginatedListObjectField(
+        AnalysisReportUploadListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+    analysis_report_snapshot = DjangoObjectField(AnalysisReportSnapshotType)
+    analysis_report_snapshots = DjangoPaginatedListObjectField(
+        AnalysisReportSnapshotListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+
     @staticmethod
     def resolve_analysis_overview(*_):
         return {}
@@ -586,6 +813,14 @@ class Query:
     @staticmethod
     def resolve_analytical_statements(root, info, **kwargs) -> models.QuerySet:
         return get_analytical_statement_qs(info)
+
+    @staticmethod
+    def resolve_analysis_reports(root, info, **kwargs) -> models.QuerySet:
+        return get_analysis_report_qs(info)
+
+    @staticmethod
+    def resolve_analysis_report_uploads(root, info, **kwargs) -> models.QuerySet:
+        return get_analysis_report_upload_qs(info)
 
     @staticmethod
     def resolve_entries_geo_data(_, info, entries_id):

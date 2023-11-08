@@ -1,4 +1,6 @@
 import django_filters
+from django.db import models
+from django.db.models.functions import Coalesce
 
 from utils.graphene.filters import IDListFilter, MultipleInputFilter
 from user_resource.filters import UserResourceGqlFilterSet
@@ -9,8 +11,14 @@ from .models import (
     AnalysisPillar,
     DiscardedEntry,
     AnalyticalStatement,
+    AnalysisReport,
+    AnalysisReportUpload,
+    AnalysisReportSnapshot,
 )
-from .enums import DiscardedEntryTagTypeEnum
+from .enums import (
+    DiscardedEntryTagTypeEnum,
+    AnalysisReportUploadTypeEnum,
+)
 
 
 class AnalysisFilterSet(django_filters.FilterSet):
@@ -92,4 +100,47 @@ class AnalysisPillarDiscardedEntryGqlFilterSet(django_filters.FilterSet):
 
     class Meta:
         model = DiscardedEntry
+        fields = []
+
+
+class AnalysisReportGQFilterSet(django_filters.FilterSet):
+    search = django_filters.CharFilter(method='search_filter')
+    analyses = IDListFilter(field_name='analysis')
+    is_public = django_filters.BooleanFilter(method='filter_discarded')
+    organizations = IDListFilter(method='organizations_filter')
+
+    class Meta:
+        model = AnalysisReport
+        fields = []
+
+    def organizations_filter(self, qs, _, value):
+        if value:
+            qs = qs.annotate(
+                authoring_organizations=Coalesce('authors__parent_id', 'authors__id')
+            ).filter(authoring_organizations__in=value).distinct()
+        return qs
+
+    def search_filter(self, qs, _, value):
+        if value:
+            qs = qs.filter(
+                models.Q(slug__icontains=value) |
+                models.Q(title__icontains=value)
+            ).distinct()
+        return qs
+
+
+class AnalysisReportUploadGQFilterSet(django_filters.FilterSet):
+    report = IDListFilter(field_name='report')
+    types = MultipleInputFilter(AnalysisReportUploadTypeEnum, field_name='type')
+
+    class Meta:
+        model = AnalysisReportUpload
+        fields = []
+
+
+class AnalysisReportSnapshotGQFilterSet(django_filters.FilterSet):
+    report = IDListFilter(field_name='report')
+
+    class Meta:
+        model = AnalysisReportSnapshot
         fields = []

@@ -1,5 +1,7 @@
 import httplib2
 
+from rest_framework import serializers
+
 from utils.common import USER_AGENT
 from apiclient import discovery
 from oauth2client import client
@@ -20,7 +22,7 @@ PPT = 'application/vnd.openxmlformats-officedocument.presentationml.'\
 EXCEL = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
 # Goggle Specific mimetypes to Standard Mimetypes mapping
-GOOLE_DRIVE_EXPORT_MAP = {
+GOOGLE_DRIVE_EXPORT_MAP = {
     GDOCS: DOCX,
     GSLIDES: PPT,
     GSHEETS: EXCEL,
@@ -33,10 +35,10 @@ def get_credentials(access_token):
 
 
 def download(
-        file_id,
-        mime_type,
-        access_token,
-        SUPPORTED_MIME_TYPES
+    file_id,
+    mime_type,
+    access_token,
+    SUPPORTED_MIME_TYPES
 ):
     """
     Download/Export file from google drive
@@ -56,13 +58,14 @@ def download(
     if mime_type in SUPPORTED_MIME_TYPES:
         # Directly dowload the file
         request = service.files().get_media(fileId=file_id)
-    else:
-        export_mime_type = GOOLE_DRIVE_EXPORT_MAP.get(mime_type)
-
+    elif mime_type in GOOGLE_DRIVE_EXPORT_MAP:
+        export_mime_type = GOOGLE_DRIVE_EXPORT_MAP.get(mime_type)
         request = service.files().export_media(
             fileId=file_id,
             mimeType=export_mime_type
         )
+    else:
+        raise serializers.ValidationError('Unsupported file type {}'.format(mime_type))
 
     outfp = tempfile.TemporaryFile("wb+")
     downloader = MediaIoBaseDownload(outfp, request)

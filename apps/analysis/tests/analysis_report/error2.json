@@ -1,0 +1,37 @@
+[
+    {
+        "arrayErrors": [
+            {
+                "clientId": "random-client-id",
+                "messages": null,
+                "objectErrors": [
+                    {
+                        "arrayErrors": [
+                            {
+                                "clientId": "NOT_FOUND_0",
+                                "messages": null,
+                                "objectErrors": [
+                                    {
+                                        "arrayErrors": null,
+                                        "clientId": null,
+                                        "field": "upload",
+                                        "messages": "Upload within report are only allowed",
+                                        "objectErrors": null
+                                    }
+                                ]
+                            }
+                        ],
+                        "clientId": "random-client-id",
+                        "field": "contentData",
+                        "messages": null,
+                        "objectErrors": null
+                    }
+                ]
+            }
+        ],
+        "clientId": null,
+        "field": "containers",
+        "messages": null,
+        "objectErrors": null
+    }
+]

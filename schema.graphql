@@ -298,6 +298,480 @@ type AnalysisPublicationDateType {
   endDate: Date!
 }
 
+input AnalysisReportBackgroundStyleInputType {
+  color: String
+  opacity: Int
+}
+
+type AnalysisReportBackgroundStyleType {
+  color: String
+  opacity: Int
+}
+
+input AnalysisReportBodyStyleInputType {
+  gap: Int
+}
+
+type AnalysisReportBodyStyleType {
+  gap: Int
+}
+
+input AnalysisReportBorderStyleInputType {
+  color: String
+  width: Int
+  opacity: Int
+  style: AnalysisReportBorderStyleStyleEnum
+}
+
+enum AnalysisReportBorderStyleStyleEnum {
+  DOTTED
+  DASHED
+  SOLID
+  DOUBLE
+  NONE
+}
+
+type AnalysisReportBorderStyleType {
+  color: String
+  width: Int
+  opacity: Int
+  style: AnalysisReportBorderStyleStyleEnum
+}
+
+input AnalysisReportConfigurationInputType {
+  pageStyle: AnalysisReportPageStyleInputType
+  headerStyle: AnalysisReportHeaderStyleInputType
+  bodyStyle: AnalysisReportBodyStyleInputType
+  containerStyle: AnalysisReportContainerStyleInputType
+  textContentStyle: AnalysisReportTextContentStyleInputType
+  headingContentStyle: AnalysisReportHeadingContentStyleInputType
+  imageContentStyle: AnalysisReportImageContentStyleInputType
+  urlContentStyle: AnalysisReportUrlConfigurationInputType
+}
+
+type AnalysisReportConfigurationType {
+  pageStyle: AnalysisReportPageStyleType
+  headerStyle: AnalysisReportHeaderStyleType
+  bodyStyle: AnalysisReportBodyStyleType
+  containerStyle: AnalysisReportContainerStyleType
+  textContentStyle: AnalysisReportTextContentStyleType
+  headingContentStyle: AnalysisReportHeadingContentStyleType
+  imageContentStyle: AnalysisReportImageContentStyleType
+  urlContentStyle: AnalysisReportUrlConfigurationType
+}
+
+input AnalysisReportContainerContentConfigurationInputType {
+  text: AnalysisReportTextConfigurationInputType
+  heading: AnalysisReportHeadingConfigurationInputType
+  image: AnalysisReportImageConfigurationInputType
+  url: AnalysisReportUrlConfigurationInputType
+}
+
+type AnalysisReportContainerContentConfigurationType {
+  text: AnalysisReportTextConfigurationType
+  heading: AnalysisReportHeadingConfigurationType
+  image: AnalysisReportImageConfigurationType
+  url: AnalysisReportUrlConfigurationType
+}
+
+enum AnalysisReportContainerContentTypeEnum {
+  TEXT
+  HEADING
+  IMAGE
+  URL
+}
+
+input AnalysisReportContainerDataInputType {
+  id: ID
+  clientId: String
+  upload: ID!
+  data: GenericScalar
+}
+
+type AnalysisReportContainerDataType {
+  id: ID!
+  upload: AnalysisReportUploadType!
+  data: GenericScalar!
+  clientId: String!
+}
+
+input AnalysisReportContainerInputType {
+  id: ID
+  clientId: String
+  row: Int!
+  column: Int!
+  width: Int!
+  height: Int
+  contentType: AnalysisReportContainerContentTypeEnum!
+  style: AnalysisReportContainerStyleInputType
+  contentConfiguration: AnalysisReportContainerContentConfigurationInputType
+  contentData: [AnalysisReportContainerDataInputType!]!
+}
+
+input AnalysisReportContainerStyleInputType {
+  padding: AnalysisReportPaddingStyleInputType
+  border: AnalysisReportBorderStyleInputType
+  background: AnalysisReportBackgroundStyleInputType
+}
+
+type AnalysisReportContainerStyleType {
+  padding: AnalysisReportPaddingStyleType
+  border: AnalysisReportBorderStyleType
+  background: AnalysisReportBackgroundStyleType
+}
+
+type AnalysisReportContainerType {
+  id: ID!
+  row: Int!
+  column: Int!
+  width: Int!
+  height: Int
+  clientId: String!
+  contentType: AnalysisReportContainerContentTypeEnum!
+  report: ID!
+  style: AnalysisReportContainerStyleType
+  contentConfiguration: AnalysisReportContainerContentConfigurationType
+  contentData: [AnalysisReportContainerDataType!]!
+}
+
+input AnalysisReportHeaderStyleInputType {
+  padding: AnalysisReportPaddingStyleInputType
+  border: AnalysisReportBorderStyleInputType
+  background: AnalysisReportBackgroundStyleInputType
+  title: AnalysisReportTextStyleInputType
+  subTitle: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportHeaderStyleType {
+  padding: AnalysisReportPaddingStyleType
+  border: AnalysisReportBorderStyleType
+  background: AnalysisReportBackgroundStyleType
+  title: AnalysisReportTextStyleType
+  subTitle: AnalysisReportTextStyleType
+}
+
+input AnalysisReportHeadingConfigurationInputType {
+  content: String
+  style: AnalysisReportHeadingConfigurationStyleInputType
+  variant: AnalysisReportHeadingConfigurationVariantEnum
+}
+
+input AnalysisReportHeadingConfigurationStyleInputType {
+  content: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportHeadingConfigurationStyleType {
+  content: AnalysisReportTextStyleType
+}
+
+type AnalysisReportHeadingConfigurationType {
+  content: String
+  style: AnalysisReportHeadingConfigurationStyleType
+  variant: AnalysisReportHeadingConfigurationVariantEnum
+}
+
+enum AnalysisReportHeadingConfigurationVariantEnum {
+  H1
+  H2
+  H3
+  H4
+}
+
+input AnalysisReportHeadingContentStyleInputType {
+  h1: AnalysisReportTextStyleInputType
+  h2: AnalysisReportTextStyleInputType
+  h3: AnalysisReportTextStyleInputType
+  h4: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportHeadingContentStyleType {
+  h1: AnalysisReportTextStyleType
+  h2: AnalysisReportTextStyleType
+  h3: AnalysisReportTextStyleType
+  h4: AnalysisReportTextStyleType
+}
+
+input AnalysisReportImageConfigurationInputType {
+  caption: String
+  altText: String
+  style: AnalysisReportImageContentStyleInputType
+}
+
+type AnalysisReportImageConfigurationType {
+  caption: String
+  altText: String
+  style: AnalysisReportImageContentStyleType
+}
+
+enum AnalysisReportImageContentStyleFitEnum {
+  FILL
+  CONTAIN
+  COVER
+  SCALE_DOWN
+  NONE
+}
+
+input AnalysisReportImageContentStyleInputType {
+  caption: AnalysisReportTextStyleInputType
+  fit: AnalysisReportImageContentStyleFitEnum
+}
+
+type AnalysisReportImageContentStyleType {
+  caption: AnalysisReportTextStyleType
+  fit: AnalysisReportImageContentStyleFitEnum
+}
+
+input AnalysisReportInputType {
+  analysis: ID!
+  slug: String!
+  title: String!
+  subTitle: String!
+  isPublic: Boolean
+  organizations: [ID!]
+  configuration: AnalysisReportConfigurationInputType
+  containers: [AnalysisReportContainerInputType!]!
+}
+
+input AnalysisReportInputUpdateType {
+  analysis: ID
+  slug: String
+  title: String
+  subTitle: String
+  isPublic: Boolean
+  organizations: [ID!]
+  configuration: AnalysisReportConfigurationInputType
+  containers: [AnalysisReportContainerInputType!]
+}
+
+type AnalysisReportListType {
+  results: [AnalysisReportType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+input AnalysisReportMarginStyleInputType {
+  top: Int
+  bottom: Int
+  left: Int
+  right: Int
+}
+
+type AnalysisReportMarginStyleType {
+  top: Int
+  bottom: Int
+  left: Int
+  right: Int
+}
+
+input AnalysisReportPaddingStyleInputType {
+  top: Int
+  bottom: Int
+  left: Int
+  right: Int
+}
+
+type AnalysisReportPaddingStyleType {
+  top: Int
+  bottom: Int
+  left: Int
+  right: Int
+}
+
+input AnalysisReportPageStyleInputType {
+  margin: AnalysisReportMarginStyleInputType
+  background: AnalysisReportBackgroundStyleInputType
+}
+
+type AnalysisReportPageStyleType {
+  margin: AnalysisReportMarginStyleType
+  background: AnalysisReportBackgroundStyleType
+}
+
+input AnalysisReportSnapshotInputType {
+  report: ID!
+}
+
+type AnalysisReportSnapshotListType {
+  results: [AnalysisReportSnapshotType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalysisReportSnapshotType {
+  id: ID!
+  publishedOn: DateTime!
+  report: ID!
+  publishedBy: UserType!
+  reportDataFile: FileFieldType
+  files: [GalleryFileType!]!
+}
+
+input AnalysisReportTextConfigurationInputType {
+  content: String
+  style: AnalysisReportTextContentStyleInputType
+}
+
+type AnalysisReportTextConfigurationType {
+  content: String
+  style: AnalysisReportTextContentStyleType
+}
+
+input AnalysisReportTextContentStyleInputType {
+  content: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportTextContentStyleType {
+  content: AnalysisReportTextStyleType
+}
+
+enum AnalysisReportTextStyleAlignEnum {
+  START
+  END
+  CENTER
+  JUSTIFIED
+}
+
+input AnalysisReportTextStyleInputType {
+  color: String
+  family: String
+  size: Int
+  weight: Int
+  align: AnalysisReportTextStyleAlignEnum
+}
+
+type AnalysisReportTextStyleType {
+  color: String
+  family: String
+  size: Int
+  weight: Int
+  align: AnalysisReportTextStyleAlignEnum
+}
+
+type AnalysisReportType {
+  id: ID!
+  isPublic: Boolean!
+  slug: String!
+  title: String!
+  subTitle: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  analysis: ID!
+  configuration: AnalysisReportConfigurationType
+  containers: [AnalysisReportContainerType!]!
+  organizations: [OrganizationType!]!
+  uploads: [AnalysisReportUploadType!]!
+  latestSnapshot: AnalysisReportSnapshotType
+}
+
+input AnalysisReportUploadInputType {
+  report: ID!
+  file: ID!
+  type: AnalysisReportUploadTypeEnum!
+  metadata: AnalysisReportUploadMetadataInputType!
+}
+
+type AnalysisReportUploadListType {
+  results: [AnalysisReportUploadType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+input AnalysisReportUploadMetadataCsvInputType {
+  headerRow: Int
+  variables: [AnalysisReportVariableInputType!]!
+}
+
+type AnalysisReportUploadMetadataCsvType {
+  headerRow: Int
+  variables: [AnalysisReportVariableType!]!
+}
+
+input AnalysisReportUploadMetadataGeoJsonInputType {
+  variables: [AnalysisReportVariableInputType!]!
+}
+
+type AnalysisReportUploadMetadataGeoJsonType {
+  variables: [AnalysisReportVariableType!]!
+}
+
+input AnalysisReportUploadMetadataInputType {
+  xlsx: AnalysisReportUploadMetadataXlsxInputType
+  csv: AnalysisReportUploadMetadataCsvInputType
+  geojson: AnalysisReportUploadMetadataGeoJsonInputType
+}
+
+type AnalysisReportUploadMetadataType {
+  xlsx: AnalysisReportUploadMetadataXlsxType
+  csv: AnalysisReportUploadMetadataCsvType
+  geojson: AnalysisReportUploadMetadataGeoJsonType
+}
+
+input AnalysisReportUploadMetadataXlsxInputType {
+  sheets: [AnalysisReportUploadMetadataXlsxSheetInputType!]!
+}
+
+input AnalysisReportUploadMetadataXlsxSheetInputType {
+  name: String
+  headerRow: Int
+  variables: [AnalysisReportVariableInputType!]!
+}
+
+type AnalysisReportUploadMetadataXlsxSheetType {
+  name: String
+  headerRow: Int
+  variables: [AnalysisReportVariableType!]!
+}
+
+type AnalysisReportUploadMetadataXlsxType {
+  sheets: [AnalysisReportUploadMetadataXlsxSheetType!]!
+}
+
+type AnalysisReportUploadType {
+  id: ID!
+  file: GalleryFileType!
+  report: ID!
+  type: AnalysisReportUploadTypeEnum!
+  metadata: AnalysisReportUploadMetadataType
+}
+
+enum AnalysisReportUploadTypeEnum {
+  CSV
+  XLSX
+  GEOJSON
+  IMAGE
+}
+
+input AnalysisReportUrlConfigurationInputType {
+  url: String
+}
+
+type AnalysisReportUrlConfigurationType {
+  url: String
+}
+
+input AnalysisReportVariableInputType {
+  name: String
+  type: AnalysisReportVariableTypeEnum
+  completeness: Int
+}
+
+type AnalysisReportVariableType {
+  name: String
+  type: AnalysisReportVariableTypeEnum
+  completeness: Int
+}
+
+enum AnalysisReportVariableTypeEnum {
+  TEXT
+  NUMBER
+  DATE
+}
+
 type AnalysisTopicModelClusterType {
   id: ID!
   entries: [EntryType]!
@@ -857,6 +1331,24 @@ type CreateAnalysisPillarDiscardedEntry {
   result: AnalysisPillarDiscardedEntryType
 }
 
+type CreateAnalysisReport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisReportType
+}
+
+type CreateAnalysisReportSnapshot {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisReportSnapshotType
+}
+
+type CreateAnalysisReportUpload {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisReportUploadType
+}
+
 type CreateDraftEntry {
   errors: [GenericScalar!]
   ok: Boolean
@@ -948,6 +1440,18 @@ type DeleteAnalysisPillarDiscardedEntry {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisPillarDiscardedEntryType
+}
+
+type DeleteAnalysisReport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisReportType
+}
+
+type DeleteAnalysisReportUpload {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisReportUploadType
 }
 
 type DeleteAssessment {
@@ -2284,6 +2788,7 @@ input ProjectCreateInputType {
   hasPubliclyViewableUnprotectedLeads: Boolean
   hasPubliclyViewableRestrictedLeads: Boolean
   hasPubliclyViewableConfidentialLeads: Boolean
+  enablePubliclyViewableAnalysisReportSnapshot: Boolean
   organizations: [ProjectOrganizationGqInputType!]
 }
 
@@ -2312,6 +2817,7 @@ type ProjectDetailType {
   hasPubliclyViewableUnprotectedLeads: Boolean!
   hasPubliclyViewableRestrictedLeads: Boolean!
   hasPubliclyViewableConfidentialLeads: Boolean!
+  enablePubliclyViewableAnalysisReportSnapshot: Boolean!
   currentUserRole: ProjectRoleTypeEnum
   allowedPermissions: [ProjectPermission!]!
   stats(filters: LeadsFilterDataInputType): ProjectStatType
@@ -2335,6 +2841,12 @@ type ProjectDetailType {
   analysisAutomaticSummary(id: ID!): AnalysisAutomaticSummaryType
   analysisAutomaticNgram(id: ID!): AnalyticalStatementNGramType
   analysisGeoTask(id: ID!): AnalyticalStatementGeoTaskType
+  analysisReport(id: ID!): AnalysisReportType
+  analysisReports(search: String, analyses: [ID!], isPublic: Boolean, organizations: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportListType
+  analysisReportUpload(id: ID!): AnalysisReportUploadType
+  analysisReportUploads(report: [ID!], types: [AnalysisReportUploadTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportUploadListType
+  analysisReportSnapshot(id: ID!): AnalysisReportSnapshotType
+  analysisReportSnapshots(report: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportSnapshotListType
   assessment(id: ID!): AssessmentType
   assessments(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentListType
   reviewComment(id: ID!): EntryReviewCommentDetailType
@@ -2462,6 +2974,12 @@ type ProjectMutationType {
   triggerAnalysisAutomaticSummary(data: AnalysisAutomaticSummaryCreateInputType!): TriggerAnalysisAutomaticSummary
   triggerAnalysisAutomaticNgram(data: AnalyticalStatementNGramCreateInputType!): TriggerAnalysisAnalyticalStatementNGram
   triggerAnalysisGeoLocation(data: AnalyticalStatementGeoTaskInputType!): TriggerAnalysisAnalyticalGeoTask
+  analysisReportCreate(data: AnalysisReportInputType!): CreateAnalysisReport
+  analysisReportUpdate(data: AnalysisReportInputUpdateType!, id: ID!): UpdateAnalysisReport
+  analysisReportDelete(id: ID!): DeleteAnalysisReport
+  analysisReportSnapshotCreate(data: AnalysisReportSnapshotInputType!): CreateAnalysisReportSnapshot
+  analysisReportUploadCreate(data: AnalysisReportUploadInputType!): CreateAnalysisReportUpload
+  analysisReportUploadDelete(id: ID!): DeleteAnalysisReportUpload
   exportCreate(data: ExportCreateInputType!): CreateUserExport
   exportUpdate(data: ExportUpdateInputType!, id: ID!): UpdateUserExport
   exportCancel(id: ID!): CancelUserExport
@@ -2645,6 +3163,7 @@ input ProjectUpdateInputType {
   hasPubliclyViewableUnprotectedLeads: Boolean
   hasPubliclyViewableRestrictedLeads: Boolean
   hasPubliclyViewableConfidentialLeads: Boolean
+  enablePubliclyViewableAnalysisReportSnapshot: Boolean
   organizations: [ProjectOrganizationGqInputType!]
 }
 
@@ -2820,6 +3339,7 @@ type PublicProjectWithMembershipData {
 }
 
 type Query {
+  publicAnalysisReportSnapshot(slug: String!): AnalysisReportSnapshotType
   deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
   publicDeepExploreYearlySnapshots: [PublicExploreSnapshotType!]
   publicDeepExploreGlobalSnapshots: [PublicExploreSnapshotType!]
@@ -3105,6 +3625,12 @@ type UpdateAnalysisPillarDiscardedEntry {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisPillarDiscardedEntryType
+}
+
+type UpdateAnalysisReport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisReportType
 }
 
 type UpdateConnectorSourceLead {
