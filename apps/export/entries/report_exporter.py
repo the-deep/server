@@ -32,7 +32,8 @@ from entry.widgets import (
     date_range_widget,
     geo_widget,
     select_widget,
-    multiselect_widget
+    multiselect_widget,
+    organigram_widget,
 )
 from entry.widgets.store import widget_store
 from entry.widgets.geo_widget import get_valid_geo_ids
@@ -142,6 +143,14 @@ class WidgetExporter:
         return cls._get_select_widget_data(data, bold, **kwargs)
 
     @classmethod
+    def _get_organigram_widget_data(cls, data, bold, **kwargs):
+        text = INTERNAL_SEPARATOR.join(
+            '/'.join(value_with_parent)
+            for value_with_parent in data.get('values')
+        )
+        return cls._add_common, text, bold
+
+    @classmethod
     def _get_geo_widget_data(cls, data, bold, **kwargs):
         # XXX: Cache this value.
         # Right now everything needs to be loaded so doing this at entry save can take lot of memory
@@ -178,6 +187,7 @@ class WidgetExporter:
                 date_widget.WIDGET_ID: cls._get_date_widget_data,
                 geo_widget.WIDGET_ID: cls._get_geo_widget_data,
                 select_widget.WIDGET_ID: cls._get_select_widget_data,
+                organigram_widget.WIDGET_ID: cls._get_organigram_widget_data,
                 multiselect_widget.WIDGET_ID: cls._get_multi_select_widget_data,
             }
             if widget_id in mapper.keys():
@@ -380,7 +390,7 @@ class ReportExporter:
                         continue
 
                     # Try to look through parent
-                    for _level in range(0, admin_level['level'] - 1)[::-1]:
+                    for _level in range(0, admin_level['level'])[::-1]:
                         if parent_id:
                             _geo_area_titles = admin_levels[_level]['geo_area_titles']
                             _geo_area = _geo_area_titles.get(parent_id) or {}

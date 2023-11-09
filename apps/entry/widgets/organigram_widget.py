@@ -1,6 +1,6 @@
 from analysis_framework.widgets.organigram_widget import WIDGET_ID
 
-DATA_VERSION = 1
+DATA_VERSION = 2
 
 
 def _get_parent_nodes(node_mapping, node_key):
@@ -86,10 +86,10 @@ def update_attribute(widget, data, widget_properties):
                     'widget_id': WIDGET_ID,
                     'widget_key': widget.key,
                     'version': DATA_VERSION,
+                    'values': selected_nodes_with_parents,
                 },
                 'excel': {
                     'type': 'lists',
-                    'values': selected_nodes_with_parents,
                 },
             },
         },
