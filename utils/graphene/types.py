@@ -230,13 +230,12 @@ class DateCountType(graphene.ObjectType):
 
 
 class UserEntityCountType(graphene.ObjectType):
-    id = graphene.String()
     name = graphene.String()
-    user_id = graphene.String()
+    user_id = graphene.String(required=True)
     count = graphene.Int()
 
 
 class UserEntityDateType(graphene.ObjectType):
-    id = graphene.String(required=True)
+    user_id = graphene.String(required=True)
     name = graphene.String()
     date = graphene.DateTime(required=True)
