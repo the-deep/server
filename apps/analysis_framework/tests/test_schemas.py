@@ -7,13 +7,14 @@ from project.factories import ProjectFactory
 from lead.factories import LeadFactory
 from analysis_framework.factories import (
     AnalysisFrameworkFactory,
+    AnalysisFrameworkTagFactory,
     SectionFactory,
     WidgetFactory,
 )
 
 
 class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
-    factories_used = [AnalysisFrameworkFactory, SectionFactory, WidgetFactory, ProjectFactory]
+    factories_used = [AnalysisFrameworkFactory, AnalysisFrameworkTagFactory, SectionFactory, WidgetFactory, ProjectFactory]
 
     def test_analysis_framework_list(self):
         query = '''
@@ -28,14 +29,24 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
                   description
                   isPrivate
                   clonedFrom
+                  tags {
+                    id
+                    title
+                    description
+                    icon {
+                      url
+                      name
+                    }
+                  }
                 }
               }
             }
         '''
 
         user = UserFactory.create()
-        private_af = AnalysisFrameworkFactory.create(is_private=True)
-        normal_af = AnalysisFrameworkFactory.create()
+        tag1, tag2, _ = AnalysisFrameworkTagFactory.create_batch(3)
+        private_af = AnalysisFrameworkFactory.create(is_private=True, tags=[tag1, tag2])
+        normal_af = AnalysisFrameworkFactory.create(tags=[tag2])
         member_af = AnalysisFrameworkFactory.create()
         member_af.add_member(user)
 
@@ -51,6 +62,7 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
         self.assertIdEqual(results[0]['id'], normal_af.id)
         self.assertIdEqual(results[1]['id'], member_af.id)
         self.assertNotIn(str(private_af.id), [d['id'] for d in results])  # Can't see private project.
+        self.assertMatchSnapshot(results, 'response-01')
 
         project = ProjectFactory.create(analysis_framework=private_af)
         # It shouldn't list private AF after adding to a project.
@@ -58,6 +70,7 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
         results = content['data']['analysisFrameworks']['results']
         self.assertEqual(content['data']['analysisFrameworks']['totalCount'], 2)
         self.assertNotIn(str(private_af.id), [d['id'] for d in results])  # Can't see private project.
+        self.assertMatchSnapshot(results, 'response-02')
 
         project.add_member(user)
         # It should list private AF after user is member of the project.
@@ -65,6 +78,7 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
         results = content['data']['analysisFrameworks']['results']
         self.assertEqual(content['data']['analysisFrameworks']['totalCount'], 3)
         self.assertIn(str(private_af.id), [d['id'] for d in results])  # Can see private project now.
+        self.assertMatchSnapshot(results, 'response-03')
 
     def test_public_analysis_framework(self):
         query = '''

@@ -344,3 +344,120 @@ snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_detail_query with
         }
     }
 }
+
+snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_list response-01'] = [
+    {
+        'clonedFrom': None,
+        'description': 'Investment on gun young catch management sense technology check civil quite others his other life edge network wall quite boy those seem shoulder future fall citizen.',
+        'id': '2',
+        'isPrivate': False,
+        'tags': [
+            {
+                'description': 'Future choice whatever from behavior benefit suggest page southern role movie win her need stop peace technology officer relate animal direction eye.',
+                'icon': {
+                    'name': 'af-tag-icon/example_AF-Tag-1.png',
+                    'url': 'http://testserver/media/af-tag-icon/example_AF-Tag-1.png'
+                },
+                'id': '2',
+                'title': 'AF-Tag-1'
+            }
+        ],
+        'title': 'AF-1'
+    },
+    {
+        'clonedFrom': None,
+        'description': 'West then enjoy may condition tree that fear police participant check several.',
+        'id': '3',
+        'isPrivate': False,
+        'tags': [
+        ],
+        'title': 'AF-2'
+    }
+]
+
+snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_list response-02'] = [
+    {
+        'clonedFrom': None,
+        'description': 'Investment on gun young catch management sense technology check civil quite others his other life edge network wall quite boy those seem shoulder future fall citizen.',
+        'id': '2',
+        'isPrivate': False,
+        'tags': [
+            {
+                'description': 'Future choice whatever from behavior benefit suggest page southern role movie win her need stop peace technology officer relate animal direction eye.',
+                'icon': {
+                    'name': 'af-tag-icon/example_AF-Tag-1.png',
+                    'url': 'http://testserver/media/af-tag-icon/example_AF-Tag-1.png'
+                },
+                'id': '2',
+                'title': 'AF-Tag-1'
+            }
+        ],
+        'title': 'AF-1'
+    },
+    {
+        'clonedFrom': None,
+        'description': 'West then enjoy may condition tree that fear police participant check several.',
+        'id': '3',
+        'isPrivate': False,
+        'tags': [
+        ],
+        'title': 'AF-2'
+    }
+]
+
+snapshots['TestAnalysisFrameworkQuery::test_analysis_framework_list response-03'] = [
+    {
+        'clonedFrom': None,
+        'description': 'Here writer policy news range successful simply director allow firm environment decision wall then fire pretty how trip learn enter east no enjoy.',
+        'id': '1',
+        'isPrivate': True,
+        'tags': [
+            {
+                'description': 'Each cause bill scientist nation opportunity all behavior discussion own night respond red information last everything thank serve civil.',
+                'icon': {
+                    'name': 'af-tag-icon/example_AF-Tag-0.png',
+                    'url': 'http://testserver/media/af-tag-icon/example_AF-Tag-0.png'
+                },
+                'id': '1',
+                'title': 'AF-Tag-0'
+            },
+            {
+                'description': 'Future choice whatever from behavior benefit suggest page southern role movie win her need stop peace technology officer relate animal direction eye.',
+                'icon': {
+                    'name': 'af-tag-icon/example_AF-Tag-1.png',
+                    'url': 'http://testserver/media/af-tag-icon/example_AF-Tag-1.png'
+                },
+                'id': '2',
+                'title': 'AF-Tag-1'
+            }
+        ],
+        'title': 'AF-0'
+    },
+    {
+        'clonedFrom': None,
+        'description': 'Investment on gun young catch management sense technology check civil quite others his other life edge network wall quite boy those seem shoulder future fall citizen.',
+        'id': '2',
+        'isPrivate': False,
+        'tags': [
+            {
+                'description': 'Future choice whatever from behavior benefit suggest page southern role movie win her need stop peace technology officer relate animal direction eye.',
+                'icon': {
+                    'name': 'af-tag-icon/example_AF-Tag-1.png',
+                    'url': 'http://testserver/media/af-tag-icon/example_AF-Tag-1.png'
+                },
+                'id': '2',
+                'title': 'AF-Tag-1'
+            }
+        ],
+        'title': 'AF-1'
+    },
+    {
+        'clonedFrom': None,
+        'description': 'West then enjoy may condition tree that fear police participant check several.',
+        'id': '3',
+        'isPrivate': False,
+        'tags': [
+        ],
+        'title': 'AF-2'
+    }
+]

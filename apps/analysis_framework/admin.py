@@ -13,6 +13,7 @@ from deep.admin import (
 
 from .models import (
     AnalysisFramework,
+    AnalysisFrameworkTag,
     AnalysisFrameworkRole,
     AnalysisFrameworkMembership,
     Section,
@@ -113,3 +114,8 @@ class AnalysisFrameworkRoleAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request, obj=None):
         return False
+
+
+@admin.register(AnalysisFrameworkTag)
+class AnalysisFrameworkTagAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title',)
