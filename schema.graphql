@@ -3720,14 +3720,13 @@ enum UserEmailConditionOptOutEnum {
 }
 
 type UserEntityCountType {
-  id: String
   name: String
-  userId: String
+  userId: String!
   count: Int
 }
 
 type UserEntityDateType {
-  id: String!
+  userId: String!
   name: String
   date: DateTime!
 }

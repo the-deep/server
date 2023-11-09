@@ -89,7 +89,7 @@ def get_recent_active_users(project, max_users=3):
     ]
     return [
         {
-            'id': user.id,
+            'user_id': user.id,
             'name': user.get_display_name(),
             'date': date,
         } for user, date in recent_active_users
@@ -112,7 +112,6 @@ def get_top_entity_contributor(project, Entity):
 
     return [
         {
-            'id': contributor.id,
             'name': contributor.member.get_display_name(),
             'user_id': contributor.member.id,
             'count': contributor.entity_count,
