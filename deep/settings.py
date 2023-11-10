@@ -120,6 +120,7 @@ DEEPER_SITE_NAME = env('DEEPER_SITE_NAME')
 HTTP_PROTOCOL = env('DEEP_HTTPS')
 
 # See if we are inside a test environment (pytest)
+PYTEST_XDIST_WORKER = env('PYTEST_XDIST_WORKER')
 TESTING = any([
     arg in sys.argv for arg in [
         'test',
@@ -128,7 +129,7 @@ TESTING = any([
         '/usr/local/lib/python3.6/dist-packages/py/test.py',
     ]
     # Provided by pytest-xdist
-]) or env('PYTEST_XDIST_WORKER') is not None
+]) or PYTEST_XDIST_WORKER is not None
 TEST_RUNNER = 'snapshottest.django.TestRunner'
 TEST_DIR = os.path.join(BASE_DIR, 'deep/test_files')
 
