@@ -13,6 +13,10 @@ ExportExcelSelectedStaticColumnEnum = convert_enum_to_graphene_enum(
     Export.StaticColumn,
     name='ExportExcelSelectedStaticColumnEnum',
 )
+ExportReportCitationStyleEnum = convert_enum_to_graphene_enum(
+    Export.CitationStyle,
+    name='ExportReportCitationStyleEnum',
+)
 
 GenericExportFormatEnum = convert_enum_to_graphene_enum(GenericExport.Format, name='GenericExportFormatEnum')
 GenericExportStatusEnum = convert_enum_to_graphene_enum(GenericExport.Status, name='GenericExportStatusEnum')
@@ -40,4 +44,9 @@ enum_map.update({
         field_name='static_column',
         serializer_name='ExportExcelSelectedColumnSerializer',
     ): ExportExcelSelectedStaticColumnEnum,
+    get_enum_name_from_django_field(
+        None,
+        field_name='report_citation_style',
+        serializer_name='ExportExtraOptionsSerializer',
+    ): ExportReportCitationStyleEnum,
 })

@@ -145,6 +145,11 @@ class Export(ExportBaseModel):
         LEAD_ENTRY_ID = 'lead_entry_id', 'Source-Entry Id'
         ENTRY_EXCERPT = 'entry_excerpt', 'Modified Excerpt, Original Excerpt'
 
+    # Used by extra options for Report
+    class CitationStyle(models.IntegerChoices):
+        DEFAULT = 1, 'Default'
+        STYLE_1 = 2, 'Sample 1'  # TODO: Update naming
+
     # NOTE: Also used to validate which combination is supported
     DEFAULT_TITLE_LABEL = {
         (DataType.ENTRIES, ExportType.EXCEL, Format.XLSX): 'Entries Excel Export',

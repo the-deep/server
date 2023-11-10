@@ -2008,6 +2008,7 @@ input ExportExtraOptionsInputType {
   reportExportingWidgets: [ID!]
   reportLevels: [ExportReportLevelWidgetInputType!]
   reportStructure: [ExportReportStructureWidgetInputType!]
+  reportCitationStyle: ExportReportCitationStyleEnum
 }
 
 type ExportExtraOptionsType {
@@ -2021,6 +2022,7 @@ type ExportExtraOptionsType {
   reportExportingWidgets: [ID!]
   reportLevels: [ExportReportLevelWidgetType!]
   reportStructure: [ExportReportStructureWidgetType!]
+  reportCitationStyle: ExportReportCitationStyleEnum
 }
 
 enum ExportFormatEnum {
@@ -2029,6 +2031,11 @@ enum ExportFormatEnum {
   DOCX
   PDF
   JSON
+}
+
+enum ExportReportCitationStyleEnum {
+  DEFAULT
+  STYLE_1
 }
 
 input ExportReportLevelWidgetFourthLevelInputType {

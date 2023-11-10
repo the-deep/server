@@ -201,6 +201,7 @@ class WidgetExporter:
 class ReportExporter:
     def __init__(
         self,
+        citation_style: Export.CitationStyle,
         exporting_widgets=None,  # eg: ["517", "43", "42"]
         is_preview=False,
         show_lead_entry_id=True,
@@ -229,6 +230,9 @@ class ReportExporter:
         self.geoarea_data_cache = {}
         self.assessment_data_cache = {}
         self.entry_widget_data_cache = {}
+
+        # Citation
+        self.citation_style = citation_style or Export.CitationStyle.DEFAULT
 
     def load_exportables(self, exportables, regions):
         exportables = exportables.filter(
@@ -531,7 +535,11 @@ class ReportExporter:
             entry.excerpt if entry.entry_type == Entry.TagType.EXCERPT
             else ''
         )
-        para.add_run(excerpt)
+
+        if self.citation_style == Export.CitationStyle.STYLE_1:
+            para.add_run(excerpt.rstrip('.'))
+        else:  # Default
+            para.add_run(excerpt)
 
         # Add texts from TextWidget
         entry_texts = self.collected_widget_text.get(entry.id) or {}
@@ -576,22 +584,35 @@ class ReportExporter:
         else:
             para.add_run(' (')  # Starting from same line
 
-        source = lead.get_source_display() or 'Reference'
-        author = lead.get_authors_display()
+        if self.citation_style == Export.CitationStyle.STYLE_1:
+            source = ''
+            author = lead.get_authors_display(short_name=True)
+        else:  # Default
+            source = lead.get_source_display() or 'Reference'
+            author = lead.get_authors_display()
+
         url = lead.url or Permalink.lead_share_view(lead.uuid)
         date = entry.lead.published_on
 
-        # Add author is available
-        if (author and author.lower() != (source or '').lower()):
+        if self.citation_style == Export.CitationStyle.STYLE_1:
+            # Add author is available
+            if (author and author.lower() != (source or '').lower()):
+                if url:
+                    para.add_hyperlink(url, f'{author} ')
+                else:
+                    para.add_run(f'{author} ')
+        else:  # Default
+            # Add author is available
+            if (author and author.lower() != (source or '').lower()):
+                if url:
+                    para.add_hyperlink(url, f'{author}, ')
+                else:
+                    para.add_run(f'{author}, ')
+            # Add source (with url if available)
             if url:
-                para.add_hyperlink(url, f'{author}, ')
+                para.add_hyperlink(url, source)
             else:
-                para.add_run(f'{author}, ')
-        # Add source (with url if available)
-        if url:
-            para.add_hyperlink(url, source)
-        else:
-            para.add_run(source)
+                para.add_run(source)
 
         # Add (confidential/restricted) to source without ,
         if lead.confidentiality == Lead.Confidentiality.CONFIDENTIAL:
@@ -599,9 +620,12 @@ class ReportExporter:
         elif lead.confidentiality == Lead.Confidentiality.RESTRICTED:
             para.add_run(' (restricted)')
 
-        # Add lead title if available
-        if lead.title:
-            para.add_run(f", {lead.title}")
+        if self.citation_style == Export.CitationStyle.STYLE_1:
+            pass
+        else:  # Default
+            # Add lead title if available
+            if lead.title:
+                para.add_run(f", {lead.title}")
 
         # Finally add date
         if date:
@@ -610,12 +634,8 @@ class ReportExporter:
         para.add_run(')')
         # --- Reference End
 
-        # Adding Entry Group Labels
-        # group_labels = self.entry_group_labels.get(entry.pk) or []
-        # if len(group_labels) > 0:
-        #     para.add_run(' (')
-        #     para.add_run(', '.join([f'{group} : {label}' for group, label in group_labels]))
-        #     para.add_run(')')
+        if self.citation_style == Export.CitationStyle.STYLE_1:
+            para.add_run('.')
 
         self.doc.add_paragraph()
 

@@ -235,6 +235,7 @@ class ExportExtraOptionsSerializer(ProjectPropertySerializerMixin, serializers.S
         required=False, many=True, help_text=ExportReportLevelWidgetSerializer.__doc__)
     report_structure = ExportReportStructureWidgetSerializer(
         required=False, many=True, help_text=ExportReportStructureWidgetSerializer.__doc__)
+    report_citation_style = serializers.ChoiceField(choices=Export.CitationStyle.choices, required=False)
 
 
 class UserExportBaseGqlMixin(ProjectPropertySerializerMixin, serializers.ModelSerializer):
