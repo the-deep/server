@@ -16,6 +16,9 @@ class AnalysisFrameworkTag(models.Model):
     description = models.TextField(blank=True)
     icon = models.FileField(upload_to='af-tag-icon/', max_length=255)
 
+    def __str__(self):
+        return self.title
+
 
 class AnalysisFramework(UserResource):
     """
