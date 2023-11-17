@@ -142,6 +142,7 @@ class Project(UserResource):
         is_viz_enabled = self.is_visualization_enabled
         return (
             is_viz_enabled and
+            af is not None and
             af.properties is not None and
             af.properties.get('stats_config') is not None
         )
