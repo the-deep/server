@@ -427,3 +427,23 @@ class LeadDuplicates(models.Model):
     # This is to collect feedback from user whether this duplicate pair is
     # valid or not.
     is_valid = models.BooleanField(default=True)
+
+
+class ExtractedLead(UserResource):
+    class TextExtraction(models.IntegerChoices):
+        INITIATED = 1, "Initiated"
+        SUCCESS = 2, "Success"
+        FAILED = 3, "Failed"
+        INPUT_URL_PROCESS_FAILED = 4, "Input url process failed"  # This might occur when input entries list url is expired
+
+    class TextClassification(models.IntegerChoices):
+        INITIATED = 1, "Initiated"
+        SUCCESS = 2, "Success"
+        FAILED = 3, "Failed"
+        INPUT_URL_PROCESS_FAILED = 4, "Input url process failed"
+
+    lead = models.ForeignKey(Lead, on_delete=models.CASCADE)
+    entry_extraction_classification = models.TextField()
+    text_extraction_id = models.CharField(max_length=50, null=True, blank=True)
+    text_extraction_status = models.IntegerField(choices=TextExtraction.choices, default=TextExtraction.INITIATED)
+    text_classification_status = models.IntegerField(choices=TextClassification.choices, default=TextClassification.INITIATED)

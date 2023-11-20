@@ -17,6 +17,7 @@ from rest_framework import serializers
 
 from deep.token import DeepTokenGenerator
 from deep.deepl import DeeplServiceEndpoint
+from geo.models import Region
 from utils.common import UidBase64Helper, get_full_media_url
 from utils.request import RequestHelper
 from deep.exceptions import DeepBaseException
@@ -203,9 +204,16 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
             },
         )
 
+    @classmethod
+    def auto_trigger_request_to_extractor(cls, lead):
+        with open(os.path.join(settings.TEST_DIR, 'mock_draftentry.json')) as f:
+            shape = json.load(f)
+        response= requests.post(url=cls.get_callback_url(),json=shape['blocks'][0]['classification'], headers=cls.REQUEST_HEADERS)
+        print(response)
+
     # --- Callback logics
     @staticmethod
-    def _get_or_create_models_version(models_data):
+    def _get_or_create_models_version(models_data): 
         def get_versions_map():
             return {
                 (model_version.model.model_id, model_version.version): model_version
