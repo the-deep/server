@@ -12,6 +12,7 @@ from deepl_integration.handlers import (
     AnalysisAutomaticSummaryHandler,
     AnalyticalStatementNGramHandler,
     AnalyticalStatementGeoHandler,
+    AutoAssistedTaggingDraftEntryHandler
 )
 
 from deduplication.tasks.indexing import index_lead_and_calculate_duplicates
@@ -203,6 +204,24 @@ class AssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializ
         return self.nlp_handler.save_data(
             draft_entry,
             validated_data,
+        )
+
+
+class AutoAssistedBlockPredicationCallbackSerializer(serializers.Serializer):
+    class ClassificationInfoCallBackSerializer(serializers.Serializer):
+        model_preds = AssistedTaggingModelPredictionCallbackSerializer(many=True)
+    text = serializers.CharField()
+    classification = ClassificationInfoCallBackSerializer()
+
+
+class AutoAssistedTaggingDraftEntryCallbackSerializer(BaseCallbackSerializer):
+    blocks = AutoAssistedBlockPredicationCallbackSerializer(many=True)
+    nlp_handler = AutoAssistedTaggingDraftEntryHandler
+
+    def create(self, validated_data):
+        return self.nlp_handler.save_data(
+            validated_data['object'],
+            validated_data
         )
 
 

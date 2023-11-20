@@ -1383,6 +1383,7 @@ type AssistedTaggingMutationType {
   wrongPredictionReviewCreate(data: WrongPredictionReviewInputType!): CreateWrongPredictionReview
   missingPredictionReviewDelete(id: ID!): DeleteMissingPredictionReview
   wrongPredictionReviewDelete(id: ID!): DeleteWrongPredictionReview
+  autoDraftEntryCreate(data: AutoDraftEntryInputType!): CreateAutoDraftEntry
 }
 
 enum AssistedTaggingPredictionDataTypeEnum {
@@ -1408,6 +1409,8 @@ type AssistedTaggingPredictionType {
 
 type AssistedTaggingQueryType {
   draftEntry(id: ID!): DraftEntryType
+  draftEntryByLeads(filter: DraftEntryFilterDataInputType): [DraftEntryByLeadType!]
+  extractionStatusByLead: AutoextractionStatusType
 }
 
 type AssistedTaggingRootQueryType {
@@ -1439,6 +1442,20 @@ type AttributeType {
   widgetType: WidgetWidgetTypeEnum!
   widgetTypeDisplay: EnumDescription!
   geoSelectedOptions: [ProjectGeoAreaType!]
+}
+
+input AutoDraftEntryInputType {
+  lead: ID!
+}
+
+enum AutoEntryExtractionTypeEnum {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+type AutoextractionStatusType {
+  autoEntryExtractionStatus: AutoEntryExtractionTypeEnum!
 }
 
 enum AutomaticSummaryStatusEnum {
@@ -1732,6 +1749,12 @@ type CreateAnalysisReportUpload {
   result: AnalysisReportUploadType
 }
 
+type CreateAutoDraftEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: DraftEntryType
+}
+
 type CreateDraftEntry {
   errors: [GenericScalar!]
   ok: Boolean
@@ -1935,6 +1958,22 @@ type DjangoDebugSQL {
   encoding: String
 }
 
+type DraftEntryByLeadType {
+  id: ID!
+  excerpt: String!
+  predictionReceivedAt: DateTime
+  predictionStatus: DraftEntryPredictionStatusEnum!
+  predictionStatusDisplay: EnumDescription!
+  predictions: [AssistedTaggingPredictionType!]
+  missingPredictionReviews: [MissingPredictionReviewType!]
+  relatedGeoareas: [ProjectGeoAreaType!]
+}
+
+input DraftEntryFilterDataInputType {
+  lead: [ID!]
+  draftEntryType: [DraftEntryTypeEnum!]
+}
+
 input DraftEntryInputType {
   lead: ID!
   excerpt: String!
@@ -1956,6 +1995,11 @@ type DraftEntryType {
   predictions: [AssistedTaggingPredictionType!]
   missingPredictionReviews: [MissingPredictionReviewType!]
   relatedGeoareas: [ProjectGeoAreaType!]
+}
+
+enum DraftEntryTypeEnum {
+  AUTO
+  MANUAL
 }
 
 input EMMEntityInputType {

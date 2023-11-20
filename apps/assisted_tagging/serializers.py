@@ -1,6 +1,5 @@
 from django.db import transaction
 from rest_framework import serializers
-
 from user_resource.serializers import UserResourceSerializer, UserResourceCreatedMixin
 from deep.serializers import ProjectPropertySerializerMixin, TempClientIdMixin
 from analysis_framework.models import Widget
@@ -11,7 +10,8 @@ from .models import (
     PredictionTagAnalysisFrameworkWidgetMapping,
     WrongPredictionReview,
 )
-from .tasks import trigger_request_for_draft_entry_task
+from lead.models import LeadPreview
+from .tasks import trigger_request_for_draft_entry_task, trigger_request_for_mock_entry_task
 
 
 # ---------- Graphql ---------------------------
@@ -127,3 +127,43 @@ class PredictionTagAnalysisFrameworkMapSerializer(TempClientIdMixin, serializers
                 association='Association is required for this widget.'
             ))
         return data
+
+
+class AutoDraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCreatedMixin, serializers.ModelSerializer):
+    class Meta:
+        model = DraftEntry
+        fields = (
+            'lead',
+        )
+
+    def validate_lead(self, lead):
+        if lead.project != self.project:
+            raise serializers.ValidationError('Only lead from current project are allowed.')
+        af = lead.project.analysis_framework
+        if af is None or not af.assisted_tagging_enabled:
+            raise serializers.ValidationError('Assisted tagging is disabled for the Framework used by this project.')
+        return lead
+
+    def validate(self, data):
+        if self.instance and self.instance.created_by != self.context['request'].user:
+            raise serializers.ValidationError('Only reviewer can edit this review')
+        data['project'] = self.project
+        if self.project.is_private:
+            raise serializers.ValidationError('Assisted tagging is not available for private projects.')
+        return data
+
+    def create(self, data):
+        text = LeadPreview.objects.filter(lead=self.data['lead']).first()
+        if text.text_extract == '' or None:
+            raise serializers.DjangoValidationError('Simplifed Text is empty')
+        # Use already existing draft entry if found
+        data['draft_entry_type'] = 0  # auto extraction
+        # Create new one and send trigger to deepl
+        transaction.on_commit(
+            lambda: trigger_request_for_mock_entry_task.delay(self.data['lead'])
+        )
+
+        return True
+
+    def update(self, *_):
+        raise Exception('Update not allowed')
