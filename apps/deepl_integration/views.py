@@ -33,6 +33,10 @@ class AssistedTaggingDraftEntryPredictionCallbackView(BaseCallbackView):
     serializer = AssistedTaggingDraftEntryPredictionCallbackSerializer
 
 
+class AutoTaggingDraftEntryPredictionCallbackView(BaseCallbackView):
+    serializer = AssistedTaggingDraftEntryPredictionCallbackSerializer
+
+
 class LeadExtractCallbackView(BaseCallbackView):
     serializer = LeadExtractCallbackSerializer
 

@@ -6,10 +6,9 @@ from django.db.models.functions import Concat
 
 from analysis_framework.models import Widget
 from project.models import Project
-from lead.models import Lead
+from lead.models import Lead, LeadPreview
 from user_resource.models import UserResource, UserResourceCreated
 from geo.models import GeoArea
-
 
 class AssistedTaggingModel(models.Model):
     # This is for refering model id within deep. This can change. Source is the deepl.
@@ -90,6 +89,10 @@ class DraftEntry(UserResourceCreated):
         DONE = 2, 'Done'
         SEND_FAILED = 3, 'Send Failed'
 
+    class DraftEntryType(models.IntegerChoices):
+        AUTO = 0, 'Auto Extraction'  # NLP defiend extraction text
+        MANUAL = 1, 'Manual Extraction'  # manaul defiend extraction text
+
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='+')
     lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='+')
     excerpt = models.TextField()
@@ -98,6 +101,7 @@ class DraftEntry(UserResourceCreated):
     prediction_received_at = models.DateTimeField(null=True, blank=True)
     # Additional attribues
     related_geoareas = models.ManyToManyField(GeoArea, blank=True)
+    draft_entry_type = models.SmallIntegerField(choices=DraftEntryType.choices, default=DraftEntryType.MANUAL)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

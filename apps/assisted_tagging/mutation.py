@@ -21,6 +21,7 @@ from .serializers import (
     DraftEntryGqlSerializer,
     WrongPredictionReviewGqlSerializer,
     MissingPredictionReviewGqlSerializer,
+    AutoDraftEntryGqlSerializer
 )
 
 
@@ -37,6 +38,11 @@ WrongPredictionReviewInputType = generate_input_type_for_serializer(
 MissingPredictionReviewInputType = generate_input_type_for_serializer(
     'MissingPredictionReviewInputType',
     serializer_class=MissingPredictionReviewGqlSerializer,
+)
+
+AutoDraftEntryInputType = generate_input_type_for_serializer(
+    "AutoDraftEntryInputType",
+    serializer_class=AutoDraftEntryGqlSerializer
 )
 
 
@@ -96,6 +102,17 @@ class DeleteWrongPredictionReview(PsDeleteMutation):
             created_by=info.context.user,
         )
 
+# auto draft_entry_create
+
+
+class CreateAutoDraftEntry(PsGrapheneMutation):
+    class Arguments:
+        data = AutoDraftEntryInputType(required=True)
+    model = DraftEntry
+    serializer_class = AutoDraftEntryGqlSerializer
+    result = graphene.Field(DraftEntryType)
+    permissions = [PP.Permission.CREATE_ENTRY]
+
 
 class AssistedTaggingMutationType(graphene.ObjectType):
     draft_entry_create = CreateDraftEntry.Field()
@@ -103,3 +120,4 @@ class AssistedTaggingMutationType(graphene.ObjectType):
     wrong_prediction_review_create = CreateWrongPredictionReview.Field()
     missing_prediction_review_delete = DeleteMissingPredictionReview.Field()
     wrong_prediction_review_delete = DeleteWrongPredictionReview.Field()
+    auto_draft_entry_create = CreateAutoDraftEntry.Field()
