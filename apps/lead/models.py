@@ -89,6 +89,12 @@ class Lead(UserResource, ProjectEntityMixin):
         SUCCESS = 2, 'Success'
         FAILED = 3, 'Failed'
 
+    class AutoExtractionStatus(models.IntegerChoices):
+        NONE = 0, "None"
+        PENDING = 1, 'Pending'
+        SUCCESS = 2, 'Success'
+        FAILED = 3, 'Failed'
+
     lead_group = models.ForeignKey(
         LeadGroup,
         on_delete=models.SET_NULL,
@@ -148,6 +154,8 @@ class Lead(UserResource, ProjectEntityMixin):
     is_indexed = models.BooleanField(default=False)
     duplicate_leads_count = models.PositiveIntegerField(default=0)
     indexed_at = models.DateTimeField(null=True, blank=True)
+    auto_entry_extraction_status = models.SmallIntegerField(
+        choices=AutoExtractionStatus.choices, default=AutoExtractionStatus.NONE)
 
     def __str__(self):
         return '{}'.format(self.title)

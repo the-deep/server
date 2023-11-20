@@ -90,6 +90,10 @@ class DraftEntry(UserResourceCreated):
         DONE = 2, 'Done'
         SEND_FAILED = 3, 'Send Failed'
 
+    class DraftEntryType(models.IntegerChoices):
+        AUTO = 0, 'Auto Extraction'  # NLP defiend extraction text
+        MANUAL = 1, 'Manual Extraction'  # manaul defiend extraction text
+
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='+')
     lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='+')
     excerpt = models.TextField()
@@ -98,6 +102,7 @@ class DraftEntry(UserResourceCreated):
     prediction_received_at = models.DateTimeField(null=True, blank=True)
     # Additional attribues
     related_geoareas = models.ManyToManyField(GeoArea, blank=True)
+    draft_entry_type = models.SmallIntegerField(choices=DraftEntryType.choices, default=DraftEntryType.MANUAL)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
