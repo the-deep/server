@@ -14,7 +14,14 @@ from analysis_framework.factories import (
 
 
 class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
-    factories_used = [AnalysisFrameworkFactory, AnalysisFrameworkTagFactory, SectionFactory, WidgetFactory, ProjectFactory]
+    factories_used = [
+        AnalysisFrameworkFactory,
+        AnalysisFrameworkTagFactory,
+        SectionFactory,
+        WidgetFactory,
+        ProjectFactory,
+        LeadFactory,
+    ]
 
     def test_analysis_framework_list(self):
         query = '''
@@ -260,12 +267,14 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
             '''
 
         # lets create some analysis_framework
-        analysis_framework1 = AnalysisFrameworkFactory.create()
-        analysis_framework2 = AnalysisFrameworkFactory.create()
-        analysis_framework3 = AnalysisFrameworkFactory.create()
-        analysis_framework4 = AnalysisFrameworkFactory.create()
-        analysis_framework5 = AnalysisFrameworkFactory.create()
-        analysis_framework6 = AnalysisFrameworkFactory.create()
+        (
+            analysis_framework1,
+            analysis_framework2,
+            analysis_framework3,
+            analysis_framework4,
+            analysis_framework5,
+            analysis_framework6,
+        ) = AnalysisFrameworkFactory.create_batch(6)
 
         project1 = ProjectFactory.create(analysis_framework=analysis_framework1)
         project2 = ProjectFactory.create(analysis_framework=analysis_framework2)
