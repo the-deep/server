@@ -807,6 +807,7 @@ class ProjectGqSerializer(DeprecatedUserResourceSerializer):
             'status',
             'is_private',
             'is_test',
+            'is_assessment_enabled',
             'analysis_framework',
             'is_visualization_enabled',
             'has_publicly_viewable_unprotected_leads',
