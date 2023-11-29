@@ -557,6 +557,7 @@ class LeadExtractionHandler(BaseHandler):
             'callback_url': callback_url,
             'request_type': NlpRequestType.USER if high_priority else NlpRequestType.SYSTEM,
         }
+        logger.error(payload)
         try:
             response = requests.post(
                 DeeplServiceEndpoint.DOCS_EXTRACTOR_ENDPOINT,
@@ -616,6 +617,7 @@ class LeadExtractionHandler(BaseHandler):
         images_uri: List[str],
         word_count: int,
         page_count: int,
+        text_extraction_id: str
     ):
         LeadPreview.objects.filter(lead=lead).delete()
         LeadPreviewImage.objects.filter(lead=lead).delete()
@@ -626,6 +628,7 @@ class LeadExtractionHandler(BaseHandler):
             text_extract=RequestHelper(url=text_source_uri, ignore_error=True).get_text(sanitize=True) or '',
             word_count=word_count,
             page_count=page_count,
+            text_extraction_id=text_extraction_id
         )
         # Save extracted images as LeadPreviewImage instances
         # TODO: The logic is same for unified_connector leads as well. Maybe have a single func?

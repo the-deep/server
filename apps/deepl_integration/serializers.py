@@ -75,7 +75,7 @@ class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
     text_path = serializers.CharField(required=False)
     total_words_count = serializers.IntegerField(required=False, default=0)
     total_pages = serializers.IntegerField(required=False, default=0)
-
+    text_extraction_id = serializers.CharField(required=False)
     nlp_handler = LeadExtractionHandler
 
     def validate(self, data):
@@ -104,6 +104,7 @@ class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
                 data.get('images_path', [])[:10],   # TODO: Support for more images, too much image will error.
                 data.get('total_words_count'),
                 data.get('total_pages'),
+                data.get('text_extraction_id')
             )
             # Add to deduplication index
             transaction.on_commit(lambda: index_lead_and_calculate_duplicates.delay(lead.id))

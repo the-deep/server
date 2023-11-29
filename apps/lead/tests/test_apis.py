@@ -1841,7 +1841,7 @@ class TestExtractorCallback(TestCase):
                 lead1,
                 f'{UidBase64Helper.encode(lead1.pk)}-some-random-id',
                 LeadExtractionHandler.Exception.InvalidOrExpiredToken,
-                F;L'AMSDF';L
+            ),
             (lead1, '11-some-random-id', LeadExtractionHandler.Exception.InvalidTokenValue),
             (lead1, 'some-random-id', LeadExtractionHandler.Exception.InvalidTokenValue),
             (lead2, lead2_client_id, LeadExtractionHandler.Exception.ObjectNotFound),
@@ -1854,16 +1854,18 @@ class TestExtractorCallback(TestCase):
                 assert LeadExtractionHandler.get_object_using_client_id(client_id) == lead
 
 
-class AutoEntryExtractionCallback(TestCase):
+class AutoEntryExtractionTestCase(TestCase):
     def setUp(self):
         super().setUp()
         self.lead = LeadFactory.create()
+    # @mock.patch('assisted_tagging.mutation.
 
     @mock.patch('deepl_integration.handlers.RequestHelper.json')
     def test_entry_extraction_callback(self, get_json_mock):
         url = '/api/v1/callback/auto-assisted-tagging-draft-entry-prediction/'
         self.authenticate()
-        get_json_mock.return_value = ""
+        get_json_mock.return_value = "testing"
+        print(get_json_mock)
         data = {
             "client_id": AutoAssistedTaggingDraftEntryHandler.get_client_id(self.lead),
             'entry_extraction_classification_path': 'https://server-deepl.dev.datafriendlyspace.org/media/',
@@ -1872,3 +1874,6 @@ class AutoEntryExtractionCallback(TestCase):
         }
         response = self.client.post(url, data)
         self.assert_200(response)
+
+    def test_auto_extraction_mutation(self):
+        pass
