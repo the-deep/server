@@ -156,6 +156,9 @@ class AutoDraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCr
         text = LeadPreview.objects.filter(lead=self.data['lead']).first()
         if text.text_extract == '' or None:
             raise serializers.DjangoValidationError('Simplifed Text is empty')
+        draft_entry = DraftEntry.objects.filter(lead=self.data['lead'], draft_entry_type=0)
+        if draft_entry:
+            raise serializers.DjangoValidationError('Draft entry already exit')
         # Use already existing draft entry if found
         data['draft_entry_type'] = 0  # auto extraction
         # Create new one and send trigger to deepl
