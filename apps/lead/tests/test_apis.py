@@ -1841,7 +1841,7 @@ class TestExtractorCallback(TestCase):
                 lead1,
                 f'{UidBase64Helper.encode(lead1.pk)}-some-random-id',
                 LeadExtractionHandler.Exception.InvalidOrExpiredToken,
-            ),
+                F;L'AMSDF';L
             (lead1, '11-some-random-id', LeadExtractionHandler.Exception.InvalidTokenValue),
             (lead1, 'some-random-id', LeadExtractionHandler.Exception.InvalidTokenValue),
             (lead2, lead2_client_id, LeadExtractionHandler.Exception.ObjectNotFound),
