@@ -1,5 +1,6 @@
 import logging
 import requests
+import json
 
 from celery import shared_task
 from lead.models import Lead
@@ -25,7 +26,9 @@ def sync_tags_with_deepl():
             tag.tag_id: tag  # tag_id is from deepl
             for tag in AssistedTaggingModelPredictionTag.objects.all()
         }
-    response = requests.get(DeeplServiceEndpoint.ASSISTED_TAGGING_TAGS_ENDPOINT).json()
+    headers = {"Authorization": "TOKEN c2e6c102ad3b4e1097242d0730a091c54f112c66"}
+    response = requests.get(DeeplServiceEndpoint.ASSISTED_TAGGING_TAGS_ENDPOINT, headers=headers)
+    response = json.loads(response.text)
     existing_tags_by_tagid = _get_existing_tags_by_tagid()
 
     new_tags = []

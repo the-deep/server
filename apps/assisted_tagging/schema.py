@@ -282,10 +282,10 @@ class AutoextractionStatusType(graphene.ObjectType):
 class AssistedTaggingQueryType(graphene.ObjectType):
     draft_entry = DjangoObjectField(DraftEntryType)
     draft_entry_by_leads = DjangoListField(DraftEntryByLeadType, filter=DraftEntryFilterDataInputType())
-    extraction_status_by_lead = graphene.Field(AutoextractionStatusType,lead_id=graphene.Int(required=True))
+    extraction_status_by_lead = graphene.Field(AutoextractionStatusType, lead_id=graphene.ID(required=True))
 
     def resolve_draft_entry_by_leads(root, info, filter):
         return DraftEntryByLeadType.custom_queryset(root, info, filter)
 
     def resolve_extraction_status_by_lead(root, info, lead_id):
-        return AutoextractionStatusType.custom_queryset(root, info,lead_id)
+        return AutoextractionStatusType.custom_queryset(root, info, lead_id)
