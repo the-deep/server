@@ -4055,6 +4055,7 @@ type ProjectDetailType {
   isDefault: Boolean!
   isPrivate: Boolean!
   isTest: Boolean!
+  isAssessmentEnabled: Boolean!
   isVisualizationEnabled: Boolean!
   data: GenericScalar
   hasPubliclyViewableUnprotectedLeads: Boolean!
@@ -4071,7 +4072,6 @@ type ProjectDetailType {
   statusDisplay: EnumDescription!
   organizations: [ProjectOrganizationType!]
   hasAnalysisFramework: Boolean!
-  hasAssessmentTemplate: Boolean!
   assessmentRegistry(id: ID!): AssessmentRegistryType
   assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], publicationDateLte: Date, publicationDateGte: Date, search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
   assessmentRegistryOptions: AssessmentRegistryOptionsType
@@ -4401,6 +4401,7 @@ type ProjectType {
   isDefault: Boolean!
   isPrivate: Boolean!
   isTest: Boolean!
+  isAssessmentEnabled: Boolean!
   isVisualizationEnabled: Boolean!
   currentUserRole: ProjectRoleTypeEnum
   allowedPermissions: [ProjectPermission!]!
@@ -4412,7 +4413,6 @@ type ProjectType {
   statusDisplay: EnumDescription!
   organizations: [ProjectOrganizationType!]
   hasAnalysisFramework: Boolean!
-  hasAssessmentTemplate: Boolean!
 }
 
 input ProjectUpdateInputType {
