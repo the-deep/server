@@ -85,6 +85,9 @@ class Project(UserResource):
     is_private = models.BooleanField(default=False)
     is_test = models.BooleanField(default=False)
 
+    # Assessment Registry
+    is_assessment_enabled = models.BooleanField(default=False)
+
     is_visualization_enabled = models.BooleanField(default=False)
 
     status = models.CharField(max_length=30, choices=Status.choices, default=Status.INACTIVE)

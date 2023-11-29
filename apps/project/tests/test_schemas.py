@@ -323,7 +323,6 @@ class TestProjectSchema(GraphQLTestCase):
                   results {
                     id
                     hasAnalysisFramework
-                    hasAssessmentTemplate
                   }
               }
             }
@@ -337,14 +336,13 @@ class TestProjectSchema(GraphQLTestCase):
         self.force_login(user)
 
         projects = self.query_check(query)['data']['projects']['results']
-        for index, (_id, has_af, has_ary_template) in enumerate([
-            (project1.pk, True, True),
-            (project2.pk, True, False),
-            (project3.pk, False, True),
+        for index, (_id, has_af) in enumerate([
+            (project1.pk, True),
+            (project2.pk, True),
+            (project3.pk, False),
         ]):
             self.assertIdEqual(projects[index]['id'], _id, projects)
             self.assertEqual(projects[index]['hasAnalysisFramework'], has_af, projects)
-            self.assertEqual(projects[index]['hasAssessmentTemplate'], has_ary_template, projects)
 
     def test_projects_query(self):
         """
