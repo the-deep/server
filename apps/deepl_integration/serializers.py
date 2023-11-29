@@ -31,6 +31,8 @@ from analysis.models import (
 
 from .models import DeeplTrackBaseModel
 
+from utils.request import RequestHelper
+
 
 class BaseCallbackSerializer(serializers.Serializer):
     nlp_handler: Type[BaseHandler]
@@ -192,6 +194,32 @@ class AssistedTaggingModelPredictionCallbackSerializer(serializers.Serializer):
     prediction_status = serializers.IntegerField()  # 0 -> Failure, 1 -> Success
 
 
+class AutoAssistedTaggingModelPredicationCallBackSerializer(serializers.Serializer):
+    class ModelPredictionCallbackSerializerTagValue(serializers.Serializer):
+        predication = serializers.DecimalField(
+            max_digits=AssistedTaggingPrediction.prediction.field.max_digits,
+            decimal_places=AssistedTaggingPrediction.prediction.field.decimal_places,
+            required=False,
+        )
+        threshold = serializers.DecimalField(
+            # From apps/assisted_tagging/models.py::AssistedTaggingPrediction::threshold
+            max_digits=AssistedTaggingPrediction.threshold.field.max_digits,
+            decimal_places=AssistedTaggingPrediction.threshold.field.decimal_places,
+            required=False,
+        )
+        is_selected = serializers.BooleanField()
+    values = serializers.ListSerializer(
+        child=serializers.CharField(),
+        required=False,
+    )
+    tags = serializers.DictField(
+        child=serializers.DictField(
+            child=ModelPredictionCallbackSerializerTagValue(),
+        ),
+        required=False,
+    )
+
+
 class AssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializer):
     model_preds = AssistedTaggingModelPredictionCallbackSerializer(many=True)
 
@@ -208,21 +236,37 @@ class AssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializ
 
 
 class AutoAssistedBlockPredicationCallbackSerializer(serializers.Serializer):
-    class ClassificationInfoCallBackSerializer(serializers.Serializer):
-        model_preds = AssistedTaggingModelPredictionCallbackSerializer(many=True)
     text = serializers.CharField()
-    classification = ClassificationInfoCallBackSerializer()
+    relevant = serializers.BooleanField()
+    prediction_status = serializers.BooleanField()
+    # classification = AutoAssistedTaggingModelPredicationCallBackSerializer()
+    classification = serializers.DictField(child=serializers.DictField())
 
 
 class AutoAssistedTaggingDraftEntryCallbackSerializer(BaseCallbackSerializer):
-    blocks = AutoAssistedBlockPredicationCallbackSerializer(many=True)
+    entry_extraction_classification_path = serializers.URLField(required=True)
+    text_extraction_id = serializers.CharField(required=True)
+    status = serializers.IntegerField()
     nlp_handler = AutoAssistedTaggingDraftEntryHandler
 
     def create(self, validated_data):
+        obj = validated_data['object']
+        validated_data = RequestHelper(url=validated_data['entry_extraction_classification_path'], ignore_error=True).json()
         return self.nlp_handler.save_data(
-            validated_data['object'],
+            obj,
             validated_data
         )
+
+# class AutoAssistedTaggingDraftEntryCallbackSerializer(BaseCallbackSerializer):
+#     blocks = AutoAssistedBlockPredicationCallbackSerializer(many=True)
+#     classification_model_info = serializers.DictField()
+#     nlp_handler = AutoAssistedTaggingDraftEntryHandler
+
+#     def create(self, validated_data):
+#         return self.nlp_handler.save_data(
+#             validated_data['object'],
+#             validated_data
+#         )
 
 
 class EntriesCollectionBaseCallbackSerializer(DeeplServerBaseCallbackSerializer):

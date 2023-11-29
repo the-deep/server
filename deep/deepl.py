@@ -8,7 +8,7 @@ DEEPL_SERVER_DOMAIN = settings.DEEPL_SERVER_DOMAIN
 class DeeplServiceEndpoint():
     # DEEPL Service Endpoints (Existing/Legacy)
     # NOTE: This will be moved to server endpoints in near future
-    ASSISTED_TAGGING_TAGS_ENDPOINT = f'{DEEPL_SERVICE_DOMAIN}/vf_tags'
+    ASSISTED_TAGGING_TAGS_ENDPOINT = f'{DEEPL_SERVICE_DOMAIN}/api/v1/nlp-tags/'
     ASSISTED_TAGGING_MODELS_ENDPOINT = f'{DEEPL_SERVICE_DOMAIN}/model_info'
     ASSISTED_TAGGING_ENTRY_PREDICT_ENDPOINT = f'{DEEPL_SERVICE_DOMAIN}/entry_predict'
 

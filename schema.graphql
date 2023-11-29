@@ -1410,7 +1410,7 @@ type AssistedTaggingPredictionType {
 type AssistedTaggingQueryType {
   draftEntry(id: ID!): DraftEntryType
   draftEntryByLeads(filter: DraftEntryFilterDataInputType): [DraftEntryByLeadType!]
-  extractionStatusByLead: AutoextractionStatusType
+  extractionStatusByLead(leadId: ID!): AutoextractionStatusType
 }
 
 type AssistedTaggingRootQueryType {
@@ -1449,6 +1449,7 @@ input AutoDraftEntryInputType {
 }
 
 enum AutoEntryExtractionTypeEnum {
+  NONE
   PENDING
   SUCCESS
   FAILED

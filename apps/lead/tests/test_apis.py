@@ -25,7 +25,7 @@ from organization.models import (
 from organization.serializers import SimpleOrganizationSerializer
 from lead.filter_set import LeadFilterSet
 from lead.serializers import SimpleLeadGroupSerializer
-from deepl_integration.handlers import LeadExtractionHandler
+from deepl_integration.handlers import AutoAssistedTaggingDraftEntryHandler, LeadExtractionHandler
 from deepl_integration.serializers import DeeplServerBaseCallbackSerializer
 from entry.models import (
     Entry,
@@ -1852,3 +1852,23 @@ class TestExtractorCallback(TestCase):
                     LeadExtractionHandler.get_object_using_client_id(client_id)
             else:
                 assert LeadExtractionHandler.get_object_using_client_id(client_id) == lead
+
+
+class AutoEntryExtractionCallback(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.lead = LeadFactory.create()
+
+    @mock.patch('deepl_integration.handlers.RequestHelper.json')
+    def test_entry_extraction_callback(self, get_json_mock):
+        url = '/api/v1/callback/auto-assisted-tagging-draft-entry-prediction/'
+        self.authenticate()
+        get_json_mock.return_value = ""
+        data = {
+            "client_id": AutoAssistedTaggingDraftEntryHandler.get_client_id(self.lead),
+            'entry_extraction_classification_path': 'https://server-deepl.dev.datafriendlyspace.org/media/',
+            'text_extraction_id': '43545',
+            'status': 1
+        }
+        response = self.client.post(url, data)
+        self.assert_200(response)

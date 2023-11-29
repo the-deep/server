@@ -18,8 +18,6 @@ from .serializers import (
     AutoAssistedTaggingDraftEntryCallbackSerializer
 )
 
-from utils.request import RequestHelper
-
 
 class BaseCallbackView(views.APIView):
     serializer: Type[serializers.Serializer]
@@ -36,16 +34,8 @@ class AssistedTaggingDraftEntryPredictionCallbackView(BaseCallbackView):
     serializer = AssistedTaggingDraftEntryPredictionCallbackSerializer
 
 
-class AutoTaggingDraftEntryPredictionCallbackView(views.APIView):
+class AutoTaggingDraftEntryPredictionCallbackView(BaseCallbackView):
     serializer = AutoAssistedTaggingDraftEntryCallbackSerializer
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request, **_):
-        data = RequestHelper(url=request.data['entry_extraction_classification_path'], ignore_error=True).json()
-        serializer = self.serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return response.Response("Request successfully completed", status=status.HTTP_200_OK)
 
 
 class LeadExtractCallbackView(BaseCallbackView):
