@@ -1450,6 +1450,7 @@ input AutoDraftEntryInputType {
 
 enum AutoEntryExtractionTypeEnum {
   NONE
+  STARTED
   PENDING
   SUCCESS
   FAILED

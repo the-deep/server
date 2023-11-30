@@ -10,7 +10,7 @@ from .models import (
     PredictionTagAnalysisFrameworkWidgetMapping,
     WrongPredictionReview,
 )
-from lead.models import LeadPreview
+from lead.models import LeadPreview, Lead
 from .tasks import trigger_request_for_draft_entry_task, trigger_request_for_mock_entry_task
 
 
@@ -153,14 +153,17 @@ class AutoDraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCr
         return data
 
     def create(self, data):
-        lead_preview = LeadPreview.objects.filter(lead=self.data['lead']).first()
-        if lead_preview.text_extract == None:
+        lead = Lead.objects.get(id=self.data['lead'])
+        lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.PENDING
+        lead.save()
+        if lead.auto_entry_extraction_status == (Lead.AutoExtractionStatus.SUCCESS):
+            raise serializers.DjangoValidationError("Already Tiggered")
+        if lead.leadpreview .text_extract == None:
             raise serializers.DjangoValidationError('Simplifed Text is empty')
         draft_entry = DraftEntry.objects.filter(lead=self.data['lead'], draft_entry_type=0)
         if draft_entry:
             raise serializers.DjangoValidationError('Draft entry already exit')
         # Use already existing draft entry if found
-        data['draft_entry_type'] = 0  # auto extraction
         # Create new one and send trigger to deepl
         transaction.on_commit(
             lambda: trigger_request_for_mock_entry_task.delay(self.data['lead'])
