@@ -66,7 +66,7 @@ class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
     """
     Serialize deepl extractor
     """
-    url = serializers.CharField()
+    url = serializers.CharField(required=False)
     # Data fields
     images_path = serializers.ListField(
         child=serializers.CharField(allow_blank=True),
