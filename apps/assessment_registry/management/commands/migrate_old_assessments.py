@@ -190,17 +190,19 @@ def migrate_score_data(old_ary, assessment_reg):
             )
 
     score_rating_data = score_json.get('pillars')
+
     score_criteria_list = []
     for analytical_statement, score_criterias in score_rating_data.items():
         score_criteria_score = [(criteria, v['value']) for criteria, v in score_criterias.items()]
         score_criteria_list.extend(score_criteria_score)
+
     for score_criteria, score_value in score_criteria_list:
         score_key = get_key(ScoreRating.ScoreCriteria, score_criteria)
         if score_key:
             ScoreRating.objects.get_or_create(
                 assessment_registry=assessment_reg,
                 score_type=get_key(ScoreRating.ScoreCriteria, score_criteria),
-                rating=score_key
+                rating=score_value
             )
 
 
