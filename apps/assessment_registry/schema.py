@@ -466,7 +466,7 @@ class AssessmentRegistryType(
 
     @staticmethod
     def resolve_summary_pillar_meta(root, info, **kwargs):
-        return Summary.objects.get(assessment_registry=root)
+        return Summary.objects.filter(assessment_registry=root).first()
 
     @staticmethod
     def resolve_summary_sub_pillar_issue(root, info, **kwargs):
