@@ -2936,6 +2936,7 @@ input ProjectCreateInputType {
   status: ProjectStatusEnum
   isPrivate: Boolean
   isTest: Boolean
+  isAssessmentEnabled: Boolean
   analysisFramework: ID
   isVisualizationEnabled: Boolean
   hasPubliclyViewableUnprotectedLeads: Boolean
@@ -3311,6 +3312,7 @@ input ProjectUpdateInputType {
   status: ProjectStatusEnum
   isPrivate: Boolean
   isTest: Boolean
+  isAssessmentEnabled: Boolean
   analysisFramework: ID
   isVisualizationEnabled: Boolean
   hasPubliclyViewableUnprotectedLeads: Boolean
