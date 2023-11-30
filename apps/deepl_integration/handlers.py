@@ -354,16 +354,16 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
 
     @classmethod
     def auto_trigger_request_to_extractor(cls, lead):
+        lead_preview = LeadPreview.objects.get(lead=lead)
         payload = {
             "documents": [
                 {
                     "client_id": cls.get_client_id(lead),  # static clientid for mock
-                    "text_extraction_id": "43545"   # static text_extraction id
+                    "text_extraction_id": lead_preview.text_extraction_id   # static text_extraction id
                 }
             ],
             "callback_url": cls.get_callback_url()
         }
-        logger.error(payload)
         try:
             response = requests.post(
                 url=DeeplServiceEndpoint.ENTRY_EXTRACTION_CLASSIFICATION,
@@ -504,7 +504,9 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
 
     @classmethod
     def save_data(cls, lead, data):
-        # print("handler data......",data)
+        draft_entry = DraftEntry.objects.filter(lead=lead, draft_entry_type=0)
+        if draft_entry:
+            raise serializers.ValidationError('Draft entry already exit')
         for model_preds in data['blocks']:
             classification = model_preds['classification']
             current_tags_map = cls._get_or_create_tags_map([
@@ -557,14 +559,13 @@ class LeadExtractionHandler(BaseHandler):
             'callback_url': callback_url,
             'request_type': NlpRequestType.USER if high_priority else NlpRequestType.SYSTEM,
         }
-        logger.error(payload)
         try:
             response = requests.post(
                 DeeplServiceEndpoint.DOCS_EXTRACTOR_ENDPOINT,
                 headers=cls.REQUEST_HEADERS,
                 data=json.dumps(payload)
             )
-            if response.status_code == 200:
+            if response.status_code == 202:
                 return True
         except Exception:
             logger.error('Lead Extraction Failed, Exception occurred!!', exc_info=True)

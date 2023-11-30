@@ -153,8 +153,8 @@ class AutoDraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCr
         return data
 
     def create(self, data):
-        text = LeadPreview.objects.filter(lead=self.data['lead']).first()
-        if text.text_extract == '' or None:
+        lead_preview = LeadPreview.objects.filter(lead=self.data['lead']).first()
+        if lead_preview.text_extract == None:
             raise serializers.DjangoValidationError('Simplifed Text is empty')
         draft_entry = DraftEntry.objects.filter(lead=self.data['lead'], draft_entry_type=0)
         if draft_entry:
