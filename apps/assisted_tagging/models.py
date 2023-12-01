@@ -104,6 +104,9 @@ class DraftEntry(UserResourceCreated):
     related_geoareas = models.ManyToManyField(GeoArea, blank=True)
     draft_entry_type = models.SmallIntegerField(choices=DraftEntryType.choices, default=DraftEntryType.MANUAL)
 
+    def __str__(self):
+        return f'{self.id}'
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.predictions: models.QuerySet[AssistedTaggingPrediction]
@@ -181,7 +184,7 @@ class AssistedTaggingPrediction(models.Model):
     id: int
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
 
 class WrongPredictionReview(UserResource):

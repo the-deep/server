@@ -359,7 +359,7 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
             "documents": [
                 {
                     "client_id": cls.get_client_id(lead),  # static clientid for mock
-                    "text_extraction_id": lead_preview.text_extraction_id   # static text_extraction id
+                    "text_extraction_id": lead_preview.text_extraction_id
                 }
             ],
             "callback_url": cls.get_callback_url()
@@ -476,6 +476,10 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
         )
         new_predictions = []
         for category_tag, tags in tags.items():
+            common_attrs = dict(
+                model_version=model_version,
+                draft_entry_id=draft_entry.id
+            )
             for tag, prediction_data in tags.items():
                 prediction_value = prediction_data.get('prediction')
                 threshold_value = prediction_data.get('threshold')
@@ -536,8 +540,7 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
                     model_version = models_version_map[
                         (data['classification_model_info']['name'], data['classification_model_info']['version'])
                     ]
-                    for prediction in data['blocks']:
-                        cls._process_model_preds(model_version, current_tags_map, draft, prediction)
+                    cls._process_model_preds(model_version, current_tags_map, draft, model_preds)
 
         return lead
 

@@ -10,7 +10,7 @@ from .models import (
     PredictionTagAnalysisFrameworkWidgetMapping,
     WrongPredictionReview,
 )
-from lead.models import LeadPreview, Lead
+from lead.models import Lead
 from .tasks import trigger_request_for_draft_entry_task, trigger_request_for_mock_entry_task
 
 
@@ -158,7 +158,7 @@ class AutoDraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCr
         lead.save()
         if lead.auto_entry_extraction_status == (Lead.AutoExtractionStatus.SUCCESS):
             raise serializers.DjangoValidationError("Already Tiggered")
-        if lead.leadpreview .text_extract == None:
+        if not lead.leadpreview.text_extract:
             raise serializers.DjangoValidationError('Simplifed Text is empty')
         draft_entry = DraftEntry.objects.filter(lead=self.data['lead'], draft_entry_type=0)
         if draft_entry:
