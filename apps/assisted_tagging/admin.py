@@ -19,7 +19,8 @@ class AssistedTaggingPredictionAdmin(VersionAdmin):
     list_display = [
         "data_type",
         "draft_entry",
-        "value"
+        "value",
+        "is_selected"
     ]
 
 
