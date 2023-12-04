@@ -188,13 +188,14 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
                 headers=cls.REQUEST_HEADERS,
                 json=payload
             )
-            if response.status_code == 200:
+            if response.status_code == 202:
                 return True
         except Exception:
             logger.error('Assisted tagging send failed, Exception occurred!!', exc_info=True)
             draft_entry.prediction_status = DraftEntry.PredictionStatus.SEND_FAILED
             draft_entry.save(update_fields=('prediction_status',))
         _response = locals().get('response')
+        logger.error(payload)
         logger.error(
             'Assisted tagging send failed!!',
             extra={
@@ -279,10 +280,10 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
     @classmethod
     def _process_model_preds(cls, model_version, current_tags_map, draft_entry, model_prediction):
         prediction_status = model_prediction['prediction_status']
-        if prediction_status == 0:  # If 0 no tags are provided
+        if not prediction_status:  # If 0 no tags are provided
             return
 
-        tags = model_prediction.get('tags', {})  # NLP TagId
+        tags = model_prediction.get('model_tags', {})  # NLP TagId
         values = model_prediction.get('values', [])  # Raw value
 
         common_attrs = dict(
@@ -320,28 +321,30 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
 
     @classmethod
     def save_data(cls, draft_entry, data):
-        model_preds = data['model_preds']
+        model_preds = data
         # Save if new tags are provided
         current_tags_map = cls._get_or_create_tags_map([
             tag
-            for prediction in model_preds
-            for category_tag, tags in prediction.get('tags', {}).items()
+            # for prediction in model_preds['model_tags']
+            for category_tag, tags in model_preds['model_tags'].items()
             for tag in [
                 category_tag,
                 *tags.keys(),
             ]
         ])
-        models_version_map = cls._get_or_create_models_version([
-            prediction['model_info']
-            for prediction in model_preds
-        ])
-
+        print(current_tags_map)
+        models_version_map = cls._get_or_create_models_version(
+            [
+                model_preds['model_info']
+            ]
+        )
         with transaction.atomic():
             draft_entry.clear_data()  # Clear old data if exists
             draft_entry.calculated_at = timezone.now()
-            for prediction in model_preds:
-                model_version = models_version_map[(prediction['model_info']['id'], prediction['model_info']['version'])]
-                cls._process_model_preds(model_version, current_tags_map, draft_entry, prediction)
+            # for prediction in model_preds:
+            model_version = models_version_map[(model_preds['model_info']['id'], model_preds['model_info']['version'])]
+            print(model_preds)
+            cls._process_model_preds(model_version, current_tags_map, draft_entry, model_preds)
             draft_entry.prediction_status = DraftEntry.PredictionStatus.DONE
             draft_entry.save_geo_data()
             draft_entry.save()

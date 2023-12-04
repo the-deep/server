@@ -162,9 +162,9 @@ class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSeria
 
 # --- AssistedTagging
 class AssistedTaggingModelPredictionCallbackSerializer(serializers.Serializer):
-    class ModelInfoCallbackSerializer(serializers.Serializer):
-        id = serializers.CharField()
-        version = serializers.CharField()
+    # class ModelInfoCallbackSerializer(serializers.Serializer):
+    #     id = serializers.CharField()
+    #     version = serializers.CharField()
 
     class ModelPredictionCallbackSerializerTagValue(serializers.Serializer):
         prediction = serializers.DecimalField(
@@ -181,7 +181,7 @@ class AssistedTaggingModelPredictionCallbackSerializer(serializers.Serializer):
         )
         is_selected = serializers.BooleanField()
 
-    model_info = ModelInfoCallbackSerializer()
+    # model_info = ModelInfoCallbackSerializer() removed from the DEEPL TODO Use different api for model information
     values = serializers.ListSerializer(
         child=serializers.CharField(),
         required=False,
@@ -192,7 +192,6 @@ class AssistedTaggingModelPredictionCallbackSerializer(serializers.Serializer):
         ),
         required=False,
     )
-    prediction_status = serializers.IntegerField()  # 0 -> Failure, 1 -> Success
 
 
 class AutoAssistedTaggingModelPredicationCallBackSerializer(serializers.Serializer):
@@ -222,8 +221,10 @@ class AutoAssistedTaggingModelPredicationCallBackSerializer(serializers.Serializ
 
 
 class AssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializer):
-    model_preds = AssistedTaggingModelPredictionCallbackSerializer(many=True)
-
+    # model_tags = AssistedTaggingModelPredictionCallbackSerializer()
+    model_tags = serializers.DictField(child=serializers.DictField())
+    prediction_status = serializers.BooleanField()
+    model_info = serializers.DictField()
     nlp_handler = AssistedTaggingDraftEntryHandler
 
     def create(self, validated_data):
