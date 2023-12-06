@@ -1569,52 +1569,52 @@ type AssessmentAffectedGroupCountByDateType {
   date: Date!
   count: Int!
   affectedGroup: AssessmentRegistryAffectedGroupTypeEnum!
-  affectedGroupDisplay: String!
+  affectedGroupDisplay: EnumDescription!
 }
 
 type AssessmentByGeographicalAndDataCollectionTechniqueCountByDateType {
-  adminLevelId: Int!
-  region: Int!
-  geoArea: Int!
+  adminLevelId: ID!
+  region: ID!
+  geoArea: ID!
   dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
   count: Int!
-  dataCollectionTechniqueDisplay: String!
+  dataCollectionTechniqueDisplay: EnumDescription!
 }
 
 type AssessmentByGeographicalAndProximityCountByDateType {
-  adminLevelId: Int!
-  region: Int!
-  geoArea: Int!
+  adminLevelId: ID!
+  region: ID!
+  geoArea: ID!
   proximity: AssessmentRegistryProximityTypeEnum!
   count: Int!
-  proximityDisplay: String!
+  proximityDisplay: EnumDescription!
 }
 
 type AssessmentByGeographicalAndSamplingApproachCountByDateType {
-  adminLevelId: Int!
-  region: Int!
-  geoArea: Int!
+  adminLevelId: ID!
+  region: ID!
+  geoArea: ID!
   samplingApproach: AssessmentRegistrySamplingApproachTypeEnum!
   count: Int!
-  samplingApproachDisplay: String!
+  samplingApproachDisplay: EnumDescription!
 }
 
 type AssessmentByGeographicalAndUnit_Of_AnalysisCountByDateType {
-  adminLevelId: Int!
-  region: Int!
-  geoArea: Int!
+  adminLevelId: ID!
+  region: ID!
+  geoArea: ID!
   unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum!
   count: Int!
-  unitOfAnalysisDisplay: String!
+  unitOfAnalysisDisplay: EnumDescription!
 }
 
 type AssessmentByGeographicalAndUnit_Of_ReportingCountByDateType {
-  adminLevelId: Int!
-  region: Int!
-  geoArea: Int!
+  adminLevelId: ID!
+  region: ID!
+  geoArea: ID!
   unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum!
   count: Int!
-  unitOfReportingDisplay: String!
+  unitOfReportingDisplay: EnumDescription!
 }
 
 type AssessmentByLeadOrganizationCountByDateType {
@@ -1630,7 +1630,7 @@ type AssessmentCountByDateType {
 
 type AssessmentCountType {
   coordinatedJoint: AssessmentRegistryCoordinationTypeEnum!
-  coordinatedJointDisplay: String
+  coordinatedJointDisplay: EnumDescription!
   count: Int
 }
 
@@ -1662,12 +1662,12 @@ input AssessmentDashboardFilterInputType {
 }
 
 type AssessmentDashboardGeographicalAreaType {
-  region: Int!
-  geoArea: Int!
+  region: ID!
+  geoArea: ID!
   adminLevelId: ID!
   code: ID!
   count: Int!
-  assessmentIds: [ID!]
+  assessmentIds: [ID!]!
 }
 
 type AssessmentDashboardStatisticsType {
@@ -1702,27 +1702,32 @@ type AssessmentDashboardStatisticsType {
   assessmentByUnitOfReportingAndGeolocation: [AssessmentByGeographicalAndUnit_Of_ReportingCountByDateType!]
   medianQualityScoreByGeoArea: [MedianQualityScoreByGeographicalAreaDateType!]
   medianQualityScoreOverTime: [MedianQualityScoreOverTimeDateType!]
+  medianQualityScoreOverTimeByMonth: [MedianQualityScoreOverTimeDateType!]
   medianQualityScoreOfEachDimension: [MedianScoreOfEachDimensionType!]
   medianQualityScoreOfEachDimensionByDate: [MedianScoreOfEachDimensionDateType!]
+  medianQualityScoreOfEachDimensionByDateMonth: [MedianScoreOfEachDimensionDateType!]
   medianQualityScoreOfAnalyticalDensity: [MedianScoreOfAnalyticalDensityType!]
   medianQualityScoreByAnalyticalDensityDate: [MedianScoreOfAnalyticalDensityDateType!]
+  medianQualityScoreByAnalyticalDensityDateMonth: [MedianScoreOfAnalyticalDensityDateType!]
   medianQualityScoreByGeoareaAndSector: [MedianScoreOfGeographicalAndSectorDateType!]
+  medianQualityScoreByGeoareaAndSectorByMonth: [MedianScoreOfGeographicalAndSectorDateType!]
   medianQualityScoreByGeoareaAndAffectedGroup: [MedianScoreOfGeoAreaAndAffectedGroupDateType!]
   medianScoreBySectorAndAffectedGroup: [MedianScoreOfSectorAndAffectedGroup!]
+  medianScoreBySectorAndAffectedGroupByMonth: [MedianScoreOfSectorAndAffectedGroup!]
 }
 
 type AssessmentFocusCountByDateType {
   date: Date!
   count: Int!
   focus: AssessmentRegistryFocusTypeEnum!
-  focusDisplay: String!
+  focusDisplay: EnumDescription!
 }
 
 type AssessmentHumanitrainSectorCountByDateType {
   date: Date!
   count: Int!
   sector: AssessmentRegistrySectorTypeEnum!
-  sectorDisplay: String!
+  sectorDisplay: EnumDescription!
 }
 
 type AssessmentListType {
@@ -1748,7 +1753,7 @@ type AssessmentPerAffectedGroupAndGeoAreaCountByDateType {
   count: Int!
   affectedGroup: AssessmentRegistryAffectedGroupTypeEnum!
   geoArea: ProjectGeoAreaType!
-  affectedGroupDisplay: String!
+  affectedGroupDisplay: EnumDescription!
 }
 
 type AssessmentPerAffectedGroupAndSectorCountByDateType {
@@ -1761,42 +1766,42 @@ type AssessmentPerDataCollectionTechniqueCountByDateType {
   date: Date!
   count: Int!
   dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
-  dataCollectionTechniqueDisplay: String!
+  dataCollectionTechniqueDisplay: EnumDescription!
 }
 
 type AssessmentPerProximityCountByDateType {
   date: Date!
   count: Int!
   proximity: AssessmentRegistryProximityTypeEnum!
-  proximityDisplay: String!
+  proximityDisplay: EnumDescription!
 }
 
 type AssessmentPerSamplingApproachCountByDateType {
   date: Date!
   count: Int!
   samplingApproach: AssessmentRegistrySamplingApproachTypeEnum!
-  samplingApproachDisplay: String!
+  samplingApproachDisplay: EnumDescription!
 }
 
 type AssessmentPerSectorAndGeoAreaCountByDateType {
   count: Int!
   sector: AssessmentRegistrySectorTypeEnum!
   geoArea: ProjectGeoAreaType!
-  sectorDisplay: String!
+  sectorDisplay: EnumDescription!
 }
 
 type AssessmentPerUnitofAnalysisCountByDateType {
   date: Date!
   count: Int!
   unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum!
-  unitOfAnalysisDisplay: String!
+  unitOfAnalysisDisplay: EnumDescription!
 }
 
 type AssessmentPerUnitofReportingCountByDateType {
   date: Date!
   count: Int!
   unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum!
-  unitOfReportingDisplay: String!
+  unitOfReportingDisplay: EnumDescription!
 }
 
 type AssessmentProtectionInformationCountByDateType {
@@ -2644,7 +2649,7 @@ type ChangeUserPassword {
 
 type CollectionTechniqueCountType {
   dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
-  dataCollectionTechniqueDisplay: String!
+  dataCollectionTechniqueDisplay: EnumDescription!
   count: Int!
 }
 
@@ -4097,9 +4102,9 @@ type Logout {
 }
 
 type MedianQualityScoreByGeographicalAreaDateType {
-  adminLevelId: Int!
-  region: Int!
-  geoArea: Int!
+  adminLevelId: ID!
+  region: ID!
+  geoArea: ID!
   finalScore: Float!
 }
 
@@ -4111,14 +4116,14 @@ type MedianQualityScoreOverTimeDateType {
 type MedianScoreOfAnalyticalDensityDateType {
   sector: AssessmentRegistrySectorTypeEnum!
   finalScore: Float!
-  sectorDisplay: String!
+  sectorDisplay: EnumDescription!
   date: Date!
 }
 
 type MedianScoreOfAnalyticalDensityType {
   sector: AssessmentRegistrySectorTypeEnum!
   finalScore: Float!
-  sectorDisplay: String!
+  sectorDisplay: EnumDescription!
 }
 
 type MedianScoreOfEachDimensionDateType {
@@ -4972,8 +4977,8 @@ type Query {
   region(id: ID!): RegionDetailType
   regions(id: Float, code: String, title: String, public: Boolean, project: [ID], createdAt: DateTime, createdBy: [ID], modifiedAt: DateTime, modifiedBy: [ID], createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, excludeProject: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): RegionListType
   organization(id: ID!): OrganizationType
-  organizations(id: Float, verified: Boolean, search: String, usedInProject: ID, usedInProjectByAssesment: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): OrganizationListType
-  publicOrganizations(id: Float, verified: Boolean, search: String, usedInProject: ID, usedInProjectByAssesment: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): PublicOrganizationListObjectType
+  organizations(id: Float, verified: Boolean, search: String, usedInProjectByLead: ID, usedInProjectByAssesment: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): OrganizationListType
+  publicOrganizations(id: Float, verified: Boolean, search: String, usedInProjectByLead: ID, usedInProjectByAssesment: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): PublicOrganizationListObjectType
   organizationType(id: ID!): OrganizationTypeType
   organizationTypes(title: String, shortName: String, description: String, reliefWebId: Int, page: Int = 1, ordering: String, pageSize: Int): OrganizationTypeListType
   userGroup(id: ID!): UserGroupType
@@ -5122,7 +5127,7 @@ type SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType {
   date: Date!
   samplingSize: Int!
   dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
-  dataCollectionTechniqueDisplay: String!
+  dataCollectionTechniqueDisplay: EnumDescription!
 }
 
 type SaveUserSavedLeadFilter {

@@ -1,5 +1,4 @@
 from collections import defaultdict
-from graphene.types import context
 
 from promise import Promise
 from django.utils.functional import cached_property
@@ -8,7 +7,7 @@ from django.db.models import Prefetch
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 from geo.schema import get_geo_area_queryset_for_project_geo_area_type
 
-from .models import AdminLevel, GeoArea
+from .models import AdminLevel
 from assessment_registry.models import AssessmentRegistry
 
 
@@ -33,15 +32,6 @@ class AssessmentRegistryGeoAreaLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key) for key in keys])
 
 
-class GeoAreaLoader(DataLoaderWithContext):
-    def batch_load_fn(self, keys):
-        geo_area_qs = GeoArea.objects.filter(id__in=keys).defer('polygons','centroid','cached_data')
-        _map = defaultdict()
-        for geo_area in geo_area_qs:
-            _map[geo_area.id] = geo_area
-        return Promise.resolve([_map.get(key) for key in keys])
-
-
 class DataLoaders(WithContextMixin):
     @cached_property
     def admin_levels_by_region(self):
@@ -50,7 +40,3 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def assessment_registry_locations(self):
         return AssessmentRegistryGeoAreaLoader(context=self.context)
-
-    @cached_property
-    def geo_area(self):
-        return GeoAreaLoader(context=self.context)

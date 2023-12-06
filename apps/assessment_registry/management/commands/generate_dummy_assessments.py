@@ -111,7 +111,7 @@ class Command(BaseCommand):
         geo_areas = list(
             GeoArea.objects.filter(
                 admin_level__region__project=project,
-                admin_level__level__in=[1,2],
+                admin_level__level__in=[1, 2],
             ).annotate(
                 region_id=models.F('admin_level__region'),
             ).only('id')
