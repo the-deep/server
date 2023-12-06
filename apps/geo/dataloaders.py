@@ -1,5 +1,4 @@
 from collections import defaultdict
-from graphene.types import context
 
 from promise import Promise
 from django.utils.functional import cached_property
@@ -35,7 +34,7 @@ class AssessmentRegistryGeoAreaLoader(DataLoaderWithContext):
 
 class GeoAreaLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        geo_area_qs = GeoArea.objects.filter(id__in=keys).defer('polygons','centroid','cached_data')
+        geo_area_qs = GeoArea.objects.filter(id__in=keys).defer('polygons', 'centroid', 'cached_data')
         _map = defaultdict()
         for geo_area in geo_area_qs:
             _map[geo_area.id] = geo_area

@@ -333,7 +333,6 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
 
         self.force_login(self.member_user)
         content = _query_check(filter)["data"]["project"]["assessmentDashboardStatistics"]
-        print("...........",content)
         # assessment dashboard tab 1
         self.assertEqual(content["totalAssessment"], 1)
         self.assertEqual(content["totalCollectionTechnique"], 2)
@@ -369,4 +368,4 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         self.assertEqual(content['medianQualityScoreByAnalyticalDensityDate'][0]['sectorDisplay'], "Food Security")
         self.assertEqual(content['medianQualityScoreByAnalyticalDensityDate'][0]['date'], str(date.today()))
         self.assertEqual(content['medianQualityScoreByAnalyticalDensityDate'][1]['finalScore'], 0.0)
-        self.assertEqual(content['medianQualityScoreByGeoArea'][0]['geoArea'],self.geo_area1)
+        self.assertEqual(content['medianQualityScoreByGeoArea'][0]['geoArea'], self.geo_area1)
