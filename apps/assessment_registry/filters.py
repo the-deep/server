@@ -25,7 +25,6 @@ class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
     )
     created_by = django_filters.ModelMultipleChoiceFilter(
         queryset=User.objects.all(),
-        widget=django_filters.widgets.CSVWidget,
     )
     publication_date_lte = django_filters.DateFilter(
         field_name='publication_date',
@@ -56,7 +55,6 @@ class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
         if not value:
             return qs
         return qs.filter(
-            Q(id=value) |
             Q(lead__title__icontains=value)
         ).distinct()
 

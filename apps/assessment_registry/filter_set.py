@@ -14,31 +14,20 @@ from .enums import (
 
 
 class AssessmentDashboardFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
-    stakeholder = IDListFilter(method="filter_stakeholder")
-    lead_organization = IDListFilter(method="filter_lead_organization")
-    location = IDListFilter(method="filter_location")
-    affected_group = MultipleInputFilter(AssessmentRegistryAffectedGroupTypeEnum, method="filter_affected_group")
+    stakeholder = IDListFilter(field_name='stakeholders')
+    lead_organization = IDListFilter(field_name='stakeholders')
+    location = IDListFilter(field_name='locations')
+    affected_group = MultipleInputFilter(AssessmentRegistryAffectedGroupTypeEnum, method='filter_affected_group')
     family = MultipleInputFilter(AssessmentRegistryFamilyTypeEnum)
     frequency = MultipleInputFilter(AssessmentRegistryFrequencyTypeEnum)
-    coordination_type = MultipleInputFilter(AssessmentRegistryCoordinationTypeEnum, field_name="coordinated_joint")
-    assessment_type = MultipleInputFilter(AssessmentRegistryDetailTypeEnum, field_name="details_type")
-    focuses = MultipleInputFilter(AssessmentRegistryFocusTypeEnum, method="filter_focuses")
-    sectors = MultipleInputFilter(AssessmentRegistrySectorTypeEnum, method="filter_sectors")
+    coordination_type = MultipleInputFilter(AssessmentRegistryCoordinationTypeEnum, field_name='coordinated_joint')
+    assessment_type = MultipleInputFilter(AssessmentRegistryDetailTypeEnum, field_name='details_type')
+    focuses = MultipleInputFilter(AssessmentRegistryFocusTypeEnum, method='filter_focuses')
+    sectors = MultipleInputFilter(AssessmentRegistrySectorTypeEnum, method='filter_sectors')
 
     class Meta:
         model = AssessmentRegistry
         fields = ()
-
-    def filter_stakeholder(self, qs, _, value):
-        return qs if value is None else qs.filter(stakeholders__in=value)
-
-    def filter_lead_organization(self, qs, _, value):
-        return qs if value is None else qs.filter(stakeholders__in=value)
-
-    def filter_location(self, qs, _, value):
-        return (
-            qs if value is None else qs.filter(locations__in=list(map(int, value)))
-        )  # change value (list of decimal) into int list
 
     def filter_affected_group(self, qs, _, value):
         return qs if value is None else qs.filter(affected_groups__overlap=value)
@@ -48,6 +37,12 @@ class AssessmentDashboardFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
 
     def filter_sectors(self, qs, _, value):
         return qs if value is None else qs.filter(sectors__overlap=value)
+
+    def filter_details_type(self, qs, _, value):
+        return qs if value is None else qs.filter(details_type__overlap=value)
+
+    def filter_coordinated_joint(self, qs, _, value):
+        return qs if value is None else qs.filter(coordinated_joint__overlap=value)
 
 
 AssessmentDashboardFilterDataType, AssessmentDashboardFilterDataInputType = generate_type_for_filter_set(

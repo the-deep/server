@@ -11,7 +11,7 @@ from admin_auto_filters.filters import AutocompleteFilterFactory
 from deep.admin import linkify
 from lead.models import Lead
 from entry.models import Entry
-from ary.models import Assessment
+from assessment_registry.models import AssessmentRegistry
 
 from .tasks import generate_viz_stats, generate_project_stats_cache
 from .forms import ProjectRoleForm
@@ -128,7 +128,7 @@ class ProjectAdmin(VersionAdmin):
         ).annotate(
             leads_count=_count_subquery(Lead),
             entries_count=_count_subquery(Entry),
-            assessment_count=_count_subquery(Assessment),
+            assessment_count=_count_subquery(AssessmentRegistry),
             members_count=_count_subquery(ProjectMembership, count_field='member'),
             associated_regions_count=models.Count('regions', distinct=True),
             associated_regions=StringAgg('regions__title', ',', distinct=True),
