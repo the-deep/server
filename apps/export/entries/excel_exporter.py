@@ -4,12 +4,13 @@ from django.db import models
 
 from deep.permalinks import Permalink
 from utils.common import (
-    deep_date_format,
     excel_column_name,
-    get_valid_xml_string as xstr
+    get_valid_xml_string as xstr,
+    deep_date_parse,
 )
 from export.formats.xlsx import WorkBook, RowsBuilder
 
+from analysis_framework.models import Widget
 from entry.models import Entry, ExportData, ProjectEntryLabel, LeadEntryGroup
 from lead.models import Lead
 from export.models import Export
@@ -35,13 +36,25 @@ class ExcelExporter:
             ] if self.modified_excerpt_exists else ['Excerpt'],
         }
 
-    def __init__(self, export_object, entries, project, columns=None, decoupled=True, is_preview=False):
+    def __init__(
+        self,
+        export_object,
+        entries,
+        project,
+        date_format,
+        columns=None,
+        decoupled=True,
+        is_preview=False,
+    ):
         self.project = project
         self.export_object = export_object
         self.is_preview = is_preview
         self.wb = WorkBook()
         # XXX: Limit memory usage? (Or use redis?)
         self.geoarea_data_cache = {}
+
+        # Date Format
+        self.date_renderer = Export.get_date_renderer(date_format)
 
         # Create worksheets(Main, Grouped, Entry Groups, Bibliography)
         if decoupled:
@@ -225,11 +238,11 @@ class ExcelExporter:
         assignee,
     ):
         if exportable == Export.StaticColumn.LEAD_PUBLISHED_ON:
-            return deep_date_format(lead.published_on)
+            return self.date_renderer(lead.published_on)
         if exportable == Export.StaticColumn.ENTRY_CREATED_BY:
             return entry.created_by and entry.created_by.profile.get_display_name()
         elif exportable == Export.StaticColumn.ENTRY_CREATED_AT:
-            return deep_date_format(entry.created_at)
+            return self.date_renderer(entry.created_at)
         elif exportable == Export.StaticColumn.ENTRY_CONTROL_STATUS:
             return 'Controlled' if entry.controlled else 'Uncontrolled'
         elif exportable == Export.StaticColumn.LEAD_ID:
@@ -313,7 +326,15 @@ class ExcelExporter:
                         col_span,
                     )
                 else:
-                    rows.add_value_list(export_data.get('values'))
+                    export_data_values = export_data.get('values')
+                    if export_data.get('widget_key') == Widget.WidgetType.DATE_RANGE.value:
+                        if len(export_data_values) == 2 and any(export_data_values):
+                            rows.add_value_list([
+                                self.date_renderer(deep_date_parse(export_data_values[0], raise_exception=False)),
+                                self.date_renderer(deep_date_parse(export_data_values[1], raise_exception=False)),
+                            ])
+                    else:
+                        rows.add_value_list(export_data_values)
             else:
                 rows.add_value_list([''] * col_span)
 
@@ -548,7 +569,7 @@ class ExcelExporter:
                 [[
                     lead.get_authors_display(),
                     lead.get_source_display(),
-                    deep_date_format(lead.published_on),
+                    self.date_renderer(lead.published_on),
                     get_hyperlink(lead.url, lead.title) if lead.url else lead.title,
                     lead.filtered_entry_count,
                 ]]

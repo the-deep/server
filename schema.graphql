@@ -1960,6 +1960,11 @@ enum ExportDataTypeEnum {
   ANALYSES
 }
 
+enum ExportDateFormatEnum {
+  DEFAULT
+  FORMAT_1
+}
+
 input ExportExcelSelectedColumnInputType {
   isWidget: Boolean!
   widgetKey: String
@@ -1998,6 +2003,7 @@ enum ExportExportTypeEnum {
 }
 
 input ExportExtraOptionsInputType {
+  dateFormat: ExportDateFormatEnum
   excelDecoupled: Boolean
   excelColumns: [ExportExcelSelectedColumnInputType!]
   reportShowGroups: Boolean
@@ -2012,6 +2018,7 @@ input ExportExtraOptionsInputType {
 }
 
 type ExportExtraOptionsType {
+  dateFormat: ExportDateFormatEnum
   excelDecoupled: Boolean
   excelColumns: [ExportExcelSelectedColumnType!]
   reportShowGroups: Boolean

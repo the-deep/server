@@ -143,9 +143,20 @@ def deep_date_format(
     date: Optional[Union[datetime.date, datetime.datetime]],
     fallback: Optional[str] = ''
 ) -> Optional[str]:
-    if date:
+    if date and (
+        isinstance(date, datetime.datetime) or
+        isinstance(date, datetime.date)
+    ):
         return date.strftime('%d-%m-%Y')
     return fallback
+
+
+def deep_date_parse(date_str: str, raise_exception=True) -> Optional[datetime.date]:
+    try:
+        return datetime.datetime.strptime(date_str, '%d-%m-%Y').date()
+    except (ValueError, TypeError) as e:
+        if raise_exception:
+            raise e
 
 
 def parse_date(date_str):

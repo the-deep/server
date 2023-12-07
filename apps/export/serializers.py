@@ -215,6 +215,9 @@ class ExportExcelSelectedColumnSerializer(serializers.Serializer):
 
 
 class ExportExtraOptionsSerializer(ProjectPropertySerializerMixin, serializers.Serializer):
+    # Common
+    date_format = serializers.ChoiceField(choices=Export.DateFormat.choices, required=False)
+
     # Excel
     excel_decoupled = serializers.BooleanField(
         help_text="Don't group entries tags. Slower export generation.", required=False)

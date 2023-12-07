@@ -1,10 +1,12 @@
+import typing
+import datetime
+
 from django.db import models
 from django.core.cache import cache
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 
-from utils.common import deep_date_format
 from deep.caches import CacheKey
 from deep.celery import app as celery_app
 from project.models import Project
@@ -150,6 +152,13 @@ class Export(ExportBaseModel):
         DEFAULT = 1, 'Default'
         STYLE_1 = 2, 'Sample 1'  # TODO: Update naming
 
+    # Used by extra options
+    # NOTE: Value should always be usable by date.strftime
+    # TODO: Add a unit test to make sure all label are valid
+    class DateFormat(models.IntegerChoices):
+        DEFAULT = 1, '%d-%m-%Y'
+        FORMAT_1 = 2, '%d/%m/%Y'
+
     # NOTE: Also used to validate which combination is supported
     DEFAULT_TITLE_LABEL = {
         (DataType.ENTRIES, ExportType.EXCEL, Format.XLSX): 'Entries Excel Export',
@@ -165,7 +174,7 @@ class Export(ExportBaseModel):
 
     CELERY_TASK_CACHE_KEY = CacheKey.EXPORT_TASK_CACHE_KEY_FORMAT
 
-    # Number of entries to proccess if is_preview is True
+    # Number of entries to process if is_preview is True
     PREVIEW_ENTRY_SIZE = 10
     PREVIEW_ASSESSMENT_SIZE = 10
 
@@ -193,8 +202,22 @@ class Export(ExportBaseModel):
     @classmethod
     def generate_title(cls, data_type, export_type, export_format):
         file_label = cls.DEFAULT_TITLE_LABEL[(data_type, export_type, export_format)]
-        time_str = deep_date_format(timezone.now())
+        time_str = timezone.now().strftime('%Y%m%d')
         return f'{time_str} DEEP {file_label}'
+
+    @classmethod
+    def get_date_renderer(cls, date_format: typing.Optional[DateFormat]) -> typing.Callable:
+        date_format = cls.DateFormat.FORMAT_1
+
+        def custom_format(d, fallback: typing.Optional[str] = ''):
+            if d and (
+                isinstance(d, datetime.datetime) or
+                isinstance(d, datetime.date)
+            ):
+                return d.strftime(cls.DateFormat(date_format).label)
+            return fallback
+
+        return custom_format
 
     def save(self, *args, **kwargs):
         self.title = self.title or self.generate_title(self.type, self.export_type, self.format)

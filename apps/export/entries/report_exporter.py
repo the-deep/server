@@ -13,7 +13,7 @@ from django.db.models import (
 )
 from docx.shared import Inches
 from deep.permalinks import Permalink
-from utils.common import deep_date_format
+from utils.common import deep_date_parse
 
 from export.formats.docx import Document
 
@@ -93,11 +93,24 @@ class WidgetExporter:
             - tuple (from, to)
         as described here: apps.entry.widgets.date_range_widget._get_date
         """
+        date_renderer = kwargs['date_renderer']
         values = data.get('values', [])
         if len(values) == 2 and any(values):
             label = '{} - {}'.format(
-                values[0] or "00-00-00",
-                values[1] or "00-00-00",
+                date_renderer(
+                    deep_date_parse(
+                        values[0],
+                        raise_exception=False
+                    ),
+                    fallback="00-00-00",
+                ),
+                date_renderer(
+                    deep_date_parse(
+                        values[1],
+                        raise_exception=False
+                    ),
+                    fallback="00-00-00",
+                ),
             )
             return cls._add_common, label, bold
 
@@ -124,12 +137,18 @@ class WidgetExporter:
         as described here: apps.entry.widgets.date_widget
         """
         value = data.get('value')
-        if value:
-            return cls._add_common, value, bold
+        if not value:
+            return
+        date_renderer = kwargs['date_renderer']
+        _value = date_renderer(deep_date_parse(value, raise_exception=False))
+        if _value:
+            return cls._add_common, _value, bold
 
     @classmethod
     def _get_time_widget_data(cls, data, bold, **kwargs):
-        cls._get_date_widget_data(data, bold, **kwargs)
+        value = data.get('value')
+        if value:
+            return cls._add_common, value, bold
 
     @classmethod
     def _get_select_widget_data(cls, data, bold, **kwargs):
@@ -201,6 +220,7 @@ class WidgetExporter:
 class ReportExporter:
     def __init__(
         self,
+        date_format: Export.DateFormat,
         citation_style: Export.CitationStyle,
         exporting_widgets=None,  # eg: ["517", "43", "42"]
         is_preview=False,
@@ -233,6 +253,9 @@ class ReportExporter:
 
         # Citation
         self.citation_style = citation_style or Export.CitationStyle.DEFAULT
+
+        # Date Format
+        self.date_renderer = Export.get_date_renderer(date_format)
 
     def load_exportables(self, exportables, regions):
         exportables = exportables.filter(
@@ -483,7 +506,8 @@ class ReportExporter:
                         if resp := WidgetExporter.get_widget_information_into_report(
                             data,
                             bold=True,
-                            _get_geo_admin_level_1_data=self._get_geo_admin_level_1_data
+                            _get_geo_admin_level_1_data=self._get_geo_admin_level_1_data,
+                            date_renderer=self.date_renderer,
                         ):
                             export_data.append(resp)
                     except ExportDataVersionMismatch:
@@ -620,7 +644,7 @@ class ReportExporter:
         elif lead.confidentiality == Lead.Confidentiality.RESTRICTED:
             para.add_run(' (restricted)')
 
-        if self.citation_style == Export.CitationStyle.STYLE_1:
+        if not self.citation_style == Export.CitationStyle.STYLE_1:
             pass
         else:  # Default
             # Add lead title if available
@@ -629,7 +653,7 @@ class ReportExporter:
 
         # Finally add date
         if date:
-            para.add_run(f", {deep_date_format(date)}")
+            para.add_run(f", {self.date_renderer(date)}")
 
         para.add_run(')')
         # --- Reference End
@@ -749,7 +773,7 @@ class ReportExporter:
         """
         self.doc.add_heading(
             'DEEP Export — {} — {}'.format(
-                deep_date_format(datetime.today()),
+                self.date_renderer(datetime.today()),
                 project.title,
             ),
             1,
@@ -853,7 +877,7 @@ class ReportExporter:
             para.add_run(f' {source}.')
             para.add_run(f' {lead.title}.')
             if lead.published_on:
-                para.add_run(f" {deep_date_format(lead.published_on)}. ")
+                para.add_run(f" {self.date_renderer(lead.published_on)}. ")
 
             para = self.doc.add_paragraph()
             url = lead.url or Permalink.lead_share_view(lead.uuid)
