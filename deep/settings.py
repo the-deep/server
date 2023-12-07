@@ -924,6 +924,7 @@ GRAPHENE_NODES_WHITELIST = (
     '__type',
     '__typename',
     # custom nodes...
+    'enums',
     'login',
     'loginWithHid',
     'register',

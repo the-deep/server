@@ -937,6 +937,373 @@ type AnalyticalStatementType {
   entries: [AnalyticalStatementEntryType!]
 }
 
+type AppEnumCollection {
+  ProfileEmailOptOuts: [AppEnumCollectionProfileEmailOptOuts!]
+  UserEmailOptOuts: [AppEnumCollectionUserEmailOptOuts!]
+  GroupMembershipRole: [AppEnumCollectionGroupMembershipRole!]
+  ProjectStatus: [AppEnumCollectionProjectStatus!]
+  ProjectOrganizationOrganizationType: [AppEnumCollectionProjectOrganizationOrganizationType!]
+  ProjectJoinRequestStatus: [AppEnumCollectionProjectJoinRequestStatus!]
+  ProjectStatsStatus: [AppEnumCollectionProjectStatsStatus!]
+  ProjectMembershipBadges: [AppEnumCollectionProjectMembershipBadges!]
+  ProjectUserGroupMembershipBadges: [AppEnumCollectionProjectUserGroupMembershipBadges!]
+  ProjectRoleType: [AppEnumCollectionProjectRoleType!]
+  ProjectStatsAction: [AppEnumCollectionProjectStatsAction!]
+  WidgetWidgetId: [AppEnumCollectionWidgetWidgetId!]
+  WidgetWidth: [AppEnumCollectionWidgetWidth!]
+  FilterFilterType: [AppEnumCollectionFilterFilterType!]
+  AnalysisFrameworkRoleType: [AppEnumCollectionAnalysisFrameworkRoleType!]
+  LeadConfidentiality: [AppEnumCollectionLeadConfidentiality!]
+  LeadStatus: [AppEnumCollectionLeadStatus!]
+  LeadPriority: [AppEnumCollectionLeadPriority!]
+  LeadSourceType: [AppEnumCollectionLeadSourceType!]
+  LeadExtractionStatus: [AppEnumCollectionLeadExtractionStatus!]
+  EntryEntryType: [AppEnumCollectionEntryEntryType!]
+  ExportFormat: [AppEnumCollectionExportFormat!]
+  ExportStatus: [AppEnumCollectionExportStatus!]
+  ExportType: [AppEnumCollectionExportType!]
+  ExportExportType: [AppEnumCollectionExportExportType!]
+  GenericExportFormat: [AppEnumCollectionGenericExportFormat!]
+  GenericExportStatus: [AppEnumCollectionGenericExportStatus!]
+  GenericExportType: [AppEnumCollectionGenericExportType!]
+  ExportExcelSelectedColumnSerializerStaticColumn: [AppEnumCollectionExportExcelSelectedColumnSerializerStaticColumn!]
+  ExportExtraOptionsSerializerDateFormat: [AppEnumCollectionExportExtraOptionsSerializerDateFormat!]
+  ExportExtraOptionsSerializerReportCitationStyle: [AppEnumCollectionExportExtraOptionsSerializerReportCitationStyle!]
+  EntryReviewCommentCommentType: [AppEnumCollectionEntryReviewCommentCommentType!]
+  DiscardedEntryTag: [AppEnumCollectionDiscardedEntryTag!]
+  TopicModelStatus: [AppEnumCollectionTopicModelStatus!]
+  AutomaticSummaryStatus: [AppEnumCollectionAutomaticSummaryStatus!]
+  AnalyticalStatementNGramStatus: [AppEnumCollectionAnalyticalStatementNGramStatus!]
+  AnalyticalStatementGeoTaskStatus: [AppEnumCollectionAnalyticalStatementGeoTaskStatus!]
+  AnalysisReportUploadType: [AppEnumCollectionAnalysisReportUploadType!]
+  AnalysisReportContainerContentType: [AppEnumCollectionAnalysisReportContainerContentType!]
+  AnalysisReportVariableSerializerType: [AppEnumCollectionAnalysisReportVariableSerializerType!]
+  AnalysisReportTextStyleSerializerAlign: [AppEnumCollectionAnalysisReportTextStyleSerializerAlign!]
+  AnalysisReportBorderStyleSerializerStyle: [AppEnumCollectionAnalysisReportBorderStyleSerializerStyle!]
+  AnalysisReportImageContentStyleSerializerFit: [AppEnumCollectionAnalysisReportImageContentStyleSerializerFit!]
+  AnalysisReportHeadingConfigurationSerializerVariant: [AppEnumCollectionAnalysisReportHeadingConfigurationSerializerVariant!]
+  NotificationNotificationType: [AppEnumCollectionNotificationNotificationType!]
+  NotificationStatus: [AppEnumCollectionNotificationStatus!]
+  ConnectorSourceSource: [AppEnumCollectionConnectorSourceSource!]
+  ConnectorSourceStatus: [AppEnumCollectionConnectorSourceStatus!]
+  ConnectorLeadExtractionStatus: [AppEnumCollectionConnectorLeadExtractionStatus!]
+  DraftEntryPredictionStatus: [AppEnumCollectionDraftEntryPredictionStatus!]
+  AssistedTaggingPredictionDataType: [AppEnumCollectionAssistedTaggingPredictionDataType!]
+  UnusedAssessmentMethodologyProtectionInfo: [AppEnumCollectionUnusedAssessmentMethodologyProtectionInfo!]
+}
+
+type AppEnumCollectionAnalysisFrameworkRoleType {
+  enum: AnalysisFrameworkRoleTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportBorderStyleSerializerStyle {
+  enum: AnalysisReportBorderStyleStyleEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportContainerContentType {
+  enum: AnalysisReportContainerContentTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportHeadingConfigurationSerializerVariant {
+  enum: AnalysisReportHeadingConfigurationVariantEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportImageContentStyleSerializerFit {
+  enum: AnalysisReportImageContentStyleFitEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportTextStyleSerializerAlign {
+  enum: AnalysisReportTextStyleAlignEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportUploadType {
+  enum: AnalysisReportUploadTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportVariableSerializerType {
+  enum: AnalysisReportVariableTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalyticalStatementGeoTaskStatus {
+  enum: AnalyticalStatementGeoTaskStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalyticalStatementNGramStatus {
+  enum: AnalyticalStatementNGramStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssistedTaggingPredictionDataType {
+  enum: AssistedTaggingPredictionDataTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAutomaticSummaryStatus {
+  enum: AutomaticSummaryStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionConnectorLeadExtractionStatus {
+  enum: ConnectorLeadExtractionStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionConnectorSourceSource {
+  enum: ConnectorSourceSourceEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionConnectorSourceStatus {
+  enum: ConnectorSourceStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionDiscardedEntryTag {
+  enum: DiscardedEntryTagTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionDraftEntryPredictionStatus {
+  enum: DraftEntryPredictionStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionEntryEntryType {
+  enum: EntryTagTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionEntryReviewCommentCommentType {
+  enum: EntryReviewCommentTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionExportExcelSelectedColumnSerializerStaticColumn {
+  enum: ExportExcelSelectedStaticColumnEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionExportExportType {
+  enum: ExportExportTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionExportExtraOptionsSerializerDateFormat {
+  enum: ExportDateFormatEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionExportExtraOptionsSerializerReportCitationStyle {
+  enum: ExportReportCitationStyleEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionExportFormat {
+  enum: ExportFormatEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionExportStatus {
+  enum: ExportStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionExportType {
+  enum: ExportDataTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionFilterFilterType {
+  enum: WidgetFilterTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionGenericExportFormat {
+  enum: GenericExportFormatEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionGenericExportStatus {
+  enum: GenericExportStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionGenericExportType {
+  enum: GenericExportDataTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionGroupMembershipRole {
+  enum: GroupMembershipRoleEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionLeadConfidentiality {
+  enum: LeadConfidentialityEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionLeadExtractionStatus {
+  enum: LeadExtractionStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionLeadPriority {
+  enum: LeadPriorityEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionLeadSourceType {
+  enum: LeadSourceTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionLeadStatus {
+  enum: LeadStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionNotificationNotificationType {
+  enum: NotificationTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionNotificationStatus {
+  enum: NotificationStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProfileEmailOptOuts {
+  enum: UserEmailConditionOptOutEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectJoinRequestStatus {
+  enum: ProjectJoinRequestStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectMembershipBadges {
+  enum: ProjectMembershipBadgeTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectOrganizationOrganizationType {
+  enum: ProjectOrganizationTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectRoleType {
+  enum: ProjectRoleTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectStatsAction {
+  enum: ProjectStatsActionEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectStatsStatus {
+  enum: ProjectStatsStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectStatus {
+  enum: ProjectStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectUserGroupMembershipBadges {
+  enum: ProjectMembershipBadgeTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionTopicModelStatus {
+  enum: TopicModelStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionUnusedAssessmentMethodologyProtectionInfo {
+  enum: AssessmentMethodologyProtectionInfoEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionUserEmailOptOuts {
+  enum: UserEmailConditionOptOutEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionWidgetWidgetId {
+  enum: WidgetWidgetTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionWidgetWidth {
+  enum: WidgetWidthTypeEnum!
+  label: String!
+  description: String
+}
+
 type AssessmentListType {
   results: [AssessmentType!]
   totalCount: Int
@@ -1419,10 +1786,6 @@ type CreateWrongPredictionReview {
   errors: [GenericScalar!]
   ok: Boolean
   result: MissingPredictionReviewType
-}
-
-type CustomEnum {
-  aryPimEnum: AssessmentMethodologyProtectionInfoEnum
 }
 
 scalar Date
@@ -3131,6 +3494,13 @@ enum ProjectStatsStatus {
   FAILURE
 }
 
+enum ProjectStatsStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILURE
+}
+
 enum ProjectStatusEnum {
   ACTIVE
   INACTIVE
@@ -3387,7 +3757,7 @@ type Query {
   publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, ordering: [PublicProjectOrderingEnum!], isTest: Boolean, page: Int = 1, pageSize: Int): PublicProjectListType
   publicProjectsByRegion(projectFilter: RegionProjectFilterData, page: Int = 1, ordering: String, pageSize: Int): PublicProjectByRegionListType
   assistedTagging: AssistedTaggingRootQueryType
-  customEnum: CustomEnum
+  enums: AppEnumCollection
   _debug: DjangoDebug
 }
 

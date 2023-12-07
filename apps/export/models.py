@@ -152,6 +152,11 @@ class Export(ExportBaseModel):
         DEFAULT = 1, 'Default'
         STYLE_1 = 2, 'Sample 1'  # TODO: Update naming
 
+        __description__ = {
+            DEFAULT: 'Entry excerpt. (Author[link], Publisher, Published Date)',
+            STYLE_1: 'Entry excerpt (Publisher[link] Published Date).',
+        }
+
     # Used by extra options
     # NOTE: Value should always be usable by date.strftime
     # TODO: Add a unit test to make sure all label are valid
