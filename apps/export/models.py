@@ -159,10 +159,17 @@ class Export(ExportBaseModel):
 
     # Used by extra options
     # NOTE: Value should always be usable by date.strftime
+    # NOTE: Name of enum should support formats accepted by toggle-corp/fujs(js)
+    # https://github.com/toggle-corp/fujs/blob/3b1b64199dad249c81d57fc4d26ed800bdccca13/src/date.ts#L77
     # TODO: Add a unit test to make sure all label are valid
-    class DateFormat(models.IntegerChoices):
-        DEFAULT = 1, '%d-%m-%Y'
-        FORMAT_1 = 2, '%d/%m/%Y'
+    class DateFormat(models.TextChoices):
+        DEFAULT = '%d-%m-%Y', 'dd-MM-yyyy'
+        FORMAT_1 = '%d/%m/%Y', 'dd/MM/yyyy'
+
+        __description__ = {
+            DEFAULT: '23-11-2021',
+            FORMAT_1: '23/11/2021',
+        }
 
     # NOTE: Also used to validate which combination is supported
     DEFAULT_TITLE_LABEL = {
@@ -217,7 +224,7 @@ class Export(ExportBaseModel):
                 isinstance(d, datetime.datetime) or
                 isinstance(d, datetime.date)
             ):
-                return d.strftime(cls.DateFormat(date_format).label)
+                return d.strftime(date_format)
             return fallback
 
         return custom_format
