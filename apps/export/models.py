@@ -211,9 +211,7 @@ class Export(ExportBaseModel):
         return f'{time_str} DEEP {file_label}'
 
     @classmethod
-    def get_date_renderer(cls, date_format: typing.Optional[DateFormat]) -> typing.Callable:
-        date_format = cls.DateFormat.FORMAT_1
-
+    def get_date_renderer(cls, date_format: DateFormat) -> typing.Callable:
         def custom_format(d, fallback: typing.Optional[str] = ''):
             if d and (
                 isinstance(d, datetime.datetime) or

@@ -102,14 +102,14 @@ class WidgetExporter:
                         values[0],
                         raise_exception=False
                     ),
-                    fallback="00-00-00",
+                    fallback="N/A",
                 ),
                 date_renderer(
                     deep_date_parse(
                         values[1],
                         raise_exception=False
                     ),
-                    fallback="00-00-00",
+                    fallback="N/A",
                 ),
             )
             return cls._add_common, label, bold
@@ -644,7 +644,7 @@ class ReportExporter:
         elif lead.confidentiality == Lead.Confidentiality.RESTRICTED:
             para.add_run(' (restricted)')
 
-        if not self.citation_style == Export.CitationStyle.STYLE_1:
+        if self.citation_style == Export.CitationStyle.STYLE_1:
             pass
         else:  # Default
             # Add lead title if available
@@ -653,7 +653,10 @@ class ReportExporter:
 
         # Finally add date
         if date:
-            para.add_run(f", {self.date_renderer(date)}")
+            if self.citation_style == Export.CitationStyle.STYLE_1:
+                para.add_run(f" {self.date_renderer(date)}")
+            else:  # Default
+                para.add_run(f", {self.date_renderer(date)}")
 
         para.add_run(')')
         # --- Reference End
