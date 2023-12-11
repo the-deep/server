@@ -1384,6 +1384,7 @@ type AssistedTaggingMutationType {
   missingPredictionReviewDelete(id: ID!): DeleteMissingPredictionReview
   wrongPredictionReviewDelete(id: ID!): DeleteWrongPredictionReview
   autoDraftEntryCreate(data: AutoDraftEntryInputType!): CreateAutoDraftEntry
+  discardDraftEntry(data: AutoDraftEntryInputType!, id: ID!): DiscardDraftEntry
 }
 
 enum AssistedTaggingPredictionDataTypeEnum {
@@ -1446,6 +1447,7 @@ type AttributeType {
 
 input AutoDraftEntryInputType {
   lead: ID!
+  isDiscarded: Boolean
 }
 
 enum AutoEntryExtractionTypeEnum {
@@ -1916,6 +1918,12 @@ type DeleteWrongPredictionReview {
   errors: [GenericScalar!]
   ok: Boolean
   result: WrongPredictionReviewType
+}
+
+type DiscardDraftEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: DraftEntryType
 }
 
 input DiscardedEntryCreateInputType {

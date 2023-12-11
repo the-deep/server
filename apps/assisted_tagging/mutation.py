@@ -114,6 +114,16 @@ class CreateAutoDraftEntry(PsGrapheneMutation):
     permissions = [PP.Permission.CREATE_ENTRY]
 
 
+class DiscardDraftEntry(PsGrapheneMutation):
+    class Arguments:
+        data = AutoDraftEntryInputType(required=True)
+        id = graphene.ID(required=True)
+    model = DraftEntry
+    serializer_class = AutoDraftEntryGqlSerializer
+    result = graphene.Field(DraftEntryType)
+    permissions = [PP.Permission.CREATE_ENTRY]
+
+
 class AssistedTaggingMutationType(graphene.ObjectType):
     draft_entry_create = CreateDraftEntry.Field()
     missing_prediction_review_create = CreateMissingPredictionReview.Field()
@@ -121,3 +131,4 @@ class AssistedTaggingMutationType(graphene.ObjectType):
     missing_prediction_review_delete = DeleteMissingPredictionReview.Field()
     wrong_prediction_review_delete = DeleteWrongPredictionReview.Field()
     auto_draft_entry_create = CreateAutoDraftEntry.Field()
+    discard_draft_entry = DiscardDraftEntry.Field()
