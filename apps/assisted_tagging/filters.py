@@ -9,18 +9,12 @@ from .enums import (
 
 
 class DraftEntryFilterSet(django_filters.FilterSet):
-    lead = IDListFilter()
-    draft_entry_type = MultipleInputFilter(DraftEntryTypeEnum)
+    leads = IDListFilter(field_name='lead')
+    draft_entry_types = MultipleInputFilter(DraftEntryTypeEnum, field_name='draft_entry_type')
 
     class Meta:
         model = DraftEntry
         fields = ()
-
-    def filter_lead(self, qs, _, value):
-        return qs if value is None else qs.filter(lead=value)
-
-    def filter_draft_entry_type(self, qs, _, value):
-        return qs if value is None else qs.filter(draft_entry_type=value)
 
 
 DraftEntryFilterDataType, DraftEntryFilterDataInputType = generate_type_for_filter_set(

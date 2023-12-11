@@ -365,8 +365,8 @@ class LeadPreview(models.Model):
         choices=ClassificationStatus.choices,
         default=ClassificationStatus.NONE,
     )
-    entry_extraction_id = models.TextField(blank=True, null=True)
-    text_extraction_id = models.TextField(blank=True, null=True)
+    entry_extraction_id = models.UUIDField(blank=True, null=True)  # Saved when EntryExtraction is completed
+    text_extraction_id = models.UUIDField(blank=True, null=True)  # Saved when TextExtraction is completed
 
     def __str__(self):
         return 'Text extracted for {}'.format(self.lead)

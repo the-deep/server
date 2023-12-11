@@ -11,33 +11,34 @@ from .models import (
     WrongPredictionReview,
 )
 from lead.models import Lead
-from .tasks import trigger_request_for_draft_entry_task, trigger_request_for_mock_entry_task
+from .tasks import (
+    trigger_request_for_draft_entry_task,
+    trigger_request_for_auto_draft_entry_task
+)
 
 
 # ---------- Graphql ---------------------------
-class DraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCreatedMixin, serializers.ModelSerializer):
-    class Meta:
-        model = DraftEntry
-        fields = (
-            'lead',
-            'excerpt',
-        )
-
+class DraftEntryBaseSerializer(serializers.Serializer):
     def validate_lead(self, lead):
         if lead.project != self.project:
             raise serializers.ValidationError('Only lead from current project are allowed.')
         af = lead.project.analysis_framework
         if af is None or not af.assisted_tagging_enabled:
             raise serializers.ValidationError('Assisted tagging is disabled for the Framework used by this project.')
-        return lead
-
-    def validate(self, data):
-        if self.instance and self.instance.created_by != self.context['request'].user:
-            raise serializers.ValidationError('Only reviewer can edit this review')
-        data['project'] = self.project
         if self.project.is_private:
             raise serializers.ValidationError('Assisted tagging is not available for private projects.')
-        return data
+        return lead
+
+
+class DraftEntryGqlSerializer(
+    ProjectPropertySerializerMixin, DraftEntryBaseSerializer, UserResourceCreatedMixin, serializers.ModelSerializer
+):
+    class Meta:
+        model = DraftEntry
+        fields = (
+            'lead',
+            'excerpt',
+        )
 
     def create(self, data):
         # Use already existing draft entry if found
@@ -56,7 +57,7 @@ class DraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCreate
         return instance
 
     def update(self, *_):
-        raise Exception('Update not allowed')
+        raise Exception("Update is not allowed")
 
 
 class WrongPredictionReviewGqlSerializer(UserResourceSerializer, serializers.ModelSerializer):
@@ -129,29 +130,15 @@ class PredictionTagAnalysisFrameworkMapSerializer(TempClientIdMixin, serializers
         return data
 
 
-class AutoDraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCreatedMixin, serializers.ModelSerializer):
+class TriggeredDraftEntryGqlSerializer(
+        DraftEntryBaseSerializer,
+        ProjectPropertySerializerMixin,
+        UserResourceCreatedMixin, serializers.ModelSerializer):
     class Meta:
         model = DraftEntry
         fields = (
             'lead',
-            'is_discarded'
         )
-
-    def validate_lead(self, lead):
-        if lead.project != self.project:
-            raise serializers.ValidationError('Only lead from current project are allowed.')
-        af = lead.project.analysis_framework
-        if af is None or not af.assisted_tagging_enabled:
-            raise serializers.ValidationError('Assisted tagging is disabled for the Framework used by this project.')
-        return lead
-
-    def validate(self, data):
-        if self.instance and self.instance.created_by != self.context['request'].user:
-            raise serializers.ValidationError('Only reviewer can edit this review')
-        data['project'] = self.project
-        if self.project.is_private:
-            raise serializers.ValidationError('Assisted tagging is not available for private projects.')
-        return data
 
     def create(self, data):
         lead = Lead.objects.get(id=self.data['lead'])
@@ -160,18 +147,33 @@ class AutoDraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCr
         if not lead.leadpreview.text_extract:
             raise serializers.DjangoValidationError('Simplifed Text is empty')
         draft_entry = DraftEntry.objects.filter(lead=self.data['lead'], draft_entry_type=0)
-        if draft_entry:
+        if draft_entry.exists():
             raise serializers.DjangoValidationError('Draft entry already exit')
         # Use already existing draft entry if found
         # Create new one and send trigger to deepl
         lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.PENDING
-        lead.save()
+        lead.save(update_fields=['auto_entry_extraction_status'])
         transaction.on_commit(
-            lambda: trigger_request_for_mock_entry_task.delay(self.data['lead'])
+            lambda: trigger_request_for_auto_draft_entry_task.delay(self.data['lead'])
         )
-
         return True
 
     def update(self, instance, validate_data):
-        validate_data['is_discarded'] = True
+        raise Exception("updated is not allowed")
+
+
+class UpdateDraftEntrySerializer(
+        DraftEntryBaseSerializer, ProjectPropertySerializerMixin, UserResourceSerializer, serializers.ModelSerializer
+):
+    class Meta:
+        model = DraftEntry
+        fields = (
+            'lead',
+            'is_discarded',
+        )
+
+    def create(self, validate_data):
+        raise Exception("Create is not Allowed")
+
+    def update(self, instance, validate_data):
         return super().update(instance, validate_data)

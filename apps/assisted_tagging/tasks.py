@@ -1,3 +1,4 @@
+from django.conf import settings
 import logging
 import requests
 import json
@@ -26,9 +27,9 @@ def sync_tags_with_deepl():
             tag.tag_id: tag  # tag_id is from deepl
             for tag in AssistedTaggingModelPredictionTag.objects.all()
         }
-    headers = {"Authorization": "TOKEN c2e6c102ad3b4e1097242d0730a091c54f112c66"}
-    response = requests.get(DeeplServiceEndpoint.ASSISTED_TAGGING_TAGS_ENDPOINT, headers=headers)
-    response = json.loads(response.text)
+
+    headers = {'Authorization': f'Token {settings.DEEPL_SERVER_TOKEN}'}
+    response = requests.get(DeeplServiceEndpoint.ASSISTED_TAGGING_TAGS_ENDPOINT, headers=headers).json()
     existing_tags_by_tagid = _get_existing_tags_by_tagid()
 
     new_tags = []
@@ -97,8 +98,8 @@ def trigger_request_for_draft_entry_task(draft_entry_id):
 
 
 @shared_task
-@redis_lock('trigger_request_for_mock_entry_task_{0}', 60 * 60 * 0.5)
-def trigger_request_for_mock_entry_task(lead):
+@redis_lock('trigger_request_for_auto_draft_entry_task_{0}', 60 * 60 * 0.5)
+def trigger_request_for_auto_draft_entry_task(lead):
     lead = Lead.objects.get(id=lead)
     return AutoAssistedTaggingDraftEntryHandler.auto_trigger_request_to_extractor(lead)
 
