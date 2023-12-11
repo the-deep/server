@@ -134,6 +134,7 @@ class AutoDraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCr
         model = DraftEntry
         fields = (
             'lead',
+            'is_discarded'
         )
 
     def validate_lead(self, lead):
@@ -154,8 +155,6 @@ class AutoDraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCr
 
     def create(self, data):
         lead = Lead.objects.get(id=self.data['lead'])
-        lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.PENDING
-        lead.save()
         if lead.auto_entry_extraction_status == (Lead.AutoExtractionStatus.SUCCESS):
             raise serializers.DjangoValidationError("Already Tiggered")
         if not lead.leadpreview.text_extract:
@@ -165,11 +164,14 @@ class AutoDraftEntryGqlSerializer(ProjectPropertySerializerMixin, UserResourceCr
             raise serializers.DjangoValidationError('Draft entry already exit')
         # Use already existing draft entry if found
         # Create new one and send trigger to deepl
+        lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.PENDING
+        lead.save()
         transaction.on_commit(
             lambda: trigger_request_for_mock_entry_task.delay(self.data['lead'])
         )
 
         return True
 
-    def update(self, *_):
-        raise Exception('Update not allowed')
+    def update(self, instance, validate_data):
+        validate_data['is_discarded'] = True
+        return super().update(instance, validate_data)

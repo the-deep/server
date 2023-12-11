@@ -92,7 +92,7 @@ class DraftEntry(UserResourceCreated):
 
     class DraftEntryType(models.IntegerChoices):
         AUTO = 0, 'Auto Extraction'  # NLP defiend extraction text
-        MANUAL = 1, 'Manual Extraction'  # manaul defiend extraction text
+        MANUAL = 1, 'Manual Extraction'  # manaul defined extraction text
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='+')
     lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='+')
@@ -103,6 +103,7 @@ class DraftEntry(UserResourceCreated):
     # Additional attribues
     related_geoareas = models.ManyToManyField(GeoArea, blank=True)
     draft_entry_type = models.SmallIntegerField(choices=DraftEntryType.choices, default=DraftEntryType.MANUAL)
+    is_discarded = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.id}'
