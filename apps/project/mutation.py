@@ -37,6 +37,7 @@ from .models import (
     ProjectMembership,
     ProjectUserGroupMembership,
     ProjectRole,
+    ProjectPinned
 )
 from .serializers import (
     ProjectGqSerializer,
@@ -45,6 +46,7 @@ from .serializers import (
     ProjectMembershipGqlSerializer as ProjectMembershipSerializer,
     ProjectUserGroupMembershipGqlSerializer as ProjectUserGroupMembershipSerializer,
     ProjectVizConfigurationSerializer,
+    ProjectPinnedSerializer
 )
 from .schema import (
     ProjectDetailType,
@@ -89,6 +91,11 @@ ProjectUserGroupMembershipInputType = generate_input_type_for_serializer(
 ProjectVizConfigurationInputType = generate_input_type_for_serializer(
     'ProjectVizConfigurationInputType',
     serializer_class=ProjectVizConfigurationSerializer,
+)
+
+ProjectPinnedInputType = generate_input_type_for_serializer(
+    'ProjectPinnedInputType',
+    serializer_class=ProjectPinnedSerializer
 )
 
 
@@ -316,6 +323,14 @@ class UpdateProjectVizConfiguration(PsGrapheneMutation):
     permissions = [PP.Permission.UPDATE_PROJECT]
 
 
+class ProjectPinnedByUser(PsGrapheneMutation):
+    class Arguments:
+        data = ProjectPinnedInputType(required=True)
+    model = ProjectPinned
+    serializer_class = ProjectPinnedSerializer
+    permissions = [PP.Permission.UPDATE_PROJECT]
+
+
 class ProjectMutationType(
     # --Begin Project Scoped Mutation
     LeadMutation,
@@ -345,6 +360,7 @@ class ProjectMutationType(
     project_viz_configuration_update = UpdateProjectVizConfiguration.Field()
     unified_connector = graphene.Field(UnifiedConnectorMutationType)
     assisted_tagging = graphene.Field(AssistedTaggingMutationType)
+    project_pinned = ProjectPinnedByUser.Field()
 
     @staticmethod
     def get_custom_node(_, info, id):

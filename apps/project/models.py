@@ -835,3 +835,10 @@ class ProjectChangeLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     action = models.SmallIntegerField(choices=Action.choices)
     diff = models.JSONField(null=True, blank=True)
+
+
+class ProjectPinned(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    order = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
