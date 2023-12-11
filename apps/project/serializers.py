@@ -38,6 +38,7 @@ from .models import (
     Project,
     ProjectMembership,
     ProjectJoinRequest,
+    ProjectPinned,
     ProjectRole,
     ProjectUserGroupMembership,
     ProjectOrganization,
@@ -890,3 +891,22 @@ class ProjectGqSerializer(DeprecatedUserResourceSerializer):
         )
         ProjectChangeManager.log_project_created(project, self.current_user)
         return project
+
+
+class ProjectPinnedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectPinned
+        fields = (
+            'order',
+        )
+
+    def validate(self, user):
+        if len(self.instance.user) > 5:
+            raise serializers.ValidationError('Only 5 project can be pinned')
+        return user
+
+    def create(self, validated_data):
+        return super().create(validated_data)
+
+    def update(self, validated_data):
+        pass
