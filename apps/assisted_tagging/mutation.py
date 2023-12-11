@@ -21,7 +21,8 @@ from .serializers import (
     DraftEntryGqlSerializer,
     WrongPredictionReviewGqlSerializer,
     MissingPredictionReviewGqlSerializer,
-    AutoDraftEntryGqlSerializer
+    TriggeredDraftEntryGqlSerializer,
+    UpdateDraftEntrySerializer
 )
 
 
@@ -40,9 +41,14 @@ MissingPredictionReviewInputType = generate_input_type_for_serializer(
     serializer_class=MissingPredictionReviewGqlSerializer,
 )
 
-AutoDraftEntryInputType = generate_input_type_for_serializer(
-    "AutoDraftEntryInputType",
-    serializer_class=AutoDraftEntryGqlSerializer
+TriggerDraftEntryInputType = generate_input_type_for_serializer(
+    "TriggerDraftEntryInputType",
+    serializer_class=TriggeredDraftEntryGqlSerializer
+)
+
+UpdateDraftEntryInputType = generate_input_type_for_serializer(
+    "UpdateDraftEntryInputType",
+    serializer_class=UpdateDraftEntrySerializer
 )
 
 
@@ -107,19 +113,19 @@ class DeleteWrongPredictionReview(PsDeleteMutation):
 
 class CreateAutoDraftEntry(PsGrapheneMutation):
     class Arguments:
-        data = AutoDraftEntryInputType(required=True)
+        data = TriggerDraftEntryInputType(required=True)
     model = DraftEntry
-    serializer_class = AutoDraftEntryGqlSerializer
+    serializer_class = TriggeredDraftEntryGqlSerializer
     result = graphene.Field(DraftEntryType)
     permissions = [PP.Permission.CREATE_ENTRY]
 
 
 class DiscardDraftEntry(PsGrapheneMutation):
     class Arguments:
-        data = AutoDraftEntryInputType(required=True)
+        data = UpdateDraftEntryInputType(required=True)
         id = graphene.ID(required=True)
     model = DraftEntry
-    serializer_class = AutoDraftEntryGqlSerializer
+    serializer_class = UpdateDraftEntrySerializer
     result = graphene.Field(DraftEntryType)
     permissions = [PP.Permission.CREATE_ENTRY]
 
