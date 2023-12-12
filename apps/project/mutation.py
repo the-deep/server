@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.utils.translation import gettext
 
 import graphene
@@ -46,7 +47,8 @@ from .serializers import (
     ProjectMembershipGqlSerializer as ProjectMembershipSerializer,
     ProjectUserGroupMembershipGqlSerializer as ProjectUserGroupMembershipSerializer,
     ProjectVizConfigurationSerializer,
-    ProjectPinnedSerializer
+    UserPinnedProjectSerializer,
+    BulkProjectPinnedSerializer
 )
 from .schema import (
     ProjectDetailType,
@@ -54,6 +56,7 @@ from .schema import (
     ProjectMembershipType,
     ProjectUserGroupMembershipType,
     ProjectVizDataType,
+    UserPinnedProjectType
 )
 
 
@@ -95,7 +98,12 @@ ProjectVizConfigurationInputType = generate_input_type_for_serializer(
 
 ProjectPinnedInputType = generate_input_type_for_serializer(
     'ProjectPinnedInputType',
-    serializer_class=ProjectPinnedSerializer
+    serializer_class=UserPinnedProjectSerializer
+)
+
+UserPinnedProjectReOrderInputType = generate_input_type_for_serializer(
+    'BulkUpdateProjectPinned',
+    serializer_class=BulkProjectPinnedSerializer,
 )
 
 
@@ -323,12 +331,13 @@ class UpdateProjectVizConfiguration(PsGrapheneMutation):
     permissions = [PP.Permission.UPDATE_PROJECT]
 
 
-class ProjectPinnedByUser(PsGrapheneMutation):
+class CreateUserPinnedProject(PsGrapheneMutation):
     class Arguments:
-        data = ProjectPinnedInputType(required=True)
+        data = ProjectPinnedInputType(required=False)
     model = ProjectPinned
-    serializer_class = ProjectPinnedSerializer
-    permissions = [PP.Permission.UPDATE_PROJECT]
+    result = graphene.Field(UserPinnedProjectType)
+    serializer_class = UserPinnedProjectSerializer
+    permissions = []
 
 
 class ProjectMutationType(
@@ -360,7 +369,6 @@ class ProjectMutationType(
     project_viz_configuration_update = UpdateProjectVizConfiguration.Field()
     unified_connector = graphene.Field(UnifiedConnectorMutationType)
     assisted_tagging = graphene.Field(AssistedTaggingMutationType)
-    project_pinned = ProjectPinnedByUser.Field()
 
     @staticmethod
     def get_custom_node(_, info, id):
@@ -383,8 +391,67 @@ class ProjectMutationType(
             return {}
 
 
+class ReorderPinnedProjects(PsGrapheneMutation):
+    class Arguments:
+        items = graphene.List(graphene.NonNull(UserPinnedProjectReOrderInputType))
+    model = ProjectPinned
+    result = graphene.List(UserPinnedProjectType)
+    serializer_class = BulkProjectPinnedSerializer
+    permissions = []
+
+    @classmethod
+    @transaction.atomic()
+    def perform_mutate(cls, root, info, **kwargs):
+        errors_data = []
+        serializers_data = []
+        results = []
+        for data in kwargs['items']:
+            instance, errors = cls.get_object(info, id=data['id'])
+            if errors:
+                errors_data.append(errors)
+            serializer = cls.serializer_class(data=data, instance=instance, context={'request': info.context.request})
+            errors_data.append(mutation_is_not_valid(serializer))  # errors_data also add empty list
+            serializers_data.append(serializer)
+        errors_data = [items for items in errors_data if items]  # list compreshive removing empty list
+        if errors_data:
+            return cls(errors=errors_data, ok=False)
+        for serializer in serializers_data:
+            results.append(serializer.save())
+        return cls(result=results, ok=True)
+
+
+class DeleteUserPinnedProject(DeleteMutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+    model = ProjectPinned
+    result = graphene.Field(UserPinnedProjectType)
+    permissions = []
+
+    @staticmethod
+    def mutate(root, info, id):
+
+        project_pinned_qs = ProjectPinned.objects.filter(
+            id=id,
+            user=info.context.user
+        )
+        if not project_pinned_qs.exists():
+            return DeleteUserPinnedProject(errors=[
+                dict(
+                    field='nonFieldErrors',
+                    messages=gettext(
+                        'Not authorize the unpinned project '
+                    ),
+                )
+            ], ok=False)
+        project_pinned_qs.delete()
+        return DeleteUserPinnedProject(result=root, errors=None, ok=True)
+
+
 class Mutation(object):
     project_create = CreateProject.Field()
     join_project = CreateProjectJoin.Field()
     project_join_request_delete = ProjectJoinRequestDelete.Field()
     project = DjangoObjectField(ProjectMutationType)
+    create_user_pinned_project = CreateUserPinnedProject.Field()
+    reorder_pinned_projects = ReorderPinnedProjects.Field()
+    delete_user_pinned_project = DeleteUserPinnedProject.Field()

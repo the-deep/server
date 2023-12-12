@@ -2628,6 +2628,12 @@ type BulkUpdateProjectMembership {
   deletedResult: [ProjectMembershipType!]
 }
 
+input BulkUpdateProjectPinned {
+  order: Int!
+  clientId: String
+  id: Int!
+}
+
 type BulkUpdateProjectRegion {
   errors: [[GenericScalar!]]
   result: [RegionDetailType!]
@@ -2917,6 +2923,12 @@ type CreateUserGroup {
   errors: [GenericScalar!]
   ok: Boolean
   result: UserGroupType
+}
+
+type CreateUserPinnedProject {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectPinnedDataType
 }
 
 type CreateWrongPredictionReview {
@@ -4266,6 +4278,9 @@ type Mutation {
   joinProject(data: ProjectJoinRequestInputType!): CreateProjectJoin
   projectJoinRequestDelete(projectId: ID!): ProjectJoinRequestDelete
   project(id: ID!): ProjectMutationType
+  createUserPinnedProject(data: ProjectPinnedInputType): CreateUserPinnedProject
+  reorderPinnedProjects(items: [BulkUpdateProjectPinned!]): ReorderPinnedProjects
+  deleteUserPinnedProject(id: ID!): deleteUserPinnedProject
   userGroupCreate(data: UserGroupInputType!): CreateUserGroup
   userGroup(id: ID!): UserGroupMutationType
   login(data: LoginInputType!): Login
@@ -4724,6 +4739,17 @@ enum ProjectPermission {
   UPDATE_ASSESSMENT_REGISTRY
 }
 
+type ProjectPinnedDataType {
+  project: ProjectType!
+  user: UserType!
+  order: Int!
+  clientId: String!
+}
+
+input ProjectPinnedInputType {
+  project: ID!
+}
+
 type ProjectRoleType {
   id: ID!
   title: String!
@@ -5039,6 +5065,7 @@ type Query {
   projectsByRegion(projectFilter: RegionProjectFilterData, ordering: String): ProjectByRegionListType
   publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, ordering: [PublicProjectOrderingEnum!], isTest: Boolean, page: Int = 1, pageSize: Int): PublicProjectListType
   publicProjectsByRegion(projectFilter: RegionProjectFilterData, page: Int = 1, ordering: String, pageSize: Int): PublicProjectByRegionListType
+  pinnedProject: [ProjectPinnedDataType!]!
   assistedTagging: AssistedTaggingRootQueryType
   enums: AppEnumCollection
   _debug: DjangoDebug
@@ -5146,6 +5173,13 @@ input RegisterInputType {
   lastName: String
   organization: String!
   captcha: String!
+}
+
+type ReorderPinnedProjects {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: [ProjectPinnedDataType]
+  deletedResult: [ProjectPinnedDataType]
 }
 
 type ResetPassword {
@@ -5876,4 +5910,10 @@ type WrongPredictionReviewType {
   createdBy: UserType
   modifiedBy: UserType
   prediction: ID!
+}
+
+type deleteUserPinnedProject {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectPinnedDataType
 }
