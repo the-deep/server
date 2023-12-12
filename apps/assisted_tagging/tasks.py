@@ -1,7 +1,6 @@
 from django.conf import settings
 import logging
 import requests
-import json
 
 from celery import shared_task
 from lead.models import Lead

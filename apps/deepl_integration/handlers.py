@@ -381,8 +381,6 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
 
         except Exception:
             logger.error('Entry Extraction send failed, Exception occurred!!', exc_info=True)
-            # lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.FAILED
-            # lead.save()
         _response = locals().get('response')
         logger.error(payload)
         logger.error(

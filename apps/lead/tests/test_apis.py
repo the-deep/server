@@ -1,5 +1,6 @@
 import logging
 from datetime import date
+import uuid
 
 from django.db.models import Q
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -43,7 +44,7 @@ from lead.models import (
 )
 from user_group.models import UserGroup, GroupMembership
 from ary.models import Assessment
-from lead.factories import LeadFactory
+from lead.factories import LeadFactory, LeadPreviewFactory
 from unittest import mock
 
 
@@ -1858,22 +1859,22 @@ class AutoEntryExtractionTestCase(TestCase):
     def setUp(self):
         super().setUp()
         self.lead = LeadFactory.create()
-    # @mock.patch('assisted_tagging.mutation.
+        self.lead_preview = LeadPreviewFactory.create(lead=self.lead, text_extraction_id=str(uuid.uuid1()))
 
-    @mock.patch('deepl_integration.handlers.RequestHelper.json')
-    def test_entry_extraction_callback(self, get_json_mock):
+    def test_entry_extraction_callback(self):
         url = '/api/v1/callback/auto-assisted-tagging-draft-entry-prediction/'
         self.authenticate()
-        get_json_mock.return_value = "testing"
-        print(get_json_mock)
         data = {
             "client_id": AutoAssistedTaggingDraftEntryHandler.get_client_id(self.lead),
-            'entry_extraction_classification_path': 'https://server-deepl.dev.datafriendlyspace.org/media/',
-            'text_extraction_id': '43545',
+            'entry_extraction_classification_path': 'https://server-deepl.dev.datafriendlyspace.org/media/mock_responses/entry_extraction/entry-extraction-client-6ppp.json',  # noqa: E501
+            'text_extraction_id': self.lead_preview.text_extraction_id,
             'status': 1
         }
         response = self.client.post(url, data)
         self.assert_200(response)
+        self.lead.refresh_from_db()
+        self.assertEqual(self.lead.auto_entry_extraction_status, Lead.AutoExtractionStatus.SUCCESS)
+        self.assertEqual(LeadPreview.objects.get(lead=self.lead).text_extraction_id, data['text_extraction_id'])
 
     def test_auto_extraction_mutation(self):
         pass
