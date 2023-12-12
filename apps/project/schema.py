@@ -53,6 +53,7 @@ from .models import (
     ProjectOrganization,
     ProjectStats,
     RecentActivityType as ActivityTypes,
+    ProjectPinned
 )
 from .enums import (
     ProjectPermissionEnum,
@@ -383,6 +384,17 @@ class ProjectVizDataType(DjangoObjectType):
         return root.get_public_url(info.context.request)
 
 
+class UserPinnedProjectType(ClientIdMixin, DjangoObjectType):
+    class Meta:
+        model = ProjectPinned
+        only_fields = (
+            "project",
+            "user",
+            "order",
+            "client_id",
+        )
+
+
 class ProjectDetailType(
     # -- Start --Project scopped entities
     LeadQuery,
@@ -576,6 +588,7 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
+    pinned_project = DjangoListField(UserPinnedProjectType, required=True)
 
     # NOTE: This is a custom feature, see https://github.com/the-deep/graphene-django-extras
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
@@ -612,3 +625,7 @@ class Query:
     @staticmethod
     def resolve_public_projects_by_region(*args, **kwargs):
         return Query.resolve_projects_by_region(*args, **kwargs)
+
+    @staticmethod
+    def resolve_pinned_project(root, info, **kwargs):
+        return ProjectPinned.objects.filter(user=info.context.user)

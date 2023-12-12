@@ -893,20 +893,69 @@ class ProjectGqSerializer(DeprecatedUserResourceSerializer):
         return project
 
 
-class ProjectPinnedSerializer(serializers.ModelSerializer):
+class UserPinnedProjectSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProjectPinned
+        fields = (
+            'project',
+        )
+
+    @cached_property
+    def current_user(self):
+        return self.context['request'].user
+
+    @cached_property
+    def get_queryset(self):
+        pinned_project = ProjectPinned.objects.filter(user=self.current_user)
+        return pinned_project
+
+    def validate(self, data):
+        if (self.get_queryset.count() >= 5):
+            raise serializers.ValidationError("User can pinned 5 project only!!!")
+        return data
+
+    def create(self, validated_data):
+        if self.get_queryset.filter(project=validated_data['project']).exists():
+            raise serializers.ValidationError("Project already pinned!!")
+        validated_data['user'] = self.current_user
+        if self.get_queryset:
+            validated_data['order'] = self.get_queryset.latest('order').order + 1
+            return super().create(validated_data)
+        validated_data['order'] = 1
+        return super().create(validated_data)
+
+    def update(self):
+        raise serializers.ValidationError("not allowed for update")
+
+
+class BulkProjectPinnedSerializer(TempClientIdMixin, UserResourceSerializer):
+    id = serializers.IntegerField(required=True)
+
     class Meta:
         model = ProjectPinned
         fields = (
             'order',
+            'client_id',
+            'id'
         )
 
-    def validate(self, user):
-        if len(self.instance.user) > 5:
-            raise serializers.ValidationError('Only 5 project can be pinned')
-        return user
+    @cached_property
+    def current_user(self):
+        return self.context['request'].user
+
+    @cached_property
+    def get_queryset(self):
+        pinned_project = ProjectPinned.objects.filter(user=self.current_user)
+        return pinned_project
+
+    def validate(self, data):
+        if (self.get_queryset.count() >= 5):
+            raise serializers.ValidationError("User can pinned 5 project only!!!")
+        return data
 
     def create(self, validated_data):
-        return super().create(validated_data)
+        raise serializers.ValidationError("Create not allowed")
 
-    def update(self, validated_data):
-        pass
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)

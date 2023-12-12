@@ -24,6 +24,7 @@ from .models import (
     ProjectJoinRequest,
     ProjectOrganization,
     ProjectChangeLog,
+    ProjectPinned
 )
 
 TRIGGER_LIMIT = 5
@@ -213,3 +214,8 @@ class ProjectChangeLogAdmin(admin.ModelAdmin):
     @admin.display(description='Diff pretty JSON')
     def diff_pretty(self, obj):
         return mark_safe(f'<pre>{json.dumps(obj.diff, indent=2)}</pre>')
+
+
+@admin.register(ProjectPinned)
+class ProjectPinnedAdmin(admin.ModelAdmin):
+    list_display = ('id', 'project', 'user', 'order')
