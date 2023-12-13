@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
+from assisted_tagging.models import DraftEntry
 
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.enums import EnumDescription
@@ -405,6 +406,19 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
         return Permalink.lead_share_view(root.uuid)
 
 
+class DraftEntryCountByLead(graphene.ObjectType):
+    undiscarded_draft_entry = graphene.Int(required=False)
+    discarded_draft_enrty = graphene.Int(required=False)
+
+    @staticmethod
+    def resolve_discarded_draft_enrty(root, info, **kwargs):
+        return DraftEntry.objects.filter(lead=root.id, is_discarded=True).count()
+
+    @staticmethod
+    def resolve_undiscarded_draft_entry(root, info, **kwargs):
+        return DraftEntry.objects.filter(lead=root.id, is_discarded=False).count()
+
+
 class LeadDetailType(LeadType):
     class Meta:
         model = Lead
@@ -416,12 +430,17 @@ class LeadDetailType(LeadType):
         )
 
     entries = graphene.List(graphene.NonNull('entry.schema.EntryType'))
+    draft_entry_stat = graphene.Field(DraftEntryCountByLead)
 
     @staticmethod
     def resolve_entries(root, info, **kwargs):
         return root.entry_set.filter(
             analysis_framework=info.context.active_project.analysis_framework,
         ).all()
+
+    @staticmethod
+    def resolve_draft_entry_stat(root, info, **kwargs):
+        return root
 
 
 class LeadListType(CustomDjangoListObjectType):
@@ -462,6 +481,7 @@ class Query:
     emm_risk_factors = graphene.List(graphene.NonNull(EmmKeyRiskFactorType))
 
     user_saved_lead_filter = graphene.Field(UserSavedLeadFilterType)
+    draft_entry_discarded_count = graphene.Field(DraftEntryCountByLead)
 
     @staticmethod
     def resolve_leads(root, info, **kwargs) -> QuerySet:

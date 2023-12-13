@@ -215,7 +215,7 @@ class DraftEntryType(DjangoObjectType):
 
     @staticmethod
     def resolve_related_geoareas(root, info, **kwargs):
-        return root.related_geoareas.all()   # NOTE: Prefetched by DraftEntry
+        return root.related_geoareas.all()  # NOTE: Prefetched by DraftEntry
 
 
 class DraftEntryByLeadType(DjangoObjectType):
@@ -230,6 +230,7 @@ class DraftEntryByLeadType(DjangoObjectType):
     related_geoareas = graphene.List(
         graphene.NonNull(ProjectGeoAreaType)
     )
+    is_discarded = graphene.Int(required=True)
 
     class Meta:
         model = DraftEntry
