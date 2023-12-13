@@ -26,7 +26,7 @@ from export import schema as export_schema, mutation as export_mutation
 from deep_explore import schema as deep_explore_schema
 from gallery import mutations as gallery_mutation
 
-from deep.enums import CustomEnum
+from deep.enums import AppEnumCollection
 
 
 class Query(
@@ -46,15 +46,17 @@ class Query(
     graphene.ObjectType
 ):
     assisted_tagging = graphene.Field(assisted_tagging_schema.AssistedTaggingRootQueryType)
-    custom_enum = graphene.Field(
-        CustomEnum, description="Used for display in schema only. Don't use Otherwise"
-    )
+    enums = graphene.Field(AppEnumCollection)
 
     if settings.DEBUG:
         _debug = graphene.Field(DjangoDebug, name="_debug")
 
     @staticmethod
     def resolve_assisted_tagging(root, info, **kwargs):
+        return {}
+
+    @staticmethod
+    def resolve_enums(root, info, **kwargs):
         return {}
 
 

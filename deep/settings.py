@@ -42,6 +42,8 @@ env = environ.Env(
     S3_AWS_ACCESS_KEY_ID=(str, None),
     S3_AWS_SECRET_ACCESS_KEY=(str, None),
     S3_AWS_ENDPOINT_URL=(str, None),
+    AWS_STORAGE_BUCKET_NAME_STATIC=str,
+    AWS_STORAGE_BUCKET_NAME_MEDIA=str,
     # Redis
     CELERY_REDIS_URL=str,
     DJANGO_CACHE_REDIS_URL=str,
@@ -406,7 +408,10 @@ if env('DJANGO_USE_S3'):
     # If environment variable are not provided, then EC2 Role will be used.
     AWS_S3_SECRET = (
         env.json('DEEP_BUCKET_ACCESS_USER_SECRET') or
-        fetch_db_credentials_from_secret_arn(env('DEEP_BUCKET_ACCESS_USER_SECRET_ARN'), ignore_error=True)
+        (
+            env('DEEP_BUCKET_ACCESS_USER_SECRET_ARN') and
+            fetch_db_credentials_from_secret_arn(env('DEEP_BUCKET_ACCESS_USER_SECRET_ARN'), ignore_error=True)
+        )
     )
     if AWS_S3_SECRET:
         AWS_ACCESS_KEY_ID = AWS_S3_SECRET['AccessKeyId']
@@ -924,6 +929,7 @@ GRAPHENE_NODES_WHITELIST = (
     '__type',
     '__typename',
     # custom nodes...
+    'enums',
     'login',
     'loginWithHid',
     'register',

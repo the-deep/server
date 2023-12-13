@@ -54,8 +54,18 @@ class LeadAdmin(VersionAdmin):
     ]
     ordering = ('project', 'created_by', 'created_at')
     autocomplete_fields = (
-        'project', 'created_by', 'modified_by', 'attachment', 'assignee',
-        'source', 'authors', 'author', 'emm_entities', 'lead_group',
+        'project',
+        'created_by',
+        'modified_by',
+        'attachment',
+        'assignee',
+        'source',
+        'authors',
+        'author',
+        'emm_entities',
+        'lead_group',
+        'connector_lead',
+        'duplicate_leads',
     )
     readonly_fields = ('uuid',)
     actions = [trigger_lead_extract]

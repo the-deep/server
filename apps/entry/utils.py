@@ -9,8 +9,8 @@ from .widgets.store import widget_store
 def update_entry_attribute(attribute):
     entry = attribute.entry
     widget = attribute.widget
-    data = attribute.data
-    if not entry or not widget or not data:
+    data = attribute.data or {}
+    if not entry or not widget:
         return
 
     widget_module = widget_store.get(widget.widget_id)

@@ -12,10 +12,7 @@ from analysis.enums import enum_map as analysis_enum_map
 from notification.enums import enum_map as notification_enum_map
 from unified_connector.enums import enum_map as unified_connector_enum_map
 from assisted_tagging.enums import enum_map as assisted_tagging_enum_map
-from ary.enums import (
-    AssessmentMethodologyProtectionInfoEnum,
-    enum_map as ary_enum_map,
-)
+from ary.enums import enum_map as ary_enum_map
 
 ENUM_TO_GRAPHENE_ENUM_MAP = {
     **user_enum_map,
@@ -33,7 +30,49 @@ ENUM_TO_GRAPHENE_ENUM_MAP = {
     **ary_enum_map,
 }
 
+ENUM_TO_GRAPHENE_ENUM_DESCRIPTION_MAP = {
+    enum: getattr(enum._meta.enum, '__description__', {})
+    for enum in ENUM_TO_GRAPHENE_ENUM_MAP.values()
+}
 
-# Enums which are not used directly in the Graphql. Eg: Ary
-class CustomEnum(graphene.ObjectType):
-    ary_pim_enum = graphene.Field(AssessmentMethodologyProtectionInfoEnum)
+
+def generate_type_for_enum(name, Enum):
+    EnumMetaType = type(
+        f'AppEnumCollection{name}',
+        (graphene.ObjectType,),
+        {
+            'enum': graphene.NonNull(Enum),
+            'label': graphene.NonNull(graphene.String),
+            'description': graphene.String(),
+        }
+    )
+    return graphene.Field(
+        graphene.List(
+            graphene.NonNull(EnumMetaType),
+        ),
+        resolver=lambda *_: [
+            EnumMetaType(
+                enum=e,
+                label=e.label,
+                description=ENUM_TO_GRAPHENE_ENUM_DESCRIPTION_MAP[Enum].get((e.value, e.label)),
+            )
+            for e in Enum._meta.enum
+        ]
+    )
+
+
+def generate_type_for_enums(name):
+    return type(
+        name,
+        (graphene.ObjectType,),
+        {
+            enum_field_name: generate_type_for_enum(
+                enum_field_name,
+                enum_,
+            )
+            for enum_field_name, enum_ in ENUM_TO_GRAPHENE_ENUM_MAP.items()
+        },
+    )
+
+
+AppEnumCollection = generate_type_for_enums('AppEnumCollection')

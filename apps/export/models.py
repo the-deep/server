@@ -1,10 +1,12 @@
+import typing
+import datetime
+
 from django.db import models
 from django.core.cache import cache
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 
-from utils.common import deep_date_format
 from deep.caches import CacheKey
 from deep.celery import app as celery_app
 from project.models import Project
@@ -145,6 +147,30 @@ class Export(ExportBaseModel):
         LEAD_ENTRY_ID = 'lead_entry_id', 'Source-Entry Id'
         ENTRY_EXCERPT = 'entry_excerpt', 'Modified Excerpt, Original Excerpt'
 
+    # Used by extra options for Report
+    class CitationStyle(models.IntegerChoices):
+        DEFAULT = 1, 'Default'
+        STYLE_1 = 2, 'Sample 1'  # TODO: Update naming
+
+        __description__ = {
+            DEFAULT: 'Entry excerpt. (Author[link], Publisher, Published Date)',
+            STYLE_1: 'Entry excerpt (Publisher[link] Published Date).',
+        }
+
+    # Used by extra options
+    # NOTE: Value should always be usable by date.strftime
+    # NOTE: Name of enum should support formats accepted by toggle-corp/fujs(js)
+    # https://github.com/toggle-corp/fujs/blob/3b1b64199dad249c81d57fc4d26ed800bdccca13/src/date.ts#L77
+    # TODO: Add a unit test to make sure all label are valid
+    class DateFormat(models.TextChoices):
+        DEFAULT = '%d-%m-%Y', 'dd-MM-yyyy'
+        FORMAT_1 = '%d/%m/%Y', 'dd/MM/yyyy'
+
+        __description__ = {
+            DEFAULT: '23-11-2021',
+            FORMAT_1: '23/11/2021',
+        }
+
     # NOTE: Also used to validate which combination is supported
     DEFAULT_TITLE_LABEL = {
         (DataType.ENTRIES, ExportType.EXCEL, Format.XLSX): 'Entries Excel Export',
@@ -160,7 +186,7 @@ class Export(ExportBaseModel):
 
     CELERY_TASK_CACHE_KEY = CacheKey.EXPORT_TASK_CACHE_KEY_FORMAT
 
-    # Number of entries to proccess if is_preview is True
+    # Number of entries to process if is_preview is True
     PREVIEW_ENTRY_SIZE = 10
     PREVIEW_ASSESSMENT_SIZE = 10
 
@@ -188,8 +214,20 @@ class Export(ExportBaseModel):
     @classmethod
     def generate_title(cls, data_type, export_type, export_format):
         file_label = cls.DEFAULT_TITLE_LABEL[(data_type, export_type, export_format)]
-        time_str = deep_date_format(timezone.now())
+        time_str = timezone.now().strftime('%Y%m%d')
         return f'{time_str} DEEP {file_label}'
+
+    @classmethod
+    def get_date_renderer(cls, date_format: DateFormat) -> typing.Callable:
+        def custom_format(d, fallback: typing.Optional[str] = ''):
+            if d and (
+                isinstance(d, datetime.datetime) or
+                isinstance(d, datetime.date)
+            ):
+                return d.strftime(date_format)
+            return fallback
+
+        return custom_format
 
     def save(self, *args, **kwargs):
         self.title = self.title or self.generate_title(self.type, self.export_type, self.format)

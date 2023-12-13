@@ -6,4 +6,6 @@ from .models import MethodologyProtectionInfo
 AssessmentMethodologyProtectionInfoEnum = convert_enum_to_graphene_enum(
     MethodologyProtectionInfo, name='AssessmentMethodologyProtectionInfoEnum')
 
-enum_map = {}
+enum_map = {
+    'UnusedAssessmentMethodologyProtectionInfo': AssessmentMethodologyProtectionInfoEnum,
+}

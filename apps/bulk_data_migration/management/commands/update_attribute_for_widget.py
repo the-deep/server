@@ -50,9 +50,10 @@ class Command(BaseCommand):
         if widget == conditional_widget.WIDGET_ID:
             # conditional widget is handled within each overview widget
             return
-        curr_data_version = getattr(widget_store[widget], 'DATA_VERSION', None)
+        current_widget_data_version = getattr(widget_store[widget], 'DATA_VERSION', None)
         to_be_changed_export_data_exists = Exists(
             ExportData.objects.filter(
+                exportable__analysis_framework=OuterRef('widget__analysis_framework'),
                 exportable__widget_key=OuterRef('widget__key'),
                 entry_id=OuterRef('entry')
             ).filter(
@@ -61,39 +62,25 @@ class Command(BaseCommand):
                 (
                     Q(data__has_key='common') &
                     Q(data__common__has_key='version') &
-                    ~Q(data__common__version=curr_data_version)
+                    ~Q(data__common__version=current_widget_data_version)
                 )
             )
         )
-        count = 0
-        for attr in qs.filter(widget__widget_id=widget).annotate(
+        attribute_qs = qs.filter(
+            widget__widget_id=widget,
+        ).annotate(
             export_data_exists=to_be_changed_export_data_exists
-        ).filter(export_data_exists=True):
-            count += 1
-            update_entry_attribute(attr)
+        ).filter(export_data_exists=True)
 
-        to_be_changed_export_data_conditional_exists = Exists(
-            ExportData.objects.filter(
-                exportable__widget_key=OuterRef('widget__key'),
-                entry_id=OuterRef('entry'),
-            ).filter(
-                ~Q(data__has_key='common') |
-                # ~Q(data__common__has_key=widget) |
-                (
-                    Q(data__has_key='common') &
-                    Q(data__common__has_key=widget) &
-                    ~Q(**{f'data__common__{widget}': curr_data_version})
-                )
-            )
-        )
-        count2 = 0
-        for attr in qs.filter(widget__widget_id=conditional_widget.WIDGET_ID).annotate(
-            export_data_exists=to_be_changed_export_data_conditional_exists
-        ).filter(export_data_exists=True):
-            count2 += 1
+        total_to_process = attribute_qs.count()
+        print(f'Processing for {widget}. Total attributes to process: {total_to_process}')
+        if total_to_process == 0:
+            # Nothing to do here
+            return
+        for index, attr in enumerate(attribute_qs.iterator(), start=1):
+            print(f'  - {index}/{total_to_process}', end='\r')
             update_entry_attribute(attr)
-
-        print(f'Updated {count} overview and {count2} conditional widgets for {widget}.')
+        print(f' - Updated {total_to_process}')
 
     def handle(self, *args, **options):
         old = time.time()

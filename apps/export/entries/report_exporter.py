@@ -13,7 +13,7 @@ from django.db.models import (
 )
 from docx.shared import Inches
 from deep.permalinks import Permalink
-from utils.common import deep_date_format
+from utils.common import deep_date_parse
 
 from export.formats.docx import Document
 
@@ -32,7 +32,8 @@ from entry.widgets import (
     date_range_widget,
     geo_widget,
     select_widget,
-    multiselect_widget
+    multiselect_widget,
+    organigram_widget,
 )
 from entry.widgets.store import widget_store
 from entry.widgets.geo_widget import get_valid_geo_ids
@@ -92,11 +93,24 @@ class WidgetExporter:
             - tuple (from, to)
         as described here: apps.entry.widgets.date_range_widget._get_date
         """
+        date_renderer = kwargs['date_renderer']
         values = data.get('values', [])
         if len(values) == 2 and any(values):
             label = '{} - {}'.format(
-                values[0] or "00-00-00",
-                values[1] or "00-00-00",
+                date_renderer(
+                    deep_date_parse(
+                        values[0],
+                        raise_exception=False
+                    ),
+                    fallback="N/A",
+                ),
+                date_renderer(
+                    deep_date_parse(
+                        values[1],
+                        raise_exception=False
+                    ),
+                    fallback="N/A",
+                ),
             )
             return cls._add_common, label, bold
 
@@ -123,12 +137,18 @@ class WidgetExporter:
         as described here: apps.entry.widgets.date_widget
         """
         value = data.get('value')
-        if value:
-            return cls._add_common, value, bold
+        if not value:
+            return
+        date_renderer = kwargs['date_renderer']
+        _value = date_renderer(deep_date_parse(value, raise_exception=False))
+        if _value:
+            return cls._add_common, _value, bold
 
     @classmethod
     def _get_time_widget_data(cls, data, bold, **kwargs):
-        cls._get_date_widget_data(data, bold, **kwargs)
+        value = data.get('value')
+        if value:
+            return cls._add_common, value, bold
 
     @classmethod
     def _get_select_widget_data(cls, data, bold, **kwargs):
@@ -140,6 +160,14 @@ class WidgetExporter:
     @classmethod
     def _get_multi_select_widget_data(cls, data, bold, **kwargs):
         return cls._get_select_widget_data(data, bold, **kwargs)
+
+    @classmethod
+    def _get_organigram_widget_data(cls, data, bold, **kwargs):
+        text = INTERNAL_SEPARATOR.join(
+            '/'.join(value_with_parent)
+            for value_with_parent in data.get('values')
+        )
+        return cls._add_common, text, bold
 
     @classmethod
     def _get_geo_widget_data(cls, data, bold, **kwargs):
@@ -178,6 +206,7 @@ class WidgetExporter:
                 date_widget.WIDGET_ID: cls._get_date_widget_data,
                 geo_widget.WIDGET_ID: cls._get_geo_widget_data,
                 select_widget.WIDGET_ID: cls._get_select_widget_data,
+                organigram_widget.WIDGET_ID: cls._get_organigram_widget_data,
                 multiselect_widget.WIDGET_ID: cls._get_multi_select_widget_data,
             }
             if widget_id in mapper.keys():
@@ -191,6 +220,8 @@ class WidgetExporter:
 class ReportExporter:
     def __init__(
         self,
+        date_format: Export.DateFormat,
+        citation_style: Export.CitationStyle,
         exporting_widgets=None,  # eg: ["517", "43", "42"]
         is_preview=False,
         show_lead_entry_id=True,
@@ -219,6 +250,12 @@ class ReportExporter:
         self.geoarea_data_cache = {}
         self.assessment_data_cache = {}
         self.entry_widget_data_cache = {}
+
+        # Citation
+        self.citation_style = citation_style or Export.CitationStyle.DEFAULT
+
+        # Date Format
+        self.date_renderer = Export.get_date_renderer(date_format)
 
     def load_exportables(self, exportables, regions):
         exportables = exportables.filter(
@@ -380,7 +417,7 @@ class ReportExporter:
                         continue
 
                     # Try to look through parent
-                    for _level in range(0, admin_level['level'] - 1)[::-1]:
+                    for _level in range(0, admin_level['level'])[::-1]:
                         if parent_id:
                             _geo_area_titles = admin_levels[_level]['geo_area_titles']
                             _geo_area = _geo_area_titles.get(parent_id) or {}
@@ -469,7 +506,8 @@ class ReportExporter:
                         if resp := WidgetExporter.get_widget_information_into_report(
                             data,
                             bold=True,
-                            _get_geo_admin_level_1_data=self._get_geo_admin_level_1_data
+                            _get_geo_admin_level_1_data=self._get_geo_admin_level_1_data,
+                            date_renderer=self.date_renderer,
                         ):
                             export_data.append(resp)
                     except ExportDataVersionMismatch:
@@ -521,7 +559,11 @@ class ReportExporter:
             entry.excerpt if entry.entry_type == Entry.TagType.EXCERPT
             else ''
         )
-        para.add_run(excerpt)
+
+        if self.citation_style == Export.CitationStyle.STYLE_1:
+            para.add_run(excerpt.rstrip('.'))
+        else:  # Default
+            para.add_run(excerpt)
 
         # Add texts from TextWidget
         entry_texts = self.collected_widget_text.get(entry.id) or {}
@@ -566,22 +608,35 @@ class ReportExporter:
         else:
             para.add_run(' (')  # Starting from same line
 
-        source = lead.get_source_display() or 'Reference'
-        author = lead.get_authors_display()
+        if self.citation_style == Export.CitationStyle.STYLE_1:
+            source = ''
+            author = lead.get_authors_display(short_name=True)
+        else:  # Default
+            source = lead.get_source_display() or 'Reference'
+            author = lead.get_authors_display()
+
         url = lead.url or Permalink.lead_share_view(lead.uuid)
         date = entry.lead.published_on
 
-        # Add author is available
-        if (author and author.lower() != (source or '').lower()):
+        if self.citation_style == Export.CitationStyle.STYLE_1:
+            # Add author is available
+            if (author and author.lower() != (source or '').lower()):
+                if url:
+                    para.add_hyperlink(url, f'{author} ')
+                else:
+                    para.add_run(f'{author} ')
+        else:  # Default
+            # Add author is available
+            if (author and author.lower() != (source or '').lower()):
+                if url:
+                    para.add_hyperlink(url, f'{author}, ')
+                else:
+                    para.add_run(f'{author}, ')
+            # Add source (with url if available)
             if url:
-                para.add_hyperlink(url, f'{author}, ')
+                para.add_hyperlink(url, source)
             else:
-                para.add_run(f'{author}, ')
-        # Add source (with url if available)
-        if url:
-            para.add_hyperlink(url, source)
-        else:
-            para.add_run(source)
+                para.add_run(source)
 
         # Add (confidential/restricted) to source without ,
         if lead.confidentiality == Lead.Confidentiality.CONFIDENTIAL:
@@ -589,23 +644,25 @@ class ReportExporter:
         elif lead.confidentiality == Lead.Confidentiality.RESTRICTED:
             para.add_run(' (restricted)')
 
-        # Add lead title if available
-        if lead.title:
-            para.add_run(f", {lead.title}")
+        if self.citation_style == Export.CitationStyle.STYLE_1:
+            pass
+        else:  # Default
+            # Add lead title if available
+            if lead.title:
+                para.add_run(f", {lead.title}")
 
         # Finally add date
         if date:
-            para.add_run(f", {deep_date_format(date)}")
+            if self.citation_style == Export.CitationStyle.STYLE_1:
+                para.add_run(f" {self.date_renderer(date)}")
+            else:  # Default
+                para.add_run(f", {self.date_renderer(date)}")
 
         para.add_run(')')
         # --- Reference End
 
-        # Adding Entry Group Labels
-        # group_labels = self.entry_group_labels.get(entry.pk) or []
-        # if len(group_labels) > 0:
-        #     para.add_run(' (')
-        #     para.add_run(', '.join([f'{group} : {label}' for group, label in group_labels]))
-        #     para.add_run(')')
+        if self.citation_style == Export.CitationStyle.STYLE_1:
+            para.add_run('.')
 
         self.doc.add_paragraph()
 
@@ -719,7 +776,7 @@ class ReportExporter:
         """
         self.doc.add_heading(
             'DEEP Export — {} — {}'.format(
-                deep_date_format(datetime.today()),
+                self.date_renderer(datetime.today()),
                 project.title,
             ),
             1,
@@ -823,7 +880,7 @@ class ReportExporter:
             para.add_run(f' {source}.')
             para.add_run(f' {lead.title}.')
             if lead.published_on:
-                para.add_run(f" {deep_date_format(lead.published_on)}. ")
+                para.add_run(f" {self.date_renderer(lead.published_on)}. ")
 
             para = self.doc.add_paragraph()
             url = lead.url or Permalink.lead_share_view(lead.uuid)

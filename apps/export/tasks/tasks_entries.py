@@ -73,6 +73,8 @@ def export_entries(export):
     ).distinct()
     regions = Region.objects.filter(project=project).distinct()
 
+    date_format = extra_options.get('date_format')
+
     if export_type == Export.ExportType.EXCEL:
         decoupled = extra_options.get('excel_decoupled', False)
         columns = extra_options.get('excel_columns')
@@ -80,6 +82,7 @@ def export_entries(export):
             export,
             entries_qs,
             project,
+            date_format,
             columns=columns,
             decoupled=decoupled,
             is_preview=is_preview,
@@ -97,12 +100,15 @@ def export_entries(export):
             show_entry_widget_data=extra_options.get('report_show_entry_widget_data', True),
         )
 
+        citation_style = extra_options.get('report_citation_style')
         report_structure = extra_options.get('report_structure')
         report_levels = extra_options.get('report_levels')
         text_widget_ids = extra_options.get('report_text_widget_ids') or []
         show_groups = extra_options.get('report_show_groups')
         export_data = (
             ReportExporter(
+                date_format,
+                citation_style,
                 exporting_widgets=exporting_widgets,
                 is_preview=is_preview,
                 **report_show_attributes,

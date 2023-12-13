@@ -215,6 +215,9 @@ class ExportExcelSelectedColumnSerializer(serializers.Serializer):
 
 
 class ExportExtraOptionsSerializer(ProjectPropertySerializerMixin, serializers.Serializer):
+    # Common
+    date_format = serializers.ChoiceField(choices=Export.DateFormat.choices, required=False)
+
     # Excel
     excel_decoupled = serializers.BooleanField(
         help_text="Don't group entries tags. Slower export generation.", required=False)
@@ -235,6 +238,7 @@ class ExportExtraOptionsSerializer(ProjectPropertySerializerMixin, serializers.S
         required=False, many=True, help_text=ExportReportLevelWidgetSerializer.__doc__)
     report_structure = ExportReportStructureWidgetSerializer(
         required=False, many=True, help_text=ExportReportStructureWidgetSerializer.__doc__)
+    report_citation_style = serializers.ChoiceField(choices=Export.CitationStyle.choices, required=False)
 
 
 class UserExportBaseGqlMixin(ProjectPropertySerializerMixin, serializers.ModelSerializer):

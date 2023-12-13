@@ -25,4 +25,4 @@ class ConnectorSourceLeadAdmin(admin.ModelAdmin):
 
 @admin.register(ConnectorLead)
 class ConnectorLeadAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ('title',)

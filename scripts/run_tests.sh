@@ -18,7 +18,7 @@ if [ "$CI" == "true" ]; then
 
     # Run all tests now
     echo 'import coverage; coverage.process_startup()' > /code/sitecustomize.py
-    COVERAGE_PROCESS_START=`pwd`/.coveragerc COVERAGE_FILE=`pwd`/.coverage PYTHONPATH=`pwd` py.test -n auto --reuse-db --dist=loadfile --durations=10
+    COVERAGE_PROCESS_START=`pwd`/.coveragerc COVERAGE_FILE=`pwd`/.coverage PYTHONPATH=`pwd` py.test --reuse-db --dist=loadfile --durations=10
     rm /code/sitecustomize.py
 
     # Collect/Generate reports

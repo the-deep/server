@@ -1,7 +1,7 @@
 import json
 
 from django.utils.functional import cached_property
-from django.core.files.storage import FileSystemStorage, get_storage_class
+from django.core.files.storage import FileSystemStorage, get_storage_class, default_storage
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.cache import cache
 from rest_framework import serializers
@@ -58,9 +58,9 @@ class URLCachedFileField(serializers.FileField):
     @staticmethod
     def generate_url(name, parameters=None):
         if StorageClass == FileSystemStorage:
-            return StorageClass().url(str(name))
+            return default_storage.url(str(name))
         # OR s3 storage
-        return StorageClass().url(str(name), parameters=parameters)
+        return default_storage.url(str(name), parameters=parameters)
 
     @classmethod
     def name_to_representation(cls, name):
@@ -74,7 +74,7 @@ class URLCachedFileField(serializers.FileField):
         name = str(name)
 
         if StorageClass == FileSystemStorage:
-            return StorageClass().url(name)
+            return default_storage.url(name)
 
         # Cache for S3Boto3Storage
         if not name:
@@ -83,7 +83,7 @@ class URLCachedFileField(serializers.FileField):
         url = cache.get(key)
         if url:
             return url
-        url = StorageClass().url(name)
+        url = default_storage.url(name)
         cache.set(key, url, get_s3_signed_url_ttl())
         return url
 

@@ -270,20 +270,22 @@ class Lead(UserResource, ProjectEntityMixin):
         if assignees:
             return assignees[0]
 
-    def get_source_display(self):
+    def get_source_display(self, short_name=False):
         if self.source:
+            if short_name:
+                return self.source.data.short_name
             return self.source.data.title
         return self.source_raw
 
-    def get_authors_display(self):
+    def get_authors_display(self, short_name=False):
         authors = self.authors.all()
         if authors:
             return ','.join([
-                author.data.title for author in authors
+                (author.data.short_name if short_name else author.data.title) for author in authors
             ])
         elif self.author:
             # TODO: Remove (Legacy)
-            return self.author and self.author.data.title
+            return self.author and (self.author.data.short_name if short_name else self.author.data.title)
         return self.author_raw
 
     def get_authoring_organizations_type_display(self):
