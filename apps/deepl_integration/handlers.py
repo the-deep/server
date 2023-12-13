@@ -509,11 +509,14 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
         AssistedTaggingPrediction.objects.bulk_create(new_predictions)
 
     @classmethod
+    @transaction.atomic
     def save_data(cls, lead, data):
         draft_entry = DraftEntry.objects.filter(lead=lead, draft_entry_type=0)
-        if draft_entry:
-            raise serializers.ValidationError('Draft entry already exit')
+        if draft_entry.exists():
+            raise serializers.ValidationError('Draft entries already exit')
         for model_preds in data['blocks']:
+            if not model_preds['relevant']:
+                continue
             classification = model_preds['classification']
             current_tags_map = cls._get_or_create_tags_map([
                 tag
@@ -527,22 +530,20 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
                 data['classification_model_info']
             ])
 
-            with transaction.atomic():
-                if model_preds['relevant']:
-                    draft = DraftEntry.objects.create(
-                        project=lead.project,
-                        lead=lead,
-                        excerpt=model_preds['text'],
-                        draft_entry_type=0
-                    )
-                    lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.SUCCESS
-                    lead.save()
-                    draft.save()
-                    model_version = models_version_map[
-                        (data['classification_model_info']['name'], data['classification_model_info']['version'])
-                    ]
-                    cls._process_model_preds(model_version, current_tags_map, draft, model_preds)
-
+            draft = DraftEntry.objects.create(
+                project=lead.project,
+                lead=lead,
+                excerpt=model_preds['text'],
+                prediction_status=DraftEntry.PredictionStatus.DONE,
+                draft_entry_type=0
+            )
+            draft.save()
+            model_version = models_version_map[
+                (data['classification_model_info']['name'], data['classification_model_info']['version'])
+            ]
+            cls._process_model_preds(model_version, current_tags_map, draft, model_preds)
+            lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.SUCCESS
+            lead.save(update_fields=('auto_entry_extraction_status',))
         return lead
 
 
