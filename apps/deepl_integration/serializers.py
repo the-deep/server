@@ -72,10 +72,10 @@ class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
         child=serializers.CharField(allow_blank=True),
         required=False, default=[],
     )
-    text_path = serializers.CharField(required=False)
-    total_words_count = serializers.IntegerField(required=False, default=0)
+    text_path = serializers.CharField(required=False, allow_null=True)
+    total_words_count = serializers.IntegerField(required=False, default=0, allow_null=True)
     total_pages = serializers.IntegerField(required=False, default=0)
-    text_extraction_id = serializers.CharField(required=False)
+    text_extraction_id = serializers.CharField(required=True)
     nlp_handler = LeadExtractionHandler
 
     def validate(self, data):
@@ -221,7 +221,6 @@ class AutoAssistedTaggingModelPredicationCallBackSerializer(serializers.Serializ
 
 
 class AssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializer):
-    # model_tags = AssistedTaggingModelPredictionCallbackSerializer()
     model_tags = serializers.DictField(child=serializers.DictField())
     prediction_status = serializers.BooleanField()
     model_info = serializers.DictField()
@@ -241,7 +240,6 @@ class AutoAssistedBlockPredicationCallbackSerializer(serializers.Serializer):
     text = serializers.CharField()
     relevant = serializers.BooleanField()
     prediction_status = serializers.BooleanField()
-    # classification = AutoAssistedTaggingModelPredicationCallBackSerializer()
     classification = serializers.DictField(child=serializers.DictField())
 
 
@@ -258,17 +256,6 @@ class AutoAssistedTaggingDraftEntryCallbackSerializer(BaseCallbackSerializer):
             obj,
             validated_data
         )
-
-# class AutoAssistedTaggingDraftEntryCallbackSerializer(BaseCallbackSerializer):
-#     blocks = AutoAssistedBlockPredicationCallbackSerializer(many=True)
-#     classification_model_info = serializers.DictField()
-#     nlp_handler = AutoAssistedTaggingDraftEntryHandler
-
-#     def create(self, validated_data):
-#         return self.nlp_handler.save_data(
-#             validated_data['object'],
-#             validated_data
-#         )
 
 
 class EntriesCollectionBaseCallbackSerializer(DeeplServerBaseCallbackSerializer):

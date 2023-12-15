@@ -104,15 +104,32 @@ class LeadAssessmentIdLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key) for key in keys])
 
 
-class LeadDraftEntryDiscardCountLoader(DataLoaderWithContext):
+class LeadDraftEntryCountLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        draft_entry_qs = DraftEntry.objects.filter(lead__in=keys, is_discarded=True).annotate(count = models.Count('id'))
+        stat_qs = DraftEntry.objects\
+            .filter(lead__in=keys)\
+            .order_by('lead').values('lead')\
+            .annotate(
+                discarded_draft_entry=models.functions.Coalesce(
+                    models.Count(
+                        'id',
+                        filter=models.Q(is_discarded=True)
+                    ),
+                    0,
+                ),
+                undiscarded_draft_entry=models.functions.Coalesce(
+                    models.Count(
+                        'id',
+                        filter=models.Q(is_discarded=False)
+                    ),
+                    0,
+                ),
+            ).values('lead_id', 'undiscarded_draft_entry', 'discarded_draft_entry')
         _map = {
-            id: count for _id , count in draft_entry_qs
-
+            stat.pop('lead_id'): stat
+            for stat in stat_qs
         }
-
-        return Promise.resolve([_map.get(key) for key in keys])
+        return Promise.resolve([_map.get(key, _map) for key in keys])
 
 
 class DataLoaders(WithContextMixin):
@@ -141,5 +158,5 @@ class DataLoaders(WithContextMixin):
         return LeadAssessmentIdLoader(context=self.context)
 
     @cached_property
-    def draftentry_discarded_count(self):
-        return LeadDraftEntryDiscardCountLoader(context=self.context)
+    def draftentry_count(self):
+        return LeadDraftEntryCountLoader(context=self.context)

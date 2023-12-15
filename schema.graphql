@@ -1397,8 +1397,8 @@ type AssistedTaggingMutationType {
   wrongPredictionReviewCreate(data: WrongPredictionReviewInputType!): CreateWrongPredictionReview
   missingPredictionReviewDelete(id: ID!): DeleteMissingPredictionReview
   wrongPredictionReviewDelete(id: ID!): DeleteWrongPredictionReview
-  autoDraftEntryCreate(data: TriggerDraftEntryInputType!): CreateAutoDraftEntry
-  discardDraftEntry(data: UpdateDraftEntryInputType!, id: ID!): DiscardDraftEntry
+  triggerAutoDraftEntry(data: TriggerAutoDraftEntryInputType!): TriggerAutoDraftEntry
+  updateDraftEntry(data: UpdateDraftEntryInputType!, id: ID!): UpdateDraftEntry
 }
 
 enum AssistedTaggingPredictionDataTypeEnum {
@@ -1424,7 +1424,7 @@ type AssistedTaggingPredictionType {
 
 type AssistedTaggingQueryType {
   draftEntry(id: ID!): DraftEntryType
-  draftEntryByLeads(filter: DraftEntryFilterDataInputType): [DraftEntryByLeadType!]
+  draftEntryByLeads(filter: DraftEntryFilterDataInputType): [DraftEntryType!]
   extractionStatusByLead(leadId: ID!): AutoextractionStatusType
 }
 
@@ -1762,12 +1762,6 @@ type CreateAnalysisReportUpload {
   result: AnalysisReportUploadType
 }
 
-type CreateAutoDraftEntry {
-  errors: [GenericScalar!]
-  ok: Boolean
-  result: DraftEntryType
-}
-
 type CreateDraftEntry {
   errors: [GenericScalar!]
   ok: Boolean
@@ -1929,12 +1923,6 @@ type DeleteWrongPredictionReview {
   result: WrongPredictionReviewType
 }
 
-type DiscardDraftEntry {
-  errors: [GenericScalar!]
-  ok: Boolean
-  result: DraftEntryType
-}
-
 input DiscardedEntryCreateInputType {
   id: ID
   analysisPillar: ID!
@@ -1975,18 +1963,6 @@ type DjangoDebugSQL {
   transStatus: String
   isoLevel: String
   encoding: String
-}
-
-type DraftEntryByLeadType {
-  id: ID!
-  excerpt: String!
-  predictionReceivedAt: DateTime
-  predictionStatus: DraftEntryPredictionStatusEnum!
-  predictionStatusDisplay: EnumDescription!
-  predictions: [AssistedTaggingPredictionType!]
-  missingPredictionReviews: [MissingPredictionReviewType!]
-  relatedGeoareas: [ProjectGeoAreaType!]
-  isDiscarded: Int!
 }
 
 type DraftEntryCountByLead {
@@ -2893,6 +2869,7 @@ type LeadPreviewType {
   thumbnailWidth: Int
   wordCount: Int
   pageCount: Int
+  textExtractionId: UUID
 }
 
 enum LeadPriorityEnum {
@@ -4013,7 +3990,13 @@ type TriggerAnalysisTopicModel {
   result: AnalysisTopicModelType
 }
 
-input TriggerDraftEntryInputType {
+type TriggerAutoDraftEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: DraftEntryType
+}
+
+input TriggerAutoDraftEntryInputType {
   lead: ID!
 }
 
@@ -4114,6 +4097,12 @@ type UpdateConnectorSourceLead {
   errors: [GenericScalar!]
   ok: Boolean
   result: ConnectorSourceLeadType
+}
+
+type UpdateDraftEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: DraftEntryType
 }
 
 input UpdateDraftEntryInputType {

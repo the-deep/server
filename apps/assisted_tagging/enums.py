@@ -16,7 +16,7 @@ DraftEntryPredictionStatusEnum = convert_enum_to_graphene_enum(
 AssistedTaggingPredictionDataTypeEnum = convert_enum_to_graphene_enum(
     AssistedTaggingPrediction.DataType, name='AssistedTaggingPredictionDataTypeEnum')
 DraftEntryTypeEnum = convert_enum_to_graphene_enum(
-    DraftEntry.DraftEntryType, name="DraftEntryTypeEnum"
+    DraftEntry.Type, name="DraftEntryTypeEnum"
 )
 AutoEntryExtractionTypeEnum = convert_enum_to_graphene_enum(
     Lead.AutoExtractionStatus, name="AutoEntryExtractionTypeEnum"

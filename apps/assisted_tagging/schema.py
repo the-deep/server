@@ -25,7 +25,7 @@ from lead.models import Lead
 from .enums import (
     DraftEntryPredictionStatusEnum,
     AssistedTaggingPredictionDataTypeEnum,
-    AutoEntryExtractionTypeEnum
+    AutoEntryExtractionTypeEnum,
 )
 
 
@@ -188,8 +188,8 @@ class DraftEntryType(DjangoObjectType):
         )
 
     @staticmethod
-    def get_custom_queryset(queryset, info, **kwargs):
-        return get_draft_entry_qs(info).prefetch_related(
+    def get_custom_queryset(root, info, _filter, **kwargs):
+        return get_draft_entry_with_filter_qs(info, _filter).prefetch_related(
             Prefetch(
                 'predictions',
                 queryset=AssistedTaggingPrediction.objects.order_by('id'),
@@ -218,59 +218,6 @@ class DraftEntryType(DjangoObjectType):
         return root.related_geoareas.all()  # NOTE: Prefetched by DraftEntry
 
 
-class DraftEntryByLeadType(DjangoObjectType):
-    prediction_status = graphene.Field(DraftEntryPredictionStatusEnum, required=True)
-    prediction_status_display = EnumDescription(source='get_prediction_status_display', required=True)
-    predictions = graphene.List(
-        graphene.NonNull(AssistedTaggingPredictionType)
-    )
-    missing_prediction_reviews = graphene.List(
-        graphene.NonNull(MissingPredictionReviewType),
-    )
-    related_geoareas = graphene.List(
-        graphene.NonNull(ProjectGeoAreaType)
-    )
-    is_discarded = graphene.Int(required=True)
-
-    class Meta:
-        model = DraftEntry
-        only_fields = (
-            'id',
-            'excerpt',
-            'prediction_received_at',
-        )
-
-    @staticmethod
-    def custom_queryset(queryset, info, _filter, **kwargs):
-        return get_draft_entry_with_filter_qs(info, _filter).prefetch_related(
-            Prefetch(
-                'predictions',
-                queryset=AssistedTaggingPrediction.objects.order_by('id'),
-            ),
-            Prefetch(
-                'related_geoareas',
-                queryset=get_geo_area_queryset_for_project_geo_area_type().order_by('id'),
-            ),
-            'predictions__model_version',
-            'predictions__model_version__model',
-            'predictions__wrong_prediction_reviews',
-            'missing_prediction_reviews',
-            'related_geoareas',
-        )
-
-    @staticmethod
-    def resolve_predictions(root, info, **kwargs):
-        return root.predictions.filter(is_selected=True)   # NOTE: Prefetched by DraftEntry
-
-    @staticmethod
-    def resolve_missing_prediction_reviews(root, info, **kwargs):
-        return root.missing_prediction_reviews.all()   # NOTE: Prefetched by DraftEntry
-
-    @staticmethod
-    def resolve_related_geoareas(root, info, **kwargs):
-        return root.related_geoareas.all()
-
-
 class AutoextractionStatusType(graphene.ObjectType):
     auto_entry_extraction_status = graphene.Field(AutoEntryExtractionTypeEnum, required=True)
 
@@ -282,11 +229,11 @@ class AutoextractionStatusType(graphene.ObjectType):
 
 class AssistedTaggingQueryType(graphene.ObjectType):
     draft_entry = DjangoObjectField(DraftEntryType)
-    draft_entry_by_leads = DjangoListField(DraftEntryByLeadType, filter=DraftEntryFilterDataInputType())
+    draft_entry_by_leads = DjangoListField(DraftEntryType, filter=DraftEntryFilterDataInputType())
     extraction_status_by_lead = graphene.Field(AutoextractionStatusType, lead_id=graphene.ID(required=True))
 
     def resolve_draft_entry_by_leads(root, info, filter):
-        return DraftEntryByLeadType.custom_queryset(root, info, filter)
+        return DraftEntryType.get_custom_queryset(root, info, filter)
 
     def resolve_extraction_status_by_lead(root, info, lead_id):
         return AutoextractionStatusType.custom_queryset(root, info, lead_id)
