@@ -5,7 +5,6 @@ from django.db import models
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
-from assisted_tagging.models import DraftEntry
 
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.enums import EnumDescription
@@ -210,6 +209,7 @@ class LeadPreviewType(DjangoObjectType):
             'thumbnail_width',
             'word_count',
             'page_count',
+            'text_extraction_id'
             # 'classified_doc_id',
             # 'classification_status',
         )
@@ -408,15 +408,7 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
 
 class DraftEntryCountByLead(graphene.ObjectType):
     undiscarded_draft_entry = graphene.Int(required=False)
-    discarded_draft_enrty = graphene.Int(required=False)
-
-    @staticmethod
-    def resolve_discarded_draft_enrty(root, info, **kwargs):
-        return DraftEntry.objects.filter(lead=root.id, is_discarded=True).count()
-
-    @staticmethod
-    def resolve_undiscarded_draft_entry(root, info, **kwargs):
-        return DraftEntry.objects.filter(lead=root.id, is_discarded=False).count()
+    discarded_draft_entry = graphene.Int(required=False)
 
 
 class LeadDetailType(LeadType):
@@ -440,7 +432,7 @@ class LeadDetailType(LeadType):
 
     @staticmethod
     def resolve_draft_entry_stat(root, info, **kwargs):
-        return root
+        return info.context.dl.lead.draftentry_count.load(root.pk)
 
 
 class LeadListType(CustomDjangoListObjectType):

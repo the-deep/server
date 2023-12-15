@@ -11,12 +11,7 @@ from .enums import (
 class DraftEntryFilterSet(django_filters.FilterSet):
     leads = IDFilter(field_name='lead')
     draft_entry_types = MultipleInputFilter(DraftEntryTypeEnum, field_name='draft_entry_type')
-    is_discarded = django_filters.BooleanFilter(method='filter_discarded')
-
-    def filter_discarded(self, queryset, name, value):
-        if value:
-            return queryset.filter(is_discarded=value)
-        return queryset.filter(is_discarded=False)
+    is_discarded = django_filters.BooleanFilter()
 
     class Meta:
         model = DraftEntry

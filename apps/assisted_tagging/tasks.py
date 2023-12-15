@@ -98,8 +98,8 @@ def trigger_request_for_draft_entry_task(draft_entry_id):
 
 @shared_task
 @redis_lock('trigger_request_for_auto_draft_entry_task_{0}', 60 * 60 * 0.5)
-def trigger_request_for_auto_draft_entry_task(lead):
-    lead = Lead.objects.get(id=lead)
+def trigger_request_for_auto_draft_entry_task(lead_id):
+    lead = Lead.objects.get(id=lead_id)
     return AutoAssistedTaggingDraftEntryHandler.auto_trigger_request_to_extractor(lead)
 
 

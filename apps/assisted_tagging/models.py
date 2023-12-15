@@ -90,7 +90,7 @@ class DraftEntry(UserResourceCreated):
         DONE = 2, 'Done'
         SEND_FAILED = 3, 'Send Failed'
 
-    class DraftEntryType(models.IntegerChoices):
+    class Type(models.IntegerChoices):
         AUTO = 0, 'Auto Extraction'  # NLP defiend extraction text
         MANUAL = 1, 'Manual Extraction'  # manaul defined extraction text
 
@@ -102,7 +102,7 @@ class DraftEntry(UserResourceCreated):
     prediction_received_at = models.DateTimeField(null=True, blank=True)
     # Additional attribues
     related_geoareas = models.ManyToManyField(GeoArea, blank=True)
-    draft_entry_type = models.SmallIntegerField(choices=DraftEntryType.choices, default=DraftEntryType.MANUAL)
+    draft_entry_type = models.SmallIntegerField(choices=Type.choices, default=Type.MANUAL)
     is_discarded = models.BooleanField(default=False)
 
     def __str__(self):

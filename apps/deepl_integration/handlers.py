@@ -204,7 +204,7 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
             },
         )
 
-# --- Callback logics
+    # --- Callback logics
     @staticmethod
     def _get_or_create_models_version(models_data):
         def get_versions_map():
@@ -280,7 +280,7 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
     @classmethod
     def _process_model_preds(cls, model_version, current_tags_map, draft_entry, model_prediction):
         prediction_status = model_prediction['prediction_status']
-        if not prediction_status:  # If 0 no tags are provided
+        if not prediction_status:  # If False no tags are provided
             return
 
         tags = model_prediction.get('model_tags', {})  # NLP TagId
@@ -325,14 +325,12 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
         # Save if new tags are provided
         current_tags_map = cls._get_or_create_tags_map([
             tag
-            # for prediction in model_preds['model_tags']
             for category_tag, tags in model_preds['model_tags'].items()
             for tag in [
                 category_tag,
                 *tags.keys(),
             ]
         ])
-        print(current_tags_map)
         models_version_map = cls._get_or_create_models_version(
             [
                 model_preds['model_info']
@@ -343,7 +341,6 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
             draft_entry.calculated_at = timezone.now()
             # for prediction in model_preds:
             model_version = models_version_map[(model_preds['model_info']['id'], model_preds['model_info']['version'])]
-            print(model_preds)
             cls._process_model_preds(model_version, current_tags_map, draft_entry, model_preds)
             draft_entry.prediction_status = DraftEntry.PredictionStatus.DONE
             draft_entry.save_geo_data()
@@ -362,7 +359,7 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
             "documents": [
                 {
                     "client_id": cls.get_client_id(lead),  # static clientid for mock
-                    "text_extraction_id": lead_preview.text_extraction_id
+                    "text_extraction_id": str(lead_preview.text_extraction_id)
                 }
             ],
             "callback_url": cls.get_callback_url()

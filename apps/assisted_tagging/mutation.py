@@ -21,7 +21,7 @@ from .serializers import (
     DraftEntryGqlSerializer,
     WrongPredictionReviewGqlSerializer,
     MissingPredictionReviewGqlSerializer,
-    TriggeredDraftEntryGqlSerializer,
+    TriggerDraftEntryGqlSerializer,
     UpdateDraftEntrySerializer
 )
 
@@ -41,9 +41,9 @@ MissingPredictionReviewInputType = generate_input_type_for_serializer(
     serializer_class=MissingPredictionReviewGqlSerializer,
 )
 
-TriggerDraftEntryInputType = generate_input_type_for_serializer(
-    "TriggerDraftEntryInputType",
-    serializer_class=TriggeredDraftEntryGqlSerializer
+TriggerAutoDraftEntryInputType = generate_input_type_for_serializer(
+    "TriggerAutoDraftEntryInputType",
+    serializer_class=TriggerDraftEntryGqlSerializer
 )
 
 UpdateDraftEntryInputType = generate_input_type_for_serializer(
@@ -111,16 +111,16 @@ class DeleteWrongPredictionReview(PsDeleteMutation):
 # auto draft_entry_create
 
 
-class CreateAutoDraftEntry(PsGrapheneMutation):
+class TriggerAutoDraftEntry(PsGrapheneMutation):
     class Arguments:
-        data = TriggerDraftEntryInputType(required=True)
+        data = TriggerAutoDraftEntryInputType(required=True)
     model = DraftEntry
-    serializer_class = TriggeredDraftEntryGqlSerializer
+    serializer_class = TriggerDraftEntryGqlSerializer
     result = graphene.Field(DraftEntryType)
     permissions = [PP.Permission.CREATE_ENTRY]
 
 
-class DiscardDraftEntry(PsGrapheneMutation):
+class UpdateDraftEntry(PsGrapheneMutation):
     class Arguments:
         data = UpdateDraftEntryInputType(required=True)
         id = graphene.ID(required=True)
@@ -136,5 +136,5 @@ class AssistedTaggingMutationType(graphene.ObjectType):
     wrong_prediction_review_create = CreateWrongPredictionReview.Field()
     missing_prediction_review_delete = DeleteMissingPredictionReview.Field()
     wrong_prediction_review_delete = DeleteWrongPredictionReview.Field()
-    auto_draft_entry_create = CreateAutoDraftEntry.Field()
-    discard_draft_entry = DiscardDraftEntry.Field()
+    trigger_auto_draft_entry = TriggerAutoDraftEntry.Field()
+    update_draft_entry = UpdateDraftEntry.Field()
