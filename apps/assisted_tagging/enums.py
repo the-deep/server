@@ -27,7 +27,7 @@ enum_map = {
     for field, enum in (
         (DraftEntry.prediction_status, DraftEntryPredictionStatusEnum),
         (AssistedTaggingPrediction.data_type, AssistedTaggingPredictionDataTypeEnum),
-        (DraftEntry.draft_entry_type, DraftEntryTypeEnum),
+        (DraftEntry.type, DraftEntryTypeEnum),
         (Lead.auto_entry_extraction_status, AutoEntryExtractionTypeEnum),
     )
 }

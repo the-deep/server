@@ -102,7 +102,7 @@ class DraftEntry(UserResourceCreated):
     prediction_received_at = models.DateTimeField(null=True, blank=True)
     # Additional attribues
     related_geoareas = models.ManyToManyField(GeoArea, blank=True)
-    draft_entry_type = models.SmallIntegerField(choices=Type.choices, default=Type.MANUAL)
+    type = models.SmallIntegerField(choices=Type.choices, default=Type.MANUAL)
     is_discarded = models.BooleanField(default=False)
 
     def __str__(self):

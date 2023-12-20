@@ -27,8 +27,8 @@ class DraftEntryBaseSerializer(serializers.Serializer):
             raise serializers.ValidationError('Assisted tagging is disabled for the Framework used by this project.')
         if self.project.is_private:
             raise serializers.ValidationError('Assisted tagging is not available for private projects.')
-        if lead.confidentiality == Lead.Confidentiality.CONFIDENTIAL:
-            raise serializers.ValidationError('Assisted tagging is not available for confidential lead')
+        if lead.confidentiality == (Lead.Confidentiality.CONFIDENTIAL or Lead.Confidentiality.RESTRICTED):
+            raise serializers.ValidationError('Assisted tagging is not available for confidential lead or restricated')
         return lead
 
 
@@ -153,7 +153,7 @@ class TriggerDraftEntryGqlSerializer(
         if not lead.leadpreview.text_extract:
             raise serializers.DjangoValidationError('Simplifed Text is empty')
         draft_entry = DraftEntry.objects.filter(lead=self.data['lead'],
-                                                draft_entry_type=DraftEntry.Type.AUTO)
+                                                type=DraftEntry.Type.AUTO)
         if draft_entry.exists():
             raise serializers.DjangoValidationError('Draft entry already exists')
         # Use already existing draft entry if found
@@ -161,7 +161,7 @@ class TriggerDraftEntryGqlSerializer(
         lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.PENDING
         lead.save(update_fields=['auto_entry_extraction_status'])
         transaction.on_commit(
-            lambda: trigger_request_for_auto_draft_entry_task.delay(self.data['lead'])
+            lambda: trigger_request_for_auto_draft_entry_task.delay(lead.id)
         )
         return True
 

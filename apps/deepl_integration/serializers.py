@@ -74,7 +74,7 @@ class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
     )
     text_path = serializers.CharField(required=False, allow_null=True)
     total_words_count = serializers.IntegerField(required=False, default=0, allow_null=True)
-    total_pages = serializers.IntegerField(required=False, default=0)
+    total_pages = serializers.IntegerField(required=False, default=0, allow_null=True)
     text_extraction_id = serializers.CharField(required=True)
     nlp_handler = LeadExtractionHandler
 
@@ -162,9 +162,6 @@ class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSeria
 
 # --- AssistedTagging
 class AssistedTaggingModelPredictionCallbackSerializer(serializers.Serializer):
-    # class ModelInfoCallbackSerializer(serializers.Serializer):
-    #     id = serializers.CharField()
-    #     version = serializers.CharField()
 
     class ModelPredictionCallbackSerializerTagValue(serializers.Serializer):
         prediction = serializers.DecimalField(

@@ -1,8 +1,8 @@
 import graphene
-from graphene_django import DjangoObjectType, DjangoListField
+from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
 from django.db.models import Prefetch
-from assisted_tagging.filters import DraftEntryFilterDataInputType, DraftEntryFilterSet
+from assisted_tagging.filters import DraftEntryFilterSet
 
 from utils.graphene.enums import EnumDescription
 from user_resource.schema import UserResourceMixin
@@ -12,6 +12,9 @@ from geo.schema import (
     ProjectGeoAreaType,
     get_geo_area_queryset_for_project_geo_area_type,
 )
+from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.pagination import NoOrderingPageGraphqlPagination
+from utils.graphene.types import CustomDjangoListObjectType
 from .models import (
     DraftEntry,
     AssistedTaggingModel,
@@ -99,10 +102,24 @@ class AssistedTaggingRootQueryType(graphene.ObjectType):
 
 
 # -- Project Level
-def get_draft_entry_qs(info):
+def get_draft_entry_qs(info):  # TODO use dataloder
     qs = DraftEntry.objects.filter(project=info.context.active_project)
     if PP.check_permission(info, PP.Permission.VIEW_ENTRY):
-        return qs
+        return qs.prefetch_related(
+            Prefetch(
+                'predictions',
+                queryset=AssistedTaggingPrediction.objects.filter(is_selected=True).order_by('id'),
+            ),
+            Prefetch(
+                'related_geoareas',
+                queryset=get_geo_area_queryset_for_project_geo_area_type().order_by('id'),
+            ),
+            'predictions__model_version',
+            'predictions__model_version__model',
+            'predictions__wrong_prediction_reviews',
+            'missing_prediction_reviews',
+            'related_geoareas',
+        )
     return qs.none()
 
 
@@ -188,22 +205,8 @@ class DraftEntryType(DjangoObjectType):
         )
 
     @staticmethod
-    def get_custom_queryset(root, info, _filter, **kwargs):
-        return get_draft_entry_with_filter_qs(info, _filter).prefetch_related(
-            Prefetch(
-                'predictions',
-                queryset=AssistedTaggingPrediction.objects.order_by('id'),
-            ),
-            Prefetch(
-                'related_geoareas',
-                queryset=get_geo_area_queryset_for_project_geo_area_type().order_by('id'),
-            ),
-            'predictions__model_version',
-            'predictions__model_version__model',
-            'predictions__wrong_prediction_reviews',
-            'missing_prediction_reviews',
-            'related_geoareas',
-        )
+    def get_custom_queryset(root, info, **kwargs):
+        return get_draft_entry_qs(info)
 
     @staticmethod
     def resolve_predictions(root, info, **kwargs):
@@ -218,7 +221,13 @@ class DraftEntryType(DjangoObjectType):
         return root.related_geoareas.all()  # NOTE: Prefetched by DraftEntry
 
 
-class AutoextractionStatusType(graphene.ObjectType):
+class DraftEntryListType(CustomDjangoListObjectType):
+    class Meta:
+        model = DraftEntry
+        filterset_class = DraftEntryFilterSet
+
+
+class AutoExtractionStatusType(graphene.ObjectType):
     auto_entry_extraction_status = graphene.Field(AutoEntryExtractionTypeEnum, required=True)
 
     @staticmethod
@@ -229,11 +238,22 @@ class AutoextractionStatusType(graphene.ObjectType):
 
 class AssistedTaggingQueryType(graphene.ObjectType):
     draft_entry = DjangoObjectField(DraftEntryType)
-    draft_entry_by_leads = DjangoListField(DraftEntryType, filter=DraftEntryFilterDataInputType())
-    extraction_status_by_lead = graphene.Field(AutoextractionStatusType, lead_id=graphene.ID(required=True))
+    draft_entries = DjangoPaginatedListObjectField(
+        DraftEntryListType,
+        pagination=NoOrderingPageGraphqlPagination(
+            page_size_query_param='pageSize',
+        ),
+    )
+    extraction_status_by_lead = graphene.Field(AutoExtractionStatusType, lead_id=graphene.ID(required=True))
 
-    def resolve_draft_entry_by_leads(root, info, filter):
-        return DraftEntryType.get_custom_queryset(root, info, filter)
+    @staticmethod
+    def resolve_draft_entry(root, info, **kwargs):
+        return DraftEntryType.get_custom_queryset(root, info, **kwargs)
 
+    @staticmethod
+    def resolve_draft_entries(root, info, **_):
+        return get_draft_entry_qs(info)
+
+    @staticmethod
     def resolve_extraction_status_by_lead(root, info, lead_id):
-        return AutoextractionStatusType.custom_queryset(root, info, lead_id)
+        return AutoExtractionStatusType.custom_queryset(root, info, lead_id)

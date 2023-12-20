@@ -195,7 +195,6 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
             draft_entry.prediction_status = DraftEntry.PredictionStatus.SEND_FAILED
             draft_entry.save(update_fields=('prediction_status',))
         _response = locals().get('response')
-        logger.error(payload)
         logger.error(
             'Assisted tagging send failed!!',
             extra={
@@ -339,7 +338,6 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
         with transaction.atomic():
             draft_entry.clear_data()  # Clear old data if exists
             draft_entry.calculated_at = timezone.now()
-            # for prediction in model_preds:
             model_version = models_version_map[(model_preds['model_info']['id'], model_preds['model_info']['version'])]
             cls._process_model_preds(model_version, current_tags_map, draft_entry, model_preds)
             draft_entry.prediction_status = DraftEntry.PredictionStatus.DONE
@@ -370,7 +368,6 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
                 headers=cls.REQUEST_HEADERS,
                 json=payload
             )
-            logger.error(response.status_code)
             if response.status_code == 202:
                 lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.PENDING
                 lead.save()
@@ -379,7 +376,6 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
         except Exception:
             logger.error('Entry Extraction send failed, Exception occurred!!', exc_info=True)
         _response = locals().get('response')
-        logger.error(payload)
         logger.error(
             'Entry Extraction send failed!!',
             extra={
@@ -508,7 +504,7 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
     @classmethod
     @transaction.atomic
     def save_data(cls, lead, data):
-        draft_entry = DraftEntry.objects.filter(lead=lead, draft_entry_type=0)
+        draft_entry = DraftEntry.objects.filter(lead=lead, type=0)
         if draft_entry.exists():
             raise serializers.ValidationError('Draft entries already exit')
         for model_preds in data['blocks']:
@@ -532,7 +528,7 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
                 lead=lead,
                 excerpt=model_preds['text'],
                 prediction_status=DraftEntry.PredictionStatus.DONE,
-                draft_entry_type=0
+                type=0
             )
             draft.save()
             model_version = models_version_map[

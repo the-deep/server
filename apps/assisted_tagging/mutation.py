@@ -7,6 +7,7 @@ from utils.graphene.mutation import (
 )
 from deep.permissions import ProjectPermissions as PP
 
+from lead.schema import LeadType
 from .models import (
     DraftEntry,
     MissingPredictionReview,
@@ -116,7 +117,7 @@ class TriggerAutoDraftEntry(PsGrapheneMutation):
         data = TriggerAutoDraftEntryInputType(required=True)
     model = DraftEntry
     serializer_class = TriggerDraftEntryGqlSerializer
-    result = graphene.Field(DraftEntryType)
+    result = graphene.Field(LeadType)
     permissions = [PP.Permission.CREATE_ENTRY]
 
 
