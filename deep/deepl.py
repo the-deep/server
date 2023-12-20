@@ -17,5 +17,5 @@ class DeeplServiceEndpoint():
     ANALYSIS_AUTOMATIC_SUMMARY = f'{DEEPL_SERVER_DOMAIN}/api/v1/summarization/'
     ANALYSIS_AUTOMATIC_NGRAM = f'{DEEPL_SERVER_DOMAIN}/api/v1/ngrams/'
     ANALYSIS_GEO = f'{DEEPL_SERVER_DOMAIN}/api/v1/geolocation/'
-    ASSISTED_TAGGING_ENTRY_PREDICT_ENDPOINT = f'{DEEPL_SERVICE_DOMAIN}/api/v1/entry-classification/'
+    ASSISTED_TAGGING_ENTRY_PREDICT_ENDPOINT = f'{DEEPL_SERVER_DOMAIN}/api/v1/entry-classification/'
     ENTRY_EXTRACTION_CLASSIFICATION = f'{DEEPL_SERVER_DOMAIN}/api/v1/entry-extraction-classification/'

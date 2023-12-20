@@ -9,8 +9,8 @@ from .enums import (
 
 
 class DraftEntryFilterSet(django_filters.FilterSet):
-    leads = IDFilter(field_name='lead')
-    draft_entry_types = MultipleInputFilter(DraftEntryTypeEnum, field_name='draft_entry_type')
+    lead = IDFilter(field_name='lead')
+    draft_entry_types = MultipleInputFilter(DraftEntryTypeEnum, field_name='type')
     is_discarded = django_filters.BooleanFilter()
 
     class Meta:
