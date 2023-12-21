@@ -259,7 +259,8 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
         current_tags_map = get_tags_map()
         # Check if new tags needs to be created
         new_tags = [
-            tag for tag in tags
+            tag
+            for tag in tags
             if tag not in current_tags_map
         ]
         if new_tags:
