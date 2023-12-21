@@ -347,6 +347,8 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
 
 
 class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
+    # TODO: Fix N+1 issues here. Try to do bulk_update for each models.
+    # Or do this Async
     model = Lead
     callback_url_name = 'auto-assisted_tagging_draft_entry_prediction_callback'
 
@@ -503,9 +505,12 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
 
     @classmethod
     @transaction.atomic
-    def save_data(cls, lead, data):
-        draft_entry = DraftEntry.objects.filter(lead=lead, type=0)
-        if draft_entry.exists():
+    def save_data(cls, lead, data_url):
+        # NOTE: Schema defined here
+        # - https://docs.google.com/document/d/1NmjOO5sOrhJU6b4QXJBrGAVk57_NW87mLJ9wzeY_NZI/edit#heading=h.t3u7vdbps5pt
+        data = RequestHelper(url=data_url, ignore_error=True).json()
+        draft_entry_qs = DraftEntry.objects.filter(lead=lead, type=DraftEntry.Type.AUTO)
+        if draft_entry_qs.exists():
             raise serializers.ValidationError('Draft entries already exit')
         for model_preds in data['blocks']:
             if not model_preds['relevant']:
@@ -528,9 +533,8 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
                 lead=lead,
                 excerpt=model_preds['text'],
                 prediction_status=DraftEntry.PredictionStatus.DONE,
-                type=0
+                type=DraftEntry.Type.AUTO
             )
-            draft.save()
             model_version = models_version_map[
                 (data['classification_model_info']['name'], data['classification_model_info']['version'])
             ]

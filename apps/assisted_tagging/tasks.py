@@ -1,4 +1,3 @@
-from django.conf import settings
 import logging
 import requests
 
@@ -7,7 +6,11 @@ from lead.models import Lead
 
 from utils.common import redis_lock
 from deep.deepl import DeeplServiceEndpoint
-from deepl_integration.handlers import AssistedTaggingDraftEntryHandler, AutoAssistedTaggingDraftEntryHandler
+from deepl_integration.handlers import (
+    AssistedTaggingDraftEntryHandler,
+    AutoAssistedTaggingDraftEntryHandler,
+    BaseHandler as DeepHandler
+)
 
 from .models import (
     DraftEntry,
@@ -27,8 +30,7 @@ def sync_tags_with_deepl():
             for tag in AssistedTaggingModelPredictionTag.objects.all()
         }
 
-    headers = {'Authorization': f'Token {settings.DEEPL_SERVER_TOKEN}'}
-    response = requests.get(DeeplServiceEndpoint.ASSISTED_TAGGING_TAGS_ENDPOINT, headers=headers).json()
+    response = requests.get(DeeplServiceEndpoint.ASSISTED_TAGGING_TAGS_ENDPOINT, headers=DeepHandler.REQUEST_HEADERS).json()
     existing_tags_by_tagid = _get_existing_tags_by_tagid()
 
     new_tags = []

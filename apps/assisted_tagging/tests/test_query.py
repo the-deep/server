@@ -333,516 +333,216 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
 class AssistedTaggingCallbackApiTest(TestCase, SnapShotTextCase):
 
     DEEPL_CALLBACK_MOCK_DATA = {
-        'client_id': 'random-client-id',
-        'model_preds': [
-            {
-                'tags': {
-                    '1': {
-                        '101': {
-                            'prediction': 0.0013131533306455466,
-                            'threshold': 0.41000000000000003,
-                            'is_selected': False,
-                        },
-                        '103': {
-                            'prediction': 0.003010824160731357,
-                            'threshold': 0.46,
-                            'is_selected': False,
-                        },
-                        '104': {
-                            'prediction': 0.002566287973119567,
-                            'threshold': 0.48,
-                            'is_selected': False,
-                        },
-                        '105': {
-                            'prediction': 2.677955230077108,
-                            'threshold': 0.36,
-                            'is_selected': True,
-                        },
-                        '106': {
-                            'prediction': 0.01722483797685096,
-                            'threshold': 0.38,
-                            'is_selected': False,
-                        },
-                        '107': {
-                            'prediction': 0.003670748323202133,
-                            'threshold': 0.5,
-                            'is_selected': False,
-                        },
-                        '108': {
-                            'prediction': 0.0041013412481668045,
-                            'threshold': 0.49,
-                            'is_selected': False,
-                        },
-                        '109': {
-                            'prediction': 0.028100471686700296,
-                            'threshold': 0.58,
-                            'is_selected': False,
-                        },
-                        '110': {
-                            'prediction': 0.0035644680749447573,
-                            'threshold': 0.42,
-                            'is_selected': False,
-                        },
-                        '111': {
-                            'prediction': 0.00885658950175879,
-                            'threshold': 0.53,
-                            'is_selected': False,
-                        }
-                    },
-                    '3': {
-                        '301': {
-                            'prediction': 0.00023104241032948875,
-                            'threshold': 0.12,
-                            'is_selected': False,
-                        },
-                        '302': {
-                            'prediction': 0.006840221311261014,
-                            'threshold': 0.41000000000000003,
-                            'is_selected': False,
-                        },
-                        '303': {
-                            'prediction': 1.51390548675291,
-                            'threshold': 0.62,
-                            'is_selected': True,
-                        },
-                        '304': {
-                            'prediction': 0.0024619154282845557,
-                            'threshold': 0.1,
-                            'is_selected': False,
-                        },
-                        '305': {
-                            'prediction': 0.19748103480006374,
-                            'threshold': 0.43,
-                            'is_selected': False,
-                        },
-                        '306': {
-                            'prediction': 0.1326687938096572,
-                            'threshold': 0.49,
-                            'is_selected': False,
-                        },
-                        '307': {
-                            'prediction': 0.008473951473004289,
-                            'threshold': 0.36,
-                            'is_selected': False,
-                        },
-                        '308': {
-                            'prediction': 0.014394345796770519,
-                            'threshold': 0.45,
-                            'is_selected': False,
-                        },
-                        '309': {
-                            'prediction': 0.002753498941479671,
-                            'threshold': 0.31,
-                            'is_selected': False,
-                        },
-                        '310': {
-                            'prediction': 0.02261752535293742,
-                            'threshold': 0.41000000000000003,
-                            'is_selected': False,
-                        },
-                        '311': {
-                            'prediction': 0.0028069927602222093,
-                            'threshold': 0.38,
-                            'is_selected': False,
-                        },
-                        '312': {
-                            'prediction': 0.0035386373796923594,
-                            'threshold': 0.33,
-                            'is_selected': False,
-                        },
-                        '313': {
-                            'prediction': 0.00474455507679118,
-                            'threshold': 0.45,
-                            'is_selected': False,
-                        },
-                        '314': {
-                            'prediction': 0.002435182492869596,
-                            'threshold': 0.24,
-                            'is_selected': False,
-                        },
-                        '315': {
-                            'prediction': 0.004984116689725355,
-                            'threshold': 0.55,
-                            'is_selected': False,
-                        },
-                        '316': {
-                            'prediction': 0.0034277827944606543,
-                            'threshold': 0.15,
-                            'is_selected': False,
-                        },
-                        '317': {
-                            'prediction': 0.0018360981872926156,
-                            'threshold': 0.3,
-                            'is_selected': False,
-                        },
-                        '318': {
-                            'prediction': 0.007651697378605604,
-                            'threshold': 0.25,
-                            'is_selected': False,
-                        }
-                    },
-                    '2': {
-                        '219': {
-                            'prediction': 0.0018779816205746359,
-                            'threshold': 0.28,
-                            'is_selected': False,
-                        },
-                        '217': {
-                            'prediction': 0.0009131004424908987,
-                            'threshold': 0.13,
-                            'is_selected': False,
-                        },
-                        '218': {
-                            'prediction': 0.0010629182305330266,
-                            'threshold': 0.13,
-                            'is_selected': False,
-                        },
-                        '204': {
-                            'prediction': 0.01951472795739466,
-                            'threshold': 0.49,
-                            'is_selected': False,
-                        },
-                        '203': {
-                            'prediction': 0.002760568168014288,
-                            'threshold': 0.41000000000000003,
-                            'is_selected': False,
-                        },
-                        '201': {
-                            'prediction': 0.001610475469772753,
-                            'threshold': 0.38,
-                            'is_selected': False,
-                        },
-                        '205': {
-                            'prediction': 0.0028414463984870143,
-                            'threshold': 0.31,
-                            'is_selected': False,
-                        },
-                        '207': {
-                            'prediction': 0.0030019306965793175,
-                            'threshold': 0.3,
-                            'is_selected': False,
-                        },
-                        '206': {
-                            'prediction': 0.0028423364380035887,
-                            'threshold': 0.44,
-                            'is_selected': False,
-                        },
-                        '202': {
-                            'prediction': 0.0024926103993921592,
-                            'threshold': 0.17,
-                            'is_selected': False,
-                        },
-                        '228': {
-                            'prediction': 0.004972799797542393,
-                            'threshold': 0.8,
-                            'is_selected': False,
-                        },
-                        '229': {
-                            'prediction': 0.00032880847216941987,
-                            'threshold': 0.39,
-                            'is_selected': False,
-                        },
-                        '230': {
-                            'prediction': 0.001167356436152333,
-                            'threshold': 0.81,
-                            'is_selected': False,
-                        },
-                        '231': {
-                            'prediction': 0.0024493522487762497,
-                            'threshold': 0.41000000000000003,
-                            'is_selected': False,
-                        },
-                        '232': {
-                            'prediction': 0.005428578056718992,
-                            'threshold': 0.46,
-                            'is_selected': False,
-                        },
-                        '233': {
-                            'prediction': 0.0018874364551392537,
-                            'threshold': 0.79,
-                            'is_selected': False,
-                        },
-                        '234': {
-                            'prediction': 0.0011778841898949057,
-                            'threshold': 0.54,
-                            'is_selected': False,
-                        },
-                        '215': {
-                            'prediction': 0.0004781786533146116,
-                            'threshold': 0.38,
-                            'is_selected': False,
-                        },
-                        '216': {
-                            'prediction': 0.006963967811316252,
-                            'threshold': 0.25,
-                            'is_selected': False,
-                        },
-                        '214': {
-                            'prediction': 0.0003674881209635401,
-                            'threshold': 0.29,
-                            'is_selected': False,
-                        },
-                        '213': {
-                            'prediction': 0.0002446720680234501,
-                            'threshold': 0.37,
-                            'is_selected': False,
-                        },
-                        '212': {
-                            'prediction': 0.012378716890357043,
-                            'threshold': 0.38,
-                            'is_selected': False,
-                        },
-                        '223': {
-                            'prediction': 0.001155513591390658,
-                            'threshold': 0.47000000000000003,
-                            'is_selected': False,
-                        },
-                        '222': {
-                            'prediction': 0.0014652756362920627,
-                            'threshold': 0.48,
-                            'is_selected': False,
-                        },
-                        '221': {
-                            'prediction': 0.001666667767016119,
-                            'threshold': 0.19,
-                            'is_selected': False,
-                        },
-                        '220': {
-                            'prediction': 0.011259256380385366,
-                            'threshold': 0.29,
-                            'is_selected': False,
-                        },
-                        '224': {
-                            'prediction': 0.007581055563475405,
-                            'threshold': 0.21,
-                            'is_selected': False,
-                        },
-                        '225': {
-                            'prediction': 0.0003372832482758289,
-                            'threshold': 0.15,
-                            'is_selected': False,
-                        },
-                        '227': {
-                            'prediction': 0.0009009759297542688,
-                            'threshold': 0.18,
-                            'is_selected': False,
-                        },
-                        '226': {
-                            'prediction': 0.0007702910806983709,
-                            'threshold': 0.18,
-                            'is_selected': False,
-                        },
-                        '210': {
-                            'prediction': 0.006979638609387304,
-                            'threshold': 0.23,
-                            'is_selected': False,
-                        },
-                        '208': {
-                            'prediction': 0.00357941840775311,
-                            'threshold': 0.2,
-                            'is_selected': False,
-                        },
-                        '209': {
-                            'prediction': 0.006321697112391976,
-                            'threshold': 0.17,
-                            'is_selected': False,
-                        }
-                    },
-                    '6': {
-                        '601': {
-                            'prediction': 0.04068703080217044,
-                            'threshold': 0.48,
-                            'is_selected': True,
-                        },
-                        '602': {
-                            'prediction': 0.024587836709212173,
-                            'threshold': 0.44,
-                            'is_selected': False,
-                        },
-                        '603': {
-                            'prediction': 0.04259871318936348,
-                            'threshold': 0.4,
-                            'is_selected': False,
-                        },
-                        '604': {
-                            'prediction': 0.006414494919972342,
-                            'threshold': 0.61,
-                            'is_selected': False,
-                        }
-                    },
-                    '5': {
-                        '501': {
-                            'prediction': 1.403369450233352,
-                            'threshold': 0.71,
-                            'is_selected': True,
-                        },
-                        '502': {
-                            'prediction': 0.007781315997073596,
-                            'threshold': 0.44,
-                            'is_selected': False,
-                        }
-                    },
-                    '8': {
-                        '801': {
-                            'prediction': 0.0002758237987769487,
-                            'threshold': 0.73,
-                            'is_selected': False,
-                        },
-                        '802': {
-                            'prediction': 0.00997524285181002,
-                            'threshold': 0.55,
-                            'is_selected': False,
-                        },
-                        '803': {
-                            'prediction': 0.004761773787105261,
-                            'threshold': 0.67,
-                            'is_selected': False,
-                        },
-                        '804': {
-                            'prediction': 0.000846206055333217,
-                            'threshold': 0.75,
-                            'is_selected': False,
-                        },
-                        '805': {
-                            'prediction': 0.0007048035968182376,
-                            'threshold': 0.64,
-                            'is_selected': False,
-                        },
-                        '806': {
-                            'prediction': 0.007033202674169585,
-                            'threshold': 0.53,
-                            'is_selected': False,
-                        }
-                    },
-                    '4': {
-                        '401': {
-                            'prediction': 0.0002081420534523204,
-                            'threshold': 0.25,
-                            'is_selected': False,
-                        },
-                        '402': {
-                            'prediction': 0.0029977605726312978,
-                            'threshold': 0.58,
-                            'is_selected': False,
-                        },
-                        '403': {
-                            'prediction': 0.0029921820636705627,
-                            'threshold': 0.14,
-                            'is_selected': False,
-                        },
-                        '404': {
-                            'prediction': 0.002415977602746959,
-                            'threshold': 0.48,
-                            'is_selected': False,
-                        },
-                        '405': {
-                            'prediction': 0.020530499899998687,
-                            'threshold': 0.78,
-                            'is_selected': False,
-                        },
-                        '406': {
-                            'prediction': 0.0028101496774559985,
-                            'threshold': 0.13,
-                            'is_selected': False,
-                        },
-                        '407': {
-                            'prediction': 0.00022843408415366598,
-                            'threshold': 0.41000000000000003,
-                            'is_selected': False,
-                        },
-                        '408': {
-                            'prediction': 0.009432899118480036,
-                            'threshold': 0.59,
-                            'is_selected': False,
-                        },
-                        '409': {
-                            'prediction': 0.000918924031014155,
-                            'threshold': 0.56,
-                            'is_selected': False,
-                        },
-                        '410': {
-                            'prediction': 2.0397998848739936,
-                            'threshold': 0.49,
-                            'is_selected': True,
-                        },
-                        '411': {
-                            'prediction': 0.007506779511459172,
-                            'threshold': 0.2,
-                            'is_selected': False,
-                        },
-                        '412': {
-                            'prediction': 0.00019092757914525768,
-                            'threshold': 0.6,
-                            'is_selected': False,
-                        }
-                    },
-                    '9': {
-                        '904': {
-                            'prediction': 0.5,
-                            'threshold': 0.5,
-                            'is_selected': True,
-                        },
-                        '905': {
-                            'prediction': 0.5,
-                            'threshold': 0.5,
-                            'is_selected': False,
-                        },
-                        '902': {
-                            'prediction': 0.5,
-                            'threshold': 0.5,
-                            'is_selected': False,
-                        },
-                        '903': {
-                            'prediction': 0.5,
-                            'threshold': 0.5,
-                            'is_selected': False,
-                        },
-                        '906': {
-                            'prediction': 0.5,
-                            'threshold': 0.5,
-                            'is_selected': False,
-                        },
-                        '907': {
-                            'prediction': 0.5,
-                            'threshold': 0.5,
-                            'is_selected': False,
-                        }
-                    }
+        "client_id": "random-client-id",
+        "model_tags": {
+            "1": {
+                "101": {
+                    "prediction": 0.002,
+                    "threshold": 0.14,
+                    "is_selected": False
                 },
-                'prediction_status': 1,
-                'model_info': {
-                    'id': 'all_tags_model',
-                    'version': '1.0.0',
+                "102": {
+                    "prediction": 0.648,
+                    "threshold": 0.17,
+                    "is_selected": True
+                },
+                "103": {
+                    "prediction": 0.027,
+                    "threshold": 0.1,
+                    "is_selected": False
+                },
+                "104": {
+                    "prediction": 0.062,
+                    "threshold": 0.14,
+                    "is_selected": False
                 }
             },
-            {
-                'model_info': {
-                    'id': 'geolocation',
-                    'version': '1.0.0',
+            "3": {
+                "301": {
+                    "prediction": 0.001,
+                    "threshold": 0.01,
+                    "is_selected": False
                 },
-                'values': [
-                    'Nepal',
-                    'Paris',
-                ],
-                'prediction_status': 1
+                "302": {
+                    "prediction": 0.001,
+                    "threshold": 0.11,
+                    "is_selected": False
+                },
+                "303": {
+                    "prediction": 0.083,
+                    "threshold": 0.38,
+                    "is_selected": False
+                },
+                "304": {
+                    "prediction": 0.086,
+                    "threshold": 0.01,
+                    "is_selected": True
+                },
+                "315": {
+                    "prediction": 0.003,
+                    "threshold": 0.45,
+                    "is_selected": False
+                },
+                "316": {
+                    "prediction": 0.001,
+                    "threshold": 0.06,
+                    "is_selected": False
+                },
+                "317": {
+                    "prediction": 0.004,
+                    "threshold": 0.28,
+                    "is_selected": False
+                },
+                "318": {
+                    "prediction": 0.0,
+                    "threshold": 0.13,
+                    "is_selected": False
+                }
             },
-            {
-                'model_info': {
-                    'id': 'reliability',
-                    'version': '1.0.0',
+            "2": {
+                "219": {
+                    "prediction": 0.003,
+                    "threshold": 0.13,
+                    "is_selected": False
                 },
-                'tags': {
-                    '10': {
-                        '1002': {
-                            'is_selected': True,
-                        }
-                    }
+                "217": {
+                    "prediction": 0.001,
+                    "threshold": 0.04,
+                    "is_selected": False
                 },
-                'prediction_status': 1
+                "218": {
+                    "prediction": 0.004,
+                    "threshold": 0.09,
+                    "is_selected": False
+                },
+                "204": {
+                    "prediction": 0.007,
+                    "threshold": 0.14,
+                    "is_selected": False
+                },
+                "216": {
+                    "prediction": 0.003,
+                    "threshold": 0.13,
+                    "is_selected": False
+                },
+                "214": {
+                    "prediction": 0.001,
+                    "threshold": 0.09,
+                    "is_selected": False
+                },
+                "209": {
+                    "prediction": 0.458,
+                    "threshold": 0.05,
+                    "is_selected": True
+                }
+            },
+            "6": {
+                "601": {
+                    "prediction": 0.0,
+                    "threshold": 0.06,
+                    "is_selected": False
+                },
+                "602": {
+                    "prediction": 0.001,
+                    "threshold": 0.48,
+                    "is_selected": False
+                },
+                "603": {
+                    "prediction": 0.022,
+                    "threshold": 0.34,
+                    "is_selected": False
+                },
+                "604": {
+                    "prediction": 0.0,
+                    "threshold": 0.16,
+                    "is_selected": False
+                }
+            },
+            "5": {
+                "501": {
+                    "prediction": 0.0,
+                    "threshold": 0.45,
+                    "is_selected": False
+                },
+                "502": {
+                    "prediction": 0.0,
+                    "threshold": 0.48,
+                    "is_selected": False
+                }
+            },
+            "8": {
+                "801": {
+                    "prediction": 0.0,
+                    "threshold": 0.66,
+                    "is_selected": False
+                },
+                "802": {
+                    "prediction": 0.0,
+                    "threshold": 0.3,
+                    "is_selected": False
+                }
+            },
+            "4": {
+                "401": {
+                    "prediction": 0.001,
+                    "threshold": 0.29,
+                    "is_selected": False
+                },
+                "402": {
+                    "prediction": 0.001,
+                    "threshold": 0.45,
+                    "is_selected": False
+                },
+                "407": {
+                    "prediction": 0.0,
+                    "threshold": 0.07,
+                    "is_selected": False
+                },
+                "408": {
+                    "prediction": 0.001,
+                    "threshold": 0.11,
+                    "is_selected": False
+                },
+                "412": {
+                    "prediction": 0.0,
+                    "threshold": 0.36,
+                    "is_selected": False
+                }
+            },
+            "7": {
+                "701": {
+                    "prediction": 0.008,
+                    "threshold": 0.27,
+                    "is_selected": False
+                }
+            },
+            "9": {
+                "904": {
+                    "prediction": -1,
+                    "threshold": -1,
+                    "is_selected": False
+                },
+                "905": {
+                    "prediction": -1,
+                    "threshold": -1,
+                    "is_selected": False
+                },
+                "907": {
+                    "prediction": -1,
+                    "threshold": -1,
+                    "is_selected": False
+                }
             }
-        ]
+        },
+        "geolocations": [
+            "New York"
+        ],
+        "model_info": {
+            "id": "all_tags_model",
+            "version": "1.0.0"
+        },
+        "prediction_status": True
     }
-
     DEEPL_TAGS_MOCK_RESPONSE = {
         '101': {
             'label': 'Agriculture',
@@ -867,55 +567,6 @@ class AssistedTaggingCallbackApiTest(TestCase, SnapShotTextCase):
         },
         '104': {
             'label': 'Food Security',
-            'group': 'Sectors',
-            'hide_in_analysis_framework_mapping': False,
-            'is_category': False,
-            'parent_id': '1',
-        },
-        '105': {
-            'label': 'Health',
-            'group': 'Sectors',
-            'hide_in_analysis_framework_mapping': False,
-            'is_category': False,
-            'parent_id': '1',
-        },
-        '106': {
-            'label': 'Livelihoods',
-            'group': 'Sectors',
-            'hide_in_analysis_framework_mapping': False,
-            'is_category': False,
-            'parent_id': '1',
-        },
-        '107': {
-            'label': 'Logistics',
-            'group': 'Sectors',
-            'hide_in_analysis_framework_mapping': False,
-            'is_category': False,
-            'parent_id': '1',
-        },
-        '108': {
-            'label': 'Nutrition',
-            'group': 'Sectors',
-            'hide_in_analysis_framework_mapping': False,
-            'is_category': False,
-            'parent_id': '1',
-        },
-        '109': {
-            'label': 'Protection',
-            'group': 'Sectors',
-            'hide_in_analysis_framework_mapping': False,
-            'is_category': False,
-            'parent_id': '1',
-        },
-        '110': {
-            'label': 'Shelter',
-            'group': 'Sectors',
-            'hide_in_analysis_framework_mapping': False,
-            'is_category': False,
-            'parent_id': '1',
-        },
-        '111': {
-            'label': 'WASH',
             'group': 'Sectors',
             'hide_in_analysis_framework_mapping': False,
             'is_category': False,

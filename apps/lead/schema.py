@@ -40,6 +40,7 @@ from .enums import (
     LeadPriorityEnum,
     LeadSourceTypeEnum,
     LeadExtractionStatusEnum,
+    LeadAutoEntryExtractionTypeEnum,
 )
 from .filter_set import (
     LeadGQFilterSet,
@@ -367,6 +368,7 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
 
     # For external accessible link
     share_view_url = graphene.String(required=True)
+    auto_entry_extraction_status = graphene.Field(LeadAutoEntryExtractionTypeEnum)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -473,7 +475,6 @@ class Query:
     emm_risk_factors = graphene.List(graphene.NonNull(EmmKeyRiskFactorType))
 
     user_saved_lead_filter = graphene.Field(UserSavedLeadFilterType)
-    draft_entry_discarded_count = graphene.Field(DraftEntryCountByLead)
 
     @staticmethod
     def resolve_leads(root, info, **kwargs) -> QuerySet:

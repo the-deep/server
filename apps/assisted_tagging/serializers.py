@@ -27,8 +27,8 @@ class DraftEntryBaseSerializer(serializers.Serializer):
             raise serializers.ValidationError('Assisted tagging is disabled for the Framework used by this project.')
         if self.project.is_private:
             raise serializers.ValidationError('Assisted tagging is not available for private projects.')
-        if lead.confidentiality == (Lead.Confidentiality.CONFIDENTIAL or Lead.Confidentiality.RESTRICTED):
-            raise serializers.ValidationError('Assisted tagging is not available for confidential lead or restricated')
+        if lead.confidentiality in (Lead.Confidentiality.CONFIDENTIAL, Lead.Confidentiality.RESTRICTED):
+            raise serializers.ValidationError('Assisted tagging is not available for confidential or restricated leads')
         return lead
 
 
@@ -137,7 +137,9 @@ class PredictionTagAnalysisFrameworkMapSerializer(TempClientIdMixin, serializers
 class TriggerDraftEntryGqlSerializer(
     DraftEntryBaseSerializer,
     ProjectPropertySerializerMixin,
-        UserResourceCreatedMixin, serializers.ModelSerializer):
+    UserResourceCreatedMixin,
+    serializers.ModelSerializer,
+):
     class Meta:
         model = DraftEntry
         fields = (
@@ -148,13 +150,12 @@ class TriggerDraftEntryGqlSerializer(
         lead = data['lead']
         if lead.leadpreview.text_extraction_id is None:
             raise serializers.DjangoValidationError("Assisted tagging is not available in old lead")
-        if lead.auto_entry_extraction_status == (Lead.AutoExtractionStatus.SUCCESS):
-            raise serializers.DjangoValidationError("Already Tiggered")
+        if lead.auto_entry_extraction_status == Lead.AutoExtractionStatus.SUCCESS:
+            raise serializers.DjangoValidationError("Already Triggered")
         if not lead.leadpreview.text_extract:
             raise serializers.DjangoValidationError('Simplifed Text is empty')
-        draft_entry = DraftEntry.objects.filter(lead=self.data['lead'],
-                                                type=DraftEntry.Type.AUTO)
-        if draft_entry.exists():
+        draft_entry_qs = DraftEntry.objects.filter(lead=lead, type=DraftEntry.Type.AUTO)
+        if draft_entry_qs.exists():
             raise serializers.DjangoValidationError('Draft entry already exists')
         # Use already existing draft entry if found
         # Create new one and send trigger to deepl
@@ -179,8 +180,5 @@ class UpdateDraftEntrySerializer(
             'is_discarded',
         )
 
-    def create(self, validate_data):
+    def create(self, _):
         raise Exception("Create is not Allowed")
-
-    def update(self, instance, validate_data):
-        return super().update(instance, validate_data)
