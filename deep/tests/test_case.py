@@ -1,4 +1,5 @@
 import os
+import shutil
 import autofixture
 from rest_framework import (
     test,
@@ -22,6 +23,9 @@ from ary.models import AssessmentTemplate, Assessment
 
 
 TEST_MEDIA_ROOT = 'rest-media-temp'
+if settings.PYTEST_XDIST_WORKER:
+    TEST_MEDIA_ROOT = f'rest-media-temp/{settings.PYTEST_XDIST_WORKER}'
+
 TEST_EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 TEST_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 TEST_CACHES = {
@@ -46,6 +50,13 @@ DUMMY_TEST_CACHES = {
 }
 
 TEST_AUTH_PASSWORD_VALIDATORS = []
+
+
+def clean_up_test_media_files(path):
+    try:
+        shutil.rmtree(path, ignore_errors=True)
+    except FileNotFoundError:
+        pass
 
 
 @override_settings(
@@ -86,6 +97,7 @@ class TestCase(test.APITestCase):
     def tearDown(self):
         super().tearDown()
         _set_middleware_current_request(None)
+        clean_up_test_media_files(os.path.join(settings.BASE_DIR, TEST_MEDIA_ROOT))
         for file_path in self.deep_test_files_path:
             if os.path.isfile(file_path):
                 os.unlink(file_path)

@@ -3,7 +3,7 @@ from unittest.mock import patch
 from utils.graphene.tests import GraphQLTestCase
 
 from analysis_framework.filter_set import AnalysisFrameworkGqFilterSet
-from analysis_framework.factories import AnalysisFrameworkFactory
+from analysis_framework.factories import AnalysisFrameworkFactory, AnalysisFrameworkTagFactory
 from entry.factories import EntryFactory
 from lead.factories import LeadFactory
 
@@ -57,3 +57,18 @@ class TestAnalysisFrameworkFilter(GraphQLTestCase):
         ))
         expected = set([af1.pk, af2.pk])
         self.assertEqual(obtained, expected)
+
+    def test_tags_filter(self):
+        tag1, tag2, _ = AnalysisFrameworkTagFactory.create_batch(3)
+        af1 = AnalysisFrameworkFactory.create(title='one', tags=[tag1])
+        af2 = AnalysisFrameworkFactory.create(title='two', tags=[tag1, tag2])
+        AnalysisFrameworkFactory.create(title='twoo')
+        for tags, expected in [
+            ([tag1, tag2], [af1, af2]),
+            ([tag1], [af1, af2]),
+            ([tag2], [af2]),
+        ]:
+            obtained = self.filter_class(data=dict(
+                tags=[tag.id for tag in tags]
+            )).qs
+            self.assertQuerySetIdEqual(expected, obtained)

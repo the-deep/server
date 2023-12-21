@@ -3,10 +3,10 @@ from autofixture.base import AutoFixture
 from tempfile import NamedTemporaryFile
 
 from deep.tests import TestCase, TEST_MEDIA_ROOT
+from utils.common import makedirs
 
 from gallery.models import File
 from geo.models import GeoArea, Region, AdminLevel
-
 from project.models import Project
 
 from tabular.tasks import auto_detect_and_update_fields
@@ -371,6 +371,7 @@ class TestTabularExtraction(TestCase):
             assert len(field.actual_data) == 9
 
     def initialize_data_and_basic_test(self, csv_data):
+        makedirs(TEST_MEDIA_ROOT)
         file = NamedTemporaryFile('w', dir=TEST_MEDIA_ROOT, delete=False)
 
         self.files.append(file.name)

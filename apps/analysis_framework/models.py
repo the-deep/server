@@ -11,6 +11,15 @@ from organization.models import Organization
 from .widgets import store as widgets_store
 
 
+class AnalysisFrameworkTag(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    icon = models.FileField(upload_to='af-tag-icon/', max_length=255)
+
+    def __str__(self):
+        return self.title
+
+
 class AnalysisFramework(UserResource):
     """
     Analysis framework defining framework to do analysis
@@ -19,6 +28,7 @@ class AnalysisFramework(UserResource):
     """
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
+    tags = models.ManyToManyField(AnalysisFrameworkTag, related_name='+', blank=True)
 
     is_private = models.BooleanField(default=False)
     assisted_tagging_enabled = models.BooleanField(default=False)

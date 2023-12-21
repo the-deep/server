@@ -12,6 +12,7 @@ from .models import (
     Filter,
     Exportable,
     AnalysisFrameworkMembership,
+    AnalysisFramework,
 )
 
 
@@ -90,6 +91,17 @@ class MembershipLoader(DataLoaderWithContext):
         return Promise.resolve([_map[key] for key in keys])
 
 
+class AnalysisFrameworkTagsLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        qs = AnalysisFramework.tags.through.objects.filter(
+            analysisframework__in=keys,
+        ).select_related('analysisframeworktag')
+        _map = defaultdict(list)
+        for row in qs:
+            _map[row.analysisframework_id].append(row.analysisframeworktag)
+        return Promise.resolve([_map[key] for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def secondary_widgets(self):
@@ -114,3 +126,7 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def members(self):
         return MembershipLoader(context=self.context)
+
+    @cached_property
+    def af_tags(self):
+        return AnalysisFrameworkTagsLoader(context=self.context)

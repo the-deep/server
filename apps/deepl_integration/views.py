@@ -15,6 +15,7 @@ from .serializers import (
     AnalysisAutomaticSummaryCallbackSerializer,
     AnalyticalStatementNGramCallbackSerializer,
     AnalyticalStatementGeoCallbackSerializer,
+    AutoAssistedTaggingDraftEntryCallbackSerializer
 )
 
 
@@ -31,6 +32,10 @@ class BaseCallbackView(views.APIView):
 
 class AssistedTaggingDraftEntryPredictionCallbackView(BaseCallbackView):
     serializer = AssistedTaggingDraftEntryPredictionCallbackSerializer
+
+
+class AutoTaggingDraftEntryPredictionCallbackView(BaseCallbackView):
+    serializer = AutoAssistedTaggingDraftEntryCallbackSerializer
 
 
 class LeadExtractCallbackView(BaseCallbackView):

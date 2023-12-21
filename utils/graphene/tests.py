@@ -1,7 +1,6 @@
 import os
 import json
 import pytz
-import shutil
 import inspect
 import datetime
 from enum import Enum
@@ -27,6 +26,7 @@ from deep.tests.test_case import (
     TEST_AUTH_PASSWORD_VALIDATORS,
     TEST_EMAIL_BACKEND,
     TEST_FILE_STORAGE,
+    clean_up_test_media_files,
 )
 
 from analysis_framework.models import AnalysisFramework, AnalysisFrameworkRole
@@ -35,15 +35,8 @@ from project.models import ProjectRole
 
 User = get_user_model()
 TEST_MEDIA_ROOT = 'media-temp'
-
-
-def clean_up_test_media_files():
-    try:
-        # NOTE: CI will clean itself
-        if os.environ.get('CI', '').lower() != 'true':
-            shutil.rmtree(os.path.join(settings.BASE_DIR, TEST_MEDIA_ROOT), ignore_errors=True)
-    except FileNotFoundError:
-        pass
+if settings.PYTEST_XDIST_WORKER:
+    TEST_MEDIA_ROOT = f'media-temp/{settings.PYTEST_XDIST_WORKER}'
 
 
 @override_settings(
@@ -66,7 +59,7 @@ class GraphQLTestCase(BaseGraphQLTestCase):
     @classmethod
     def tearDownClass(cls):
         # clear the temporary media files
-        clean_up_test_media_files()
+        clean_up_test_media_files(os.path.join(settings.BASE_DIR, TEST_MEDIA_ROOT))
         super().tearDownClass()
 
     def _setup_premailer_patcher(self, mock):

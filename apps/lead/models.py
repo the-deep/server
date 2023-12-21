@@ -89,6 +89,13 @@ class Lead(UserResource, ProjectEntityMixin):
         SUCCESS = 2, 'Success'
         FAILED = 3, 'Failed'
 
+    class AutoExtractionStatus(models.IntegerChoices):
+        NONE = 0, "None"
+        STARTED = 1, "Started"
+        PENDING = 2, 'Pending'
+        SUCCESS = 3, 'Success'
+        FAILED = 4, 'Failed'
+
     lead_group = models.ForeignKey(
         LeadGroup,
         on_delete=models.SET_NULL,
@@ -148,6 +155,8 @@ class Lead(UserResource, ProjectEntityMixin):
     is_indexed = models.BooleanField(default=False)
     duplicate_leads_count = models.PositiveIntegerField(default=0)
     indexed_at = models.DateTimeField(null=True, blank=True)
+    auto_entry_extraction_status = models.SmallIntegerField(
+        choices=AutoExtractionStatus.choices, default=AutoExtractionStatus.NONE)
 
     def __str__(self):
         return '{}'.format(self.title)
@@ -356,6 +365,8 @@ class LeadPreview(models.Model):
         choices=ClassificationStatus.choices,
         default=ClassificationStatus.NONE,
     )
+    entry_extraction_id = models.UUIDField(blank=True, null=True)  # Saved when EntryExtraction is completed
+    text_extraction_id = models.UUIDField(blank=True, null=True)  # Saved when TextExtraction is completed
 
     def __str__(self):
         return 'Text extracted for {}'.format(self.lead)

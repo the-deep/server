@@ -1,13 +1,30 @@
 import factory
 from factory import fuzzy
 from factory.django import DjangoModelFactory
+from django.core.files.base import ContentFile
 
 from .models import (
     AnalysisFramework,
+    AnalysisFrameworkTag,
     Section,
     Widget,
     Filter,
 )
+
+
+class AnalysisFrameworkTagFactory(DjangoModelFactory):
+    title = factory.Sequence(lambda n: f'AF-Tag-{n}')
+    description = factory.Faker('sentence', nb_words=20)
+    icon = factory.LazyAttribute(
+        lambda n: ContentFile(
+            factory.django.ImageField()._make_data(
+                {'width': 100, 'height': 100}
+            ), f'example_{n.title}.png'
+        )
+    )
+
+    class Meta:
+        model = AnalysisFrameworkTag
 
 
 class AnalysisFrameworkFactory(DjangoModelFactory):
@@ -16,6 +33,14 @@ class AnalysisFrameworkFactory(DjangoModelFactory):
 
     class Meta:
         model = AnalysisFramework
+
+    @factory.post_generation
+    def tags(self, create, extracted, **_):
+        if not create:
+            return
+        if extracted:
+            for tag in extracted:
+                self.tags.add(tag)
 
 
 class SectionFactory(DjangoModelFactory):

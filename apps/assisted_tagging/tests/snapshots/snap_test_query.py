@@ -8,19 +8,11 @@ from snapshottest import GenericRepr, Snapshot
 snapshots = Snapshot()
 
 snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-model-stats'] = {
-    'model_count': 3,
-    'model_version_count': 3,
+    'model_count': 1,
+    'model_version_count': 1,
     'model_versions': [
         {
             'model__model_id': 'all_tags_model',
-            'version': '1.0.0'
-        },
-        {
-            'model__model_id': 'geolocation',
-            'version': '1.0.0'
-        },
-        {
-            'model__model_id': 'reliability',
             'version': '1.0.0'
         }
     ],
@@ -28,17 +20,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-m
         {
             'model_id': 'all_tags_model',
             'name': 'all_tags_model'
-        },
-        {
-            'model_id': 'geolocation',
-            'name': 'geolocation'
-        },
-        {
-            'model_id': 'reliability',
-            'name': 'reliability'
         }
     ],
-    'tag_count': 101,
+    'tag_count': 45,
     'tags': [
         {
             'is_deprecated': False,
@@ -52,6 +36,11 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-m
         },
         {
             'is_deprecated': False,
+            'name': '102',
+            'tag_id': '102'
+        },
+        {
+            'is_deprecated': False,
             'name': '103',
             'tag_id': '103'
         },
@@ -62,38 +51,43 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-m
         },
         {
             'is_deprecated': False,
-            'name': '105',
-            'tag_id': '105'
+            'name': '2',
+            'tag_id': '2'
         },
         {
             'is_deprecated': False,
-            'name': '106',
-            'tag_id': '106'
+            'name': '204',
+            'tag_id': '204'
         },
         {
             'is_deprecated': False,
-            'name': '107',
-            'tag_id': '107'
+            'name': '209',
+            'tag_id': '209'
         },
         {
             'is_deprecated': False,
-            'name': '108',
-            'tag_id': '108'
+            'name': '214',
+            'tag_id': '214'
         },
         {
             'is_deprecated': False,
-            'name': '109',
-            'tag_id': '109'
+            'name': '216',
+            'tag_id': '216'
         },
         {
             'is_deprecated': False,
-            'name': '110',
-            'tag_id': '110'
+            'name': '217',
+            'tag_id': '217'
         },
         {
             'is_deprecated': False,
-            'name': '111',
-            'tag_id': '111'
+            'name': '218',
+            'tag_id': '218'
+        },
+        {
+            'is_deprecated': False,
+            'name': '219',
+            'tag_id': '219'
         },
         {
             'is_deprecated': False,
@@ -122,56 +116,6 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-m
         },
         {
             'is_deprecated': False,
-            'name': '305',
-            'tag_id': '305'
-        },
-        {
-            'is_deprecated': False,
-            'name': '306',
-            'tag_id': '306'
-        },
-        {
-            'is_deprecated': False,
-            'name': '307',
-            'tag_id': '307'
-        },
-        {
-            'is_deprecated': False,
-            'name': '308',
-            'tag_id': '308'
-        },
-        {
-            'is_deprecated': False,
-            'name': '309',
-            'tag_id': '309'
-        },
-        {
-            'is_deprecated': False,
-            'name': '310',
-            'tag_id': '310'
-        },
-        {
-            'is_deprecated': False,
-            'name': '311',
-            'tag_id': '311'
-        },
-        {
-            'is_deprecated': False,
-            'name': '312',
-            'tag_id': '312'
-        },
-        {
-            'is_deprecated': False,
-            'name': '313',
-            'tag_id': '313'
-        },
-        {
-            'is_deprecated': False,
-            'name': '314',
-            'tag_id': '314'
-        },
-        {
-            'is_deprecated': False,
             'name': '315',
             'tag_id': '315'
         },
@@ -192,173 +136,48 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-m
         },
         {
             'is_deprecated': False,
-            'name': '2',
-            'tag_id': '2'
+            'name': '4',
+            'tag_id': '4'
         },
         {
             'is_deprecated': False,
-            'name': '219',
-            'tag_id': '219'
+            'name': '401',
+            'tag_id': '401'
         },
         {
             'is_deprecated': False,
-            'name': '217',
-            'tag_id': '217'
+            'name': '402',
+            'tag_id': '402'
         },
         {
             'is_deprecated': False,
-            'name': '218',
-            'tag_id': '218'
+            'name': '407',
+            'tag_id': '407'
         },
         {
             'is_deprecated': False,
-            'name': '204',
-            'tag_id': '204'
+            'name': '408',
+            'tag_id': '408'
         },
         {
             'is_deprecated': False,
-            'name': '203',
-            'tag_id': '203'
+            'name': '412',
+            'tag_id': '412'
         },
         {
             'is_deprecated': False,
-            'name': '201',
-            'tag_id': '201'
+            'name': '5',
+            'tag_id': '5'
         },
         {
             'is_deprecated': False,
-            'name': '205',
-            'tag_id': '205'
+            'name': '501',
+            'tag_id': '501'
         },
         {
             'is_deprecated': False,
-            'name': '207',
-            'tag_id': '207'
-        },
-        {
-            'is_deprecated': False,
-            'name': '206',
-            'tag_id': '206'
-        },
-        {
-            'is_deprecated': False,
-            'name': '202',
-            'tag_id': '202'
-        },
-        {
-            'is_deprecated': False,
-            'name': '228',
-            'tag_id': '228'
-        },
-        {
-            'is_deprecated': False,
-            'name': '229',
-            'tag_id': '229'
-        },
-        {
-            'is_deprecated': False,
-            'name': '230',
-            'tag_id': '230'
-        },
-        {
-            'is_deprecated': False,
-            'name': '231',
-            'tag_id': '231'
-        },
-        {
-            'is_deprecated': False,
-            'name': '232',
-            'tag_id': '232'
-        },
-        {
-            'is_deprecated': False,
-            'name': '233',
-            'tag_id': '233'
-        },
-        {
-            'is_deprecated': False,
-            'name': '234',
-            'tag_id': '234'
-        },
-        {
-            'is_deprecated': False,
-            'name': '215',
-            'tag_id': '215'
-        },
-        {
-            'is_deprecated': False,
-            'name': '216',
-            'tag_id': '216'
-        },
-        {
-            'is_deprecated': False,
-            'name': '214',
-            'tag_id': '214'
-        },
-        {
-            'is_deprecated': False,
-            'name': '213',
-            'tag_id': '213'
-        },
-        {
-            'is_deprecated': False,
-            'name': '212',
-            'tag_id': '212'
-        },
-        {
-            'is_deprecated': False,
-            'name': '223',
-            'tag_id': '223'
-        },
-        {
-            'is_deprecated': False,
-            'name': '222',
-            'tag_id': '222'
-        },
-        {
-            'is_deprecated': False,
-            'name': '221',
-            'tag_id': '221'
-        },
-        {
-            'is_deprecated': False,
-            'name': '220',
-            'tag_id': '220'
-        },
-        {
-            'is_deprecated': False,
-            'name': '224',
-            'tag_id': '224'
-        },
-        {
-            'is_deprecated': False,
-            'name': '225',
-            'tag_id': '225'
-        },
-        {
-            'is_deprecated': False,
-            'name': '227',
-            'tag_id': '227'
-        },
-        {
-            'is_deprecated': False,
-            'name': '226',
-            'tag_id': '226'
-        },
-        {
-            'is_deprecated': False,
-            'name': '210',
-            'tag_id': '210'
-        },
-        {
-            'is_deprecated': False,
-            'name': '208',
-            'tag_id': '208'
-        },
-        {
-            'is_deprecated': False,
-            'name': '209',
-            'tag_id': '209'
+            'name': '502',
+            'tag_id': '502'
         },
         {
             'is_deprecated': False,
@@ -387,18 +206,13 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-m
         },
         {
             'is_deprecated': False,
-            'name': '5',
-            'tag_id': '5'
+            'name': '7',
+            'tag_id': '7'
         },
         {
             'is_deprecated': False,
-            'name': '501',
-            'tag_id': '501'
-        },
-        {
-            'is_deprecated': False,
-            'name': '502',
-            'tag_id': '502'
+            'name': '701',
+            'tag_id': '701'
         },
         {
             'is_deprecated': False,
@@ -417,91 +231,6 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-m
         },
         {
             'is_deprecated': False,
-            'name': '803',
-            'tag_id': '803'
-        },
-        {
-            'is_deprecated': False,
-            'name': '804',
-            'tag_id': '804'
-        },
-        {
-            'is_deprecated': False,
-            'name': '805',
-            'tag_id': '805'
-        },
-        {
-            'is_deprecated': False,
-            'name': '806',
-            'tag_id': '806'
-        },
-        {
-            'is_deprecated': False,
-            'name': '4',
-            'tag_id': '4'
-        },
-        {
-            'is_deprecated': False,
-            'name': '401',
-            'tag_id': '401'
-        },
-        {
-            'is_deprecated': False,
-            'name': '402',
-            'tag_id': '402'
-        },
-        {
-            'is_deprecated': False,
-            'name': '403',
-            'tag_id': '403'
-        },
-        {
-            'is_deprecated': False,
-            'name': '404',
-            'tag_id': '404'
-        },
-        {
-            'is_deprecated': False,
-            'name': '405',
-            'tag_id': '405'
-        },
-        {
-            'is_deprecated': False,
-            'name': '406',
-            'tag_id': '406'
-        },
-        {
-            'is_deprecated': False,
-            'name': '407',
-            'tag_id': '407'
-        },
-        {
-            'is_deprecated': False,
-            'name': '408',
-            'tag_id': '408'
-        },
-        {
-            'is_deprecated': False,
-            'name': '409',
-            'tag_id': '409'
-        },
-        {
-            'is_deprecated': False,
-            'name': '410',
-            'tag_id': '410'
-        },
-        {
-            'is_deprecated': False,
-            'name': '411',
-            'tag_id': '411'
-        },
-        {
-            'is_deprecated': False,
-            'name': '412',
-            'tag_id': '412'
-        },
-        {
-            'is_deprecated': False,
             'name': '9',
             'tag_id': '9'
         },
@@ -517,93 +246,35 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-m
         },
         {
             'is_deprecated': False,
-            'name': '902',
-            'tag_id': '902'
-        },
-        {
-            'is_deprecated': False,
-            'name': '903',
-            'tag_id': '903'
-        },
-        {
-            'is_deprecated': False,
-            'name': '906',
-            'tag_id': '906'
-        },
-        {
-            'is_deprecated': False,
             'name': '907',
             'tag_id': '907'
-        },
-        {
-            'is_deprecated': False,
-            'name': '10',
-            'tag_id': '10'
-        },
-        {
-            'is_deprecated': False,
-            'name': '1002',
-            'tag_id': '1002'
         }
     ]
 }
 
 snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-prediction-stats'] = {
-    'prediction_count': 188,
+    'prediction_count': 72,
     'predictions': [
         {
-            'category__tag_id': None,
-            'data_type': 0,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': True,
-            'model_version__model__model_id': 'geolocation',
-            'prediction': None,
-            'tag__tag_id': None,
-            'threshold': None,
-            'value': 'Nepal'
-        },
-        {
-            'category__tag_id': None,
-            'data_type': 0,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': True,
-            'model_version__model__model_id': 'geolocation',
-            'prediction': None,
-            'tag__tag_id': None,
-            'threshold': None,
-            'value': 'Paris'
-        },
-        {
-            'category__tag_id': None,
-            'data_type': 0,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': True,
-            'model_version__model__model_id': 'geolocation',
-            'prediction': None,
-            'tag__tag_id': None,
-            'threshold': None,
-            'value': 'Nepal'
-        },
-        {
-            'category__tag_id': None,
-            'data_type': 0,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': True,
-            'model_version__model__model_id': 'geolocation',
-            'prediction': None,
-            'tag__tag_id': None,
-            'threshold': None,
-            'value': 'Paris'
-        },
-        {
             'category__tag_id': '1',
             'data_type': 1,
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00131315333064554660')"),
+            'prediction': GenericRepr("Decimal('0.00200000000000000004')"),
             'tag__tag_id': '101',
-            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
+            'threshold': GenericRepr("Decimal('0.14000000000000001332')"),
+            'value': ''
+        },
+        {
+            'category__tag_id': '1',
+            'data_type': 1,
+            'draft_entry__excerpt': 'sample excerpt 101',
+            'is_selected': True,
+            'model_version__model__model_id': 'all_tags_model',
+            'prediction': GenericRepr("Decimal('0.64800000000000002043')"),
+            'tag__tag_id': '102',
+            'threshold': GenericRepr("Decimal('0.17000000000000001221')"),
             'value': ''
         },
         {
@@ -612,9 +283,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00301082416073135700')"),
+            'prediction': GenericRepr("Decimal('0.02699999999999999969')"),
             'tag__tag_id': '103',
-            'threshold': GenericRepr("Decimal('0.46000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.10000000000000000555')"),
             'value': ''
         },
         {
@@ -623,86 +294,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00256628797311956700')"),
+            'prediction': GenericRepr("Decimal('0.06199999999999999956')"),
             'tag__tag_id': '104',
-            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '1',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': True,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('2.67795523007710800000')"),
-            'tag__tag_id': '105',
-            'threshold': GenericRepr("Decimal('0.36000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '1',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.01722483797685096000')"),
-            'tag__tag_id': '106',
-            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '1',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00367074832320213300')"),
-            'tag__tag_id': '107',
-            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '1',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00410134124816680450')"),
-            'tag__tag_id': '108',
-            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '1',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.02810047168670029600')"),
-            'tag__tag_id': '109',
-            'threshold': GenericRepr("Decimal('0.58000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '1',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00356446807494475730')"),
-            'tag__tag_id': '110',
-            'threshold': GenericRepr("Decimal('0.42000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '1',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00885658950175879000')"),
-            'tag__tag_id': '111',
-            'threshold': GenericRepr("Decimal('0.53000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.14000000000000001332')"),
             'value': ''
         },
         {
@@ -711,97 +305,20 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00161047546977275300')"),
-            'tag__tag_id': '201',
-            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00249261039939215920')"),
-            'tag__tag_id': '202',
-            'threshold': GenericRepr("Decimal('0.17000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00276056816801428800')"),
-            'tag__tag_id': '203',
-            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.01951472795739466000')"),
+            'prediction': GenericRepr("Decimal('0.00700000000000000015')"),
             'tag__tag_id': '204',
-            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.14000000000000001332')"),
             'value': ''
         },
         {
             'category__tag_id': '2',
             'data_type': 1,
             'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
+            'is_selected': True,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00284144639848701430')"),
-            'tag__tag_id': '205',
-            'threshold': GenericRepr("Decimal('0.31000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00284233643800358870')"),
-            'tag__tag_id': '206',
-            'threshold': GenericRepr("Decimal('0.44000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00300193069657931750')"),
-            'tag__tag_id': '207',
-            'threshold': GenericRepr("Decimal('0.30000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00357941840775311000')"),
-            'tag__tag_id': '208',
-            'threshold': GenericRepr("Decimal('0.20000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00632169711239197600')"),
+            'prediction': GenericRepr("Decimal('0.45800000000000001821')"),
             'tag__tag_id': '209',
-            'threshold': GenericRepr("Decimal('0.17000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.05000000000000000278')"),
             'value': ''
         },
         {
@@ -810,42 +327,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00697963860938730400')"),
-            'tag__tag_id': '210',
-            'threshold': GenericRepr("Decimal('0.23000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.01237871689035704300')"),
-            'tag__tag_id': '212',
-            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00024467206802345010')"),
-            'tag__tag_id': '213',
-            'threshold': GenericRepr("Decimal('0.37000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00036748812096354010')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '214',
-            'threshold': GenericRepr("Decimal('0.29000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.08999999999999999667')"),
             'value': ''
         },
         {
@@ -854,20 +338,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00047817865331461160')"),
-            'tag__tag_id': '215',
-            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00696396781131625200')"),
+            'prediction': GenericRepr("Decimal('0.00300000000000000006')"),
             'tag__tag_id': '216',
-            'threshold': GenericRepr("Decimal('0.25000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.13000000000000000444')"),
             'value': ''
         },
         {
@@ -876,9 +349,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00091310044249089870')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '217',
-            'threshold': GenericRepr("Decimal('0.13000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.04000000000000000083')"),
             'value': ''
         },
         {
@@ -887,9 +360,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00106291823053302660')"),
+            'prediction': GenericRepr("Decimal('0.00400000000000000008')"),
             'tag__tag_id': '218',
-            'threshold': GenericRepr("Decimal('0.13000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.08999999999999999667')"),
             'value': ''
         },
         {
@@ -898,174 +371,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00187798162057463590')"),
+            'prediction': GenericRepr("Decimal('0.00300000000000000006')"),
             'tag__tag_id': '219',
-            'threshold': GenericRepr("Decimal('0.28000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.01125925638038536600')"),
-            'tag__tag_id': '220',
-            'threshold': GenericRepr("Decimal('0.29000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00166666776701611900')"),
-            'tag__tag_id': '221',
-            'threshold': GenericRepr("Decimal('0.19000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00146527563629206270')"),
-            'tag__tag_id': '222',
-            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00115551359139065800')"),
-            'tag__tag_id': '223',
-            'threshold': GenericRepr("Decimal('0.47000000000000003000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00758105556347540500')"),
-            'tag__tag_id': '224',
-            'threshold': GenericRepr("Decimal('0.21000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00033728324827582890')"),
-            'tag__tag_id': '225',
-            'threshold': GenericRepr("Decimal('0.15000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00077029108069837090')"),
-            'tag__tag_id': '226',
-            'threshold': GenericRepr("Decimal('0.18000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00090097592975426880')"),
-            'tag__tag_id': '227',
-            'threshold': GenericRepr("Decimal('0.18000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00497279979754239300')"),
-            'tag__tag_id': '228',
-            'threshold': GenericRepr("Decimal('0.80000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00032880847216941987')"),
-            'tag__tag_id': '229',
-            'threshold': GenericRepr("Decimal('0.39000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00116735643615233300')"),
-            'tag__tag_id': '230',
-            'threshold': GenericRepr("Decimal('0.81000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00244935224877624970')"),
-            'tag__tag_id': '231',
-            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00542857805671899200')"),
-            'tag__tag_id': '232',
-            'threshold': GenericRepr("Decimal('0.46000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00188743645513925370')"),
-            'tag__tag_id': '233',
-            'threshold': GenericRepr("Decimal('0.79000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00117788418989490570')"),
-            'tag__tag_id': '234',
-            'threshold': GenericRepr("Decimal('0.54000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.13000000000000000444')"),
             'value': ''
         },
         {
@@ -1074,9 +382,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00023104241032948875')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '301',
-            'threshold': GenericRepr("Decimal('0.12000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.01000000000000000021')"),
             'value': ''
         },
         {
@@ -1085,31 +393,31 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00684022131126101400')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '302',
-            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
+            'threshold': GenericRepr("Decimal('0.11000000000000000056')"),
             'value': ''
         },
         {
             'category__tag_id': '3',
             'data_type': 1,
             'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': True,
+            'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('1.51390548675291000000')"),
+            'prediction': GenericRepr("Decimal('0.08300000000000000433')"),
             'tag__tag_id': '303',
-            'threshold': GenericRepr("Decimal('0.62000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.38000000000000000444')"),
             'value': ''
         },
         {
             'category__tag_id': '3',
             'data_type': 1,
             'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
+            'is_selected': True,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00246191542828455570')"),
+            'prediction': GenericRepr("Decimal('0.08599999999999999312')"),
             'tag__tag_id': '304',
-            'threshold': GenericRepr("Decimal('0.10000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.01000000000000000021')"),
             'value': ''
         },
         {
@@ -1118,119 +426,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.19748103480006374000')"),
-            'tag__tag_id': '305',
-            'threshold': GenericRepr("Decimal('0.43000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.13266879380965720000')"),
-            'tag__tag_id': '306',
-            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00847395147300428900')"),
-            'tag__tag_id': '307',
-            'threshold': GenericRepr("Decimal('0.36000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.01439434579677051900')"),
-            'tag__tag_id': '308',
-            'threshold': GenericRepr("Decimal('0.45000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00275349894147967100')"),
-            'tag__tag_id': '309',
-            'threshold': GenericRepr("Decimal('0.31000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.02261752535293742000')"),
-            'tag__tag_id': '310',
-            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00280699276022220930')"),
-            'tag__tag_id': '311',
-            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00353863737969235940')"),
-            'tag__tag_id': '312',
-            'threshold': GenericRepr("Decimal('0.33000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00474455507679118000')"),
-            'tag__tag_id': '313',
-            'threshold': GenericRepr("Decimal('0.45000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00243518249286959600')"),
-            'tag__tag_id': '314',
-            'threshold': GenericRepr("Decimal('0.24000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00498411668972535500')"),
+            'prediction': GenericRepr("Decimal('0.00300000000000000006')"),
             'tag__tag_id': '315',
-            'threshold': GenericRepr("Decimal('0.55000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.45000000000000001110')"),
             'value': ''
         },
         {
@@ -1239,9 +437,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00342778279446065430')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '316',
-            'threshold': GenericRepr("Decimal('0.15000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.05999999999999999778')"),
             'value': ''
         },
         {
@@ -1250,9 +448,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00183609818729261560')"),
+            'prediction': GenericRepr("Decimal('0.00400000000000000008')"),
             'tag__tag_id': '317',
-            'threshold': GenericRepr("Decimal('0.30000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.28000000000000002665')"),
             'value': ''
         },
         {
@@ -1261,9 +459,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00765169737860560400')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '318',
-            'threshold': GenericRepr("Decimal('0.25000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.13000000000000000444')"),
             'value': ''
         },
         {
@@ -1272,9 +470,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00020814205345232040')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '401',
-            'threshold': GenericRepr("Decimal('0.25000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.28999999999999998002')"),
             'value': ''
         },
         {
@@ -1283,9 +481,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00299776057263129780')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '402',
-            'threshold': GenericRepr("Decimal('0.58000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.45000000000000001110')"),
             'value': ''
         },
         {
@@ -1294,53 +492,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00299218206367056270')"),
-            'tag__tag_id': '403',
-            'threshold': GenericRepr("Decimal('0.14000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '4',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00241597760274695900')"),
-            'tag__tag_id': '404',
-            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '4',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.02053049989999868700')"),
-            'tag__tag_id': '405',
-            'threshold': GenericRepr("Decimal('0.78000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '4',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00281014967745599850')"),
-            'tag__tag_id': '406',
-            'threshold': GenericRepr("Decimal('0.13000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '4',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00022843408415366598')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '407',
-            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
+            'threshold': GenericRepr("Decimal('0.07000000000000000666')"),
             'value': ''
         },
         {
@@ -1349,9 +503,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00943289911848003600')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '408',
-            'threshold': GenericRepr("Decimal('0.59000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.11000000000000000056')"),
             'value': ''
         },
         {
@@ -1360,53 +514,20 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00091892403101415500')"),
-            'tag__tag_id': '409',
-            'threshold': GenericRepr("Decimal('0.56000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '4',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': True,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('2.03979988487399360000')"),
-            'tag__tag_id': '410',
-            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '4',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00750677951145917200')"),
-            'tag__tag_id': '411',
-            'threshold': GenericRepr("Decimal('0.20000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '4',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00019092757914525768')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '412',
-            'threshold': GenericRepr("Decimal('0.60000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.35999999999999998668')"),
             'value': ''
         },
         {
             'category__tag_id': '5',
             'data_type': 1,
             'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': True,
+            'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('1.40336945023335200000')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '501',
-            'threshold': GenericRepr("Decimal('0.71000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.45000000000000001110')"),
             'value': ''
         },
         {
@@ -1415,20 +536,20 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00778131599707359600')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '502',
-            'threshold': GenericRepr("Decimal('0.44000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.47999999999999998224')"),
             'value': ''
         },
         {
             'category__tag_id': '6',
             'data_type': 1,
             'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': True,
+            'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.04068703080217044000')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '601',
-            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.05999999999999999778')"),
             'value': ''
         },
         {
@@ -1437,9 +558,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.02458783670921217300')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '602',
-            'threshold': GenericRepr("Decimal('0.44000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.47999999999999998224')"),
             'value': ''
         },
         {
@@ -1448,9 +569,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.04259871318936348000')"),
+            'prediction': GenericRepr("Decimal('0.02199999999999999872')"),
             'tag__tag_id': '603',
-            'threshold': GenericRepr("Decimal('0.40000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.34000000000000002442')"),
             'value': ''
         },
         {
@@ -1459,9 +580,20 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00641449491997234200')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '604',
-            'threshold': GenericRepr("Decimal('0.61000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.16000000000000000333')"),
+            'value': ''
+        },
+        {
+            'category__tag_id': '7',
+            'data_type': 1,
+            'draft_entry__excerpt': 'sample excerpt 101',
+            'is_selected': False,
+            'model_version__model__model_id': 'all_tags_model',
+            'prediction': GenericRepr("Decimal('0.00800000000000000017')"),
+            'tag__tag_id': '701',
+            'threshold': GenericRepr("Decimal('0.27000000000000001776')"),
             'value': ''
         },
         {
@@ -1470,9 +602,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00027582379877694870')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '801',
-            'threshold': GenericRepr("Decimal('0.73000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.66000000000000003109')"),
             'value': ''
         },
         {
@@ -1481,53 +613,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00997524285181002000')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '802',
-            'threshold': GenericRepr("Decimal('0.55000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '8',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00476177378710526100')"),
-            'tag__tag_id': '803',
-            'threshold': GenericRepr("Decimal('0.67000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '8',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00084620605533321700')"),
-            'tag__tag_id': '804',
-            'threshold': GenericRepr("Decimal('0.75000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '8',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00070480359681823760')"),
-            'tag__tag_id': '805',
-            'threshold': GenericRepr("Decimal('0.64000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '8',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00703320267416958500')"),
-            'tag__tag_id': '806',
-            'threshold': GenericRepr("Decimal('0.53000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.29999999999999998890')"),
             'value': ''
         },
         {
@@ -1536,31 +624,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.50000000000000000000')"),
-            'tag__tag_id': '902',
-            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '9',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.50000000000000000000')"),
-            'tag__tag_id': '903',
-            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '9',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': True,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.50000000000000000000')"),
+            'prediction': GenericRepr("Decimal('-1.00000000000000000000')"),
             'tag__tag_id': '904',
-            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
+            'threshold': GenericRepr("Decimal('-1.00000000000000000000')"),
             'value': ''
         },
         {
@@ -1569,9 +635,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.50000000000000000000')"),
+            'prediction': GenericRepr("Decimal('-1.00000000000000000000')"),
             'tag__tag_id': '905',
-            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
+            'threshold': GenericRepr("Decimal('-1.00000000000000000000')"),
             'value': ''
         },
         {
@@ -1580,20 +646,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 101',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.50000000000000000000')"),
-            'tag__tag_id': '906',
-            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '9',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.50000000000000000000')"),
+            'prediction': GenericRepr("Decimal('-1.00000000000000000000')"),
             'tag__tag_id': '907',
-            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
+            'threshold': GenericRepr("Decimal('-1.00000000000000000000')"),
             'value': ''
         },
         {
@@ -1602,9 +657,20 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00131315333064554660')"),
+            'prediction': GenericRepr("Decimal('0.00200000000000000004')"),
             'tag__tag_id': '101',
-            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
+            'threshold': GenericRepr("Decimal('0.14000000000000001332')"),
+            'value': ''
+        },
+        {
+            'category__tag_id': '1',
+            'data_type': 1,
+            'draft_entry__excerpt': 'sample excerpt 102',
+            'is_selected': True,
+            'model_version__model__model_id': 'all_tags_model',
+            'prediction': GenericRepr("Decimal('0.64800000000000002043')"),
+            'tag__tag_id': '102',
+            'threshold': GenericRepr("Decimal('0.17000000000000001221')"),
             'value': ''
         },
         {
@@ -1613,9 +679,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00301082416073135700')"),
+            'prediction': GenericRepr("Decimal('0.02699999999999999969')"),
             'tag__tag_id': '103',
-            'threshold': GenericRepr("Decimal('0.46000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.10000000000000000555')"),
             'value': ''
         },
         {
@@ -1624,86 +690,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00256628797311956700')"),
+            'prediction': GenericRepr("Decimal('0.06199999999999999956')"),
             'tag__tag_id': '104',
-            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '1',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': True,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('2.67795523007710800000')"),
-            'tag__tag_id': '105',
-            'threshold': GenericRepr("Decimal('0.36000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '1',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.01722483797685096000')"),
-            'tag__tag_id': '106',
-            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '1',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00367074832320213300')"),
-            'tag__tag_id': '107',
-            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '1',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00410134124816680450')"),
-            'tag__tag_id': '108',
-            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '1',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.02810047168670029600')"),
-            'tag__tag_id': '109',
-            'threshold': GenericRepr("Decimal('0.58000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '1',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00356446807494475730')"),
-            'tag__tag_id': '110',
-            'threshold': GenericRepr("Decimal('0.42000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '1',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00885658950175879000')"),
-            'tag__tag_id': '111',
-            'threshold': GenericRepr("Decimal('0.53000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.14000000000000001332')"),
             'value': ''
         },
         {
@@ -1712,97 +701,20 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00161047546977275300')"),
-            'tag__tag_id': '201',
-            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00249261039939215920')"),
-            'tag__tag_id': '202',
-            'threshold': GenericRepr("Decimal('0.17000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00276056816801428800')"),
-            'tag__tag_id': '203',
-            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.01951472795739466000')"),
+            'prediction': GenericRepr("Decimal('0.00700000000000000015')"),
             'tag__tag_id': '204',
-            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.14000000000000001332')"),
             'value': ''
         },
         {
             'category__tag_id': '2',
             'data_type': 1,
             'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
+            'is_selected': True,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00284144639848701430')"),
-            'tag__tag_id': '205',
-            'threshold': GenericRepr("Decimal('0.31000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00284233643800358870')"),
-            'tag__tag_id': '206',
-            'threshold': GenericRepr("Decimal('0.44000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00300193069657931750')"),
-            'tag__tag_id': '207',
-            'threshold': GenericRepr("Decimal('0.30000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00357941840775311000')"),
-            'tag__tag_id': '208',
-            'threshold': GenericRepr("Decimal('0.20000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00632169711239197600')"),
+            'prediction': GenericRepr("Decimal('0.45800000000000001821')"),
             'tag__tag_id': '209',
-            'threshold': GenericRepr("Decimal('0.17000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.05000000000000000278')"),
             'value': ''
         },
         {
@@ -1811,42 +723,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00697963860938730400')"),
-            'tag__tag_id': '210',
-            'threshold': GenericRepr("Decimal('0.23000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.01237871689035704300')"),
-            'tag__tag_id': '212',
-            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00024467206802345010')"),
-            'tag__tag_id': '213',
-            'threshold': GenericRepr("Decimal('0.37000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00036748812096354010')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '214',
-            'threshold': GenericRepr("Decimal('0.29000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.08999999999999999667')"),
             'value': ''
         },
         {
@@ -1855,20 +734,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00047817865331461160')"),
-            'tag__tag_id': '215',
-            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00696396781131625200')"),
+            'prediction': GenericRepr("Decimal('0.00300000000000000006')"),
             'tag__tag_id': '216',
-            'threshold': GenericRepr("Decimal('0.25000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.13000000000000000444')"),
             'value': ''
         },
         {
@@ -1877,9 +745,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00091310044249089870')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '217',
-            'threshold': GenericRepr("Decimal('0.13000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.04000000000000000083')"),
             'value': ''
         },
         {
@@ -1888,9 +756,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00106291823053302660')"),
+            'prediction': GenericRepr("Decimal('0.00400000000000000008')"),
             'tag__tag_id': '218',
-            'threshold': GenericRepr("Decimal('0.13000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.08999999999999999667')"),
             'value': ''
         },
         {
@@ -1899,174 +767,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00187798162057463590')"),
+            'prediction': GenericRepr("Decimal('0.00300000000000000006')"),
             'tag__tag_id': '219',
-            'threshold': GenericRepr("Decimal('0.28000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.01125925638038536600')"),
-            'tag__tag_id': '220',
-            'threshold': GenericRepr("Decimal('0.29000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00166666776701611900')"),
-            'tag__tag_id': '221',
-            'threshold': GenericRepr("Decimal('0.19000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00146527563629206270')"),
-            'tag__tag_id': '222',
-            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00115551359139065800')"),
-            'tag__tag_id': '223',
-            'threshold': GenericRepr("Decimal('0.47000000000000003000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00758105556347540500')"),
-            'tag__tag_id': '224',
-            'threshold': GenericRepr("Decimal('0.21000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00033728324827582890')"),
-            'tag__tag_id': '225',
-            'threshold': GenericRepr("Decimal('0.15000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00077029108069837090')"),
-            'tag__tag_id': '226',
-            'threshold': GenericRepr("Decimal('0.18000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00090097592975426880')"),
-            'tag__tag_id': '227',
-            'threshold': GenericRepr("Decimal('0.18000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00497279979754239300')"),
-            'tag__tag_id': '228',
-            'threshold': GenericRepr("Decimal('0.80000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00032880847216941987')"),
-            'tag__tag_id': '229',
-            'threshold': GenericRepr("Decimal('0.39000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00116735643615233300')"),
-            'tag__tag_id': '230',
-            'threshold': GenericRepr("Decimal('0.81000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00244935224877624970')"),
-            'tag__tag_id': '231',
-            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00542857805671899200')"),
-            'tag__tag_id': '232',
-            'threshold': GenericRepr("Decimal('0.46000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00188743645513925370')"),
-            'tag__tag_id': '233',
-            'threshold': GenericRepr("Decimal('0.79000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '2',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00117788418989490570')"),
-            'tag__tag_id': '234',
-            'threshold': GenericRepr("Decimal('0.54000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.13000000000000000444')"),
             'value': ''
         },
         {
@@ -2075,9 +778,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00023104241032948875')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '301',
-            'threshold': GenericRepr("Decimal('0.12000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.01000000000000000021')"),
             'value': ''
         },
         {
@@ -2086,31 +789,31 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00684022131126101400')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '302',
-            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
+            'threshold': GenericRepr("Decimal('0.11000000000000000056')"),
             'value': ''
         },
         {
             'category__tag_id': '3',
             'data_type': 1,
             'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': True,
+            'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('1.51390548675291000000')"),
+            'prediction': GenericRepr("Decimal('0.08300000000000000433')"),
             'tag__tag_id': '303',
-            'threshold': GenericRepr("Decimal('0.62000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.38000000000000000444')"),
             'value': ''
         },
         {
             'category__tag_id': '3',
             'data_type': 1,
             'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
+            'is_selected': True,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00246191542828455570')"),
+            'prediction': GenericRepr("Decimal('0.08599999999999999312')"),
             'tag__tag_id': '304',
-            'threshold': GenericRepr("Decimal('0.10000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.01000000000000000021')"),
             'value': ''
         },
         {
@@ -2119,119 +822,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.19748103480006374000')"),
-            'tag__tag_id': '305',
-            'threshold': GenericRepr("Decimal('0.43000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.13266879380965720000')"),
-            'tag__tag_id': '306',
-            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00847395147300428900')"),
-            'tag__tag_id': '307',
-            'threshold': GenericRepr("Decimal('0.36000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.01439434579677051900')"),
-            'tag__tag_id': '308',
-            'threshold': GenericRepr("Decimal('0.45000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00275349894147967100')"),
-            'tag__tag_id': '309',
-            'threshold': GenericRepr("Decimal('0.31000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.02261752535293742000')"),
-            'tag__tag_id': '310',
-            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00280699276022220930')"),
-            'tag__tag_id': '311',
-            'threshold': GenericRepr("Decimal('0.38000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00353863737969235940')"),
-            'tag__tag_id': '312',
-            'threshold': GenericRepr("Decimal('0.33000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00474455507679118000')"),
-            'tag__tag_id': '313',
-            'threshold': GenericRepr("Decimal('0.45000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00243518249286959600')"),
-            'tag__tag_id': '314',
-            'threshold': GenericRepr("Decimal('0.24000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '3',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00498411668972535500')"),
+            'prediction': GenericRepr("Decimal('0.00300000000000000006')"),
             'tag__tag_id': '315',
-            'threshold': GenericRepr("Decimal('0.55000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.45000000000000001110')"),
             'value': ''
         },
         {
@@ -2240,9 +833,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00342778279446065430')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '316',
-            'threshold': GenericRepr("Decimal('0.15000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.05999999999999999778')"),
             'value': ''
         },
         {
@@ -2251,9 +844,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00183609818729261560')"),
+            'prediction': GenericRepr("Decimal('0.00400000000000000008')"),
             'tag__tag_id': '317',
-            'threshold': GenericRepr("Decimal('0.30000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.28000000000000002665')"),
             'value': ''
         },
         {
@@ -2262,9 +855,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00765169737860560400')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '318',
-            'threshold': GenericRepr("Decimal('0.25000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.13000000000000000444')"),
             'value': ''
         },
         {
@@ -2273,9 +866,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00020814205345232040')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '401',
-            'threshold': GenericRepr("Decimal('0.25000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.28999999999999998002')"),
             'value': ''
         },
         {
@@ -2284,9 +877,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00299776057263129780')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '402',
-            'threshold': GenericRepr("Decimal('0.58000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.45000000000000001110')"),
             'value': ''
         },
         {
@@ -2295,53 +888,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00299218206367056270')"),
-            'tag__tag_id': '403',
-            'threshold': GenericRepr("Decimal('0.14000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '4',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00241597760274695900')"),
-            'tag__tag_id': '404',
-            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '4',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.02053049989999868700')"),
-            'tag__tag_id': '405',
-            'threshold': GenericRepr("Decimal('0.78000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '4',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00281014967745599850')"),
-            'tag__tag_id': '406',
-            'threshold': GenericRepr("Decimal('0.13000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '4',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00022843408415366598')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '407',
-            'threshold': GenericRepr("Decimal('0.41000000000000003000')"),
+            'threshold': GenericRepr("Decimal('0.07000000000000000666')"),
             'value': ''
         },
         {
@@ -2350,9 +899,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00943289911848003600')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '408',
-            'threshold': GenericRepr("Decimal('0.59000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.11000000000000000056')"),
             'value': ''
         },
         {
@@ -2361,53 +910,20 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00091892403101415500')"),
-            'tag__tag_id': '409',
-            'threshold': GenericRepr("Decimal('0.56000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '4',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': True,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('2.03979988487399360000')"),
-            'tag__tag_id': '410',
-            'threshold': GenericRepr("Decimal('0.49000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '4',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00750677951145917200')"),
-            'tag__tag_id': '411',
-            'threshold': GenericRepr("Decimal('0.20000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '4',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00019092757914525768')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '412',
-            'threshold': GenericRepr("Decimal('0.60000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.35999999999999998668')"),
             'value': ''
         },
         {
             'category__tag_id': '5',
             'data_type': 1,
             'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': True,
+            'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('1.40336945023335200000')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '501',
-            'threshold': GenericRepr("Decimal('0.71000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.45000000000000001110')"),
             'value': ''
         },
         {
@@ -2416,20 +932,20 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00778131599707359600')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '502',
-            'threshold': GenericRepr("Decimal('0.44000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.47999999999999998224')"),
             'value': ''
         },
         {
             'category__tag_id': '6',
             'data_type': 1,
             'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': True,
+            'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.04068703080217044000')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '601',
-            'threshold': GenericRepr("Decimal('0.48000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.05999999999999999778')"),
             'value': ''
         },
         {
@@ -2438,9 +954,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.02458783670921217300')"),
+            'prediction': GenericRepr("Decimal('0.00100000000000000002')"),
             'tag__tag_id': '602',
-            'threshold': GenericRepr("Decimal('0.44000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.47999999999999998224')"),
             'value': ''
         },
         {
@@ -2449,9 +965,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.04259871318936348000')"),
+            'prediction': GenericRepr("Decimal('0.02199999999999999872')"),
             'tag__tag_id': '603',
-            'threshold': GenericRepr("Decimal('0.40000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.34000000000000002442')"),
             'value': ''
         },
         {
@@ -2460,9 +976,20 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00641449491997234200')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '604',
-            'threshold': GenericRepr("Decimal('0.61000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.16000000000000000333')"),
+            'value': ''
+        },
+        {
+            'category__tag_id': '7',
+            'data_type': 1,
+            'draft_entry__excerpt': 'sample excerpt 102',
+            'is_selected': False,
+            'model_version__model__model_id': 'all_tags_model',
+            'prediction': GenericRepr("Decimal('0.00800000000000000017')"),
+            'tag__tag_id': '701',
+            'threshold': GenericRepr("Decimal('0.27000000000000001776')"),
             'value': ''
         },
         {
@@ -2471,9 +998,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00027582379877694870')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '801',
-            'threshold': GenericRepr("Decimal('0.73000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.66000000000000003109')"),
             'value': ''
         },
         {
@@ -2482,53 +1009,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00997524285181002000')"),
+            'prediction': GenericRepr("Decimal('0E-20')"),
             'tag__tag_id': '802',
-            'threshold': GenericRepr("Decimal('0.55000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '8',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00476177378710526100')"),
-            'tag__tag_id': '803',
-            'threshold': GenericRepr("Decimal('0.67000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '8',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00084620605533321700')"),
-            'tag__tag_id': '804',
-            'threshold': GenericRepr("Decimal('0.75000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '8',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00070480359681823760')"),
-            'tag__tag_id': '805',
-            'threshold': GenericRepr("Decimal('0.64000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '8',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.00703320267416958500')"),
-            'tag__tag_id': '806',
-            'threshold': GenericRepr("Decimal('0.53000000000000000000')"),
+            'threshold': GenericRepr("Decimal('0.29999999999999998890')"),
             'value': ''
         },
         {
@@ -2537,31 +1020,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.50000000000000000000')"),
-            'tag__tag_id': '902',
-            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '9',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.50000000000000000000')"),
-            'tag__tag_id': '903',
-            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '9',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': True,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.50000000000000000000')"),
+            'prediction': GenericRepr("Decimal('-1.00000000000000000000')"),
             'tag__tag_id': '904',
-            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
+            'threshold': GenericRepr("Decimal('-1.00000000000000000000')"),
             'value': ''
         },
         {
@@ -2570,9 +1031,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.50000000000000000000')"),
+            'prediction': GenericRepr("Decimal('-1.00000000000000000000')"),
             'tag__tag_id': '905',
-            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
+            'threshold': GenericRepr("Decimal('-1.00000000000000000000')"),
             'value': ''
         },
         {
@@ -2581,42 +1042,9 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-p
             'draft_entry__excerpt': 'sample excerpt 102',
             'is_selected': False,
             'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.50000000000000000000')"),
-            'tag__tag_id': '906',
-            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '9',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': False,
-            'model_version__model__model_id': 'all_tags_model',
-            'prediction': GenericRepr("Decimal('0.50000000000000000000')"),
+            'prediction': GenericRepr("Decimal('-1.00000000000000000000')"),
             'tag__tag_id': '907',
-            'threshold': GenericRepr("Decimal('0.50000000000000000000')"),
-            'value': ''
-        },
-        {
-            'category__tag_id': '10',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 101',
-            'is_selected': True,
-            'model_version__model__model_id': 'reliability',
-            'prediction': None,
-            'tag__tag_id': '1002',
-            'threshold': None,
-            'value': ''
-        },
-        {
-            'category__tag_id': '10',
-            'data_type': 1,
-            'draft_entry__excerpt': 'sample excerpt 102',
-            'is_selected': True,
-            'model_version__model__model_id': 'reliability',
-            'prediction': None,
-            'tag__tag_id': '1002',
-            'threshold': None,
+            'threshold': GenericRepr("Decimal('-1.00000000000000000000')"),
             'value': ''
         }
     ]
@@ -2712,69 +1140,6 @@ snapshots['AssistedTaggingCallbackApiTest::test_tags_sync sync-tags'] = [
         'name': 'Food Security',
         'parent_tag__tag_id': '1',
         'tag_id': '104'
-    },
-    {
-        'group': 'Sectors',
-        'hide_in_analysis_framework_mapping': False,
-        'is_category': False,
-        'is_deprecated': False,
-        'name': 'Health',
-        'parent_tag__tag_id': '1',
-        'tag_id': '105'
-    },
-    {
-        'group': 'Sectors',
-        'hide_in_analysis_framework_mapping': False,
-        'is_category': False,
-        'is_deprecated': False,
-        'name': 'Livelihoods',
-        'parent_tag__tag_id': '1',
-        'tag_id': '106'
-    },
-    {
-        'group': 'Sectors',
-        'hide_in_analysis_framework_mapping': False,
-        'is_category': False,
-        'is_deprecated': False,
-        'name': 'Logistics',
-        'parent_tag__tag_id': '1',
-        'tag_id': '107'
-    },
-    {
-        'group': 'Sectors',
-        'hide_in_analysis_framework_mapping': False,
-        'is_category': False,
-        'is_deprecated': False,
-        'name': 'Nutrition',
-        'parent_tag__tag_id': '1',
-        'tag_id': '108'
-    },
-    {
-        'group': 'Sectors',
-        'hide_in_analysis_framework_mapping': False,
-        'is_category': False,
-        'is_deprecated': False,
-        'name': 'Protection',
-        'parent_tag__tag_id': '1',
-        'tag_id': '109'
-    },
-    {
-        'group': 'Sectors',
-        'hide_in_analysis_framework_mapping': False,
-        'is_category': False,
-        'is_deprecated': False,
-        'name': 'Shelter',
-        'parent_tag__tag_id': '1',
-        'tag_id': '110'
-    },
-    {
-        'group': 'Sectors',
-        'hide_in_analysis_framework_mapping': False,
-        'is_category': False,
-        'is_deprecated': False,
-        'name': 'WASH',
-        'parent_tag__tag_id': '1',
-        'tag_id': '111'
     },
     {
         'group': None,

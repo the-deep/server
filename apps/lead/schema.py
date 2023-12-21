@@ -40,6 +40,7 @@ from .enums import (
     LeadPriorityEnum,
     LeadSourceTypeEnum,
     LeadExtractionStatusEnum,
+    LeadAutoEntryExtractionTypeEnum,
 )
 from .filter_set import (
     LeadGQFilterSet,
@@ -209,6 +210,7 @@ class LeadPreviewType(DjangoObjectType):
             'thumbnail_width',
             'word_count',
             'page_count',
+            'text_extraction_id'
             # 'classified_doc_id',
             # 'classification_status',
         )
@@ -366,6 +368,7 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
 
     # For external accessible link
     share_view_url = graphene.String(required=True)
+    auto_entry_extraction_status = graphene.Field(LeadAutoEntryExtractionTypeEnum)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -405,6 +408,11 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
         return Permalink.lead_share_view(root.uuid)
 
 
+class DraftEntryCountByLead(graphene.ObjectType):
+    undiscarded_draft_entry = graphene.Int(required=False)
+    discarded_draft_entry = graphene.Int(required=False)
+
+
 class LeadDetailType(LeadType):
     class Meta:
         model = Lead
@@ -416,12 +424,17 @@ class LeadDetailType(LeadType):
         )
 
     entries = graphene.List(graphene.NonNull('entry.schema.EntryType'))
+    draft_entry_stat = graphene.Field(DraftEntryCountByLead)
 
     @staticmethod
     def resolve_entries(root, info, **kwargs):
         return root.entry_set.filter(
             analysis_framework=info.context.active_project.analysis_framework,
         ).all()
+
+    @staticmethod
+    def resolve_draft_entry_stat(root, info, **kwargs):
+        return info.context.dl.lead.draftentry_count.load(root.pk)
 
 
 class LeadListType(CustomDjangoListObjectType):

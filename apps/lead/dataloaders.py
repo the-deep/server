@@ -13,6 +13,7 @@ from ary.models import Assessment
 from organization.dataloaders import OrganizationLoader
 
 from .models import Lead, LeadPreview, LeadGroup
+from assisted_tagging.models import DraftEntry
 
 
 class LeadPreviewLoader(DataLoaderWithContext):
@@ -103,6 +104,34 @@ class LeadAssessmentIdLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key) for key in keys])
 
 
+class LeadDraftEntryCountLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        stat_qs = DraftEntry.objects\
+            .filter(lead__in=keys)\
+            .order_by('lead').values('lead')\
+            .annotate(
+                discarded_draft_entry=models.functions.Coalesce(
+                    models.Count(
+                        'id',
+                        filter=models.Q(is_discarded=True)
+                    ),
+                    0,
+                ),
+                undiscarded_draft_entry=models.functions.Coalesce(
+                    models.Count(
+                        'id',
+                        filter=models.Q(is_discarded=False)
+                    ),
+                    0,
+                ),
+            ).values('lead_id', 'undiscarded_draft_entry', 'discarded_draft_entry')
+        _map = {
+            stat.pop('lead_id'): stat
+            for stat in stat_qs
+        }
+        return Promise.resolve([_map.get(key, _map) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def lead_preview(self):
@@ -127,3 +156,7 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def assessment_id(self):
         return LeadAssessmentIdLoader(context=self.context)
+
+    @cached_property
+    def draftentry_count(self):
+        return LeadDraftEntryCountLoader(context=self.context)

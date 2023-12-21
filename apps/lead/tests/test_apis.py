@@ -1,5 +1,6 @@
 import logging
 from datetime import date
+import uuid
 
 from django.db.models import Q
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -25,7 +26,8 @@ from organization.models import (
 from organization.serializers import SimpleOrganizationSerializer
 from lead.filter_set import LeadFilterSet
 from lead.serializers import SimpleLeadGroupSerializer
-from deepl_integration.handlers import LeadExtractionHandler
+from deepl_integration.handlers import AutoAssistedTaggingDraftEntryHandler, LeadExtractionHandler
+from deepl_integration.serializers import DeeplServerBaseCallbackSerializer
 from entry.models import (
     Entry,
     ProjectEntryLabel,
@@ -42,7 +44,7 @@ from lead.models import (
 )
 from user_group.models import UserGroup, GroupMembership
 from ary.models import Assessment
-from lead.factories import LeadFactory
+from lead.factories import LeadFactory, LeadPreviewFactory
 from unittest import mock
 
 
@@ -1800,7 +1802,8 @@ class TestExtractorCallback(TestCase):
             'url': 'http://random.com/pdf_file.pdf',
             'total_words_count': 300,
             'total_pages': 4,
-            'extraction_status': 0,
+            'status': DeeplServerBaseCallbackSerializer.Status.FAILED.value,
+            'text_extraction_id': '00431349-5879-4d59-9827-0b12491c4baa'
         }
 
         # After callback [Failure]
@@ -1811,7 +1814,7 @@ class TestExtractorCallback(TestCase):
         self.assertEqual(LeadPreview.objects.filter(lead=self.lead).count(), 0)
         self.assertEqual(LeadPreviewImage.objects.filter(lead=self.lead).count(), 0)
 
-        data['extraction_status'] = 1
+        data['status'] = DeeplServerBaseCallbackSerializer.Status.SUCCESS.value
         # After callback [Success]
         with self.captureOnCommitCallbacks(execute=True):
             response = self.client.post(url, data)
@@ -1851,3 +1854,28 @@ class TestExtractorCallback(TestCase):
                     LeadExtractionHandler.get_object_using_client_id(client_id)
             else:
                 assert LeadExtractionHandler.get_object_using_client_id(client_id) == lead
+
+
+class AutoEntryExtractionTestCase(TestCase):
+    def setUp(self):
+        super().setUp()
+        self.lead = LeadFactory.create()
+        self.lead_preview = LeadPreviewFactory.create(lead=self.lead, text_extraction_id=str(uuid.uuid1()))
+
+    def test_entry_extraction_callback(self):
+        url = '/api/v1/callback/auto-assisted-tagging-draft-entry-prediction/'
+        self.authenticate()
+        data = {
+            "client_id": AutoAssistedTaggingDraftEntryHandler.get_client_id(self.lead),
+            'entry_extraction_classification_path': 'https://server-deepl.dev.datafriendlyspace.org/media/mock_responses/entry_extraction/entry-extraction-client-6ppp.json',  # noqa: E501
+            'text_extraction_id': str(self.lead_preview.text_extraction_id),
+            'status': 1
+        }
+        response = self.client.post(url, data)
+        self.assert_200(response)
+        self.lead.refresh_from_db()
+        self.assertEqual(self.lead.auto_entry_extraction_status, Lead.AutoExtractionStatus.SUCCESS)
+        self.assertEqual(str(LeadPreview.objects.get(lead=self.lead).text_extraction_id), data['text_extraction_id'])
+
+    def test_auto_extraction_mutation(self):
+        pass

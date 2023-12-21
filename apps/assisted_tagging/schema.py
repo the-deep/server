@@ -2,6 +2,7 @@ import graphene
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
 from django.db.models import Prefetch
+from assisted_tagging.filters import DraftEntryFilterSet
 
 from utils.graphene.enums import EnumDescription
 from user_resource.schema import UserResourceMixin
@@ -11,6 +12,9 @@ from geo.schema import (
     ProjectGeoAreaType,
     get_geo_area_queryset_for_project_geo_area_type,
 )
+from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.pagination import NoOrderingPageGraphqlPagination
+from utils.graphene.types import CustomDjangoListObjectType
 from .models import (
     DraftEntry,
     AssistedTaggingModel,
@@ -96,10 +100,31 @@ class AssistedTaggingRootQueryType(graphene.ObjectType):
 
 
 # -- Project Level
-def get_draft_entry_qs(info):
+def get_draft_entry_qs(info):  # TODO use dataloder
     qs = DraftEntry.objects.filter(project=info.context.active_project)
     if PP.check_permission(info, PP.Permission.VIEW_ENTRY):
-        return qs
+        return qs.prefetch_related(
+            Prefetch(
+                'predictions',
+                queryset=AssistedTaggingPrediction.objects.filter(is_selected=True).order_by('id'),
+            ),
+            Prefetch(
+                'related_geoareas',
+                queryset=get_geo_area_queryset_for_project_geo_area_type().order_by('id'),
+            ),
+            'predictions__model_version',
+            'predictions__model_version__model',
+            'predictions__wrong_prediction_reviews',
+            'missing_prediction_reviews',
+            'related_geoareas',
+        )
+    return qs.none()
+
+
+def get_draft_entry_with_filter_qs(info, filters):
+    qs = DraftEntry.objects.filter(project=info.context.active_project)
+    if PP.check_permission(info, PP.Permission.VIEW_ENTRY):
+        return DraftEntryFilterSet(queryset=qs, data=filters).qs
     return qs.none()
 
 
@@ -178,22 +203,8 @@ class DraftEntryType(DjangoObjectType):
         )
 
     @staticmethod
-    def get_custom_queryset(queryset, info, **kwargs):
-        return get_draft_entry_qs(info).prefetch_related(
-            Prefetch(
-                'predictions',
-                queryset=AssistedTaggingPrediction.objects.order_by('id'),
-            ),
-            Prefetch(
-                'related_geoareas',
-                queryset=get_geo_area_queryset_for_project_geo_area_type().order_by('id'),
-            ),
-            'predictions__model_version',
-            'predictions__model_version__model',
-            'predictions__wrong_prediction_reviews',
-            'missing_prediction_reviews',
-            'related_geoareas',
-        )
+    def get_custom_queryset(root, info, **kwargs):
+        return get_draft_entry_qs(info)
 
     @staticmethod
     def resolve_predictions(root, info, **kwargs):
@@ -205,9 +216,27 @@ class DraftEntryType(DjangoObjectType):
 
     @staticmethod
     def resolve_related_geoareas(root, info, **kwargs):
-        return root.related_geoareas.all()   # NOTE: Prefetched by DraftEntry
+        return root.related_geoareas.all()  # NOTE: Prefetched by DraftEntry
+
+
+class DraftEntryListType(CustomDjangoListObjectType):
+    class Meta:
+        model = DraftEntry
+        filterset_class = DraftEntryFilterSet
 
 
 # This is attached to project type.
+
+
 class AssistedTaggingQueryType(graphene.ObjectType):
     draft_entry = DjangoObjectField(DraftEntryType)
+    draft_entries = DjangoPaginatedListObjectField(
+        DraftEntryListType,
+        pagination=NoOrderingPageGraphqlPagination(
+            page_size_query_param='pageSize',
+        ),
+    )
+
+    @staticmethod
+    def resolve_draft_entries(root, info, **_):
+        return get_draft_entry_qs(info)

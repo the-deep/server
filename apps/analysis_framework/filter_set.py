@@ -5,8 +5,11 @@ from user_resource.filters import (
     UserResourceFilterSet,
     UserResourceGqlFilterSet,
 )
+from utils.graphene.filters import IDListFilter
+
 from .models import (
     AnalysisFramework,
+    AnalysisFrameworkTag,
 )
 from entry.models import Entry
 from django.utils import timezone
@@ -28,7 +31,22 @@ class AnalysisFrameworkFilterSet(UserResourceFilterSet):
             },
         }
 
+
 # ----------------------------- Graphql Filters ---------------------------------------
+class AnalysisFrameworkTagGqFilterSet(django_filters.FilterSet):
+    search = django_filters.CharFilter(method='search_filter')
+
+    class Meta:
+        model = AnalysisFrameworkTag
+        fields = ['id']
+
+    def search_filter(self, qs, _, value):
+        if value:
+            return qs.filter(
+                models.Q(title__icontains=value) |
+                models.Q(description__icontains=value)
+            )
+        return qs
 
 
 class AnalysisFrameworkGqFilterSet(UserResourceGqlFilterSet):
@@ -39,6 +57,7 @@ class AnalysisFrameworkGqFilterSet(UserResourceGqlFilterSet):
         method='filter_recently_used',
         label='Recently Used',
     )
+    tags = IDListFilter(distinct=True)
 
     class Meta:
         model = AnalysisFramework

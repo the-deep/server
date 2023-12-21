@@ -2,10 +2,15 @@ import logging
 import requests
 
 from celery import shared_task
+from lead.models import Lead
 
 from utils.common import redis_lock
 from deep.deepl import DeeplServiceEndpoint
-from deepl_integration.handlers import AssistedTaggingDraftEntryHandler
+from deepl_integration.handlers import (
+    AssistedTaggingDraftEntryHandler,
+    AutoAssistedTaggingDraftEntryHandler,
+    BaseHandler as DeepHandler
+)
 
 from .models import (
     DraftEntry,
@@ -24,7 +29,8 @@ def sync_tags_with_deepl():
             tag.tag_id: tag  # tag_id is from deepl
             for tag in AssistedTaggingModelPredictionTag.objects.all()
         }
-    response = requests.get(DeeplServiceEndpoint.ASSISTED_TAGGING_TAGS_ENDPOINT).json()
+
+    response = requests.get(DeeplServiceEndpoint.ASSISTED_TAGGING_TAGS_ENDPOINT, headers=DeepHandler.REQUEST_HEADERS).json()
     existing_tags_by_tagid = _get_existing_tags_by_tagid()
 
     new_tags = []
@@ -90,6 +96,13 @@ def sync_models_with_deepl():
 def trigger_request_for_draft_entry_task(draft_entry_id):
     draft_entry = DraftEntry.objects.get(pk=draft_entry_id)
     return AssistedTaggingDraftEntryHandler.send_trigger_request_to_extractor(draft_entry)
+
+
+@shared_task
+@redis_lock('trigger_request_for_auto_draft_entry_task_{0}', 60 * 60 * 0.5)
+def trigger_request_for_auto_draft_entry_task(lead_id):
+    lead = Lead.objects.get(id=lead_id)
+    return AutoAssistedTaggingDraftEntryHandler.auto_trigger_request_to_extractor(lead)
 
 
 @shared_task

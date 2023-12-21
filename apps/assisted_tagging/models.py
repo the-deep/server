@@ -90,6 +90,10 @@ class DraftEntry(UserResourceCreated):
         DONE = 2, 'Done'
         SEND_FAILED = 3, 'Send Failed'
 
+    class Type(models.IntegerChoices):
+        AUTO = 0, 'Auto Extraction'  # NLP defiend extraction text
+        MANUAL = 1, 'Manual Extraction'  # manual defined extraction text
+
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='+')
     lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='+')
     excerpt = models.TextField()
@@ -98,6 +102,11 @@ class DraftEntry(UserResourceCreated):
     prediction_received_at = models.DateTimeField(null=True, blank=True)
     # Additional attribues
     related_geoareas = models.ManyToManyField(GeoArea, blank=True)
+    type = models.SmallIntegerField(choices=Type.choices, default=Type.MANUAL)
+    is_discarded = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.id}'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -176,7 +185,7 @@ class AssistedTaggingPrediction(models.Model):
     id: int
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
 
 class WrongPredictionReview(UserResource):

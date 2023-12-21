@@ -47,8 +47,9 @@ type AnalysisFrameworkDetailType {
   currentUserRole: AnalysisFrameworkRoleTypeEnum
   previewImage: FileFieldType
   export: FileFieldType
-  allowedPermissions: [AnalysisFrameworkPermission!]!
   clonedFrom: ID
+  allowedPermissions: [AnalysisFrameworkPermission!]!
+  tags: [AnalysisFrameworkTagType!]!
   primaryTagging: [SectionType!]
   secondaryTagging: [WidgetType!]
   members: [AnalysisFrameworkMembershipType!]
@@ -186,6 +187,20 @@ enum AnalysisFrameworkRoleTypeEnum {
   UNKNOWN
 }
 
+type AnalysisFrameworkTagListType {
+  results: [AnalysisFrameworkTagType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalysisFrameworkTagType {
+  id: ID!
+  title: String!
+  description: String!
+  icon: FileFieldType
+}
+
 type AnalysisFrameworkType {
   id: ID!
   title: String!
@@ -200,8 +215,9 @@ type AnalysisFrameworkType {
   currentUserRole: AnalysisFrameworkRoleTypeEnum
   previewImage: FileFieldType
   export: FileFieldType
-  allowedPermissions: [AnalysisFrameworkPermission!]!
   clonedFrom: ID
+  allowedPermissions: [AnalysisFrameworkPermission!]!
+  tags: [AnalysisFrameworkTagType!]!
 }
 
 type AnalysisFrameworkVisibleProjectType {
@@ -958,6 +974,7 @@ type AppEnumCollection {
   LeadPriority: [AppEnumCollectionLeadPriority!]
   LeadSourceType: [AppEnumCollectionLeadSourceType!]
   LeadExtractionStatus: [AppEnumCollectionLeadExtractionStatus!]
+  LeadAutoEntryExtractionStatus: [AppEnumCollectionLeadAutoEntryExtractionStatus!]
   EntryEntryType: [AppEnumCollectionEntryEntryType!]
   ExportFormat: [AppEnumCollectionExportFormat!]
   ExportStatus: [AppEnumCollectionExportStatus!]
@@ -989,6 +1006,7 @@ type AppEnumCollection {
   ConnectorLeadExtractionStatus: [AppEnumCollectionConnectorLeadExtractionStatus!]
   DraftEntryPredictionStatus: [AppEnumCollectionDraftEntryPredictionStatus!]
   AssistedTaggingPredictionDataType: [AppEnumCollectionAssistedTaggingPredictionDataType!]
+  DraftEntryType: [AppEnumCollectionDraftEntryType!]
   UnusedAssessmentMethodologyProtectionInfo: [AppEnumCollectionUnusedAssessmentMethodologyProtectionInfo!]
 }
 
@@ -1094,6 +1112,12 @@ type AppEnumCollectionDraftEntryPredictionStatus {
   description: String
 }
 
+type AppEnumCollectionDraftEntryType {
+  enum: DraftEntryTypeEnum!
+  label: String!
+  description: String
+}
+
 type AppEnumCollectionEntryEntryType {
   enum: EntryTagTypeEnum!
   label: String!
@@ -1174,6 +1198,12 @@ type AppEnumCollectionGenericExportType {
 
 type AppEnumCollectionGroupMembershipRole {
   enum: GroupMembershipRoleEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionLeadAutoEntryExtractionStatus {
+  enum: LeadAutoEntryExtractionTypeEnum!
   label: String!
   description: String
 }
@@ -1367,6 +1397,8 @@ type AssistedTaggingMutationType {
   wrongPredictionReviewCreate(data: WrongPredictionReviewInputType!): CreateWrongPredictionReview
   missingPredictionReviewDelete(id: ID!): DeleteMissingPredictionReview
   wrongPredictionReviewDelete(id: ID!): DeleteWrongPredictionReview
+  triggerAutoDraftEntry(data: TriggerAutoDraftEntryInputType!): TriggerAutoDraftEntry
+  updateDraftEntry(data: UpdateDraftEntryInputType!, id: ID!): UpdateDraftEntry
 }
 
 enum AssistedTaggingPredictionDataTypeEnum {
@@ -1392,6 +1424,7 @@ type AssistedTaggingPredictionType {
 
 type AssistedTaggingQueryType {
   draftEntry(id: ID!): DraftEntryType
+  draftEntries(lead: ID, draftEntryTypes: [DraftEntryTypeEnum!], isDiscarded: Boolean, page: Int = 1, pageSize: Int): DraftEntryListType
 }
 
 type AssistedTaggingRootQueryType {
@@ -1919,9 +1952,21 @@ type DjangoDebugSQL {
   encoding: String
 }
 
+type DraftEntryCountByLead {
+  undiscardedDraftEntry: Int
+  discardedDraftEntry: Int
+}
+
 input DraftEntryInputType {
   lead: ID!
   excerpt: String!
+}
+
+type DraftEntryListType {
+  results: [DraftEntryType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
 }
 
 enum DraftEntryPredictionStatusEnum {
@@ -1940,6 +1985,11 @@ type DraftEntryType {
   predictions: [AssistedTaggingPredictionType!]
   missingPredictionReviews: [MissingPredictionReviewType!]
   relatedGeoareas: [ProjectGeoAreaType!]
+}
+
+enum DraftEntryTypeEnum {
+  AUTO
+  MANUAL
 }
 
 input EMMEntityInputType {
@@ -2628,6 +2678,14 @@ type JwtTokenType {
   expiresIn: String
 }
 
+enum LeadAutoEntryExtractionTypeEnum {
+  NONE
+  STARTED
+  PENDING
+  SUCCESS
+  FAILED
+}
+
 enum LeadConfidentialityEnum {
   UNPROTECTED
   RESTRICTED
@@ -2680,7 +2738,9 @@ type LeadDetailType {
   filteredEntriesCount: Int
   duplicateLeadsCount: Int
   shareViewUrl: String!
+  autoEntryExtractionStatus: LeadAutoEntryExtractionTypeEnum
   entries: [EntryType!]
+  draftEntryStat: DraftEntryCountByLead
 }
 
 input LeadEMMTriggerInputType {
@@ -2806,6 +2866,7 @@ type LeadPreviewType {
   thumbnailWidth: Int
   wordCount: Int
   pageCount: Int
+  textExtractionId: UUID
 }
 
 enum LeadPriorityEnum {
@@ -2867,6 +2928,7 @@ type LeadType {
   filteredEntriesCount: Int
   duplicateLeadsCount: Int
   shareViewUrl: String!
+  autoEntryExtractionStatus: LeadAutoEntryExtractionTypeEnum
 }
 
 input LeadsFilterDataInputType {
@@ -3746,8 +3808,9 @@ type Query {
   user(id: ID!): UserType
   users(id: Float, search: String, membersExcludeProject: ID, membersExcludeFramework: ID, membersExcludeUsergroup: ID, page: Int = 1, ordering: String, pageSize: Int): UserListType
   analysisFramework(id: ID!): AnalysisFrameworkDetailType
-  analysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, isCurrentUserMember: Boolean, recentlyUsed: Boolean, page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkListType
-  publicAnalysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, isCurrentUserMember: Boolean, recentlyUsed: Boolean, page: Int = 1, ordering: String, pageSize: Int): PublicAnalysisFrameworkListType
+  analysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, isCurrentUserMember: Boolean, recentlyUsed: Boolean, tags: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkListType
+  publicAnalysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, isCurrentUserMember: Boolean, recentlyUsed: Boolean, tags: [ID!], page: Int = 1, ordering: String, pageSize: Int): PublicAnalysisFrameworkListType
+  analysisFrameworkTags(id: Float, search: String, page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkTagListType
   project(id: ID!): ProjectDetailType
   projects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, ordering: [ProjectOrderingEnum!], isTest: Boolean, page: Int = 1, pageSize: Int): ProjectListType
   recentProjects: [ProjectDetailType!]
@@ -3924,6 +3987,15 @@ type TriggerAnalysisTopicModel {
   result: AnalysisTopicModelType
 }
 
+type TriggerAutoDraftEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+}
+
+input TriggerAutoDraftEntryInputType {
+  lead: ID!
+}
+
 type TriggerUnifiedConnector {
   errors: [GenericScalar!]
   ok: Boolean
@@ -4021,6 +4093,17 @@ type UpdateConnectorSourceLead {
   errors: [GenericScalar!]
   ok: Boolean
   result: ConnectorSourceLeadType
+}
+
+type UpdateDraftEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: DraftEntryType
+}
+
+input UpdateDraftEntryInputType {
+  lead: ID!
+  isDiscarded: Boolean
 }
 
 type UpdateEntry {

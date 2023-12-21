@@ -15,6 +15,7 @@ from project.models import ProjectMembership
 from assisted_tagging.models import PredictionTagAnalysisFrameworkWidgetMapping
 from .models import (
     AnalysisFramework,
+    AnalysisFrameworkTag,
     Section,
     Widget,
     Filter,
@@ -29,7 +30,7 @@ from .enums import (
     AnalysisFrameworkRoleTypeEnum,
 )
 from .serializers import AnalysisFrameworkPropertiesGqlSerializer
-from .filter_set import AnalysisFrameworkGqFilterSet
+from .filter_set import AnalysisFrameworkGqFilterSet, AnalysisFrameworkTagGqFilterSet
 from .public_schema import PublicAnalysisFrameworkListType
 
 
@@ -84,6 +85,18 @@ class SectionType(ClientIdMixin, DjangoObjectType):
         return info.context.dl.analysis_framework.sections_widgets.load(root.id)
 
 
+class AnalysisFrameworkTagType(DjangoObjectType):
+    class Meta:
+        model = AnalysisFrameworkTag
+        only_fields = (
+            'id',
+            'title',
+            'description',
+        )
+
+    icon = graphene.Field(FileFieldType, required=False)
+
+
 # NOTE: We have AnalysisFrameworkDetailType for detailed AF Type.
 class AnalysisFrameworkType(DjangoObjectType):
     class Meta:
@@ -96,12 +109,19 @@ class AnalysisFrameworkType(DjangoObjectType):
     current_user_role = graphene.Field(AnalysisFrameworkRoleTypeEnum)
     preview_image = graphene.Field(FileFieldType)
     export = graphene.Field(FileFieldType)
+    cloned_from = graphene.ID(source='cloned_from_id')
     allowed_permissions = graphene.List(
         graphene.NonNull(
             graphene.Enum.from_enum(AfP.Permission),
-        ), required=True
+        ),
+        required=True,
     )
-    cloned_from = graphene.ID(source='cloned_from_id')
+    tags = graphene.List(
+        graphene.NonNull(
+            AnalysisFrameworkTagType,
+        ),
+        required=True,
+    )
 
     @staticmethod
     def get_custom_node(_, info, id):
@@ -122,6 +142,10 @@ class AnalysisFrameworkType(DjangoObjectType):
             root.get_current_user_role(info.context.request.user),
             is_public=not root.is_private,
         )
+
+    @staticmethod
+    def resolve_tags(root, info):
+        return info.context.dl.analysis_framework.af_tags.load(root.id)
 
 
 class AnalysisFrameworkRoleType(DjangoObjectType):
@@ -251,6 +275,12 @@ class AnalysisFrameworkListType(CustomDjangoListObjectType):
         filterset_class = AnalysisFrameworkGqFilterSet
 
 
+class AnalysisFrameworkTagListType(CustomDjangoListObjectType):
+    class Meta:
+        model = AnalysisFrameworkTag
+        filterset_class = AnalysisFrameworkTagGqFilterSet
+
+
 class Query:
     analysis_framework = DjangoObjectField(AnalysisFrameworkDetailType)
     analysis_frameworks = DjangoPaginatedListObjectField(
@@ -261,6 +291,12 @@ class Query:
     )
     public_analysis_frameworks = DjangoPaginatedListObjectField(
         PublicAnalysisFrameworkListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
+    analysis_framework_tags = DjangoPaginatedListObjectField(
+        AnalysisFrameworkTagListType,
         pagination=PageGraphqlPagination(
             page_size_query_param='pageSize'
         )
