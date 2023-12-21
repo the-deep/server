@@ -974,6 +974,7 @@ type AppEnumCollection {
   LeadPriority: [AppEnumCollectionLeadPriority!]
   LeadSourceType: [AppEnumCollectionLeadSourceType!]
   LeadExtractionStatus: [AppEnumCollectionLeadExtractionStatus!]
+  LeadAutoEntryExtractionStatus: [AppEnumCollectionLeadAutoEntryExtractionStatus!]
   EntryEntryType: [AppEnumCollectionEntryEntryType!]
   ExportFormat: [AppEnumCollectionExportFormat!]
   ExportStatus: [AppEnumCollectionExportStatus!]
@@ -1006,7 +1007,6 @@ type AppEnumCollection {
   DraftEntryPredictionStatus: [AppEnumCollectionDraftEntryPredictionStatus!]
   AssistedTaggingPredictionDataType: [AppEnumCollectionAssistedTaggingPredictionDataType!]
   DraftEntryType: [AppEnumCollectionDraftEntryType!]
-  LeadAutoEntryExtractionStatus: [AppEnumCollectionLeadAutoEntryExtractionStatus!]
   UnusedAssessmentMethodologyProtectionInfo: [AppEnumCollectionUnusedAssessmentMethodologyProtectionInfo!]
 }
 
@@ -1203,7 +1203,7 @@ type AppEnumCollectionGroupMembershipRole {
 }
 
 type AppEnumCollectionLeadAutoEntryExtractionStatus {
-  enum: AutoEntryExtractionTypeEnum!
+  enum: LeadAutoEntryExtractionTypeEnum!
   label: String!
   description: String
 }
@@ -1425,7 +1425,6 @@ type AssistedTaggingPredictionType {
 type AssistedTaggingQueryType {
   draftEntry(id: ID!): DraftEntryType
   draftEntries(lead: ID, draftEntryTypes: [DraftEntryTypeEnum!], isDiscarded: Boolean, page: Int = 1, pageSize: Int): DraftEntryListType
-  extractionStatusByLead(leadId: ID!): AutoExtractionStatusType
 }
 
 type AssistedTaggingRootQueryType {
@@ -1457,18 +1456,6 @@ type AttributeType {
   widgetType: WidgetWidgetTypeEnum!
   widgetTypeDisplay: EnumDescription!
   geoSelectedOptions: [ProjectGeoAreaType!]
-}
-
-enum AutoEntryExtractionTypeEnum {
-  NONE
-  STARTED
-  PENDING
-  SUCCESS
-  FAILED
-}
-
-type AutoExtractionStatusType {
-  autoEntryExtractionStatus: AutoEntryExtractionTypeEnum!
 }
 
 enum AutomaticSummaryStatusEnum {
@@ -2691,6 +2678,14 @@ type JwtTokenType {
   expiresIn: String
 }
 
+enum LeadAutoEntryExtractionTypeEnum {
+  NONE
+  STARTED
+  PENDING
+  SUCCESS
+  FAILED
+}
+
 enum LeadConfidentialityEnum {
   UNPROTECTED
   RESTRICTED
@@ -2743,6 +2738,7 @@ type LeadDetailType {
   filteredEntriesCount: Int
   duplicateLeadsCount: Int
   shareViewUrl: String!
+  autoEntryExtractionStatus: LeadAutoEntryExtractionTypeEnum
   entries: [EntryType!]
   draftEntryStat: DraftEntryCountByLead
 }
@@ -2932,6 +2928,7 @@ type LeadType {
   filteredEntriesCount: Int
   duplicateLeadsCount: Int
   shareViewUrl: String!
+  autoEntryExtractionStatus: LeadAutoEntryExtractionTypeEnum
 }
 
 input LeadsFilterDataInputType {
@@ -3307,7 +3304,6 @@ type ProjectDetailType {
   emmKeywords: [EmmKeyWordType!]
   emmRiskFactors: [EmmKeyRiskFactorType!]
   userSavedLeadFilter: UserSavedLeadFilterType
-  draftEntryDiscardedCount: DraftEntryCountByLead
   activityLog: GenericScalar
   recentActiveUsers: [UserEntityDateType!]
   topSourcers: [UserEntityCountType!]
@@ -3994,7 +3990,6 @@ type TriggerAnalysisTopicModel {
 type TriggerAutoDraftEntry {
   errors: [GenericScalar!]
   ok: Boolean
-  result: LeadType
 }
 
 input TriggerAutoDraftEntryInputType {

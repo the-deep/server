@@ -24,11 +24,9 @@ from .models import (
     MissingPredictionReview,
     WrongPredictionReview,
 )
-from lead.models import Lead
 from .enums import (
     DraftEntryPredictionStatusEnum,
     AssistedTaggingPredictionDataTypeEnum,
-    AutoEntryExtractionTypeEnum,
 )
 
 
@@ -227,12 +225,6 @@ class DraftEntryListType(CustomDjangoListObjectType):
         filterset_class = DraftEntryFilterSet
 
 
-class AutoExtractionStatusType(graphene.ObjectType):
-    auto_entry_extraction_status = graphene.Field(AutoEntryExtractionTypeEnum, required=True)
-
-    @staticmethod
-    def custom_queryset(root, info, lead_id):
-        return Lead.objects.get(id=lead_id)
 # This is attached to project type.
 
 
@@ -244,16 +236,7 @@ class AssistedTaggingQueryType(graphene.ObjectType):
             page_size_query_param='pageSize',
         ),
     )
-    extraction_status_by_lead = graphene.Field(AutoExtractionStatusType, lead_id=graphene.ID(required=True))
-
-    @staticmethod
-    def resolve_draft_entry(root, info, **kwargs):
-        return DraftEntryType.get_custom_queryset(root, info, **kwargs)
 
     @staticmethod
     def resolve_draft_entries(root, info, **_):
         return get_draft_entry_qs(info)
-
-    @staticmethod
-    def resolve_extraction_status_by_lead(root, info, lead_id):
-        return AutoExtractionStatusType.custom_queryset(root, info, lead_id)

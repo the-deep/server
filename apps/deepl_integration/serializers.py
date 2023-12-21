@@ -31,8 +31,6 @@ from analysis.models import (
 
 from .models import DeeplTrackBaseModel
 
-from utils.request import RequestHelper
-
 
 class BaseCallbackSerializer(serializers.Serializer):
     nlp_handler: Type[BaseHandler]
@@ -248,10 +246,9 @@ class AutoAssistedTaggingDraftEntryCallbackSerializer(BaseCallbackSerializer):
 
     def create(self, validated_data):
         obj = validated_data['object']
-        validated_data = RequestHelper(url=validated_data['entry_extraction_classification_path'], ignore_error=True).json()
         return self.nlp_handler.save_data(
             obj,
-            validated_data
+            validated_data['entry_extraction_classification_path'],
         )
 
 

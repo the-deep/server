@@ -372,14 +372,14 @@ class TestLeadMutationSchema(GraphQLSnapShotTestCase):
                 (
                     'source-invalid',
                     [500, 'invalid-content'],
-                    [200, {}],
+                    [202, {}],
                     ConnectorSource.Status.FAILURE,
                     [],
                 ),
                 (
                     'all-good',
                     [200, RELIEF_WEB_MOCK_DATA_PAGE_2_RAW],
-                    [200, {}],
+                    [202, {}],
                     ConnectorSource.Status.SUCCESS,
                     [ConnectorLead.ExtractionStatus.STARTED],
                 ),

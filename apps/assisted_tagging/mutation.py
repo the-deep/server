@@ -4,10 +4,10 @@ from utils.graphene.mutation import (
     generate_input_type_for_serializer,
     PsGrapheneMutation,
     PsDeleteMutation,
+    mutation_is_not_valid
 )
 from deep.permissions import ProjectPermissions as PP
 
-from lead.schema import LeadType
 from .models import (
     DraftEntry,
     MissingPredictionReview,
@@ -117,8 +117,16 @@ class TriggerAutoDraftEntry(PsGrapheneMutation):
         data = TriggerAutoDraftEntryInputType(required=True)
     model = DraftEntry
     serializer_class = TriggerDraftEntryGqlSerializer
-    result = graphene.Field(LeadType)
     permissions = [PP.Permission.CREATE_ENTRY]
+
+    @classmethod
+    def perform_mutate(cls, root, info, **kwargs):
+        data = kwargs['data']
+        serializer = cls.serializer_class(data=data, context={'request': info.context.request})
+        if errors := mutation_is_not_valid(serializer):
+            return cls(errors=errors, ok=False)
+        serializer.save()
+        return cls(errors=None, ok=True)
 
 
 class UpdateDraftEntry(PsGrapheneMutation):

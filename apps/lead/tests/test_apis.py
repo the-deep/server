@@ -1803,6 +1803,7 @@ class TestExtractorCallback(TestCase):
             'total_words_count': 300,
             'total_pages': 4,
             'status': DeeplServerBaseCallbackSerializer.Status.FAILED.value,
+            'text_extraction_id': '00431349-5879-4d59-9827-0b12491c4baa'
         }
 
         # After callback [Failure]
@@ -1867,14 +1868,14 @@ class AutoEntryExtractionTestCase(TestCase):
         data = {
             "client_id": AutoAssistedTaggingDraftEntryHandler.get_client_id(self.lead),
             'entry_extraction_classification_path': 'https://server-deepl.dev.datafriendlyspace.org/media/mock_responses/entry_extraction/entry-extraction-client-6ppp.json',  # noqa: E501
-            'text_extraction_id': self.lead_preview.text_extraction_id,
+            'text_extraction_id': str(self.lead_preview.text_extraction_id),
             'status': 1
         }
         response = self.client.post(url, data)
         self.assert_200(response)
         self.lead.refresh_from_db()
         self.assertEqual(self.lead.auto_entry_extraction_status, Lead.AutoExtractionStatus.SUCCESS)
-        self.assertEqual(LeadPreview.objects.get(lead=self.lead).text_extraction_id, data['text_extraction_id'])
+        self.assertEqual(str(LeadPreview.objects.get(lead=self.lead).text_extraction_id), data['text_extraction_id'])
 
     def test_auto_extraction_mutation(self):
         pass

@@ -24,7 +24,6 @@ class BaseCallbackView(views.APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, **_):
-        print(request.data)
         serializer = self.serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
