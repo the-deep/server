@@ -22,686 +22,231 @@ snapshots['AssistedTaggingCallbackApiTest::test_save_draft_entry final-current-m
             'name': 'all_tags_model'
         }
     ],
-    'tag_count': 136,
+    'tag_count': 45,
     'tags': [
         {
             'is_deprecated': False,
-            'name': 'reliability',
-            'tag_id': '10'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'sectors',
+            'name': '1',
             'tag_id': '1'
         },
         {
             'is_deprecated': False,
-            'name': 'subpillars_2d',
-            'tag_id': '3'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'subpillars_1d',
-            'tag_id': '2'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'age',
-            'tag_id': '6'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'gender',
-            'tag_id': '5'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'affected_groups',
-            'tag_id': '8'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'specific_needs_groups',
-            'tag_id': '4'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'severity',
-            'tag_id': '7'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'demographic_group',
-            'tag_id': '9'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Health',
-            'tag_id': '105'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Livelihoods',
-            'tag_id': '106'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Logistics',
-            'tag_id': '107'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Nutrition',
-            'tag_id': '108'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Protection',
-            'tag_id': '109'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Shelter',
-            'tag_id': '110'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'WASH',
-            'tag_id': '111'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Environment',
-            'tag_id': '201'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Socio Cultural',
-            'tag_id': '202'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Economy',
-            'tag_id': '203'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Legal & Policy',
-            'tag_id': '205'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Security & Stability',
-            'tag_id': '206'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Politics',
-            'tag_id': '207'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Type And Characteristics',
-            'tag_id': '208'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Hazard & Threats',
-            'tag_id': '210'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Type/Numbers/Movements',
-            'tag_id': '212'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Push Factors',
-            'tag_id': '213'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Intentions',
-            'tag_id': '215'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Relief To Population',
-            'tag_id': '220'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Population To Relief',
-            'tag_id': '221'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Physical Constraints',
-            'tag_id': '222'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Number Of People Facing Humanitarian Access Constraints/Humanitarian Access Gaps',
-            'tag_id': '223'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Communication Means And Preferences',
-            'tag_id': '224'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Information Challenges And Barriers',
-            'tag_id': '225'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Knowledge And Info Gaps (Pop)',
-            'tag_id': '226'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Knowledge And Info Gaps (Hum)',
-            'tag_id': '227'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Cases',
-            'tag_id': '228'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Contact Tracing',
-            'tag_id': '229'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Deaths',
-            'tag_id': '230'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Hospitalization & Care',
-            'tag_id': '231'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Restriction Measures',
-            'tag_id': '232'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Testing',
-            'tag_id': '233'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Vaccination',
-            'tag_id': '234'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Technological',
-            'tag_id': '235'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Prevention campaign',
-            'tag_id': '236'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Research and outlook',
-            'tag_id': '237'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'National Response',
-            'tag_id': '305'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Number Of People Reached/Response Gaps',
-            'tag_id': '306'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Coping Mechanisms',
-            'tag_id': '307'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Living Standards',
-            'tag_id': '308'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Number Of People In Need',
-            'tag_id': '309'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Physical And Mental Well Being',
-            'tag_id': '310'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Driver/Aggravating Factors',
-            'tag_id': '311'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Impact On People',
-            'tag_id': '312'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Impact On Systems, Services And Networks',
-            'tag_id': '313'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Number Of People Affected',
-            'tag_id': '314'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Humanitarian coordination',
-            'tag_id': '319'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'People reached/response gaps',
-            'tag_id': '320'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Red cross/red crescent',
-            'tag_id': '321'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Elderly Head of Household',
-            'tag_id': '403'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Female Head of Household',
-            'tag_id': '404'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'GBV survivors',
-            'tag_id': '405'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Indigenous people',
-            'tag_id': '406'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Persons with Disability',
-            'tag_id': '409'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Pregnant or Lactating Women',
-            'tag_id': '410'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Single Women (including Widows)',
-            'tag_id': '411'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Lgbtqia+',
-            'tag_id': '413'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Unaccompanied or/and separated children',
-            'tag_id': '414'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Infants/Toddlers (<5 years old) ',
-            'tag_id': '901'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Female Children/Youth (5 to 17 years old)',
-            'tag_id': '902'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Male Children/Youth (5 to 17 years old)',
-            'tag_id': '903'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Female Older Persons (60+ years old)',
-            'tag_id': '906'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Major',
-            'tag_id': '702'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Minor Problem',
-            'tag_id': '703'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'No problem',
-            'tag_id': '704'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Of Concern',
-            'tag_id': '705'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Critical issue',
-            'tag_id': '706'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Issue of concern',
-            'tag_id': '707'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Minor issue',
-            'tag_id': '708'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'No issue',
-            'tag_id': '709'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Severe issue',
-            'tag_id': '710'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'IDP',
-            'tag_id': '803'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Migrants',
-            'tag_id': '804'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Refugees',
-            'tag_id': '805'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Returnees',
-            'tag_id': '806'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Completely reliable',
-            'tag_id': '1001'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Usually reliable',
-            'tag_id': '1002'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Fairly Reliable',
-            'tag_id': '1003'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Unreliable',
-            'tag_id': '1004'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'All',
-            'tag_id': '503'
-        },
-        {
-            'is_deprecated': False,
-            'name': '12-17 years old',
-            'tag_id': '605'
-        },
-        {
-            'is_deprecated': False,
-            'name': '18-24 years old',
-            'tag_id': '606'
-        },
-        {
-            'is_deprecated': False,
-            'name': '18-59 years old',
-            'tag_id': '607'
-        },
-        {
-            'is_deprecated': False,
-            'name': '25-59 years old',
-            'tag_id': '608'
-        },
-        {
-            'is_deprecated': False,
-            'name': '5-11 years old',
-            'tag_id': '609'
-        },
-        {
-            'is_deprecated': False,
-            'name': '5-17 years old',
-            'tag_id': '610'
-        },
-        {
-            'is_deprecated': False,
-            'name': '<18 years',
-            'tag_id': '611'
-        },
-        {
-            'is_deprecated': False,
-            'name': '<18 years old',
-            'tag_id': '612'
-        },
-        {
-            'is_deprecated': False,
-            'name': '<5 years old',
-            'tag_id': '613'
-        },
-        {
-            'is_deprecated': False,
-            'name': '>60 years old',
-            'tag_id': '614'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Agriculture',
+            'name': '101',
             'tag_id': '101'
         },
         {
             'is_deprecated': False,
-            'name': 'Cross',
+            'name': '102',
             'tag_id': '102'
         },
         {
             'is_deprecated': False,
-            'name': 'Education',
+            'name': '103',
             'tag_id': '103'
         },
         {
             'is_deprecated': False,
-            'name': 'Food Security',
+            'name': '104',
             'tag_id': '104'
         },
         {
             'is_deprecated': False,
-            'name': 'Number Of People At Risk',
-            'tag_id': '301'
+            'name': '2',
+            'tag_id': '2'
         },
         {
             'is_deprecated': False,
-            'name': 'Risk And Vulnerabilities',
-            'tag_id': '302'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'International Response',
-            'tag_id': '303'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Local Response',
-            'tag_id': '304'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Expressed By Humanitarian Staff',
-            'tag_id': '315'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Expressed By Population',
-            'tag_id': '316'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Expressed By Humanitarian Staff',
-            'tag_id': '317'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Expressed By Population',
-            'tag_id': '318'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Dead',
-            'tag_id': '219'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Injured',
-            'tag_id': '217'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Missing',
-            'tag_id': '218'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Demography',
+            'name': '204',
             'tag_id': '204'
         },
         {
             'is_deprecated': False,
-            'name': 'Local Integration',
-            'tag_id': '216'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Pull Factors',
-            'tag_id': '214'
-        },
-        {
-            'is_deprecated': False,
-            'name': 'Underlying/Aggravating Factors',
+            'name': '209',
             'tag_id': '209'
         },
         {
             'is_deprecated': False,
-            'name': 'Adult (18 to 59 years old)',
-            'tag_id': '601'
+            'name': '214',
+            'tag_id': '214'
         },
         {
             'is_deprecated': False,
-            'name': 'Children/Youth (5 to 17 years old)',
-            'tag_id': '602'
+            'name': '216',
+            'tag_id': '216'
         },
         {
             'is_deprecated': False,
-            'name': 'Infants/Toddlers (<5 years old)',
-            'tag_id': '603'
+            'name': '217',
+            'tag_id': '217'
         },
         {
             'is_deprecated': False,
-            'name': 'Older Persons (60+ years old)',
-            'tag_id': '604'
+            'name': '218',
+            'tag_id': '218'
         },
         {
             'is_deprecated': False,
-            'name': 'Female',
-            'tag_id': '501'
+            'name': '219',
+            'tag_id': '219'
         },
         {
             'is_deprecated': False,
-            'name': 'Male',
-            'tag_id': '502'
+            'name': '3',
+            'tag_id': '3'
         },
         {
             'is_deprecated': False,
-            'name': 'Asylum Seekers',
-            'tag_id': '801'
+            'name': '301',
+            'tag_id': '301'
         },
         {
             'is_deprecated': False,
-            'name': 'Host',
-            'tag_id': '802'
+            'name': '302',
+            'tag_id': '302'
         },
         {
             'is_deprecated': False,
-            'name': 'Child Head of Household',
+            'name': '303',
+            'tag_id': '303'
+        },
+        {
+            'is_deprecated': False,
+            'name': '304',
+            'tag_id': '304'
+        },
+        {
+            'is_deprecated': False,
+            'name': '315',
+            'tag_id': '315'
+        },
+        {
+            'is_deprecated': False,
+            'name': '316',
+            'tag_id': '316'
+        },
+        {
+            'is_deprecated': False,
+            'name': '317',
+            'tag_id': '317'
+        },
+        {
+            'is_deprecated': False,
+            'name': '318',
+            'tag_id': '318'
+        },
+        {
+            'is_deprecated': False,
+            'name': '4',
+            'tag_id': '4'
+        },
+        {
+            'is_deprecated': False,
+            'name': '401',
             'tag_id': '401'
         },
         {
             'is_deprecated': False,
-            'name': 'Chronically Ill',
+            'name': '402',
             'tag_id': '402'
         },
         {
             'is_deprecated': False,
-            'name': 'LGBTQI+',
+            'name': '407',
             'tag_id': '407'
         },
         {
             'is_deprecated': False,
-            'name': 'Minorities',
+            'name': '408',
             'tag_id': '408'
         },
         {
             'is_deprecated': False,
-            'name': 'Unaccompanied or Separated Children',
+            'name': '412',
             'tag_id': '412'
         },
         {
             'is_deprecated': False,
-            'name': 'Critical',
+            'name': '5',
+            'tag_id': '5'
+        },
+        {
+            'is_deprecated': False,
+            'name': '501',
+            'tag_id': '501'
+        },
+        {
+            'is_deprecated': False,
+            'name': '502',
+            'tag_id': '502'
+        },
+        {
+            'is_deprecated': False,
+            'name': '6',
+            'tag_id': '6'
+        },
+        {
+            'is_deprecated': False,
+            'name': '601',
+            'tag_id': '601'
+        },
+        {
+            'is_deprecated': False,
+            'name': '602',
+            'tag_id': '602'
+        },
+        {
+            'is_deprecated': False,
+            'name': '603',
+            'tag_id': '603'
+        },
+        {
+            'is_deprecated': False,
+            'name': '604',
+            'tag_id': '604'
+        },
+        {
+            'is_deprecated': False,
+            'name': '7',
+            'tag_id': '7'
+        },
+        {
+            'is_deprecated': False,
+            'name': '701',
             'tag_id': '701'
         },
         {
             'is_deprecated': False,
-            'name': 'Female Adult (18 to 59 years old)',
+            'name': '8',
+            'tag_id': '8'
+        },
+        {
+            'is_deprecated': False,
+            'name': '801',
+            'tag_id': '801'
+        },
+        {
+            'is_deprecated': False,
+            'name': '802',
+            'tag_id': '802'
+        },
+        {
+            'is_deprecated': False,
+            'name': '9',
+            'tag_id': '9'
+        },
+        {
+            'is_deprecated': False,
+            'name': '904',
             'tag_id': '904'
         },
         {
             'is_deprecated': False,
-            'name': 'Male Adult (18 to 59 years old)',
+            'name': '905',
             'tag_id': '905'
         },
         {
             'is_deprecated': False,
-            'name': 'Male Older Persons (60+ years old)',
+            'name': '907',
             'tag_id': '907'
         }
     ]

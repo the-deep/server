@@ -331,6 +331,18 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
 
 
 class AssistedTaggingCallbackApiTest(TestCase, SnapShotTextCase):
+    factories_used = [
+        UserFactory,
+        ProjectFactory,
+        LeadFactory,
+        AssistedTaggingModelFactory,
+        AssistedTaggingModelPredictionTagFactory,
+        AssistedTaggingModelVersionFactory,
+        DraftEntryFactory,
+        AssistedTaggingPredictionFactory,
+        MissingPredictionReviewFactory,
+        WrongPredictionReviewFactory,
+    ]
 
     DEEPL_CALLBACK_MOCK_DATA = {
         "client_id": "random-client-id",
@@ -1272,13 +1284,13 @@ class AssistedTaggingCallbackApiTest(TestCase, SnapShotTextCase):
                 model_version_count=AssistedTaggingModelVersion.objects.count(),
                 tag_count=AssistedTaggingModelPredictionTag.objects.count(),
                 models=list(
-                    AssistedTaggingModel.objects.values('model_id', 'name')
+                    AssistedTaggingModel.objects.values('model_id', 'name').order_by('model_id')
                 ),
                 model_versions=list(
-                    AssistedTaggingModelVersion.objects.values('model__model_id', 'version')
+                    AssistedTaggingModelVersion.objects.values('model__model_id', 'version').order_by('model__model_id')
                 ),
                 tags=list(
-                    AssistedTaggingModelPredictionTag.objects.values('name', 'tag_id', 'is_deprecated')
+                    AssistedTaggingModelPredictionTag.objects.values('name', 'tag_id', 'is_deprecated').order_by('tag_id')
                 ),
             )
 
