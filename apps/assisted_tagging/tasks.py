@@ -41,7 +41,7 @@ def sync_tags_with_deepl():
         assisted_tag.group = tag_meta.get('group')
         assisted_tag.is_category = tag_meta['is_category']
         assisted_tag.hide_in_analysis_framework_mapping = tag_meta['hide_in_analysis_framework_mapping']
-        if assisted_tag.id:
+        if assisted_tag.pk:
             updated_tags.append(assisted_tag)
         else:
             assisted_tag.tag_id = tag_id
@@ -54,8 +54,8 @@ def sync_tags_with_deepl():
             updated_tags,
             fields=(
                 'name',
-                'is_category',
                 'group',
+                'is_category',
                 'hide_in_analysis_framework_mapping',
             )
         )

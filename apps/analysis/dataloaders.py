@@ -138,7 +138,7 @@ class AnalysisTopicModelClusterEntryLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         qs = TopicModelCluster.entries.through.objects.filter(
             topicmodelcluster__in=keys,
-        ).select_related('entry').order_by('topicmodelcluster', 'entry')
+        ).select_related('entry').order_by('topicmodelcluster', 'entry_id')
         _map = defaultdict(list)
         for cluster_entry in qs:
             _map[cluster_entry.topicmodelcluster_id].append(cluster_entry.entry)
