@@ -7,11 +7,12 @@ from deep.admin import VersionAdmin
 
 @admin.register(DraftEntry)
 class DraftEntryAdmin(VersionAdmin):
+    search_fields = ['lead']
     list_display = [
         'lead',
         'prediction_status',
-        'excerpt',
     ]
+    autocomplete_fields = ('project', 'lead', 'related_geoareas',)
 
 
 @admin.register(AssistedTaggingPrediction)

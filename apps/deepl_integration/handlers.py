@@ -370,7 +370,7 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
             )
             if response.status_code == 202:
                 lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.PENDING
-                lead.save()
+                lead.save(update_fields=('auto_entry_extraction_status',))
                 return True
 
         except Exception:
@@ -1008,4 +1008,4 @@ class AnalyticalStatementGeoHandler(NewNlpServerBaseHandler):
             geo_task.status = AnalyticalStatementGeoTask.Status.SUCCESS
         else:
             geo_task.status = AnalyticalStatementGeoTask.Status.FAILED
-        geo_task.save()
+        geo_task.save(update_fields=('status',))
