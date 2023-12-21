@@ -194,7 +194,7 @@ class AssessmentRegistry(UserResource):
     )
 
     # Additional Documents
-    executive_summary = models.TextField(blank=True)
+    executive_summary = models.TextField(blank=True, null=True)
 
     # Methodology
     objectives = models.TextField(blank=True, null=True)
@@ -204,15 +204,15 @@ class AssessmentRegistry(UserResource):
 
     # Focus
     # -- Focus Sectors
-    focuses = ArrayField(models.IntegerField(choices=FocusType.choices), default=list)
-    sectors = ArrayField(models.IntegerField(choices=SectorType.choices), default=list)
+    focuses = ArrayField(models.IntegerField(choices=FocusType.choices), default=list, blank=True)
+    sectors = ArrayField(models.IntegerField(choices=SectorType.choices), default=list, blank=True)
     protection_info_mgmts = ArrayField(
         models.IntegerField(choices=ProtectionInfoType.choices),
         default=list, blank=True
     )
     affected_groups = ArrayField(
         models.IntegerField(choices=AffectedGroupType.choices),
-        default=list
+        default=list, blank=True
     )
 
     locations = models.ManyToManyField(GeoArea, related_name='focus_location_assessment_reg', blank=True)
@@ -239,22 +239,6 @@ class AssessmentRegistryOrganization(models.Model):
         LEAD_ORGANIZATION = 1, 'Lead Organization'  # Project Owner
         INTERNATIONAL_PARTNER = 2, 'International Partners'
         NATIONAL_PARTNER = 3, 'National Partners'
-        DONOR = 4, 'Donor'
-        GOVERNMENT = 5, 'Government'
-
-    organization_type = models.IntegerField(choices=Type.choices)
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    assessment_registry = models.ForeignKey(AssessmentRegistry, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ('assessment_registry', 'organization_type', 'organization')
-
-
-class AssessmentRegistryOrganization(models.Model):
-    class Type(models.IntegerChoices):
-        LEAD_ORGANIZATION = 1, 'Lead Organization'  # Project Owner
-        INTERNATIONAL_PARTNER = 2, 'International Partner'
-        NATIONAL_PARTNER = 3, 'National Partner'
         DONOR = 4, 'Donor'
         GOVERNMENT = 5, 'Government'
 
@@ -466,8 +450,8 @@ class ScoreAnalyticalDensity(UserResource):
         related_name='analytical_density'
     )
     sector = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
-    analysis_level_covered = ArrayField(models.IntegerField(choices=AnalysisLevelCovered.choices), default=list)
-    figure_provided = ArrayField(models.IntegerField(choices=FigureProvidedByAssessment.choices), default=list)
+    analysis_level_covered = ArrayField(models.IntegerField(choices=AnalysisLevelCovered.choices), default=list, blank=True)
+    figure_provided = ArrayField(models.IntegerField(choices=FigureProvidedByAssessment.choices), default=list, blank=True)
     score = models.IntegerField(blank=True, null=True)
 
 
@@ -827,9 +811,6 @@ class SummaryFocus(UserResource):
 
     class Meta:
         verbose_name = _("SummaryDimension")
-
-    class Meta:
-        verbose_name = _("SummaryDimmension")
 
 
 class SummaryIssue(models.Model):
