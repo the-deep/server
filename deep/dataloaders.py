@@ -15,7 +15,6 @@ from unified_connector.dataloaders import DataLoaders as UnifiedConnectorDataLoa
 from analysis.dataloaders import DataLoaders as AnalysisDataLoaders
 from gallery.dataloaders import DataLoaders as DeepGalleryDataLoaders
 from assessment_registry.dataloaders import DataLoaders as AssessmentRegistryDataLoaders
-from gallery.dataloaders import DataLoaders as DeepGalleryDataLoaders
 
 
 class GlobalDataLoaders(WithContextMixin):
@@ -63,10 +62,6 @@ class GlobalDataLoaders(WithContextMixin):
     def analysis(self):
         return AnalysisDataLoaders(context=self.context)
 
-    @cached_property
-    def deep_gallery(self):
-        return DeepGalleryDataLoaders(context=self.context)
-        
     def assessment_registry(self):
         return AssessmentRegistryDataLoaders(context=self.context)
 

@@ -154,18 +154,6 @@ class CNAAnswerSerializer(TempClientIdMixin, UserResourceSerializer):
         fields = ("id", 'client_id', 'question', 'answer')
 
 
-class ScoreRatingSerializer(UserResourceSerializer, TempClientIdMixin):
-    class Meta:
-        model = ScoreRating
-        fields = ("client_id", "score_type", "rating", "reason",)
-
-
-class ScoreAnalyticalDensitySerializer(UserResourceSerializer):
-    class Meta:
-        model = ScoreAnalyticalDensity
-        fields = ("client_id", "sector", "value",)
-
-
 class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerializerMixin):
     stakeholders = AssessmentRegistryOrganizationSerializer(
         source='assessmentregistryorganization_set',

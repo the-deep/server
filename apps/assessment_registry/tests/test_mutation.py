@@ -16,6 +16,7 @@ from assessment_registry.models import (
     AdditionalDocument,
     ScoreRating,
     Question,
+    ScoreAnalyticalDensity,
 )
 
 
@@ -228,10 +229,18 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
             scoreAnalyticalDensity=[
                 dict(
                     sector=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
+                    analysisLevelCovered=[
+                        self.genum(ScoreAnalyticalDensity.AnalysisLevelCovered.ISSUE_UNMET_NEEDS_ARE_DETAILED),
+                        self.genum(ScoreAnalyticalDensity.AnalysisLevelCovered.ISSUE_UNMET_NEEDS_ARE_PRIORITIZED_RANKED),
+                    ],
+                    figureProvided=[
+                        self.genum(ScoreAnalyticalDensity.FigureProvidedByAssessment.TOTAL_POP_IN_THE_ASSESSED_AREAS),
+                    ],
                     score=1,
                 ),
                 dict(
                     sector=self.genum(AssessmentRegistry.SectorType.SHELTER),
+                    analysisLevelCovered=[],
                     score=2
                 )
             ],
