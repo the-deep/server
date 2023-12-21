@@ -1005,7 +1005,7 @@ type AppEnumCollection {
   ConnectorLeadExtractionStatus: [AppEnumCollectionConnectorLeadExtractionStatus!]
   DraftEntryPredictionStatus: [AppEnumCollectionDraftEntryPredictionStatus!]
   AssistedTaggingPredictionDataType: [AppEnumCollectionAssistedTaggingPredictionDataType!]
-  DraftEntryDraftEntryType: [AppEnumCollectionDraftEntryDraftEntryType!]
+  DraftEntryType: [AppEnumCollectionDraftEntryType!]
   LeadAutoEntryExtractionStatus: [AppEnumCollectionLeadAutoEntryExtractionStatus!]
   UnusedAssessmentMethodologyProtectionInfo: [AppEnumCollectionUnusedAssessmentMethodologyProtectionInfo!]
 }
@@ -1106,14 +1106,14 @@ type AppEnumCollectionDiscardedEntryTag {
   description: String
 }
 
-type AppEnumCollectionDraftEntryDraftEntryType {
-  enum: DraftEntryTypeEnum!
+type AppEnumCollectionDraftEntryPredictionStatus {
+  enum: DraftEntryPredictionStatusEnum!
   label: String!
   description: String
 }
 
-type AppEnumCollectionDraftEntryPredictionStatus {
-  enum: DraftEntryPredictionStatusEnum!
+type AppEnumCollectionDraftEntryType {
+  enum: DraftEntryTypeEnum!
   label: String!
   description: String
 }
@@ -1424,7 +1424,7 @@ type AssistedTaggingPredictionType {
 
 type AssistedTaggingQueryType {
   draftEntry(id: ID!): DraftEntryType
-  draftEntryByLeads(filter: DraftEntryFilterDataInputType): [DraftEntryType!]
+  draftEntries(lead: ID, draftEntryTypes: [DraftEntryTypeEnum!], isDiscarded: Boolean, page: Int = 1, pageSize: Int): DraftEntryListType
   extractionStatusByLead(leadId: ID!): AutoExtractionStatusType
 }
 
@@ -1970,15 +1970,16 @@ type DraftEntryCountByLead {
   discardedDraftEntry: Int
 }
 
-input DraftEntryFilterDataInputType {
-  leads: ID
-  draftEntryTypes: [DraftEntryTypeEnum!]
-  isDiscarded: Boolean
-}
-
 input DraftEntryInputType {
   lead: ID!
   excerpt: String!
+}
+
+type DraftEntryListType {
+  results: [DraftEntryType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
 }
 
 enum DraftEntryPredictionStatusEnum {
