@@ -359,7 +359,7 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
         payload = {
             "documents": [
                 {
-                    "client_id": cls.get_client_id(lead),  # static clientid for mock
+                    "client_id": cls.get_client_id(lead),
                     "text_extraction_id": str(lead_preview.text_extraction_id)
                 }
             ],
@@ -378,6 +378,8 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
 
         except Exception:
             logger.error('Entry Extraction send failed, Exception occurred!!', exc_info=True)
+            lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.FAILED
+            lead.save(update_fields=('auto_entry_extraction_status',))
         _response = locals().get('response')
         logger.error(
             'Entry Extraction send failed!!',
@@ -387,6 +389,7 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
             },
         )
 
+    # --- Callback logics
     @staticmethod
     def _get_or_create_models_version(models_data):
         def get_versions_map():
@@ -442,7 +445,8 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
         current_tags_map = get_tags_map()
         # Check if new tags needs to be created
         new_tags = [
-            tag for tag in tags
+            tag
+            for tag in tags
             if tag not in current_tags_map
         ]
         if new_tags:
@@ -467,16 +471,13 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
 
         tags = model_prediction.get('classification', {})  # NLP TagId
         values = model_prediction.get('values', [])  # Raw value
+
         common_attrs = dict(
             model_version=model_version,
             draft_entry_id=draft_entry.id,
         )
         new_predictions = []
         for category_tag, tags in tags.items():
-            common_attrs = dict(
-                model_version=model_version,
-                draft_entry_id=draft_entry.id
-            )
             for tag, prediction_data in tags.items():
                 prediction_value = prediction_data.get('prediction')
                 threshold_value = prediction_data.get('threshold')
@@ -540,8 +541,8 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
                 (data['classification_model_info']['name'], data['classification_model_info']['version'])
             ]
             cls._process_model_preds(model_version, current_tags_map, draft, model_preds)
-            lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.SUCCESS
-            lead.save(update_fields=('auto_entry_extraction_status',))
+        lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.SUCCESS
+        lead.save(update_fields=('auto_entry_extraction_status',))
         return lead
 
 
