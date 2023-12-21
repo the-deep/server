@@ -1273,6 +1273,17 @@ class AssistedTaggingCallbackApiTest(TestCase, SnapShotTextCase):
         },
     }
 
+    def setUp(self):
+        super().setUp()
+        self.sync_request_mock = patch('assisted_tagging.tasks.requests')
+        mock = self.sync_request_mock.start()
+        mock.get.return_value.status_code = 200
+        mock.get.return_value.json.return_value = self.DEEPL_TAGS_MOCK_RESPONSE
+
+    def tearDown(self):
+        self.sync_request_mock.stop()
+        super().tearDown()
+
     def test_save_draft_entry(self):
         def _check_draft_entry_status(draft_entry, status):
             draft_entry.refresh_from_db()
@@ -1388,8 +1399,7 @@ class AssistedTaggingCallbackApiTest(TestCase, SnapShotTextCase):
         self.assertMatchSnapshot(current_model_stats, 'final-current-model-stats')
         self.assertMatchSnapshot(current_prediction_stats, 'final-current-prediction-stats')
 
-    @patch('assisted_tagging.tasks.requests')
-    def test_tags_sync(self, sync_request_mock):
+    def test_tags_sync(self):
         def _get_current_tags():
             return list(
                 AssistedTaggingModelPredictionTag.objects.values(
@@ -1404,8 +1414,6 @@ class AssistedTaggingCallbackApiTest(TestCase, SnapShotTextCase):
             )
 
         self.maxDiff = None
-        sync_request_mock.get.return_value.status_code = 200
-        sync_request_mock.get.return_value.json.return_value = self.DEEPL_TAGS_MOCK_RESPONSE
         self.assertEqual(len(_get_current_tags()), 0)
         sync_tags_with_deepl()
         self.assertNotEqual(len(_get_current_tags()), 0)
