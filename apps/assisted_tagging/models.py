@@ -93,7 +93,8 @@ class DraftEntry(UserResourceCreated):
     class Type(models.IntegerChoices):
         AUTO = 0, 'Auto Extraction'  # NLP defiend extraction text
         MANUAL = 1, 'Manual Extraction'  # manual defined extraction text
-
+    page = models.IntegerField(default=0)
+    text_order = models.IntegerField(default=0)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='+')
     lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='+')
     excerpt = models.TextField()

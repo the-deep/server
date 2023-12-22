@@ -100,8 +100,8 @@ class AssistedTaggingRootQueryType(graphene.ObjectType):
 
 
 # -- Project Level
-def get_draft_entry_qs(info):  # TODO use dataloder
-    qs = DraftEntry.objects.filter(project=info.context.active_project)
+def get_draft_entry_qs(info):  # TODO use dataloader
+    qs = DraftEntry.objects.filter(project=info.context.active_project).order_by('page', 'text_order')
     if PP.check_permission(info, PP.Permission.VIEW_ENTRY):
         return qs.prefetch_related(
             Prefetch(

@@ -40,6 +40,7 @@ class ConnectorLead(models.Model):
     simplified_text = models.TextField(blank=True)
     word_count = models.IntegerField(blank=True, null=True)
     page_count = models.IntegerField(blank=True, null=True)
+    text_extraction_id = models.UUIDField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)

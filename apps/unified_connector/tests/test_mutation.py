@@ -498,6 +498,8 @@ class UnifiedConnectorCallbackApiTest(TestCase):
             total_words_count=100,
             total_pages=10,
             status=DeeplServerBaseCallbackSerializer.Status.FAILED.value,
+            text_extraction_id='c4c3c256-f307-4a85-a50e-5516a6f1ce8e',
+
         )
 
         response = self.client.post(url, data)
@@ -524,6 +526,7 @@ class UnifiedConnectorCallbackApiTest(TestCase):
             total_words_count=100,
             total_pages=10,
             status=DeeplServerBaseCallbackSerializer.Status.SUCCESS.value,
+            text_extraction_id='c4c3c256-f307-4a85-a50e-5516a6f1ce8e',
         )
         response = self.client.post(url, data)
         self.assert_400(response)
