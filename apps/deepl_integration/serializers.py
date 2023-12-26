@@ -122,9 +122,10 @@ class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSeria
         child=serializers.CharField(allow_blank=True),
         required=False, default=[],
     )
-    text_path = serializers.CharField(required=False)
-    total_words_count = serializers.IntegerField(required=False, default=0)
-    total_pages = serializers.IntegerField(required=False, default=0)
+    text_path = serializers.CharField(required=False, allow_null=True)
+    total_words_count = serializers.IntegerField(required=False, default=0, allow_null=True)
+    total_pages = serializers.IntegerField(required=False, default=0, allow_null=True)
+    text_extraction_id = serializers.CharField(required=False, allow_null=True)
 
     nlp_handler = UnifiedConnectorLeadHandler
 
@@ -136,7 +137,7 @@ class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSeria
             })
         if data['status'] == self.Status.SUCCESS:
             errors = {}
-            for key in ['text_path', 'total_words_count', 'total_pages']:
+            for key in ['text_path', 'total_words_count', 'total_pages', 'text_extraction_id']:
                 if key not in data:
                     errors[key] = f'<{key}> is missing. Required when the extraction is Success'
             if errors:
@@ -153,6 +154,7 @@ class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSeria
                 data.get('images_path', [])[:10],  # TODO: Support for more images, to much image will error.
                 data['total_words_count'],
                 data['total_pages'],
+                data['text_extraction_id']
             )
         connector_lead.update_extraction_status(ConnectorLead.ExtractionStatus.FAILED)
         return connector_lead
@@ -232,6 +234,8 @@ class AssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializ
 
 
 class AutoAssistedBlockPredicationCallbackSerializer(serializers.Serializer):
+    page = serializers.IntegerField()
+    textOrder = serializers.IntegerField()
     text = serializers.CharField()
     relevant = serializers.BooleanField()
     prediction_status = serializers.BooleanField()

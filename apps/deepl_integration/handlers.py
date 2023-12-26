@@ -531,6 +531,8 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
             ])
 
             draft = DraftEntry.objects.create(
+                page=model_preds['page'],
+                text_order=model_preds['textOrder'],
                 project=lead.project,
                 lead=lead,
                 excerpt=model_preds['text'],
@@ -690,10 +692,12 @@ class UnifiedConnectorLeadHandler(BaseHandler):
         images_uri: List[str],
         word_count: int,
         page_count: int,
+        text_extraction_id: str,
     ):
         connector_lead.simplified_text = RequestHelper(url=text_source_uri, ignore_error=True).get_text(sanitize=True) or ''
         connector_lead.word_count = word_count
         connector_lead.page_count = page_count
+        connector_lead.text_extraction_id = text_extraction_id
         image_base_path = f'{connector_lead.pk}'
         for image_uri in images_uri:
             lead_image = ConnectorLeadPreviewImage(connector_lead=connector_lead)
