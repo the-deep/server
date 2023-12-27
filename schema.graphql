@@ -1,0 +1,5533 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+input AdditionalDocumentInputType {
+  id: ID
+  clientId: String
+  documentType: AssessmentRegistryDocumentTypeEnum!
+  file: ID
+  externalLink: String
+}
+
+type AdditionalDocumentType {
+  id: ID!
+  file: GalleryFileType
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  documentType: AssessmentRegistryDocumentTypeEnum!
+  documentTypeDisplay: EnumDescription!
+  externalLink: String
+}
+
+type AdminLevelType {
+  id: ID!
+  title: String!
+  level: Int
+  nameProp: String!
+  codeProp: String!
+  parentNameProp: String!
+  parentCodeProp: String!
+  geoShapeFile: GalleryFileType
+  tolerance: Float!
+  staleGeoAreas: Boolean!
+  parent: ID
+  geojsonFile: FileFieldType
+  boundsFile: FileFieldType
+}
+
+input AnalysisAutomaticSummaryCreateInputType {
+  entriesId: [ID!]
+}
+
+type AnalysisAutomaticSummaryType {
+  id: ID!
+  summary: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  status: AutomaticSummaryStatusEnum!
+}
+
+type AnalysisFrameworkDetailType {
+  id: ID!
+  title: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  description: String
+  isPrivate: Boolean!
+  assistedTaggingEnabled: Boolean!
+  organization: OrganizationType
+  currentUserRole: AnalysisFrameworkRoleTypeEnum
+  previewImage: FileFieldType
+  export: FileFieldType
+  clonedFrom: ID
+  allowedPermissions: [AnalysisFrameworkPermission!]!
+  tags: [AnalysisFrameworkTagType!]!
+  usedInProjectCount: AnalysisFrameworkProjectCount!
+  primaryTagging: [SectionType!]
+  secondaryTagging: [WidgetType!]
+  members: [AnalysisFrameworkMembershipType!]
+  filters: [AnalysisFrameworkFilterType!]
+  exportables: [AnalysisFrameworkExportableType!]
+  visibleProjects: [AnalysisFrameworkVisibleProjectType!]
+  predictionTagsMapping: [AnalysisFrameworkPredictionMappingType!]
+  properties: AnalysisFrameworkPropertiesType
+}
+
+type AnalysisFrameworkExportableType {
+  id: ID!
+  inline: Boolean!
+  order: Int!
+  data: GenericScalar
+  widgetKey: String!
+  widgetType: WidgetWidgetTypeEnum!
+  widgetTypeDisplay: EnumDescription!
+}
+
+type AnalysisFrameworkFilterType {
+  id: ID!
+  widgetKey: String!
+  title: String!
+  properties: GenericScalar
+  key: String!
+  widgetType: WidgetWidgetTypeEnum!
+  widgetTypeDisplay: EnumDescription!
+  filterType: WidgetFilterTypeEnum!
+  filterTypeDisplay: EnumDescription!
+}
+
+input AnalysisFrameworkInputType {
+  title: String!
+  description: String
+  isPrivate: Boolean
+  properties: AnalysisFrameworkPropertiesGqlInputType
+  organization: ID
+  previewImage: Upload
+  createdBy: ID
+  primaryTagging: [SectionGqlInputType!]
+  secondaryTagging: [WidgetGqlInputType!]
+  predictionTagsMapping: [PredictionTagAnalysisFrameworkMapInputType!]
+  assistedTaggingEnabled: Boolean
+}
+
+type AnalysisFrameworkListType {
+  results: [AnalysisFrameworkType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalysisFrameworkMembershipType {
+  id: ID!
+  member: UserType!
+  role: AnalysisFrameworkRoleType!
+  joinedAt: DateTime!
+  addedBy: UserType
+  clientId: ID!
+}
+
+type AnalysisFrameworkMutationType {
+  id: ID!
+  title: String!
+  analysisFrameworkUpdate(data: AnalysisFrameworkInputType!): UpdateAnalysisFramework
+  analysisFrameworkMembershipBulk(deleteIds: [ID!], items: [BulkAnalysisFrameworkMembershipInputType!]): BulkUpdateAnalysisFrameworkMembership
+}
+
+enum AnalysisFrameworkPermission {
+  CAN_ADD_USER
+  CAN_CLONE_FRAMEWORK
+  CAN_EDIT_FRAMEWORK
+  CAN_USE_IN_OTHER_PROJECTS
+  DELETE_FRAMEWORK
+}
+
+type AnalysisFrameworkPredictionMappingType {
+  id: ID!
+  widget: ID!
+  tag: ID
+  association: GenericScalar
+  clientId: ID!
+  widgetType: WidgetWidgetTypeEnum!
+}
+
+type AnalysisFrameworkProjectCount {
+  projectCount: Int!
+  testProjectCount: Int!
+}
+
+input AnalysisFrameworkPropertiesGqlInputType {
+  statsConfig: AnalysisFrameworkPropertiesStatsConfigInputType
+}
+
+input AnalysisFrameworkPropertiesStatsConfigIdInputType {
+  pk: ID!
+}
+
+type AnalysisFrameworkPropertiesStatsConfigIdType {
+  pk: ID!
+}
+
+input AnalysisFrameworkPropertiesStatsConfigInputType {
+  geoWidget: AnalysisFrameworkPropertiesStatsConfigIdInputType!
+  severityWidget: AnalysisFrameworkPropertiesStatsConfigIdInputType!
+  reliabilityWidget: AnalysisFrameworkPropertiesStatsConfigIdInputType!
+  widget1d: [AnalysisFrameworkPropertiesStatsConfigIdInputType!]
+  widget2d: [AnalysisFrameworkPropertiesStatsConfigIdInputType!]
+  multiselectWidgets: [AnalysisFrameworkPropertiesStatsConfigIdInputType!]
+  organigramWidgets: [AnalysisFrameworkPropertiesStatsConfigIdInputType!]
+}
+
+type AnalysisFrameworkPropertiesStatsConfigType {
+  geoWidget: AnalysisFrameworkPropertiesStatsConfigIdType!
+  severityWidget: AnalysisFrameworkPropertiesStatsConfigIdType!
+  reliabilityWidget: AnalysisFrameworkPropertiesStatsConfigIdType!
+  widget1d: [AnalysisFrameworkPropertiesStatsConfigIdType!]
+  widget2d: [AnalysisFrameworkPropertiesStatsConfigIdType!]
+  multiselectWidgets: [AnalysisFrameworkPropertiesStatsConfigIdType!]
+  organigramWidgets: [AnalysisFrameworkPropertiesStatsConfigIdType!]
+}
+
+type AnalysisFrameworkPropertiesType {
+  statsConfig: AnalysisFrameworkPropertiesStatsConfigType
+}
+
+type AnalysisFrameworkRoleType {
+  id: ID!
+  title: String!
+}
+
+enum AnalysisFrameworkRoleTypeEnum {
+  EDITOR
+  OWNER
+  DEFAULT
+  PRIVATE_EDITOR
+  PRIVATE_OWNER
+  PRIVATE_VIEWER
+  UNKNOWN
+}
+
+type AnalysisFrameworkTagListType {
+  results: [AnalysisFrameworkTagType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalysisFrameworkTagType {
+  id: ID!
+  title: String!
+  description: String!
+  icon: FileFieldType
+}
+
+type AnalysisFrameworkType {
+  id: ID!
+  title: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  description: String
+  isPrivate: Boolean!
+  assistedTaggingEnabled: Boolean!
+  organization: OrganizationType
+  currentUserRole: AnalysisFrameworkRoleTypeEnum
+  previewImage: FileFieldType
+  export: FileFieldType
+  clonedFrom: ID
+  allowedPermissions: [AnalysisFrameworkPermission!]!
+  tags: [AnalysisFrameworkTagType!]!
+  usedInProjectCount: AnalysisFrameworkProjectCount!
+}
+
+type AnalysisFrameworkVisibleProjectType {
+  id: ID!
+  title: String!
+  isPrivate: Boolean!
+}
+
+type AnalysisListType {
+  results: [AnalysisType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalysisOverviewOrganizationType {
+  id: ID!
+  title: String!
+  count: Int!
+}
+
+type AnalysisOverviewType {
+  totalEntriesCount: Int!
+  totalLeadsCount: Int!
+  analyzedEntriesCount: Int!
+  analyzedLeadsCount: Int!
+  authoringOrganizations: [AnalysisOverviewOrganizationType!]
+}
+
+type AnalysisPillarDiscardedEntryListType {
+  results: [AnalysisPillarDiscardedEntryType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalysisPillarDiscardedEntryType {
+  id: ID!
+  analysisPillar: ID
+  entry: EntryType!
+  entryId: ID!
+  tag: DiscardedEntryTagTypeEnum!
+  tagDisplay: EnumDescription!
+}
+
+type AnalysisPillarEntryListType {
+  results: [EntryType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalysisPillarListType {
+  results: [AnalysisPillarType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalysisPillarType {
+  id: ID!
+  title: String!
+  mainStatement: String!
+  informationGap: String!
+  filters: GenericScalar
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  clientId: ID!
+  assignee: UserType!
+  analysis: ID!
+  clonedFrom: ID
+  analyzedEntriesCount: Int!
+  statements: [AnalyticalStatementType!]
+  discardedEntries(tags: [DiscardedEntryTagTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarDiscardedEntryListType
+  entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadCreatedBy: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], leadAuthoringOrganizationTypes: [ID!], leadAuthorOrganizations: [ID!], leadSourceOrganizations: [ID!], search: String, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataInputType!], hasComment: Boolean, isVerified: Boolean, discarded: Boolean, excludeEntries: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarEntryListType
+}
+
+input AnalysisPillarUpdateInputType {
+  title: String
+  mainStatement: String
+  informationGap: String
+  filters: GenericScalar
+  assignee: ID
+  analysis: ID
+  clonedFrom: ID
+  statements: [AnalyticalStatementGqlInputType!]
+  clientId: String
+}
+
+type AnalysisPublicationDateType {
+  startDate: Date!
+  endDate: Date!
+}
+
+input AnalysisReportBackgroundStyleInputType {
+  color: String
+  opacity: Int
+}
+
+type AnalysisReportBackgroundStyleType {
+  color: String
+  opacity: Int
+}
+
+input AnalysisReportBodyStyleInputType {
+  gap: Int
+}
+
+type AnalysisReportBodyStyleType {
+  gap: Int
+}
+
+input AnalysisReportBorderStyleInputType {
+  color: String
+  width: Int
+  opacity: Int
+  style: AnalysisReportBorderStyleStyleEnum
+}
+
+enum AnalysisReportBorderStyleStyleEnum {
+  DOTTED
+  DASHED
+  SOLID
+  DOUBLE
+  NONE
+}
+
+type AnalysisReportBorderStyleType {
+  color: String
+  width: Int
+  opacity: Int
+  style: AnalysisReportBorderStyleStyleEnum
+}
+
+input AnalysisReportConfigurationInputType {
+  pageStyle: AnalysisReportPageStyleInputType
+  headerStyle: AnalysisReportHeaderStyleInputType
+  bodyStyle: AnalysisReportBodyStyleInputType
+  containerStyle: AnalysisReportContainerStyleInputType
+  textContentStyle: AnalysisReportTextContentStyleInputType
+  headingContentStyle: AnalysisReportHeadingContentStyleInputType
+  imageContentStyle: AnalysisReportImageContentStyleInputType
+  urlContentStyle: AnalysisReportUrlConfigurationInputType
+}
+
+type AnalysisReportConfigurationType {
+  pageStyle: AnalysisReportPageStyleType
+  headerStyle: AnalysisReportHeaderStyleType
+  bodyStyle: AnalysisReportBodyStyleType
+  containerStyle: AnalysisReportContainerStyleType
+  textContentStyle: AnalysisReportTextContentStyleType
+  headingContentStyle: AnalysisReportHeadingContentStyleType
+  imageContentStyle: AnalysisReportImageContentStyleType
+  urlContentStyle: AnalysisReportUrlConfigurationType
+}
+
+input AnalysisReportContainerContentConfigurationInputType {
+  text: AnalysisReportTextConfigurationInputType
+  heading: AnalysisReportHeadingConfigurationInputType
+  image: AnalysisReportImageConfigurationInputType
+  url: AnalysisReportUrlConfigurationInputType
+}
+
+type AnalysisReportContainerContentConfigurationType {
+  text: AnalysisReportTextConfigurationType
+  heading: AnalysisReportHeadingConfigurationType
+  image: AnalysisReportImageConfigurationType
+  url: AnalysisReportUrlConfigurationType
+}
+
+enum AnalysisReportContainerContentTypeEnum {
+  TEXT
+  HEADING
+  IMAGE
+  URL
+}
+
+input AnalysisReportContainerDataInputType {
+  id: ID
+  clientId: String
+  upload: ID!
+  data: GenericScalar
+}
+
+type AnalysisReportContainerDataType {
+  id: ID!
+  upload: AnalysisReportUploadType!
+  data: GenericScalar!
+  clientId: ID!
+}
+
+input AnalysisReportContainerInputType {
+  id: ID
+  clientId: String
+  row: Int!
+  column: Int!
+  width: Int!
+  height: Int
+  contentType: AnalysisReportContainerContentTypeEnum!
+  style: AnalysisReportContainerStyleInputType
+  contentConfiguration: AnalysisReportContainerContentConfigurationInputType
+  contentData: [AnalysisReportContainerDataInputType!]!
+}
+
+input AnalysisReportContainerStyleInputType {
+  padding: AnalysisReportPaddingStyleInputType
+  border: AnalysisReportBorderStyleInputType
+  background: AnalysisReportBackgroundStyleInputType
+}
+
+type AnalysisReportContainerStyleType {
+  padding: AnalysisReportPaddingStyleType
+  border: AnalysisReportBorderStyleType
+  background: AnalysisReportBackgroundStyleType
+}
+
+type AnalysisReportContainerType {
+  id: ID!
+  row: Int!
+  column: Int!
+  width: Int!
+  height: Int
+  clientId: ID!
+  contentType: AnalysisReportContainerContentTypeEnum!
+  report: ID!
+  style: AnalysisReportContainerStyleType
+  contentConfiguration: AnalysisReportContainerContentConfigurationType
+  contentData: [AnalysisReportContainerDataType!]!
+}
+
+input AnalysisReportHeaderStyleInputType {
+  padding: AnalysisReportPaddingStyleInputType
+  border: AnalysisReportBorderStyleInputType
+  background: AnalysisReportBackgroundStyleInputType
+  title: AnalysisReportTextStyleInputType
+  subTitle: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportHeaderStyleType {
+  padding: AnalysisReportPaddingStyleType
+  border: AnalysisReportBorderStyleType
+  background: AnalysisReportBackgroundStyleType
+  title: AnalysisReportTextStyleType
+  subTitle: AnalysisReportTextStyleType
+}
+
+input AnalysisReportHeadingConfigurationInputType {
+  content: String
+  style: AnalysisReportHeadingConfigurationStyleInputType
+  variant: AnalysisReportHeadingConfigurationVariantEnum
+}
+
+input AnalysisReportHeadingConfigurationStyleInputType {
+  content: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportHeadingConfigurationStyleType {
+  content: AnalysisReportTextStyleType
+}
+
+type AnalysisReportHeadingConfigurationType {
+  content: String
+  style: AnalysisReportHeadingConfigurationStyleType
+  variant: AnalysisReportHeadingConfigurationVariantEnum
+}
+
+enum AnalysisReportHeadingConfigurationVariantEnum {
+  H1
+  H2
+  H3
+  H4
+}
+
+input AnalysisReportHeadingContentStyleInputType {
+  h1: AnalysisReportTextStyleInputType
+  h2: AnalysisReportTextStyleInputType
+  h3: AnalysisReportTextStyleInputType
+  h4: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportHeadingContentStyleType {
+  h1: AnalysisReportTextStyleType
+  h2: AnalysisReportTextStyleType
+  h3: AnalysisReportTextStyleType
+  h4: AnalysisReportTextStyleType
+}
+
+input AnalysisReportImageConfigurationInputType {
+  caption: String
+  altText: String
+  style: AnalysisReportImageContentStyleInputType
+}
+
+type AnalysisReportImageConfigurationType {
+  caption: String
+  altText: String
+  style: AnalysisReportImageContentStyleType
+}
+
+enum AnalysisReportImageContentStyleFitEnum {
+  FILL
+  CONTAIN
+  COVER
+  SCALE_DOWN
+  NONE
+}
+
+input AnalysisReportImageContentStyleInputType {
+  caption: AnalysisReportTextStyleInputType
+  fit: AnalysisReportImageContentStyleFitEnum
+}
+
+type AnalysisReportImageContentStyleType {
+  caption: AnalysisReportTextStyleType
+  fit: AnalysisReportImageContentStyleFitEnum
+}
+
+input AnalysisReportInputType {
+  analysis: ID!
+  slug: String!
+  title: String!
+  subTitle: String!
+  isPublic: Boolean
+  organizations: [ID!]
+  configuration: AnalysisReportConfigurationInputType
+  containers: [AnalysisReportContainerInputType!]!
+}
+
+input AnalysisReportInputUpdateType {
+  analysis: ID
+  slug: String
+  title: String
+  subTitle: String
+  isPublic: Boolean
+  organizations: [ID!]
+  configuration: AnalysisReportConfigurationInputType
+  containers: [AnalysisReportContainerInputType!]
+}
+
+type AnalysisReportListType {
+  results: [AnalysisReportType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+input AnalysisReportMarginStyleInputType {
+  top: Int
+  bottom: Int
+  left: Int
+  right: Int
+}
+
+type AnalysisReportMarginStyleType {
+  top: Int
+  bottom: Int
+  left: Int
+  right: Int
+}
+
+input AnalysisReportPaddingStyleInputType {
+  top: Int
+  bottom: Int
+  left: Int
+  right: Int
+}
+
+type AnalysisReportPaddingStyleType {
+  top: Int
+  bottom: Int
+  left: Int
+  right: Int
+}
+
+input AnalysisReportPageStyleInputType {
+  margin: AnalysisReportMarginStyleInputType
+  background: AnalysisReportBackgroundStyleInputType
+}
+
+type AnalysisReportPageStyleType {
+  margin: AnalysisReportMarginStyleType
+  background: AnalysisReportBackgroundStyleType
+}
+
+input AnalysisReportSnapshotInputType {
+  report: ID!
+}
+
+type AnalysisReportSnapshotListType {
+  results: [AnalysisReportSnapshotType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AnalysisReportSnapshotType {
+  id: ID!
+  publishedOn: DateTime!
+  report: ID!
+  publishedBy: UserType!
+  reportDataFile: FileFieldType
+  files: [GalleryFileType!]!
+}
+
+input AnalysisReportTextConfigurationInputType {
+  content: String
+  style: AnalysisReportTextContentStyleInputType
+}
+
+type AnalysisReportTextConfigurationType {
+  content: String
+  style: AnalysisReportTextContentStyleType
+}
+
+input AnalysisReportTextContentStyleInputType {
+  content: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportTextContentStyleType {
+  content: AnalysisReportTextStyleType
+}
+
+enum AnalysisReportTextStyleAlignEnum {
+  START
+  END
+  CENTER
+  JUSTIFIED
+}
+
+input AnalysisReportTextStyleInputType {
+  color: String
+  family: String
+  size: Int
+  weight: Int
+  align: AnalysisReportTextStyleAlignEnum
+}
+
+type AnalysisReportTextStyleType {
+  color: String
+  family: String
+  size: Int
+  weight: Int
+  align: AnalysisReportTextStyleAlignEnum
+}
+
+type AnalysisReportType {
+  id: ID!
+  isPublic: Boolean!
+  slug: String!
+  title: String!
+  subTitle: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  analysis: ID!
+  configuration: AnalysisReportConfigurationType
+  containers: [AnalysisReportContainerType!]!
+  organizations: [OrganizationType!]!
+  uploads: [AnalysisReportUploadType!]!
+  latestSnapshot: AnalysisReportSnapshotType
+}
+
+input AnalysisReportUploadInputType {
+  report: ID!
+  file: ID!
+  type: AnalysisReportUploadTypeEnum!
+  metadata: AnalysisReportUploadMetadataInputType!
+}
+
+type AnalysisReportUploadListType {
+  results: [AnalysisReportUploadType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+input AnalysisReportUploadMetadataCsvInputType {
+  headerRow: Int
+  variables: [AnalysisReportVariableInputType!]!
+}
+
+type AnalysisReportUploadMetadataCsvType {
+  headerRow: Int
+  variables: [AnalysisReportVariableType!]!
+}
+
+input AnalysisReportUploadMetadataGeoJsonInputType {
+  variables: [AnalysisReportVariableInputType!]!
+}
+
+type AnalysisReportUploadMetadataGeoJsonType {
+  variables: [AnalysisReportVariableType!]!
+}
+
+input AnalysisReportUploadMetadataInputType {
+  xlsx: AnalysisReportUploadMetadataXlsxInputType
+  csv: AnalysisReportUploadMetadataCsvInputType
+  geojson: AnalysisReportUploadMetadataGeoJsonInputType
+}
+
+type AnalysisReportUploadMetadataType {
+  xlsx: AnalysisReportUploadMetadataXlsxType
+  csv: AnalysisReportUploadMetadataCsvType
+  geojson: AnalysisReportUploadMetadataGeoJsonType
+}
+
+input AnalysisReportUploadMetadataXlsxInputType {
+  sheets: [AnalysisReportUploadMetadataXlsxSheetInputType!]!
+}
+
+input AnalysisReportUploadMetadataXlsxSheetInputType {
+  name: String
+  headerRow: Int
+  variables: [AnalysisReportVariableInputType!]!
+}
+
+type AnalysisReportUploadMetadataXlsxSheetType {
+  name: String
+  headerRow: Int
+  variables: [AnalysisReportVariableType!]!
+}
+
+type AnalysisReportUploadMetadataXlsxType {
+  sheets: [AnalysisReportUploadMetadataXlsxSheetType!]!
+}
+
+type AnalysisReportUploadType {
+  id: ID!
+  file: GalleryFileType!
+  report: ID!
+  type: AnalysisReportUploadTypeEnum!
+  metadata: AnalysisReportUploadMetadataType
+}
+
+enum AnalysisReportUploadTypeEnum {
+  CSV
+  XLSX
+  GEOJSON
+  IMAGE
+}
+
+input AnalysisReportUrlConfigurationInputType {
+  url: String
+}
+
+type AnalysisReportUrlConfigurationType {
+  url: String
+}
+
+input AnalysisReportVariableInputType {
+  name: String
+  type: AnalysisReportVariableTypeEnum
+  completeness: Int
+}
+
+type AnalysisReportVariableType {
+  name: String
+  type: AnalysisReportVariableTypeEnum
+  completeness: Int
+}
+
+enum AnalysisReportVariableTypeEnum {
+  TEXT
+  NUMBER
+  DATE
+}
+
+type AnalysisTopicModelClusterType {
+  id: ID!
+  entries: [EntryType]!
+}
+
+input AnalysisTopicModelCreateInputType {
+  analysisPillar: ID!
+  additionalFilters: EntriesFilterDataInputType
+}
+
+type AnalysisTopicModelType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  status: TopicModelStatusEnum!
+  clusters: [AnalysisTopicModelClusterType]!
+  additionalFilters: EntriesFilterDataType
+  analysisPillar: ID!
+}
+
+type AnalysisType {
+  id: ID!
+  title: String!
+  startDate: Date
+  endDate: Date!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  clonedFrom: ID
+  teamLead: UserType!
+  publicationDate: AnalysisPublicationDateType
+  analyzedEntriesCount: Int!
+  analyzedLeadsCount: Int!
+  pillars: [AnalysisPillarType!]
+}
+
+input AnalyticalEntriesGqlInputType {
+  id: ID
+  order: Int!
+  entry: ID!
+  clientId: String
+}
+
+type AnalyticalStatementEntryGeoDataType {
+  ent: String
+  offsetStart: Int
+  offsetEnd: Int
+  geoids: [AnalyticalStatementEntryGeoIDsDataType!]
+}
+
+type AnalyticalStatementEntryGeoIDsDataType {
+  match: String
+  geonameid: Int
+  latitude: Float
+  longitude: Float
+  featurecode: String
+  countrycode: String
+}
+
+type AnalyticalStatementEntryGeoType {
+  id: ID!
+  entry: EntryType!
+  entryId: ID!
+  data: [AnalyticalStatementEntryGeoDataType!]
+}
+
+type AnalyticalStatementEntryType {
+  id: ID!
+  order: Int!
+  clientId: ID!
+  entry: EntryType!
+  entryId: ID!
+  analyticalStatement: ID!
+}
+
+input AnalyticalStatementGeoTaskInputType {
+  entriesId: [ID!]
+}
+
+enum AnalyticalStatementGeoTaskStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILED
+  SEND_FAILED
+}
+
+type AnalyticalStatementGeoTaskType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  status: AnalyticalStatementGeoTaskStatusEnum!
+  entryGeo: [AnalyticalStatementEntryGeoType]!
+}
+
+input AnalyticalStatementGqlInputType {
+  id: ID
+  statement: String!
+  reportText: String
+  informationGaps: String
+  includeInReport: Boolean
+  order: Int!
+  clonedFrom: ID
+  entries: [AnalyticalEntriesGqlInputType!]
+  clientId: String
+}
+
+type AnalyticalStatementListType {
+  results: [AnalyticalStatementType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+input AnalyticalStatementNGramCreateInputType {
+  entriesId: [ID!]
+}
+
+type AnalyticalStatementNGramDataType {
+  word: String!
+  count: Int!
+}
+
+enum AnalyticalStatementNGramStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILED
+  SEND_FAILED
+}
+
+type AnalyticalStatementNGramType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  status: AnalyticalStatementNGramStatusEnum!
+  unigrams: [AnalyticalStatementNGramDataType]!
+  bigrams: [AnalyticalStatementNGramDataType]!
+  trigrams: [AnalyticalStatementNGramDataType]!
+}
+
+type AnalyticalStatementType {
+  id: ID!
+  statement: String!
+  includeInReport: Boolean!
+  order: Int!
+  reportText: String!
+  informationGaps: String!
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  clonedFrom: ID
+  entriesCount: Int!
+  entries: [AnalyticalStatementEntryType!]
+}
+
+type AppEnumCollection {
+  ProfileEmailOptOuts: [AppEnumCollectionProfileEmailOptOuts!]
+  UserEmailOptOuts: [AppEnumCollectionUserEmailOptOuts!]
+  GroupMembershipRole: [AppEnumCollectionGroupMembershipRole!]
+  ProjectStatus: [AppEnumCollectionProjectStatus!]
+  ProjectOrganizationOrganizationType: [AppEnumCollectionProjectOrganizationOrganizationType!]
+  ProjectJoinRequestStatus: [AppEnumCollectionProjectJoinRequestStatus!]
+  ProjectStatsStatus: [AppEnumCollectionProjectStatsStatus!]
+  ProjectMembershipBadges: [AppEnumCollectionProjectMembershipBadges!]
+  ProjectUserGroupMembershipBadges: [AppEnumCollectionProjectUserGroupMembershipBadges!]
+  ProjectRoleType: [AppEnumCollectionProjectRoleType!]
+  ProjectStatsAction: [AppEnumCollectionProjectStatsAction!]
+  WidgetWidgetId: [AppEnumCollectionWidgetWidgetId!]
+  WidgetWidth: [AppEnumCollectionWidgetWidth!]
+  FilterFilterType: [AppEnumCollectionFilterFilterType!]
+  AnalysisFrameworkRoleType: [AppEnumCollectionAnalysisFrameworkRoleType!]
+  LeadConfidentiality: [AppEnumCollectionLeadConfidentiality!]
+  LeadStatus: [AppEnumCollectionLeadStatus!]
+  LeadPriority: [AppEnumCollectionLeadPriority!]
+  LeadSourceType: [AppEnumCollectionLeadSourceType!]
+  LeadExtractionStatus: [AppEnumCollectionLeadExtractionStatus!]
+  LeadAutoEntryExtractionStatus: [AppEnumCollectionLeadAutoEntryExtractionStatus!]
+  EntryEntryType: [AppEnumCollectionEntryEntryType!]
+  ExportFormat: [AppEnumCollectionExportFormat!]
+  ExportStatus: [AppEnumCollectionExportStatus!]
+  ExportType: [AppEnumCollectionExportType!]
+  ExportExportType: [AppEnumCollectionExportExportType!]
+  GenericExportFormat: [AppEnumCollectionGenericExportFormat!]
+  GenericExportStatus: [AppEnumCollectionGenericExportStatus!]
+  GenericExportType: [AppEnumCollectionGenericExportType!]
+  ExportExcelSelectedColumnSerializerStaticColumn: [AppEnumCollectionExportExcelSelectedColumnSerializerStaticColumn!]
+  ExportExtraOptionsSerializerDateFormat: [AppEnumCollectionExportExtraOptionsSerializerDateFormat!]
+  ExportExtraOptionsSerializerReportCitationStyle: [AppEnumCollectionExportExtraOptionsSerializerReportCitationStyle!]
+  EntryReviewCommentCommentType: [AppEnumCollectionEntryReviewCommentCommentType!]
+  DiscardedEntryTag: [AppEnumCollectionDiscardedEntryTag!]
+  TopicModelStatus: [AppEnumCollectionTopicModelStatus!]
+  AutomaticSummaryStatus: [AppEnumCollectionAutomaticSummaryStatus!]
+  AnalyticalStatementNGramStatus: [AppEnumCollectionAnalyticalStatementNGramStatus!]
+  AnalyticalStatementGeoTaskStatus: [AppEnumCollectionAnalyticalStatementGeoTaskStatus!]
+  AnalysisReportUploadType: [AppEnumCollectionAnalysisReportUploadType!]
+  AnalysisReportContainerContentType: [AppEnumCollectionAnalysisReportContainerContentType!]
+  AnalysisReportVariableSerializerType: [AppEnumCollectionAnalysisReportVariableSerializerType!]
+  AnalysisReportTextStyleSerializerAlign: [AppEnumCollectionAnalysisReportTextStyleSerializerAlign!]
+  AnalysisReportBorderStyleSerializerStyle: [AppEnumCollectionAnalysisReportBorderStyleSerializerStyle!]
+  AnalysisReportImageContentStyleSerializerFit: [AppEnumCollectionAnalysisReportImageContentStyleSerializerFit!]
+  AnalysisReportHeadingConfigurationSerializerVariant: [AppEnumCollectionAnalysisReportHeadingConfigurationSerializerVariant!]
+  NotificationNotificationType: [AppEnumCollectionNotificationNotificationType!]
+  NotificationStatus: [AppEnumCollectionNotificationStatus!]
+  ConnectorSourceSource: [AppEnumCollectionConnectorSourceSource!]
+  ConnectorSourceStatus: [AppEnumCollectionConnectorSourceStatus!]
+  ConnectorLeadExtractionStatus: [AppEnumCollectionConnectorLeadExtractionStatus!]
+  DraftEntryPredictionStatus: [AppEnumCollectionDraftEntryPredictionStatus!]
+  AssistedTaggingPredictionDataType: [AppEnumCollectionAssistedTaggingPredictionDataType!]
+  DraftEntryType: [AppEnumCollectionDraftEntryType!]
+  UnusedAssessmentMethodologyProtectionInfo: [AppEnumCollectionUnusedAssessmentMethodologyProtectionInfo!]
+  AssessmentRegistryBgCrisisType: [AppEnumCollectionAssessmentRegistryBgCrisisType!]
+  AssessmentRegistryBgPreparedness: [AppEnumCollectionAssessmentRegistryBgPreparedness!]
+  AssessmentRegistryExternalSupport: [AppEnumCollectionAssessmentRegistryExternalSupport!]
+  AssessmentRegistryCoordinatedJoint: [AppEnumCollectionAssessmentRegistryCoordinatedJoint!]
+  AssessmentRegistryDetailsType: [AppEnumCollectionAssessmentRegistryDetailsType!]
+  AssessmentRegistryFamily: [AppEnumCollectionAssessmentRegistryFamily!]
+  AssessmentRegistryFrequency: [AppEnumCollectionAssessmentRegistryFrequency!]
+  AssessmentRegistryConfidentiality: [AppEnumCollectionAssessmentRegistryConfidentiality!]
+  AssessmentRegistryLanguage: [AppEnumCollectionAssessmentRegistryLanguage!]
+  AssessmentRegistryFocuses: [AppEnumCollectionAssessmentRegistryFocuses!]
+  AssessmentRegistrySectors: [AppEnumCollectionAssessmentRegistrySectors!]
+  AssessmentRegistryProtectionInfoMgmts: [AppEnumCollectionAssessmentRegistryProtectionInfoMgmts!]
+  AssessmentRegistryAffectedGroups: [AppEnumCollectionAssessmentRegistryAffectedGroups!]
+  MethodologyAttributeDataCollectionTechnique: [AppEnumCollectionMethodologyAttributeDataCollectionTechnique!]
+  MethodologyAttributeSamplingApproach: [AppEnumCollectionMethodologyAttributeSamplingApproach!]
+  MethodologyAttributeProximity: [AppEnumCollectionMethodologyAttributeProximity!]
+  MethodologyAttributeUnitOfAnalysis: [AppEnumCollectionMethodologyAttributeUnitOfAnalysis!]
+  MethodologyAttributeUnitOfReporting: [AppEnumCollectionMethodologyAttributeUnitOfReporting!]
+  AdditionalDocumentDocumentType: [AppEnumCollectionAdditionalDocumentDocumentType!]
+  ScoreRatingScoreType: [AppEnumCollectionScoreRatingScoreType!]
+  ScoreRatingRating: [AppEnumCollectionScoreRatingRating!]
+  ScoreAnalyticalDensitySector: [AppEnumCollectionScoreAnalyticalDensitySector!]
+  ScoreAnalyticalDensityAnalysisLevelCovered: [AppEnumCollectionScoreAnalyticalDensityAnalysisLevelCovered!]
+  ScoreAnalyticalDensityFigureProvided: [AppEnumCollectionScoreAnalyticalDensityFigureProvided!]
+  SummarySubDimensionIssueSector: [AppEnumCollectionSummarySubDimensionIssueSector!]
+  SummaryIssueSubPillar: [AppEnumCollectionSummaryIssueSubPillar!]
+  SummaryIssueSubDimension: [AppEnumCollectionSummaryIssueSubDimension!]
+  SummaryFocusSector: [AppEnumCollectionSummaryFocusSector!]
+  AssessmentRegistryOrganizationOrganizationType: [AppEnumCollectionAssessmentRegistryOrganizationOrganizationType!]
+}
+
+type AppEnumCollectionAdditionalDocumentDocumentType {
+  enum: AssessmentRegistryDocumentTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisFrameworkRoleType {
+  enum: AnalysisFrameworkRoleTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportBorderStyleSerializerStyle {
+  enum: AnalysisReportBorderStyleStyleEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportContainerContentType {
+  enum: AnalysisReportContainerContentTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportHeadingConfigurationSerializerVariant {
+  enum: AnalysisReportHeadingConfigurationVariantEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportImageContentStyleSerializerFit {
+  enum: AnalysisReportImageContentStyleFitEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportTextStyleSerializerAlign {
+  enum: AnalysisReportTextStyleAlignEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportUploadType {
+  enum: AnalysisReportUploadTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportVariableSerializerType {
+  enum: AnalysisReportVariableTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalyticalStatementGeoTaskStatus {
+  enum: AnalyticalStatementGeoTaskStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalyticalStatementNGramStatus {
+  enum: AnalyticalStatementNGramStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryAffectedGroups {
+  enum: AssessmentRegistryAffectedGroupTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryBgCrisisType {
+  enum: AssessmentRegistryCrisisTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryBgPreparedness {
+  enum: AssessmentRegistryPreparednessTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryConfidentiality {
+  enum: AssessmentRegistryConfidentialityTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryCoordinatedJoint {
+  enum: AssessmentRegistryCoordinationTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryDetailsType {
+  enum: AssessmentRegistryDetailTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryExternalSupport {
+  enum: AssessmentRegistryExternalTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryFamily {
+  enum: AssessmentRegistryFamilyTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryFocuses {
+  enum: AssessmentRegistryFocusTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryFrequency {
+  enum: AssessmentRegistryFrequencyTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryLanguage {
+  enum: AssessmentRegistryLanguageTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryOrganizationOrganizationType {
+  enum: AssessmentRegistryOrganizationTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryProtectionInfoMgmts {
+  enum: AssessmentRegistryProtectionInfoTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistrySectors {
+  enum: AssessmentRegistrySectorTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssistedTaggingPredictionDataType {
+  enum: AssistedTaggingPredictionDataTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAutomaticSummaryStatus {
+  enum: AutomaticSummaryStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionConnectorLeadExtractionStatus {
+  enum: ConnectorLeadExtractionStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionConnectorSourceSource {
+  enum: ConnectorSourceSourceEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionConnectorSourceStatus {
+  enum: ConnectorSourceStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionDiscardedEntryTag {
+  enum: DiscardedEntryTagTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionDraftEntryPredictionStatus {
+  enum: DraftEntryPredictionStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionDraftEntryType {
+  enum: DraftEntryTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionEntryEntryType {
+  enum: EntryTagTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionEntryReviewCommentCommentType {
+  enum: EntryReviewCommentTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionExportExcelSelectedColumnSerializerStaticColumn {
+  enum: ExportExcelSelectedStaticColumnEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionExportExportType {
+  enum: ExportExportTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionExportExtraOptionsSerializerDateFormat {
+  enum: ExportDateFormatEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionExportExtraOptionsSerializerReportCitationStyle {
+  enum: ExportReportCitationStyleEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionExportFormat {
+  enum: ExportFormatEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionExportStatus {
+  enum: ExportStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionExportType {
+  enum: ExportDataTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionFilterFilterType {
+  enum: WidgetFilterTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionGenericExportFormat {
+  enum: GenericExportFormatEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionGenericExportStatus {
+  enum: GenericExportStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionGenericExportType {
+  enum: GenericExportDataTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionGroupMembershipRole {
+  enum: GroupMembershipRoleEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionLeadAutoEntryExtractionStatus {
+  enum: LeadAutoEntryExtractionTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionLeadConfidentiality {
+  enum: LeadConfidentialityEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionLeadExtractionStatus {
+  enum: LeadExtractionStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionLeadPriority {
+  enum: LeadPriorityEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionLeadSourceType {
+  enum: LeadSourceTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionLeadStatus {
+  enum: LeadStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionMethodologyAttributeDataCollectionTechnique {
+  enum: AssessmentRegistryDataCollectionTechniqueTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionMethodologyAttributeProximity {
+  enum: AssessmentRegistryProximityTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionMethodologyAttributeSamplingApproach {
+  enum: AssessmentRegistrySamplingApproachTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionMethodologyAttributeUnitOfAnalysis {
+  enum: AssessmentRegistryUnitOfAnalysisTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionMethodologyAttributeUnitOfReporting {
+  enum: AssessmentRegistryUnitOfReportingTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionNotificationNotificationType {
+  enum: NotificationTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionNotificationStatus {
+  enum: NotificationStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProfileEmailOptOuts {
+  enum: UserEmailConditionOptOutEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectJoinRequestStatus {
+  enum: ProjectJoinRequestStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectMembershipBadges {
+  enum: ProjectMembershipBadgeTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectOrganizationOrganizationType {
+  enum: ProjectOrganizationTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectRoleType {
+  enum: ProjectRoleTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectStatsAction {
+  enum: ProjectStatsActionEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectStatsStatus {
+  enum: ProjectStatsStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectStatus {
+  enum: ProjectStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionProjectUserGroupMembershipBadges {
+  enum: ProjectMembershipBadgeTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionScoreAnalyticalDensityAnalysisLevelCovered {
+  enum: AssessmentRegistryAnalysisLevelTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionScoreAnalyticalDensityFigureProvided {
+  enum: AssessmentRegistryAnalysisFigureTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionScoreAnalyticalDensitySector {
+  enum: AssessmentRegistrySectorTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionScoreRatingRating {
+  enum: AssessmentRegistryRatingType!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionScoreRatingScoreType {
+  enum: AssessmentRegistryScoreCriteriaTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionSummaryFocusSector {
+  enum: AssessmentRegistrySectorTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionSummaryIssueSubDimension {
+  enum: AssessmentRegistrySummarySubDimensionTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionSummaryIssueSubPillar {
+  enum: AssessmentRegistrySummarySubPillarTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionSummarySubDimensionIssueSector {
+  enum: AssessmentRegistrySectorTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionTopicModelStatus {
+  enum: TopicModelStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionUnusedAssessmentMethodologyProtectionInfo {
+  enum: AssessmentMethodologyProtectionInfoEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionUserEmailOptOuts {
+  enum: UserEmailConditionOptOutEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionWidgetWidgetId {
+  enum: WidgetWidgetTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionWidgetWidth {
+  enum: WidgetWidthTypeEnum!
+  label: String!
+  description: String
+}
+
+type AssessmentListType {
+  results: [AssessmentType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum AssessmentMethodologyProtectionInfoEnum {
+  PROTECTION_MONITORING
+  PROTECTION_NEEDS_ASSESSMENT
+  CASE_MANAGEMENT
+  POPULATION_DATA
+  PROTECTION_RESPONSE
+  COMMUNICATING_WITH_OR_IN_AFFECTED_COMMUNITIES
+  SECURITY_AND_SITUATIONAL_AWARENESS
+  SECTORAL_SYSTEMS_OR_OTHER
+}
+
+enum AssessmentRegistryAffectedGroupTypeEnum {
+  ALL
+  ALL_AFFECTED
+  ALL_NOT_AFFECTED
+  ALL_AFFECTED_NOT_DISPLACED
+  ALL_AFFECTED_DISPLACED
+  ALL_AFFECTED_DISPLACED_IN_TRANSIT
+  ALL_AFFECTED_DISPLACED_MIGRANTS
+  ALL_AFFECTED_DISPLACED_IDPS
+  ALL_AFFECTED_DISPLACED_ASYLUM_SEEKER
+  ALL_AFFECTED_DISPLACED_OTHER_OF_CONCERN
+  ALL_AFFECTED_DISPLACED_RETURNEES
+  ALL_AFFECTED_DISPLACED_REFUGEES
+  ALL_AFFECTED_DISPLACED_MIGRANTS_IN_TRANSIT
+  ALL_AFFECTED_DISPLACED_MIGRANTS_PERMANENTS
+  ALL_AFFECTED_DISPLACED_MIGRANTS_PENDULAR
+  ALL_AFFECTED_NOT_DISPLACED_NO_HOST
+  ALL_AFFECTED_NOT_DISPLACED_HOST
+}
+
+enum AssessmentRegistryAnalysisFigureTypeEnum {
+  TOTAL_POP_IN_THE_ASSESSED_AREAS
+  TOTAL_POP_EXPOSED_TO_THE_SHOCK_EVENT
+  TOTAL_POP_AFFECTED_LIVING_IN_THE_AFFECTED_AREAS
+  TOTAL_POP_FACING_HUMANITARIAN_ACCESS_CONSTRAINTS
+  TOTAL_POP_IN_NEED
+  TOTAL_POP_IN_CRITICAL_NEED
+  TOTAL_POP_IN_SEVERE_NEED
+  TOTAL_POP_IN_MODERATE_NEED
+  TOTAL_POP_AT_RISK_VULNERABLE
+  TOTAL_POP_REACHED_BY_ASSISTANCE
+}
+
+enum AssessmentRegistryAnalysisLevelTypeEnum {
+  ISSUE_UNMET_NEEDS_ARE_DETAILED
+  ISSUE_UNMET_NEEDS_ARE_PRIORITIZED_RANKED
+  CAUSES_OR_UNDERLYING_MECHANISMS_BEHIND_ISSUES_UNMET_NEEDS_ARE_DETAILED
+  CAUSES_OR_UNDERLYING_MECHANISMS_BEHIND_ISSUES_UNMET_NEEDS_ARE_PRIORITIZED_RANKED
+  SEVERITY_OF_SOME_ALL_ISSUE_UNMET_NEEDS_IS_DETAILED
+  FUTURE_ISSUES_UNMET_NEEDS_ARE_DETAILED
+  FUTURE_ISSUES_UNMET_NEEDS_ARE_PRIORITIZED_RANKED
+  SEVERITY_OF_SOME_ALL_FUTURE_ISSUE_UNMET_NEEDS_IS_DETAILED
+  RECOMMENDATIONS_INTERVENTIONS_ARE_DETAILED
+  RECOMMENDATIONS_INTERVENTIONS_ARE_PRIORITIZED_RANKED
+}
+
+enum AssessmentRegistryCNAQuestionSectorTypeEnum {
+  RELEVANCE
+  COMPREHENSIVENESS
+  ETHICS
+  METHODOLOGICAL_RIGOR
+  ANALYTICAL_VALUE
+  TIMELINESS
+  EFFECTIVE_COMMUNICATION
+  USE
+  PEOPLE_CENTERED_AND_INCLUSIVE
+  ACCOUNTABILITY_TO_AFFECTED_POPULATIONS
+  DO_NOT_HARM
+  DESIGNED_WITH_PURPOSE
+  COMPETENCY_AND_CAPACITY
+  IMPARTIALITY
+  COORDINATION_AND_DATA_MINIMIZATION
+  JOINT_ANALYSIS
+  ACKNOWLEDGE_DISSENTING_VOICES_IN_JOINT_NEEDS_ANALYSIS
+  IFORMED_CONSENT_CONFIDENTIALITY_AND_DATA_SECURITY
+  SHARING_RESULTS
+  TRANSPARENCY_BETWEEN_ACTORS
+  MINIMUM_TECHNICAL_STANDARDS
+}
+
+enum AssessmentRegistryCNAQuestionSubSectorTypeEnum {
+  RELEVANCE
+  GEOGRAPHIC_COMPREHENSIVENESS
+  SECTORAL_COMPREHENSIVENESS
+  AFFECTED_AND_VULNERABLE_GROUPS_COMPREHENSIVENESS
+  SAFETY_AND_PROTECTION
+  HUMANITARIAN_PRINCIPLES
+  CONTRIBUTION
+  TRANSPARENCY
+  MITIGATING_BIAS
+  PARTICIPATION
+  CONTEXT_SPECIFICITY
+  ANALYTICAL_STANDARDS
+  DESCRIPTIONS
+  EXPLANATION
+  INTERPRETATION
+  ANTICIPATION
+  TIMELINESS
+  USER_FRIENDLY_PRESENTATION
+  ACTIVE_DISSEMINATION
+  USE_FOR_COLLECTIVE_PLANNING
+  BUY_IN_AND_USE_BY_HUMANITARIAN_CLUSTERS_SECTORS
+  BUY_IN_AND_USE_BY_UN_AGENCIES
+  BUY_IN_AND_USE_BY_INTERNATIONAL_NGO
+  BUY_IN_AND_USE_BY_LOCAL_NGO
+  BUY_IN_AND_USE_BY_MEMBER_OF_RED_CROSS_RED_CRESENT_MOVEMENT
+  BUY_IN_AND_USE_BY_DONORS
+  BUY_IN_AND_USE_BY_NATIONAL_AND_LOCAL_GOVERNMENT_AGENCIES
+  BUY_IN_AND_USE_BY_DEVELOPMENT_AND_STABILIZATION_ACTORS
+}
+
+enum AssessmentRegistryConfidentialityTypeEnum {
+  UNPROTECTED
+  CONFIDENTIAL
+}
+
+enum AssessmentRegistryCoordinationTypeEnum {
+  COORDINATED
+  HARMONIZED
+  UNCOORDINATED
+}
+
+input AssessmentRegistryCreateInputType {
+  lead: ID
+  bgCountries: [ID!]!
+  bgCrisisStartDate: Date
+  costEstimatesUsd: Int
+  noOfPages: Int
+  dataCollectionStartDate: Date
+  dataCollectionEndDate: Date
+  publicationDate: Date
+  executiveSummary: String
+  objectives: String
+  dataCollectionTechniques: String
+  sampling: String
+  limitations: String
+  locations: [ID!]
+  bgCrisisType: AssessmentRegistryCrisisTypeEnum!
+  bgPreparedness: AssessmentRegistryPreparednessTypeEnum!
+  externalSupport: AssessmentRegistryExternalTypeEnum!
+  coordinatedJoint: AssessmentRegistryCoordinationTypeEnum!
+  detailsType: AssessmentRegistryDetailTypeEnum!
+  family: AssessmentRegistryFamilyTypeEnum!
+  frequency: AssessmentRegistryFrequencyTypeEnum!
+  confidentiality: AssessmentRegistryConfidentialityTypeEnum!
+  stakeholders: [AssessmentRegistryOrganizationInputType!]
+  language: [AssessmentRegistryLanguageTypeEnum!]!
+  focuses: [AssessmentRegistryFocusTypeEnum!]
+  sectors: [AssessmentRegistrySectorTypeEnum!]
+  protectionInfoMgmts: [AssessmentRegistryProtectionInfoTypeEnum!]
+  affectedGroups: [AssessmentRegistryAffectedGroupTypeEnum!]
+  methodologyAttributes: [MethodologyAttributeInputType!]
+  additionalDocuments: [AdditionalDocumentInputType!]
+  scoreRatings: [ScoreRatingInputType!]
+  scoreAnalyticalDensity: [ScoreAnalyticalDensityInputType!]
+  cna: [CNAAnswerInputType!]
+  summaryPillarMeta: SummaryMetaInputType
+  summarySubPillarIssue: [SummarySubPillarIssueInputType!]
+  summaryDimensionMeta: [SummaryFocusMetaInputType!]
+  summarySubDimensionIssue: [SummarySubDimensionInputType!]
+  metadataComplete: Boolean
+  additionalDocumentComplete: Boolean
+  focusComplete: Boolean
+  methodologyComplete: Boolean
+  summaryComplete: Boolean
+  cnaComplete: Boolean
+  scoreComplete: Boolean
+}
+
+type AssessmentRegistryCreateIssue {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssessmentRegistrySummaryIssueType
+}
+
+enum AssessmentRegistryCrisisTypeEnum {
+  EARTH_QUAKE
+  GROUND_SHAKING
+  TSUNAMI
+  VOLCANO
+  VOLCANIC_ERUPTION
+  MASS_MOMENT_DRY
+  ROCK_FALL
+  AVALANCE
+  LANDSLIDE
+  SUBSIDENCE
+  EXTRA_TROPICAL_CYCLONE
+  TROPICAL_CYCLONE
+  LOCAL_STROM
+  FLOOD_RAIN
+  GENERAL_RIVER_FLOOD
+  FLASH_FLOOD
+  STROM_SURGE_FLOOD
+  MASS_MOVEMENT_WET
+  EXTREME_TEMPERATURE
+  HEAT_WAVE
+  COLD_WAVE
+  EXTREME_WEATHER_CONDITION
+  DROUGHT
+  WILDFIRE
+  POPULATION_DISPLACEMENT
+  CONFLICT
+  ECONOMIC
+  EPIDEMIC
+}
+
+enum AssessmentRegistryDataCollectionTechniqueTypeEnum {
+  SECONDARY_DATA_REVIEW
+  KEY_INFORMAT_INTERVIEW
+  DIRECT_OBSERVATION
+  COMMUNITY_GROUP_DISCUSSION
+  FOCUS_GROUP_DISCUSSION
+  HOUSEHOLD_INTERVIEW
+  INDIVIDUAL_INTERVIEW
+  SATELLITE_IMAGERY
+}
+
+enum AssessmentRegistryDetailTypeEnum {
+  INITIAL
+  RAPID
+  IN_DEPTH
+  MONITORING
+  REGISTRATION
+  OTHER
+}
+
+enum AssessmentRegistryDocumentTypeEnum {
+  ASSESSMENT_DATABASE
+  QUESTIONNAIRE
+  MISCELLANEOUS
+}
+
+enum AssessmentRegistryExternalTypeEnum {
+  EXTERNAL_SUPPORT_RECIEVED
+  NO_EXTERNAL_SUPPORT_RECEIVED
+}
+
+enum AssessmentRegistryFamilyTypeEnum {
+  DISPLACEMENT_TRAKING_MATRIX
+  MULTI_CLUSTER_INITIAL_AND_RAPID_ASSESSMENT
+  MULTI_SECTORIAL_NEEDS_ASSESSMENT
+  EMERGENCY_FOOD_SECURITY_ASSESSMENT
+  COMPREHENSIVE_FOOD_SECURITY_AND_VULNERABILITY_ANALYSIS
+  PROTECTION_MONITORING
+  HUMANITARIAN_NEEDS_OVERVIEW
+  BRIEFING_NOTE
+  REGISTRATION
+  IDP_PROFILING_EXERCISE
+  CENSUS
+  REFUGEE_AND_MIGRANT_RESPONSE_PLAN
+  RUFUGEE_RESPONSE_PLAN
+  SMART_NUTRITION_SURVEY
+  OTHER
+}
+
+enum AssessmentRegistryFocusTypeEnum {
+  CONTEXT
+  SHOCK_EVENT
+  DISPLACEMENT
+  CASUALTIES
+  INFORMATION_AND_COMMUNICATION
+  HUMANITERIAN_ACCESS
+  IMPACT
+  HUMANITARIAN_CONDITIONS
+  PEOPLE_AT_RISK
+  PRIORITIES_AND_PREFERENCES
+  RESPONSE_AND_CAPACITIES
+}
+
+enum AssessmentRegistryFrequencyTypeEnum {
+  ONE_OFF
+  REGULAR
+}
+
+enum AssessmentRegistryLanguageTypeEnum {
+  ENGLISH
+  FRENCH
+  SPANISH
+  ARABIC
+  PORTUGESE
+}
+
+type AssessmentRegistryListType {
+  results: [AssessmentRegistryType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AssessmentRegistryOptionsType {
+  cnaQuestions: [QuestionType!]!
+  summaryOptions: [SummaryOptionType!]!
+  summaryFocusOptions: [SummaryFocusOptionType!]!
+  scoreOptions: [ScoreOptionsType!]!
+}
+
+input AssessmentRegistryOrganizationInputType {
+  id: ID
+  clientId: String
+  organization: ID!
+  organizationType: AssessmentRegistryOrganizationTypeEnum!
+}
+
+type AssessmentRegistryOrganizationType {
+  id: ID!
+  organization: OrganizationType!
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  organizationType: AssessmentRegistryOrganizationTypeEnum!
+  organizationTypeDisplay: EnumDescription!
+}
+
+enum AssessmentRegistryOrganizationTypeEnum {
+  LEAD_ORGANIZATION
+  INTERNATIONAL_PARTNER
+  NATIONAL_PARTNER
+  DONOR
+  GOVERNMENT
+}
+
+enum AssessmentRegistryPreparednessTypeEnum {
+  WITH_PREPAREDNESS
+  WITHOUT_PREPAREDNESS
+}
+
+enum AssessmentRegistryProtectionInfoTypeEnum {
+  PROTECTION_MONITORING
+  PROTECTION_NEEDS_ASSESSMENT
+  CASE_MANAGEMENT
+  POPULATION_DATA
+  PROTECTION_RESPONSE_M_E
+  COMMUNICATING_WITH_IN_AFFECTED_COMMUNITIES
+  SECURITY_AND_SITUATIONAL_AWARENESS
+  SECTORAL_SYSTEM_OTHER
+}
+
+enum AssessmentRegistryProximityTypeEnum {
+  FACE_TO_FACE
+  REMOTE
+  MIXED
+}
+
+enum AssessmentRegistryRatingType {
+  VERY_POOR
+  POOR
+  FAIR
+  GOOD
+  VERY_GOOD
+}
+
+enum AssessmentRegistrySamplingApproachTypeEnum {
+  NON_RANDOM_SELECTION
+  RANDOM_SELECTION
+  FULL_ENUMERATION
+}
+
+enum AssessmentRegistryScoreAnalyticalStatementTypeEnum {
+  FIT_FOR_PURPOSE
+  TRUSTWORTHINESS
+  ANALYTICAL_RIGOR
+  ANALYTICAL_WRITING
+}
+
+enum AssessmentRegistryScoreCriteriaTypeEnum {
+  RELEVANCE
+  COMPREHENSIVENESS
+  TIMELINESS
+  GRANULARITY
+  COMPARABILITY
+  SOURCE_REABILITY
+  METHODS
+  TRIANGULATION
+  PLAUSIBILITY
+  INCLUSIVENESS
+  ASSUMPTIONS
+  CORROBORATION
+  STRUCTURED_ANALYTICAL_TECHNIQUE
+  CONSENSUS
+  REPRODUCIBILITY
+  CLEARLY_ARTICULATED_RESULT
+  LEVEL_OF_CONFIDENCE
+  ILLUSTRATION
+  SOURCED_DATA_EVIDENCE
+  CLEARLY_STATED_OUTLIERS
+}
+
+enum AssessmentRegistrySectorTypeEnum {
+  FOOD_SECURITY
+  HEALTH
+  SHELTER
+  WASH
+  PROTECTION
+  NUTRITION
+  LIVELIHOOD
+  EDUCATION
+  LOGISTICS
+  INTER_CROSS_SECTOR
+}
+
+enum AssessmentRegistrySummaryFocusDimensionTypeEnum {
+  IMPACT
+  HUMANITARIAN_CONDITIONS
+  PRIORITIES_AND_PREFERENCES
+  CONCLUSIONS
+  HUMANITARIAN_POPULATION_FIGURES
+}
+
+input AssessmentRegistrySummaryIssueCreateInputType {
+  subPillar: AssessmentRegistrySummarySubPillarTypeEnum
+  subDimension: AssessmentRegistrySummarySubDimensionTypeEnum
+  parent: ID
+  label: String!
+}
+
+type AssessmentRegistrySummaryIssueListType {
+  results: [AssessmentRegistrySummaryIssueType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AssessmentRegistrySummaryIssueType {
+  id: ID!
+  parent: AssessmentRegistrySummaryIssueType
+  label: String!
+  fullLabel: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  subPillar: AssessmentRegistrySummarySubPillarTypeEnum
+  subPillarDisplay: EnumDescription
+  subDimension: AssessmentRegistrySummarySubDimensionTypeEnum
+  subDimensionDisplay: EnumDescription
+  childCount: Int!
+  level: Int
+}
+
+enum AssessmentRegistrySummaryPillarTypeEnum {
+  CONTEXT
+  EVENT_SHOCK
+  DISPLACEMENT
+  INFORMATION_AND_COMMUNICATION
+  HUMANITARIAN_ACCESS
+}
+
+enum AssessmentRegistrySummarySubDimensionTypeEnum {
+  DRIVERS
+  IMPACT_ON_PEOPLE
+  IMPACT_ON_SYSTEM
+  LIVING_STANDARDS
+  COPING_MECHANISMS
+  PHYSICAL_AND_MENTAL_WELL_BEING
+  NEEDS_POP
+  NEEDS_HUMAN
+  INTERVENTIONS_POP
+  INTERVENTIONS_HUMAN
+  DEMOGRAPHIC_GROUPS
+  GROUPS_WITH_SPECIFIC_NEEDS
+  GEOGRAPHICAL_AREAS
+  PEOPLE_AT_RISKS
+  FOCAL_ISSUES
+}
+
+enum AssessmentRegistrySummarySubPillarTypeEnum {
+  POLITICS
+  DEMOGRAPHY
+  SOCIO_CULTURAL
+  ENVIRONMENT
+  SECURITY_AND_STABILITY
+  ECONOMICS
+  CHARACTERISTICS
+  DRIVERS_AND_AGGRAVATING_FACTORS
+  MITIGATING_FACTORS
+  HAZARDS_AND_THREATS
+  DISPLACEMENT_CHARACTERISTICS
+  PUSH_FACTORS
+  PULL_FACTORS
+  INTENTIONS
+  LOCAL_INTREGATIONS
+  SOURCE_AND_MEANS
+  CHALLANGES_AND_BARRIERS
+  KNOWLEDGE_AND_INFO_GAPS_HUMAN
+  KNOWLEDGE_AND_INFO_GAPS_POP
+  POPULATION_TO_RELIEF
+  RELIEF_TO_POPULATION
+  PHYSICAL_AND_SECURITY
+}
+
+type AssessmentRegistryType {
+  id: ID!
+  bgCountries: [RegionType!]!
+  bgCrisisStartDate: Date
+  costEstimatesUsd: Int
+  noOfPages: Int
+  dataCollectionStartDate: Date
+  dataCollectionEndDate: Date
+  publicationDate: Date
+  executiveSummary: String
+  objectives: String
+  dataCollectionTechniques: String
+  sampling: String
+  limitations: String
+  metadataComplete: Boolean!
+  additionalDocumentComplete: Boolean!
+  focusComplete: Boolean!
+  methodologyComplete: Boolean!
+  summaryComplete: Boolean!
+  cnaComplete: Boolean!
+  scoreComplete: Boolean!
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  project: ID!
+  bgCrisisType: AssessmentRegistryCrisisTypeEnum!
+  bgCrisisTypeDisplay: EnumDescription!
+  bgPreparedness: AssessmentRegistryPreparednessTypeEnum!
+  bgPreparednessDisplay: EnumDescription!
+  externalSupport: AssessmentRegistryExternalTypeEnum!
+  externalSupportDisplay: EnumDescription!
+  coordinatedJoint: AssessmentRegistryCoordinationTypeEnum!
+  coordinatedJointDisplay: EnumDescription!
+  detailsType: AssessmentRegistryDetailTypeEnum!
+  detailsTypeDisplay: EnumDescription!
+  family: AssessmentRegistryFamilyTypeEnum!
+  familyDisplay: EnumDescription!
+  frequency: AssessmentRegistryFrequencyTypeEnum!
+  frequencyDisplay: EnumDescription!
+  confidentiality: AssessmentRegistryConfidentialityTypeEnum!
+  confidentialityDisplay: EnumDescription!
+  language: [AssessmentRegistryLanguageTypeEnum!]!
+  focuses: [AssessmentRegistryFocusTypeEnum!]!
+  sectors: [AssessmentRegistrySectorTypeEnum!]!
+  protectionInfoMgmts: [AssessmentRegistryProtectionInfoTypeEnum!]
+  affectedGroups: [AssessmentRegistryAffectedGroupTypeEnum!]!
+  methodologyAttributes: [MethodologyAttributeType!]
+  additionalDocuments: [AdditionalDocumentType!]
+  scoreRatings: [ScoreRatingType!]!
+  scoreAnalyticalDensity: [ScoreAnalyticalDensityType!]!
+  locations: [ProjectGeoAreaType!]
+  cna: [CNAType!]
+  summaryPillarMeta: SummaryMetaType
+  summarySubPillarIssue: [SummarySubPillarIssueType!]
+  summaryDimensionMeta: [SummaryFocusMetaType!]
+  summarySubDimensionIssue: [SummaryFocusSubDimensionIssueType!]
+  lead: LeadDetailType!
+  stakeholders: [AssessmentRegistryOrganizationType!]
+}
+
+enum AssessmentRegistryUnitOfAnalysisTypeEnum {
+  CRISIS
+  COUNTRY
+  REGION
+  PROVINCE_GOV_PREFECTURE
+  DEPARTMENT_DISTRICT
+  SUB_DISTRICT_COUNTRY
+  MUNICIPALITY
+  NEIGHBORHOOD_QUARTIER
+  COMMUNITY_SITE
+  AFFECTED_GROUP
+  HOUSEHOLD
+  INDIVIDUAL
+}
+
+enum AssessmentRegistryUnitOfReportingTypeEnum {
+  CRISIS
+  COUNTRY
+  REGION
+  PROVINCE_GOV_PREFECTURE
+  DEPARTMENT_DISTRICT
+  SUB_DISTRICT_COUNTRY
+  MUNICIPALITY
+  NEIGHBORHOOD_QUARTIER
+  COMMUNITY_SITE
+  AFFECTED_GROUP
+  HOUSEHOLD
+  INDIVIDUAL
+}
+
+type AssessmentType {
+  id: ID!
+  lead: LeadType
+  project: ProjectType!
+  leadGroup: LeadGroupType
+  metadata: GenericScalar
+  methodology: GenericScalar
+  summary: GenericScalar
+  score: GenericScalar
+  questionnaire: GenericScalar
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+}
+
+type AssistedTaggingModelPredictionTagType {
+  id: ID!
+  name: String!
+  tagId: String!
+  group: String
+  hideInAnalysisFrameworkMapping: Boolean!
+  isCategory: Boolean!
+  isDeprecated: Boolean!
+  parentTag: ID
+}
+
+type AssistedTaggingModelType {
+  id: ID!
+  modelId: String!
+  name: String!
+  versions: [AssistedTaggingModelVersionType!]
+}
+
+type AssistedTaggingModelVersionType {
+  id: ID!
+  version: String!
+}
+
+type AssistedTaggingMutationType {
+  draftEntryCreate(data: DraftEntryInputType!): CreateDraftEntry
+  missingPredictionReviewCreate(data: MissingPredictionReviewInputType!): CreateMissingPredictionReview
+  wrongPredictionReviewCreate(data: WrongPredictionReviewInputType!): CreateWrongPredictionReview
+  missingPredictionReviewDelete(id: ID!): DeleteMissingPredictionReview
+  wrongPredictionReviewDelete(id: ID!): DeleteWrongPredictionReview
+  triggerAutoDraftEntry(data: TriggerAutoDraftEntryInputType!): TriggerAutoDraftEntry
+  updateDraftEntry(data: UpdateDraftEntryInputType!, id: ID!): UpdateDraftEntry
+}
+
+enum AssistedTaggingPredictionDataTypeEnum {
+  RAW
+  TAG
+}
+
+type AssistedTaggingPredictionType {
+  id: ID!
+  value: String!
+  prediction: Decimal
+  threshold: Decimal
+  isSelected: Boolean!
+  modelVersion: ID!
+  modelVersionDeeplModelId: String!
+  draftEntry: ID!
+  dataType: AssistedTaggingPredictionDataTypeEnum!
+  dataTypeDisplay: EnumDescription!
+  category: ID
+  tag: ID
+  wrongPredictionReviews: [WrongPredictionReviewType!]
+}
+
+type AssistedTaggingQueryType {
+  draftEntry(id: ID!): DraftEntryType
+  draftEntries(lead: ID, draftEntryTypes: [DraftEntryTypeEnum!], isDiscarded: Boolean, page: Int = 1, pageSize: Int): DraftEntryListType
+}
+
+type AssistedTaggingRootQueryType {
+  taggingModel(id: ID!): AssistedTaggingModelType
+  taggingModels: [AssistedTaggingModelType!]
+  predictionTag(id: ID!): AssistedTaggingModelPredictionTagType
+  predictionTags: [AssistedTaggingModelPredictionTagType!]
+}
+
+type AtomFeedFieldType {
+  key: String
+  label: String
+}
+
+input AttributeGqInputType {
+  id: ID
+  data: GenericScalar
+  widget: ID!
+  widgetVersion: Int!
+  clientId: String
+}
+
+type AttributeType {
+  id: ID!
+  widgetVersion: Int!
+  data: GenericScalar
+  clientId: ID!
+  widget: ID!
+  widgetType: WidgetWidgetTypeEnum!
+  widgetTypeDisplay: EnumDescription!
+  geoSelectedOptions: [ProjectGeoAreaType!]
+}
+
+enum AutomaticSummaryStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILED
+  SEND_FAILED
+}
+
+input BulkAnalysisFrameworkMembershipInputType {
+  id: ID
+  member: ID!
+  role: ID
+  clientId: String
+}
+
+type BulkEntry {
+  errors: [[GenericScalar!]]
+  result: [EntryType]
+  deletedResult: [EntryType!]
+}
+
+input BulkEntryInputType {
+  id: ID
+  lead: ID!
+  order: Int
+  informationDate: Date
+  entryType: EntryTagTypeEnum
+  image: ID
+  imageRaw: String
+  leadImage: ID
+  tabularField: ID
+  excerpt: String
+  droppedExcerpt: String
+  highlightHidden: Boolean
+  attributes: [AttributeGqInputType!]
+  draftEntry: ID
+  clientId: String
+}
+
+type BulkLead {
+  errors: [[GenericScalar!]]
+  result: [LeadType]
+  deletedResult: [LeadType!]
+}
+
+input BulkLeadInputType {
+  id: ID
+  title: String!
+  attachment: ID
+  status: LeadStatusEnum
+  assignee: String
+  confidentiality: LeadConfidentialityEnum
+  sourceType: LeadSourceTypeEnum
+  priority: LeadPriorityEnum
+  publishedOn: Date
+  text: String
+  isAssessmentLead: Boolean
+  leadGroup: ID
+  url: String
+  website: String
+  source: ID
+  authors: [ID!]
+  emmTriggers: [LeadEMMTriggerInputType!]
+  emmEntities: [EMMEntityInputType!]
+  connectorLead: ID
+  clientId: String
+}
+
+input BulkProjectMembershipInputType {
+  id: ID
+  member: ID!
+  role: ID
+  badges: [ProjectMembershipBadgeTypeEnum!]
+  clientId: String
+}
+
+input BulkProjectUserGroupMembershipInputType {
+  usergroup: ID!
+  role: ID
+  badges: [ProjectMembershipBadgeTypeEnum!]
+  clientId: String
+  id: ID
+}
+
+type BulkUpdateAnalysisFrameworkMembership {
+  errors: [[GenericScalar!]]
+  result: [AnalysisFrameworkMembershipType]
+  deletedResult: [AnalysisFrameworkMembershipType!]
+}
+
+type BulkUpdateProjectMembership {
+  errors: [[GenericScalar!]]
+  result: [ProjectMembershipType]
+  deletedResult: [ProjectMembershipType!]
+}
+
+type BulkUpdateProjectRegion {
+  errors: [[GenericScalar!]]
+  result: [RegionDetailType!]
+  deletedResult: [RegionDetailType!]
+}
+
+type BulkUpdateProjectUserGroupMembership {
+  errors: [[GenericScalar!]]
+  result: [ProjectUserGroupMembershipType]
+  deletedResult: [ProjectUserGroupMembershipType!]
+}
+
+type BulkUpdateUserGroupMembership {
+  errors: [[GenericScalar!]]
+  result: [GroupMembershipType]
+  deletedResult: [GroupMembershipType!]
+}
+
+input BulkUserGroupMembershipInputType {
+  id: ID
+  member: ID!
+  role: GroupMembershipRoleEnum
+  clientId: String
+}
+
+input CNAAnswerInputType {
+  id: ID
+  clientId: String
+  question: ID!
+  answer: Boolean!
+}
+
+type CNAType {
+  id: ID!
+  question: QuestionType!
+  answer: Boolean!
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+}
+
+type CancelUserExport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserExportType
+}
+
+type CancelUserGenericExport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserGenericExportType
+}
+
+type ChangeUserPassword {
+  errors: [GenericScalar!]
+  ok: Boolean
+}
+
+enum ConnectorLeadExtractionStatusEnum {
+  PENDING
+  RETRYING
+  STARTED
+  SUCCESS
+  FAILED
+}
+
+type ConnectorLeadType {
+  id: ID!
+  url: String!
+  website: String!
+  title: String!
+  publishedOn: Date
+  sourceRaw: String!
+  authorRaw: String!
+  authors: [OrganizationType!]!
+  source: OrganizationType
+  extractionStatus: ConnectorLeadExtractionStatusEnum!
+  extractionStatusDisplay: EnumDescription!
+}
+
+input ConnectorSourceGqInputType {
+  id: ID
+  title: String!
+  source: ConnectorSourceSourceEnum!
+  params: GenericScalar
+  clientId: String
+}
+
+type ConnectorSourceLeadCountType {
+  total: Int!
+  blocked: Int!
+  alreadyAdded: Int!
+}
+
+input ConnectorSourceLeadInputType {
+  blocked: Boolean
+}
+
+type ConnectorSourceLeadListType {
+  results: [ConnectorSourceLeadType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum ConnectorSourceLeadOrderingEnum {
+  ASC_ID
+  ASC_LEAD_CREATED_AT
+  ASC_LEAD_TITLE
+  DESC_ID
+  DESC_LEAD_CREATED_AT
+  DESC_LEAD_TITLE
+}
+
+type ConnectorSourceLeadType {
+  id: ID!
+  blocked: Boolean!
+  alreadyAdded: Boolean!
+  connectorLead: ConnectorLeadType!
+  source: ID!
+}
+
+type ConnectorSourceListType {
+  results: [ConnectorSourceType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum ConnectorSourceOrderingEnum {
+  ASC_ID
+  ASC_CREATED_AT
+  ASC_TITLE
+  ASC_SOURCE
+  DESC_ID
+  DESC_CREATED_AT
+  DESC_TITLE
+  DESC_SOURCE
+}
+
+enum ConnectorSourceSourceEnum {
+  ATOM_FEED
+  RELIEF_WEB
+  RSS_FEED
+  UNHCR
+  HUMANITARIAN_RESP
+  PDNA
+  EMM
+}
+
+type ConnectorSourceStatsType {
+  date: Date!
+  count: Int!
+}
+
+enum ConnectorSourceStatusEnum {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILURE
+}
+
+type ConnectorSourceType {
+  id: ID!
+  title: String!
+  unifiedConnector: ID!
+  params: GenericScalar!
+  lastFetchedAt: DateTime
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  source: ConnectorSourceSourceEnum!
+  sourceDisplay: EnumDescription!
+  stats: [ConnectorSourceStatsType]
+  leadsCount: ConnectorSourceLeadCountType!
+  status: ConnectorSourceStatusEnum!
+  statusDisplay: EnumDescription!
+}
+
+type CreateAnalysisFramework {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisFrameworkDetailType
+}
+
+type CreateAnalysisPillarDiscardedEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisPillarDiscardedEntryType
+}
+
+type CreateAnalysisReport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisReportType
+}
+
+type CreateAnalysisReportSnapshot {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisReportSnapshotType
+}
+
+type CreateAnalysisReportUpload {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisReportUploadType
+}
+
+type CreateAssessmentRegistry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssessmentRegistryType
+}
+
+type CreateDraftEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: DraftEntryType
+}
+
+type CreateEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: EntryType
+}
+
+type CreateEntryReviewComment {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: EntryReviewCommentDetailType
+}
+
+type CreateLead {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: LeadType
+}
+
+type CreateMissingPredictionReview {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: MissingPredictionReviewType
+}
+
+type CreateProject {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectDetailType
+}
+
+type CreateProjectJoin {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectJoinRequestType
+}
+
+type CreateUnifiedConnector {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UnifiedConnectorType
+}
+
+type CreateUserExport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserExportType
+}
+
+type CreateUserGenericExport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserGenericExportType
+}
+
+type CreateUserGroup {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserGroupType
+}
+
+type CreateWrongPredictionReview {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: MissingPredictionReviewType
+}
+
+scalar Date
+
+type DateCountType {
+  date: String
+  count: Int
+}
+
+scalar DateTime
+
+scalar Decimal
+
+type DeleteAnalysisPillarDiscardedEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisPillarDiscardedEntryType
+}
+
+type DeleteAnalysisReport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisReportType
+}
+
+type DeleteAnalysisReportUpload {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisReportUploadType
+}
+
+type DeleteAssessment {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssessmentType
+}
+
+type DeleteAssessmentRegistry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssessmentRegistryType
+}
+
+type DeleteEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: EntryType
+}
+
+type DeleteEntryReviewComment {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: EntryReviewCommentDetailType
+}
+
+type DeleteLead {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: LeadType
+}
+
+type DeleteLeadGroup {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: LeadGroupType
+}
+
+type DeleteMissingPredictionReview {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: MissingPredictionReviewType
+}
+
+type DeleteUnifiedConnector {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UnifiedConnectorType
+}
+
+type DeleteUserExport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserExportType
+}
+
+type DeleteUserGroup {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserGroupType
+}
+
+type DeleteWrongPredictionReview {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: WrongPredictionReviewType
+}
+
+input DiscardedEntryCreateInputType {
+  id: ID
+  analysisPillar: ID!
+  entry: ID!
+  tag: DiscardedEntryTagTypeEnum!
+}
+
+enum DiscardedEntryTagTypeEnum {
+  REDUNDANT
+  TOO_OLD
+  ANECDOTAL
+  OUTLIER
+}
+
+input DiscardedEntryUpdateInputType {
+  id: ID
+  analysisPillar: ID
+  entry: ID
+  tag: DiscardedEntryTagTypeEnum
+}
+
+type DjangoDebug {
+  sql: [DjangoDebugSQL]
+}
+
+type DjangoDebugSQL {
+  vendor: String!
+  alias: String!
+  sql: String
+  duration: Float!
+  rawSql: String!
+  params: String!
+  startTime: Float!
+  stopTime: Float!
+  isSlow: Boolean!
+  isSelect: Boolean!
+  transId: String
+  transStatus: String
+  isoLevel: String
+  encoding: String
+}
+
+type DraftEntryCountByLead {
+  undiscardedDraftEntry: Int
+  discardedDraftEntry: Int
+}
+
+input DraftEntryInputType {
+  lead: ID!
+  excerpt: String!
+}
+
+type DraftEntryListType {
+  results: [DraftEntryType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum DraftEntryPredictionStatusEnum {
+  PENDING
+  STARTED
+  DONE
+  SEND_FAILED
+}
+
+type DraftEntryType {
+  id: ID!
+  excerpt: String!
+  predictionReceivedAt: DateTime
+  predictionStatus: DraftEntryPredictionStatusEnum!
+  predictionStatusDisplay: EnumDescription!
+  predictions: [AssistedTaggingPredictionType!]
+  missingPredictionReviews: [MissingPredictionReviewType!]
+  relatedGeoareas: [ProjectGeoAreaType!]
+}
+
+enum DraftEntryTypeEnum {
+  AUTO
+  MANUAL
+}
+
+input EMMEntityInputType {
+  name: String!
+}
+
+type EmmEntityListType {
+  results: [EmmEntityType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type EmmEntityType {
+  id: ID!
+  name: String!
+}
+
+type EmmKeyRiskFactorType {
+  emmRiskFactors: String
+}
+
+type EmmKeyWordType {
+  emmKeywords: String
+}
+
+type EntriesCountType {
+  total: Int
+  controlled: Int
+}
+
+input EntriesFilterDataInputType {
+  id: ID
+  excerpt: String
+  controlled: Boolean
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  leads: [ID!]
+  leadCreatedBy: [ID!]
+  leadPublishedOn: Date
+  leadPublishedOnGte: Date
+  leadPublishedOnLte: Date
+  leadTitle: String
+  leadAssignees: [ID!]
+  leadStatuses: [LeadStatusEnum!]
+  leadPriorities: [LeadPriorityEnum!]
+  leadConfidentialities: [LeadConfidentialityEnum!]
+  leadAuthoringOrganizationTypes: [ID!]
+  leadAuthorOrganizations: [ID!]
+  leadSourceOrganizations: [ID!]
+  search: String
+  entryTypes: [EntryTagTypeEnum!]
+  projectEntryLabels: [ID!]
+  entriesId: [ID!]
+  geoCustomShape: String
+  leadGroupLabel: String
+  filterableData: [EntryFilterDataInputType!]
+  hasComment: Boolean
+  isVerified: Boolean
+}
+
+type EntriesFilterDataType {
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  leads: [ID!]
+  leadCreatedBy: [ID!]
+  leadAssignees: [ID!]
+  leadStatuses: [LeadStatusEnum!]
+  leadPriorities: [LeadPriorityEnum!]
+  leadConfidentialities: [LeadConfidentialityEnum!]
+  leadAuthoringOrganizationTypes: [ID!]
+  leadAuthorOrganizations: [ID!]
+  leadSourceOrganizations: [ID!]
+  entryTypes: [EntryTagTypeEnum!]
+  projectEntryLabels: [ID!]
+  entriesId: [ID!]
+  id: ID
+  excerpt: String
+  controlled: Boolean
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  leadPublishedOn: Date
+  leadPublishedOnGte: Date
+  leadPublishedOnLte: Date
+  leadTitle: String
+  search: String
+  geoCustomShape: String
+  leadGroupLabel: String
+  hasComment: Boolean
+  isVerified: Boolean
+  filterableData: [EntryFilterDataType!]
+}
+
+input EntryFilterDataInputType {
+  filterKey: ID!
+  value: String
+  valueGte: String
+  valueLte: String
+  valueList: [String!]
+  useExclude: Boolean
+  useAndOperator: Boolean
+  includeSubRegions: Boolean
+}
+
+type EntryFilterDataType {
+  valueList: [String!]
+  filterKey: ID!
+  value: String
+  valueGte: String
+  valueLte: String
+  useExclude: Boolean
+  useAndOperator: Boolean
+  includeSubRegions: Boolean
+}
+
+type EntryGeoCentroidData {
+  centroid: PointScalar!
+  count: Int!
+}
+
+type EntryGroupLabelType {
+  labelId: ID!
+  labelTitle: String!
+  labelColor: String
+  count: Int!
+  groups: [String!]!
+}
+
+input EntryInputType {
+  id: ID
+  lead: ID!
+  order: Int
+  informationDate: Date
+  entryType: EntryTagTypeEnum
+  image: ID
+  imageRaw: String
+  leadImage: ID
+  tabularField: ID
+  excerpt: String
+  droppedExcerpt: String
+  highlightHidden: Boolean
+  attributes: [AttributeGqInputType!]
+  draftEntry: ID
+  clientId: String
+}
+
+type EntryListType {
+  results: [EntryType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type EntryReviewCommentDetailType {
+  id: ID!
+  createdBy: UserType!
+  createdAt: DateTime!
+  mentionedUsers: [UserType!]!
+  entry: ID!
+  commentType: EntryReviewCommentTypeEnum!
+  commentTypeDisplay: EnumDescription!
+  text: String
+  textHistory: [EntryReviewCommentTextType!]
+}
+
+input EntryReviewCommentInputType {
+  entry: ID!
+  commentType: EntryReviewCommentTypeEnum
+  text: String
+  mentionedUsers: [ID!]
+}
+
+type EntryReviewCommentListType {
+  results: [EntryReviewCommentType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum EntryReviewCommentOrderingEnum {
+  ASC_ID
+  ASC_CREATED_AT
+  ASC_COMMENT_TYPE
+  ASC_ENTRY
+  DESC_ID
+  DESC_CREATED_AT
+  DESC_COMMENT_TYPE
+  DESC_ENTRY
+}
+
+type EntryReviewCommentTextType {
+  id: ID!
+  createdAt: DateTime!
+  text: String!
+}
+
+type EntryReviewCommentType {
+  id: ID!
+  createdBy: UserType!
+  createdAt: DateTime!
+  mentionedUsers: [UserType!]!
+  commentType: EntryReviewCommentTypeEnum!
+  commentTypeDisplay: EnumDescription!
+  text: String
+  entry: ID!
+}
+
+enum EntryReviewCommentTypeEnum {
+  COMMENT
+  VERIFY
+  UNVERIFY
+  CONTROL
+  UNCONTROL
+}
+
+enum EntryTagTypeEnum {
+  EXCERPT
+  IMAGE
+  DATA_SERIES
+}
+
+type EntryType {
+  id: ID!
+  clientId: ID!
+  lead: LeadType!
+  project: ProjectType!
+  order: Int!
+  analysisFramework: AnalysisFrameworkType!
+  informationDate: Date
+  excerpt: String!
+  image: GalleryFileType
+  droppedExcerpt: String!
+  highlightHidden: Boolean!
+  controlled: Boolean
+  controlledChangedBy: UserType
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  entryType: EntryTagTypeEnum!
+  entryTypeDisplay: EnumDescription!
+  attributes: [AttributeType!]
+  projectLabels: [EntryGroupLabelType!]
+  verifiedBy: [UserType!]
+  verifiedByCount: Int!
+  reviewCommentsCount: Int!
+  draftEntry: ID
+}
+
+scalar EnumDescription
+
+type ExploreCountByDateType {
+  date: Date!
+  count: Int!
+}
+
+type ExploreDashboardProjectRegion {
+  id: ID!
+  centroid: PointScalar
+  projectIds: [ID!]
+}
+
+type ExploreDashboardStatType {
+  totalProjects: Int!
+  totalRegisteredUsers: Int!
+  totalLeads: Int!
+  totalEntries: Int!
+  totalEntriesAddedLastWeek: Int!
+  totalActiveUsers: Int!
+  totalAuthors: Int!
+  totalPublishers: Int!
+  topTenAuthors: [ExploreStastOrganizationType!]
+  topTenPublishers: [ExploreStastOrganizationType!]
+  topTenFrameworks: [ExploreDeepStatTopActiveFrameworksType!]
+  topTenProjectsByUsers: [ExploreDeepStatTopProjectType!]
+  topTenProjectsByEntries: [ExploreDeepStatTopProjectLeadEntryType!]
+  topTenProjectsByLeads: [ExploreDeepStatTopProjectLeadEntryType!]
+  leadsCountByMonth: [ExploreCountByDateType!]
+  leadsCountByDay: [ExploreCountByDateType!]
+  entriesCountByMonth: [ExploreCountByDateType!]
+  entriesCountByDay: [ExploreCountByDateType!]
+  entriesCountByRegion: [ExploreDeepStatEntriesCountByCentroidType!]
+  projectsByRegion: [ExploreDashboardProjectRegion]
+  projectsCountByMonth: [ExploreCountByDateType!]
+  projectsCountByDay: [ExploreCountByDateType!]
+}
+
+input ExploreDeepFilterInputType {
+  dateFrom: DateTime!
+  dateTo: DateTime!
+  project: ExploreProjectFilterDataInputType
+}
+
+type ExploreDeepStatEntriesCountByCentroidType {
+  centroid: PointScalar
+  count: Int!
+}
+
+type ExploreDeepStatTopActiveFrameworksType {
+  id: ID!
+  title: String!
+  projectsCount: Int!
+  entriesCount: Int!
+}
+
+type ExploreDeepStatTopProjectLeadEntryType {
+  id: ID!
+  title: String
+  leadsCount: Int!
+  entriesCount: Int!
+}
+
+type ExploreDeepStatTopProjectType {
+  id: ID!
+  title: String
+  usersCount: Int!
+}
+
+input ExploreProjectFilterDataInputType {
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  organizations: [ID!]
+  isTest: Boolean
+  search: String
+  excludeEntryLessThan: Boolean
+  regions: [ID!]
+}
+
+type ExploreProjectStatTopActiveFrameworksType {
+  analysisFrameworkId: ID!
+  analysisFrameworkTitle: String
+  projectCount: Int!
+  sourceCount: Int!
+}
+
+type ExploreProjectStatTopActiveProjectsType {
+  projectId: ID!
+  projectTitle: String
+  analysisFrameworkId: ID
+  analysisFrameworkTitle: String
+}
+
+type ExploreStastOrganizationType {
+  id: ID!
+  title: String!
+  leadsCount: Int
+  projectsCount: Int
+}
+
+input ExportCreateInputType {
+  title: String
+  type: ExportDataTypeEnum!
+  format: ExportFormatEnum!
+  exportType: ExportExportTypeEnum!
+  isPreview: Boolean
+  filters: LeadsFilterDataInputType!
+  extraOptions: ExportExtraOptionsInputType
+  analysis: ID
+}
+
+enum ExportDataTypeEnum {
+  ENTRIES
+  ASSESSMENTS
+  PLANNED_ASSESSMENTS
+  ANALYSES
+}
+
+enum ExportDateFormatEnum {
+  DEFAULT
+  FORMAT_1
+}
+
+input ExportExcelSelectedColumnInputType {
+  isWidget: Boolean!
+  widgetKey: String
+  staticColumn: ExportExcelSelectedStaticColumnEnum
+}
+
+type ExportExcelSelectedColumnType {
+  isWidget: Boolean!
+  widgetKey: String
+  staticColumn: ExportExcelSelectedStaticColumnEnum
+}
+
+enum ExportExcelSelectedStaticColumnEnum {
+  LEAD_PUBLISHED_ON
+  ENTRY_CREATED_BY
+  ENTRY_CREATED_AT
+  ENTRY_CONTROL_STATUS
+  LEAD_ID
+  LEAD_TITLE
+  LEAD_URL
+  LEAD_PAGE_COUNT
+  LEAD_ORGANIZATION_TYPE_AUTHOR
+  LEAD_ORGANIZATION_AUTHOR
+  LEAD_ORGANIZATION_SOURCE
+  LEAD_PRIORITY
+  LEAD_ASSIGNEE
+  ENTRY_ID
+  LEAD_ENTRY_ID
+  ENTRY_EXCERPT
+}
+
+enum ExportExportTypeEnum {
+  EXCEL
+  REPORT
+  JSON
+}
+
+input ExportExtraOptionsInputType {
+  dateFormat: ExportDateFormatEnum
+  excelDecoupled: Boolean
+  excelColumns: [ExportExcelSelectedColumnInputType!]
+  reportShowGroups: Boolean
+  reportShowLeadEntryId: Boolean
+  reportShowAssessmentData: Boolean
+  reportShowEntryWidgetData: Boolean
+  reportTextWidgetIds: [ID!]
+  reportExportingWidgets: [ID!]
+  reportLevels: [ExportReportLevelWidgetInputType!]
+  reportStructure: [ExportReportStructureWidgetInputType!]
+  reportCitationStyle: ExportReportCitationStyleEnum
+}
+
+type ExportExtraOptionsType {
+  dateFormat: ExportDateFormatEnum
+  excelDecoupled: Boolean
+  excelColumns: [ExportExcelSelectedColumnType!]
+  reportShowGroups: Boolean
+  reportShowLeadEntryId: Boolean
+  reportShowAssessmentData: Boolean
+  reportShowEntryWidgetData: Boolean
+  reportTextWidgetIds: [ID!]
+  reportExportingWidgets: [ID!]
+  reportLevels: [ExportReportLevelWidgetType!]
+  reportStructure: [ExportReportStructureWidgetType!]
+  reportCitationStyle: ExportReportCitationStyleEnum
+}
+
+enum ExportFormatEnum {
+  CSV
+  XLSX
+  DOCX
+  PDF
+  JSON
+}
+
+enum ExportReportCitationStyleEnum {
+  DEFAULT
+  STYLE_1
+}
+
+input ExportReportLevelWidgetFourthLevelInputType {
+  id: ID!
+  title: String!
+}
+
+type ExportReportLevelWidgetFourthLevelType {
+  id: ID!
+  title: String!
+}
+
+input ExportReportLevelWidgetInputType {
+  id: ID!
+  levels: [ExportReportLevelWidgetLevelInputType!]
+}
+
+input ExportReportLevelWidgetLevelInputType {
+  id: ID!
+  title: String!
+  sublevels: [ExportReportLevelWidgetSubLevelInputType!]
+}
+
+type ExportReportLevelWidgetLevelType {
+  id: ID!
+  title: String!
+  sublevels: [ExportReportLevelWidgetSubLevelType!]
+}
+
+input ExportReportLevelWidgetSubLevelInputType {
+  id: ID!
+  title: String!
+  sublevels: [ExportReportLevelWidgetSubSubLevelInputType!]
+}
+
+type ExportReportLevelWidgetSubLevelType {
+  id: ID!
+  title: String!
+  sublevels: [ExportReportLevelWidgetSubSubLevelType!]
+}
+
+input ExportReportLevelWidgetSubSubLevelInputType {
+  id: ID!
+  title: String!
+  sublevels: [ExportReportLevelWidgetFourthLevelInputType!]
+}
+
+type ExportReportLevelWidgetSubSubLevelType {
+  id: ID!
+  title: String!
+  sublevels: [ExportReportLevelWidgetFourthLevelType!]
+}
+
+type ExportReportLevelWidgetType {
+  id: ID!
+  levels: [ExportReportLevelWidgetLevelType!]
+}
+
+input ExportReportStructureWidgetFirstLevelInputType {
+  id: ID!
+  levels: [ExportReportStructureWidgetSecondLevelInputType!]
+}
+
+type ExportReportStructureWidgetFirstLevelType {
+  id: ID!
+  levels: [ExportReportStructureWidgetSecondLevelType!]
+}
+
+input ExportReportStructureWidgetFourthLevelInputType {
+  id: ID!
+}
+
+type ExportReportStructureWidgetFourthLevelType {
+  id: ID!
+}
+
+input ExportReportStructureWidgetInputType {
+  id: ID!
+  levels: [ExportReportStructureWidgetFirstLevelInputType!]
+}
+
+input ExportReportStructureWidgetSecondLevelInputType {
+  id: ID!
+  levels: [ExportReportStructureWidgetThirdLevelInputType!]
+}
+
+type ExportReportStructureWidgetSecondLevelType {
+  id: ID!
+  levels: [ExportReportStructureWidgetThirdLevelType!]
+}
+
+input ExportReportStructureWidgetThirdLevelInputType {
+  id: ID!
+  levels: [ExportReportStructureWidgetFourthLevelInputType!]
+}
+
+type ExportReportStructureWidgetThirdLevelType {
+  id: ID!
+  levels: [ExportReportStructureWidgetFourthLevelType!]
+}
+
+type ExportReportStructureWidgetType {
+  id: ID!
+  levels: [ExportReportStructureWidgetFirstLevelType!]
+}
+
+enum ExportStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILURE
+  CANCELED
+}
+
+input ExportUpdateInputType {
+  title: String
+}
+
+enum FeatureFeatureType {
+  GENERAL_ACCESS
+  EXPERIMENTAL
+  EARLY_ACCESS
+}
+
+enum FeatureKey {
+  PRIVATE_PROJECT
+  TABULAR
+  ZOOMABLE_IMAGE
+  POLYGON_SUPPORT_GEO
+  ENTRY_VISUALIZATION_CONFIGURATION
+  CONNECTORS
+  ASSISTED
+  QUALITY_CONTROL
+  NEW_UI
+  ANALYSIS
+  QUESTIONNAIRE
+}
+
+type FileFieldType {
+  name: String
+  url: String
+}
+
+input FileUploadInputType {
+  clientId: String
+  file: Upload!
+  title: String!
+  isPublic: Boolean
+  projects: [ID!]
+}
+
+type GalleryFileType {
+  id: ID!
+  title: String!
+  mimeType: String
+  metadata: GenericScalar
+  file: FileFieldType
+}
+
+input GenericExportCreateInputType {
+  title: String
+  type: GenericExportDataTypeEnum!
+  format: GenericExportFormatEnum!
+  filters: UserGenericExportFiltersGqlInputType!
+}
+
+enum GenericExportDataTypeEnum {
+  PROJECTS_STATS
+}
+
+enum GenericExportFormatEnum {
+  CSV
+  XLSX
+  DOCX
+  PDF
+  JSON
+}
+
+enum GenericExportStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILURE
+  CANCELED
+}
+
+scalar GenericScalar
+
+enum GeoAreaOrderingEnum {
+  ASC_ID
+  ASC_ADMIN_LEVEL
+  DESC_ID
+  DESC_ADMIN_LEVEL
+}
+
+enum GroupMembershipRoleEnum {
+  NORMAL
+  ADMIN
+}
+
+type GroupMembershipType {
+  id: ID!
+  member: UserType!
+  joinedAt: DateTime!
+  addedBy: UserType
+  clientId: ID!
+  role: GroupMembershipRoleEnum!
+  roleDisplay: EnumDescription!
+}
+
+input HIDLoginInputType {
+  accessToken: String!
+  expiresIn: Int
+  tokenType: String
+  state: Int
+}
+
+type JwtTokenType {
+  accessToken: String
+  expiresIn: String
+}
+
+enum LeadAutoEntryExtractionTypeEnum {
+  NONE
+  STARTED
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum LeadConfidentialityEnum {
+  UNPROTECTED
+  RESTRICTED
+  CONFIDENTIAL
+}
+
+type LeadCopy {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: [LeadType!]
+}
+
+input LeadCopyInputType {
+  projects: [ID!]!
+  leads: [ID!]!
+}
+
+type LeadDetailType {
+  id: ID!
+  clientId: ID!
+  leadGroup: LeadGroupType
+  title: String!
+  assignee: UserType
+  publishedOn: Date
+  text: String!
+  url: String!
+  attachment: GalleryFileType
+  isAssessmentLead: Boolean!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  project: ID!
+  sourceType: LeadSourceTypeEnum!
+  sourceTypeDisplay: EnumDescription!
+  priority: LeadPriorityEnum!
+  priorityDisplay: EnumDescription!
+  confidentiality: LeadConfidentialityEnum!
+  confidentialityDisplay: EnumDescription!
+  status: LeadStatusEnum!
+  statusDisplay: EnumDescription!
+  extractionStatus: LeadExtractionStatusEnum
+  leadPreview: LeadPreviewType
+  source: OrganizationType
+  authors: [OrganizationType!]
+  emmEntities: [EmmEntityType!]
+  emmTriggers: [LeadEmmTriggerType!]
+  assessmentId: ID
+  entriesCount: EntriesCountType
+  filteredEntriesCount: Int
+  duplicateLeadsCount: Int
+  shareViewUrl: String!
+  autoEntryExtractionStatus: LeadAutoEntryExtractionTypeEnum
+  entries: [EntryType!]
+  draftEntryStat: DraftEntryCountByLead
+}
+
+input LeadEMMTriggerInputType {
+  emmRiskFactor: String
+  emmKeyword: String!
+  count: Int
+}
+
+type LeadEmmTriggerListType {
+  results: [LeadEmmTriggerType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type LeadEmmTriggerType {
+  id: ID!
+  emmKeyword: String!
+  emmRiskFactor: String!
+  count: Int!
+}
+
+enum LeadExtractionStatusEnum {
+  PENDING
+  STARTED
+  RETRYING
+  SUCCESS
+  FAILED
+}
+
+type LeadFilterDataType {
+  createdByOptions: [UserType!]!
+  modifiedByOptions: [UserType!]!
+  assigneeOptions: [UserType!]!
+  authorOrganizationTypeOptions: [OrganizationTypeType!]!
+  authorOrganizationOptions: [OrganizationType!]!
+  sourceOrganizationOptions: [OrganizationType!]!
+  entryFilterCreatedByOptions: [UserType!]!
+  entryFilterLeadAssigneeOptions: [UserType!]!
+  entryFilterLeadAuthorOrganizationOptions: [OrganizationType!]!
+  entryFilterLeadAuthoringOrganizationTypeOptions: [OrganizationTypeType!]!
+  entryFilterLeadCreatedByOptions: [UserType!]!
+  entryFilterLeadSourceOrganizationOptions: [OrganizationType!]!
+  entryFilterModifiedByOptions: [UserType!]!
+  entryFilterGeoAreaOptions: [ProjectGeoAreaType!]!
+}
+
+type LeadGroupListType {
+  results: [LeadGroupType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type LeadGroupType {
+  id: ID!
+  title: String!
+  project: ProjectType!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  leadCounts: Int!
+}
+
+input LeadInputType {
+  id: ID
+  title: String!
+  attachment: ID
+  status: LeadStatusEnum
+  assignee: String
+  confidentiality: LeadConfidentialityEnum
+  sourceType: LeadSourceTypeEnum
+  priority: LeadPriorityEnum
+  publishedOn: Date
+  text: String
+  isAssessmentLead: Boolean
+  leadGroup: ID
+  url: String
+  website: String
+  source: ID
+  authors: [ID!]
+  emmTriggers: [LeadEMMTriggerInputType!]
+  emmEntities: [EMMEntityInputType!]
+  connectorLead: ID
+  clientId: String
+}
+
+type LeadListType {
+  results: [LeadType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum LeadOrderingEnum {
+  ASC_ID
+  ASC_CREATED_AT
+  ASC_TITLE
+  ASC_SOURCE
+  ASC_PUBLISHED_ON
+  ASC_CREATED_BY
+  ASC_ASSIGNEE
+  ASC_PRIORITY
+  ASC_PAGE_COUNT
+  ASC_ENTRIES_COUNT
+  DESC_ID
+  DESC_CREATED_AT
+  DESC_TITLE
+  DESC_SOURCE
+  DESC_PUBLISHED_ON
+  DESC_CREATED_BY
+  DESC_ASSIGNEE
+  DESC_PRIORITY
+  DESC_PAGE_COUNT
+  DESC_ENTRIES_COUNT
+}
+
+type LeadPreviewType {
+  textExtract: String!
+  thumbnail: String
+  thumbnailHeight: Int
+  thumbnailWidth: Int
+  wordCount: Int
+  pageCount: Int
+  textExtractionId: UUID
+}
+
+enum LeadPriorityEnum {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum LeadSourceTypeEnum {
+  TEXT
+  DISK
+  WEBSITE
+  DROPBOX
+  GOOGLE_DRIVE
+  RSS
+  EMM
+  WEB_API
+  UNKNOWN
+}
+
+enum LeadStatusEnum {
+  NOT_TAGGED
+  IN_PROGRESS
+  TAGGED
+}
+
+type LeadType {
+  id: ID!
+  clientId: ID!
+  leadGroup: LeadGroupType
+  title: String!
+  assignee: UserType
+  publishedOn: Date
+  text: String!
+  url: String!
+  attachment: GalleryFileType
+  isAssessmentLead: Boolean!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  project: ID!
+  sourceType: LeadSourceTypeEnum!
+  sourceTypeDisplay: EnumDescription!
+  priority: LeadPriorityEnum!
+  priorityDisplay: EnumDescription!
+  confidentiality: LeadConfidentialityEnum!
+  confidentialityDisplay: EnumDescription!
+  status: LeadStatusEnum!
+  statusDisplay: EnumDescription!
+  extractionStatus: LeadExtractionStatusEnum
+  leadPreview: LeadPreviewType
+  source: OrganizationType
+  authors: [OrganizationType!]
+  emmEntities: [EmmEntityType!]
+  emmTriggers: [LeadEmmTriggerType!]
+  assessmentId: ID
+  entriesCount: EntriesCountType
+  filteredEntriesCount: Int
+  duplicateLeadsCount: Int
+  shareViewUrl: String!
+  autoEntryExtractionStatus: LeadAutoEntryExtractionTypeEnum
+}
+
+input LeadsFilterDataInputType {
+  text: String
+  url: String
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  ids: [ID!]
+  excludeProvidedLeadsId: Boolean
+  sourceTypes: [LeadSourceTypeEnum!]
+  priorities: [LeadPriorityEnum!]
+  confidentiality: LeadConfidentialityEnum
+  statuses: [LeadStatusEnum!]
+  extractionStatus: LeadExtractionStatusEnum
+  assignees: [ID!]
+  authoringOrganizationTypes: [ID!]
+  authorOrganizations: [ID!]
+  sourceOrganizations: [ID!]
+  hasEntries: Boolean
+  hasAssessment: Boolean
+  isAssessment: Boolean
+  entriesFilterData: EntriesFilterDataInputType
+  search: String
+  publishedOn: Date
+  publishedOnGte: Date
+  publishedOnLte: Date
+  emmEntities: String
+  emmKeywords: String
+  emmRiskFactors: String
+  hasDuplicates: Boolean
+  duplicatesOf: ID
+  ordering: [LeadOrderingEnum!]
+}
+
+type LeadsFilterDataType {
+  entriesFilterData: EntriesFilterDataType
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  ids: [ID!]
+  sourceTypes: [LeadSourceTypeEnum!]
+  priorities: [LeadPriorityEnum!]
+  statuses: [LeadStatusEnum!]
+  assignees: [ID!]
+  authoringOrganizationTypes: [ID!]
+  authorOrganizations: [ID!]
+  sourceOrganizations: [ID!]
+  ordering: [LeadOrderingEnum!]
+  text: String
+  url: String
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  excludeProvidedLeadsId: Boolean
+  confidentiality: LeadConfidentialityEnum
+  extractionStatus: LeadExtractionStatusEnum
+  hasEntries: Boolean
+  hasAssessment: Boolean
+  isAssessment: Boolean
+  search: String
+  publishedOn: Date
+  publishedOnGte: Date
+  publishedOnLte: Date
+  emmEntities: String
+  emmKeywords: String
+  emmRiskFactors: String
+  hasDuplicates: Boolean
+  duplicatesOf: ID
+}
+
+type Login {
+  result: UserMeType
+  errors: [GenericScalar!]
+  ok: Boolean!
+  captchaRequired: Boolean!
+}
+
+input LoginInputType {
+  email: String!
+  password: String!
+  captcha: String
+}
+
+type LoginWithHID {
+  result: UserMeType
+  errors: [GenericScalar!]
+  ok: Boolean!
+}
+
+type Logout {
+  ok: Boolean
+}
+
+type MergedAsOrganizationType {
+  id: ID!
+  title: String!
+  shortName: String!
+  longName: String!
+  url: String!
+  logo: GalleryFileType
+  verified: Boolean!
+}
+
+input MethodologyAttributeInputType {
+  id: ID
+  clientId: String
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
+  samplingApproach: AssessmentRegistrySamplingApproachTypeEnum
+  samplingSize: Int
+  proximity: AssessmentRegistryProximityTypeEnum
+  unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum
+  unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum
+}
+
+type MethodologyAttributeType {
+  id: ID!
+  samplingSize: Int
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
+  dataCollectionTechniqueDisplay: EnumDescription
+  samplingApproach: AssessmentRegistrySamplingApproachTypeEnum
+  samplingAppraochDisplay: EnumDescription
+  proximity: AssessmentRegistryProximityTypeEnum
+  proximityDisplay: EnumDescription
+  unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum
+  unitOfAnalysisDisplay: EnumDescription
+  unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum
+  unitOfReportingDisplay: EnumDescription
+}
+
+input MissingPredictionReviewInputType {
+  draftEntry: ID!
+  tag: ID!
+  category: ID!
+}
+
+type MissingPredictionReviewType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  category: ID!
+  tag: ID!
+  draftEntry: ID!
+}
+
+type Mutation {
+  createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType!): AssessmentRegistryCreateIssue
+  fileUpload(data: FileUploadInputType!): UploadFile
+  genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
+  genericExportCancel(id: ID!): CancelUserGenericExport
+  notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
+  projectCreate(data: ProjectCreateInputType!): CreateProject
+  joinProject(data: ProjectJoinRequestInputType!): CreateProjectJoin
+  projectJoinRequestDelete(projectId: ID!): ProjectJoinRequestDelete
+  project(id: ID!): ProjectMutationType
+  userGroupCreate(data: UserGroupInputType!): CreateUserGroup
+  userGroup(id: ID!): UserGroupMutationType
+  login(data: LoginInputType!): Login
+  loginWithHid(data: HIDLoginInputType!): LoginWithHID
+  logout: Logout
+  register(data: RegisterInputType!): Register
+  resetPassword(data: ResetPasswordInputType!): ResetPassword
+  changePassword(data: PasswordChangeInputType!): ChangeUserPassword
+  updateMe(data: UserMeInputType!): UpdateMe
+  deleteUser: UserDelete
+  analysisFrameworkCreate(data: AnalysisFrameworkInputType!): CreateAnalysisFramework
+  analysisFramework(id: ID!): AnalysisFrameworkMutationType
+}
+
+type NotificationListType {
+  results: [NotificationType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum NotificationStatusEnum {
+  SEEN
+  UNSEEN
+}
+
+input NotificationStatusInputType {
+  id: ID!
+  status: NotificationStatusEnum
+}
+
+type NotificationStatusUpdate {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: NotificationType
+}
+
+type NotificationType {
+  id: ID!
+  project: ProjectType
+  data: GenericScalar
+  timestamp: DateTime!
+  notificationType: NotificationTypeEnum!
+  notificationTypeDisplay: EnumDescription!
+  status: NotificationStatusEnum!
+  statusDisplay: EnumDescription!
+}
+
+enum NotificationTypeEnum {
+  PROJECT_JOIN_REQUEST
+  PROJECT_JOIN_REQUEST_ABORT
+  PROJECT_JOIN_RESPONSE
+  ENTRY_COMMENT_ADD
+  ENTRY_COMMENT_MODIFY
+  ENTRY_COMMENT_ASSIGNEE_CHANGE
+  ENTRY_COMMENT_REPLY_ADD
+  ENTRY_COMMENT_REPLY_MODIFY
+  ENTRY_COMMENT_RESOLVED
+  ENTRY_REVIEW_COMMENT_ADD
+  ENTRY_REVIEW_COMMENT_MODIFY
+}
+
+type OrganizationListType {
+  results: [OrganizationType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum OrganizationOrderingEnum {
+  ASC_ID
+  ASC_CREATED_AT
+  ASC_TITLE
+  ASC_SHORT_NAME
+  ASC_LONG_NAME
+  ASC_ORGANIZATION_TYPE
+  ASC_POPULARITY
+  DESC_ID
+  DESC_CREATED_AT
+  DESC_TITLE
+  DESC_SHORT_NAME
+  DESC_LONG_NAME
+  DESC_ORGANIZATION_TYPE
+  DESC_POPULARITY
+  ASC_TITLE_LENGTH
+  DESC_TITLE_LENGTH
+}
+
+type OrganizationType {
+  id: ID!
+  title: String!
+  shortName: String!
+  longName: String!
+  url: String!
+  logo: GalleryFileType
+  verified: Boolean!
+  regions: [RegionType!]!
+  organizationType: OrganizationTypeType
+  mergedAs: MergedAsOrganizationType
+}
+
+type OrganizationTypeListType {
+  results: [OrganizationTypeType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type OrganizationTypeType {
+  id: ID!
+  title: String!
+  shortName: String
+  description: String!
+}
+
+input PasswordChangeInputType {
+  oldPassword: String!
+  newPassword: String!
+}
+
+scalar PointScalar
+
+input PredictionTagAnalysisFrameworkMapInputType {
+  id: Int
+  widget: ID!
+  tag: ID
+  association: GenericScalar
+  clientId: String
+}
+
+type ProjectAcceptReject {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectJoinRequestType
+}
+
+input ProjectAcceptRejectInputType {
+  status: ProjectJoinRequestStatusEnum
+  role: String
+}
+
+type ProjectByRegionListType {
+  results: [RegionWithProject!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+input ProjectCreateInputType {
+  title: String!
+  description: String
+  startDate: Date
+  endDate: Date
+  status: ProjectStatusEnum
+  isPrivate: Boolean
+  isTest: Boolean
+  isAssessmentEnabled: Boolean
+  analysisFramework: ID
+  isVisualizationEnabled: Boolean
+  hasPubliclyViewableUnprotectedLeads: Boolean
+  hasPubliclyViewableRestrictedLeads: Boolean
+  hasPubliclyViewableConfidentialLeads: Boolean
+  enablePubliclyViewableAnalysisReportSnapshot: Boolean
+  organizations: [ProjectOrganizationGqInputType!]
+}
+
+type ProjectDelete {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectDetailType
+}
+
+type ProjectDetailType {
+  id: ID!
+  createdAt: DateTime!
+  title: String!
+  description: String!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  startDate: Date
+  endDate: Date
+  analysisFramework: AnalysisFrameworkDetailType
+  isDefault: Boolean!
+  isPrivate: Boolean!
+  isTest: Boolean!
+  isAssessmentEnabled: Boolean!
+  isVisualizationEnabled: Boolean!
+  data: GenericScalar
+  hasPubliclyViewableUnprotectedLeads: Boolean!
+  hasPubliclyViewableRestrictedLeads: Boolean!
+  hasPubliclyViewableConfidentialLeads: Boolean!
+  enablePubliclyViewableAnalysisReportSnapshot: Boolean!
+  currentUserRole: ProjectRoleTypeEnum
+  allowedPermissions: [ProjectPermission!]!
+  stats(filters: LeadsFilterDataInputType): ProjectStatType
+  membershipPending: Boolean!
+  isRejected: Boolean!
+  regions: [RegionDetailType!]
+  status: ProjectStatusEnum!
+  statusDisplay: EnumDescription!
+  organizations: [ProjectOrganizationType!]
+  hasAnalysisFramework: Boolean!
+  assessmentRegistry(id: ID!): AssessmentRegistryType
+  assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], project: [ID], lead: [ID], publicationDateLte: Date, publicationDateGte: Date, search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
+  assessmentRegistryOptions: AssessmentRegistryOptionsType
+  analysisOverview: AnalysisOverviewType
+  analysis(id: ID!): AnalysisType
+  analyses(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisListType
+  analysisPillar(id: ID!): AnalysisPillarType
+  analysisPillars(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], analyses: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarListType
+  analyticalStatement(id: ID!): AnalyticalStatementType
+  analyticalStatements(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalyticalStatementListType
+  entriesGeoData(entriesId: [ID!]!): [EntryGeoCentroidData!]
+  analysisTopicModel(id: ID!): AnalysisTopicModelType
+  analysisAutomaticSummary(id: ID!): AnalysisAutomaticSummaryType
+  analysisAutomaticNgram(id: ID!): AnalyticalStatementNGramType
+  analysisGeoTask(id: ID!): AnalyticalStatementGeoTaskType
+  analysisReport(id: ID!): AnalysisReportType
+  analysisReports(search: String, analyses: [ID!], isPublic: Boolean, organizations: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportListType
+  analysisReportUpload(id: ID!): AnalysisReportUploadType
+  analysisReportUploads(report: [ID!], types: [AnalysisReportUploadTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportUploadListType
+  analysisReportSnapshot(id: ID!): AnalysisReportSnapshotType
+  analysisReportSnapshots(report: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportSnapshotListType
+  assessment(id: ID!): AssessmentType
+  assessments(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): AssessmentListType
+  reviewComment(id: ID!): EntryReviewCommentDetailType
+  reviewComments(entry: ID, ordering: [EntryReviewCommentOrderingEnum!], page: Int = 1, pageSize: Int): EntryReviewCommentListType
+  geoAreas(ids: [ID!], regionIds: [ID!], adminLevelIds: [ID!], search: String, titles: [String!], ordering: [GeoAreaOrderingEnum!], page: Int = 1, pageSize: Int): ProjectGeoAreaListType
+  export(id: ID!): UserExportType
+  exports(type: [ExportDataTypeEnum!], format: [ExportFormatEnum!], status: [ExportStatusEnum!], search: String, exportedAt: DateTime, exportedAtGte: DateTime, exportedAtLte: DateTime, page: Int = 1, ordering: String, pageSize: Int): UserExportListType
+  entry(id: ID!): EntryType
+  entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadCreatedBy: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], leadAuthoringOrganizationTypes: [ID!], leadAuthorOrganizations: [ID!], leadSourceOrganizations: [ID!], search: String, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataInputType!], hasComment: Boolean, isVerified: Boolean, page: Int = 1, ordering: String, pageSize: Int): EntryListType
+  lead(id: ID!): LeadDetailType
+  leads(text: String, url: String, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeProvidedLeadsId: Boolean, sourceTypes: [LeadSourceTypeEnum!], priorities: [LeadPriorityEnum!], confidentiality: LeadConfidentialityEnum, statuses: [LeadStatusEnum!], extractionStatus: LeadExtractionStatusEnum, assignees: [ID!], authoringOrganizationTypes: [ID!], authorOrganizations: [ID!], sourceOrganizations: [ID!], hasEntries: Boolean, hasAssessment: Boolean, isAssessment: Boolean, entriesFilterData: EntriesFilterDataInputType, search: String, publishedOn: Date, publishedOnGte: Date, publishedOnLte: Date, emmEntities: String, emmKeywords: String, emmRiskFactors: String, hasDuplicates: Boolean, duplicatesOf: ID, ordering: [LeadOrderingEnum!], page: Int = 1, pageSize: Int): LeadListType
+  leadGroup(id: ID!): LeadGroupType
+  leadGroups(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): LeadGroupListType
+  emmEntities(name: String, page: Int = 1, ordering: String, pageSize: Int): EmmEntityListType
+  leadEmmTriggers(lead: ID, emmKeyword: String, emmRiskFactor: String, count: Int, page: Int = 1, ordering: String, pageSize: Int): LeadEmmTriggerListType
+  emmKeywords: [EmmKeyWordType!]
+  emmRiskFactors: [EmmKeyRiskFactorType!]
+  userSavedLeadFilter: UserSavedLeadFilterType
+  activityLog: GenericScalar
+  recentActiveUsers: [UserEntityDateType!]
+  topSourcers: [UserEntityCountType!]
+  topTaggers: [UserEntityCountType!]
+  userMembers(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, members: [ID!], page: Int = 1, ordering: String, pageSize: Int): ProjectMembershipListType
+  userGroupMembers(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, usergroups: [ID!], page: Int = 1, ordering: String, pageSize: Int): ProjectUserGroupMembershipListType
+  isVisualizationAvailable: Boolean!
+  vizData: ProjectVizDataType
+  unifiedConnector: UnifiedConnectorQueryType
+  assistedTagging: AssistedTaggingQueryType
+}
+
+type ProjectExploreStatType {
+  calculatedAt: DateTime
+  totalProjects: Int
+  totalUsers: Int
+  totalLeads: Int
+  totalEntries: Int
+  leadsAddedWeekly: Int
+  dailyAverageLeadsTaggedPerProject: Float
+  generatedExportsMonthly: Int
+  topActiveProjects: [ExploreProjectStatTopActiveProjectsType!]
+  topActiveFrameworks: [ExploreProjectStatTopActiveFrameworksType!]
+}
+
+type ProjectGeoAreaListType {
+  results: [ProjectGeoAreaType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type ProjectGeoAreaType {
+  id: ID!
+  title: String!
+  regionTitle: String!
+  adminLevelTitle: String!
+  adminLevelLevel: Int
+  parentTitles: [String!]!
+}
+
+type ProjectJoinRequestDelete {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectJoinRequestType
+}
+
+input ProjectJoinRequestInputType {
+  reason: String!
+  role: String
+  project: String!
+  data: GenericScalar
+}
+
+enum ProjectJoinRequestStatusEnum {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+type ProjectJoinRequestType {
+  id: ID!
+  project: ProjectType!
+  requestedBy: UserType!
+  respondedBy: UserType
+  data: GenericScalar
+  status: ProjectJoinRequestStatusEnum!
+}
+
+type ProjectListType {
+  results: [ProjectType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum ProjectMembershipBadgeTypeEnum {
+  QA
+}
+
+type ProjectMembershipListType {
+  results: [ProjectMembershipType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type ProjectMembershipType {
+  id: ID!
+  member: UserType!
+  role: ProjectRoleType!
+  linkedGroup: UserGroupType
+  joinedAt: DateTime!
+  addedBy: UserType
+  clientId: ID!
+  badges: [ProjectMembershipBadgeTypeEnum!]
+}
+
+type ProjectMutationType {
+  id: ID!
+  title: String!
+  createAssessmentRegistry(data: AssessmentRegistryCreateInputType!): CreateAssessmentRegistry
+  updateAssessmentRegistry(data: AssessmentRegistryCreateInputType!, id: ID): UpdateAssessmentRegistry
+  deleteAssessmentRegistry(id: ID!): DeleteAssessmentRegistry
+  analysisPillarUpdate(data: AnalysisPillarUpdateInputType!, id: ID!): UpdateAnalysisPillar
+  discardedEntryCreate(data: DiscardedEntryCreateInputType!): CreateAnalysisPillarDiscardedEntry
+  discardedEntryUpdate(data: DiscardedEntryUpdateInputType!, id: ID!): UpdateAnalysisPillarDiscardedEntry
+  discardedEntryDelete(id: ID!): DeleteAnalysisPillarDiscardedEntry
+  triggerAnalysisTopicModel(data: AnalysisTopicModelCreateInputType!): TriggerAnalysisTopicModel
+  triggerAnalysisAutomaticSummary(data: AnalysisAutomaticSummaryCreateInputType!): TriggerAnalysisAutomaticSummary
+  triggerAnalysisAutomaticNgram(data: AnalyticalStatementNGramCreateInputType!): TriggerAnalysisAnalyticalStatementNGram
+  triggerAnalysisGeoLocation(data: AnalyticalStatementGeoTaskInputType!): TriggerAnalysisAnalyticalGeoTask
+  analysisReportCreate(data: AnalysisReportInputType!): CreateAnalysisReport
+  analysisReportUpdate(data: AnalysisReportInputUpdateType!, id: ID!): UpdateAnalysisReport
+  analysisReportDelete(id: ID!): DeleteAnalysisReport
+  analysisReportSnapshotCreate(data: AnalysisReportSnapshotInputType!): CreateAnalysisReportSnapshot
+  analysisReportUploadCreate(data: AnalysisReportUploadInputType!): CreateAnalysisReportUpload
+  analysisReportUploadDelete(id: ID!): DeleteAnalysisReportUpload
+  exportCreate(data: ExportCreateInputType!): CreateUserExport
+  exportUpdate(data: ExportUpdateInputType!, id: ID!): UpdateUserExport
+  exportCancel(id: ID!): CancelUserExport
+  exportDelete(id: ID!): DeleteUserExport
+  assessmentDelete(id: ID!): DeleteAssessment
+  entryReviewCommentCreate(data: EntryReviewCommentInputType!): CreateEntryReviewComment
+  entryReviewCommentUpdate(data: EntryReviewCommentInputType!, id: ID!): UpdateEntryReviewComment
+  entryReviewCommentDelete(id: ID!): DeleteEntryReviewComment
+  entryCreate(data: EntryInputType!): CreateEntry
+  entryUpdate(data: EntryInputType!, id: ID!): UpdateEntry
+  entryDelete(id: ID!): DeleteEntry
+  entryBulk(deleteIds: [ID!], items: [BulkEntryInputType!]): BulkEntry
+  leadCreate(data: LeadInputType!): CreateLead
+  leadUpdate(data: LeadInputType!, id: ID!): UpdateLead
+  leadDelete(id: ID!): DeleteLead
+  leadBulk(items: [BulkLeadInputType!]): BulkLead
+  leadGroupDelete(id: ID!): DeleteLeadGroup
+  leadCopy(data: LeadCopyInputType!): LeadCopy
+  leadFilterSave(data: UserSavedLeadFilterInputType!): SaveUserSavedLeadFilter
+  projectUpdate(data: ProjectUpdateInputType!): UpdateProject
+  projectDelete: ProjectDelete
+  acceptRejectProject(data: ProjectAcceptRejectInputType!, id: ID!): ProjectAcceptReject
+  projectUserMembershipBulk(deleteIds: [ID!], items: [BulkProjectMembershipInputType!]): BulkUpdateProjectMembership
+  projectUserGroupMembershipBulk(deleteIds: [ID!], items: [BulkProjectUserGroupMembershipInputType!]): BulkUpdateProjectUserGroupMembership
+  projectRegionBulk(regionsToAdd: [ID!], regionsToRemove: [ID!]): BulkUpdateProjectRegion
+  projectVizConfigurationUpdate(data: ProjectVizConfigurationInputType!): UpdateProjectVizConfiguration
+  unifiedConnector: UnifiedConnectorMutationType
+  assistedTagging: AssistedTaggingMutationType
+}
+
+enum ProjectOrderingEnum {
+  ASC_TITLE
+  ASC_USER_COUNT
+  ASC_LEAD_COUNT
+  ASC_CREATED_AT
+  ASC_ANALYSIS_FRAMEWORK
+  DESC_TITLE
+  DESC_USER_COUNT
+  DESC_LEAD_COUNT
+  DESC_CREATED_AT
+  DESC_ANALYSIS_FRAMEWORK
+}
+
+input ProjectOrganizationGqInputType {
+  id: ID
+  organization: ID!
+  organizationType: ProjectOrganizationTypeEnum!
+  clientId: String
+}
+
+type ProjectOrganizationType {
+  id: ID!
+  organization: OrganizationType!
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  organizationType: ProjectOrganizationTypeEnum!
+  organizationTypeDisplay: EnumDescription!
+}
+
+enum ProjectOrganizationTypeEnum {
+  LEAD_ORGANIZATION
+  INTERNATIONAL_PARTNER
+  NATIONAL_PARTNER
+  DONOR
+  GOVERNMENT
+}
+
+enum ProjectPermission {
+  BASE_ACCESS
+  UPDATE_PROJECT
+  DELETE_PROJECT
+  CAN_ADD_MEMBER
+  VIEW_UNIFIED_CONNECTOR
+  CREATE_UNIFIED_CONNECTOR
+  UPDATE_UNIFIED_CONNECTOR
+  DELETE_UNIFIED_CONNECTOR
+  CREATE_LEAD
+  VIEW_ONLY_UNPROTECTED_LEAD
+  VIEW_ONLY_UNPROTECTED_ASSESSMENT_REGISTRY
+  VIEW_ALL_LEAD
+  VIEW_ASSESSMENT_REGISTRY
+  UPDATE_LEAD
+  DELETE_LEAD
+  CREATE_ENTRY
+  VIEW_ENTRY
+  UPDATE_ENTRY
+  DELETE_ENTRY
+  CREATE_EXPORT
+  CAN_QUALITY_CONTROL
+  CREATE_ANALYSIS_MODULE
+  CREATE_ASSESSMENT_REGISTRY
+  UPDATE_ASSESSMENT_REGISTRY
+}
+
+type ProjectRoleType {
+  id: ID!
+  title: String!
+  level: Int!
+  type: ProjectRoleTypeEnum!
+}
+
+enum ProjectRoleTypeEnum {
+  PROJECT_OWNER
+  ADMIN
+  MEMBER
+  READER
+  READER_NON_CONFIDENTIAL
+  UNKNOWN
+}
+
+type ProjectStatType {
+  numberOfLeads: Int
+  numberOfLeadsNotTagged: Int
+  numberOfLeadsInProgress: Int
+  numberOfLeadsTagged: Int
+  numberOfEntries: Int
+  numberOfEntriesVerified: Int
+  numberOfEntriesControlled: Int
+  numberOfUsers: Int
+  leadsActivity: [DateCountType!]
+  entriesActivity: [DateCountType!]
+  filteredNumberOfLeads: Int
+  filteredNumberOfLeadsNotTagged: Int
+  filteredNumberOfLeadsInProgress: Int
+  filteredNumberOfLeadsTagged: Int
+  filteredNumberOfEntries: Int
+  filteredNumberOfEntriesVerified: Int
+  filteredNumberOfEntriesControlled: Int
+}
+
+enum ProjectStatsActionEnum {
+  NEW
+  ON
+  OFF
+}
+
+enum ProjectStatsStatus {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILURE
+}
+
+enum ProjectStatsStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILURE
+}
+
+enum ProjectStatusEnum {
+  ACTIVE
+  INACTIVE
+}
+
+type ProjectType {
+  id: ID!
+  createdAt: DateTime!
+  title: String!
+  description: String!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  startDate: Date
+  endDate: Date
+  analysisFramework: AnalysisFrameworkType
+  isDefault: Boolean!
+  isPrivate: Boolean!
+  isTest: Boolean!
+  isAssessmentEnabled: Boolean!
+  isVisualizationEnabled: Boolean!
+  currentUserRole: ProjectRoleTypeEnum
+  allowedPermissions: [ProjectPermission!]!
+  stats: ProjectStatType
+  membershipPending: Boolean!
+  isRejected: Boolean!
+  regions: [RegionDetailType!]
+  status: ProjectStatusEnum!
+  statusDisplay: EnumDescription!
+  organizations: [ProjectOrganizationType!]
+  hasAnalysisFramework: Boolean!
+}
+
+input ProjectUpdateInputType {
+  title: String
+  description: String
+  startDate: Date
+  endDate: Date
+  status: ProjectStatusEnum
+  isPrivate: Boolean
+  isTest: Boolean
+  isAssessmentEnabled: Boolean
+  analysisFramework: ID
+  isVisualizationEnabled: Boolean
+  hasPubliclyViewableUnprotectedLeads: Boolean
+  hasPubliclyViewableRestrictedLeads: Boolean
+  hasPubliclyViewableConfidentialLeads: Boolean
+  enablePubliclyViewableAnalysisReportSnapshot: Boolean
+  organizations: [ProjectOrganizationGqInputType!]
+}
+
+type ProjectUserGroupMembershipListType {
+  results: [ProjectUserGroupMembershipType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type ProjectUserGroupMembershipType {
+  id: ID!
+  usergroup: UserGroupType!
+  role: ProjectRoleType!
+  joinedAt: DateTime!
+  addedBy: UserType
+  clientId: ID!
+  badges: [ProjectMembershipBadgeTypeEnum!]
+}
+
+input ProjectVizConfigurationInputType {
+  action: ProjectStatsActionEnum!
+}
+
+type ProjectVizDataType {
+  modifiedAt: DateTime!
+  status: ProjectStatsStatus!
+  publicShare: Boolean!
+  dataUrl: String
+  publicUrl: String
+}
+
+input ProjectsFilterDataInputType {
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  ids: [ID!]
+  excludeIds: [ID!]
+  status: ProjectStatusEnum
+  organizations: [ID!]
+  analysisFrameworks: [ID!]
+  regions: [ID!]
+  search: String
+  isCurrentUserMember: Boolean
+  hasPermissionAccess: ProjectPermission
+  ordering: [ProjectOrderingEnum!]
+  isTest: Boolean
+}
+
+type PublicAnalysisFramework {
+  id: ID!
+  title: String!
+}
+
+type PublicAnalysisFrameworkListType {
+  results: [PublicAnalysisFramework!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum PublicExploreSnapshotGlobalTypeEnum {
+  FULL
+  TIME_SERIES
+}
+
+type PublicExploreSnapshotType {
+  id: ID!
+  startDate: Date!
+  endDate: Date!
+  year: Int
+  type: PublicExploreSnapshotTypeEnum!
+  globalType: PublicExploreSnapshotGlobalTypeEnum
+  file: FileFieldType
+  downloadFile: FileFieldType
+}
+
+enum PublicExploreSnapshotTypeEnum {
+  GLOBAL
+  YEARLY_SNAPSHOT
+}
+
+type PublicGalleryFileType {
+  title: String!
+  mimeType: String
+  file: FileFieldType
+}
+
+type PublicLeadDetailType {
+  uuid: UUID!
+  projectTitle: String
+  createdByDisplayName: String
+  sourceTitle: String
+  sourceUrl: String
+  publishedOn: Date
+  sourceType: LeadSourceTypeEnum!
+  sourceTypeDisplay: EnumDescription!
+  text: String
+  url: String
+  attachment: PublicGalleryFileType
+  title: String
+}
+
+type PublicLeadMetaType {
+  project: PublicProjectWithMembershipData
+  lead: PublicLeadDetailType
+}
+
+type PublicOrganization {
+  id: ID!
+  title: String!
+}
+
+type PublicOrganizationListObjectType {
+  results: [PublicOrganization!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type PublicProjectByRegionListType {
+  results: [RegionWithProject!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type PublicProjectListType {
+  results: [PublicProjectType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+enum PublicProjectOrderingEnum {
+  ASC_TITLE
+  ASC_USER_COUNT
+  ASC_LEAD_COUNT
+  ASC_CREATED_AT
+  ASC_ANALYSIS_FRAMEWORK
+  DESC_TITLE
+  DESC_USER_COUNT
+  DESC_LEAD_COUNT
+  DESC_CREATED_AT
+  DESC_ANALYSIS_FRAMEWORK
+}
+
+type PublicProjectType {
+  id: ID!
+  createdAt: DateTime!
+  title: String!
+  description: String!
+  analysisFramework: ID
+  analysisFrameworkTitle: String
+  regionsTitle: String
+  organizationsTitle: String
+  numberOfUsers: Int!
+  numberOfLeads: Int!
+  numberOfEntries: Int!
+  analysisFrameworkPreviewImage: String
+}
+
+type PublicProjectWithMembershipData {
+  id: ID!
+  title: ID!
+  membershipPending: Boolean!
+  isRejected: Boolean!
+}
+
+type Query {
+  assessmentRegSummaryIssue(id: ID!): AssessmentRegistrySummaryIssueType
+  assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimension: AssessmentRegistrySummarySubDimensionTypeEnum, search: String, isParent: Boolean, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
+  publicAnalysisReportSnapshot(slug: String!): AnalysisReportSnapshotType
+  deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
+  publicDeepExploreYearlySnapshots: [PublicExploreSnapshotType!]
+  publicDeepExploreGlobalSnapshots: [PublicExploreSnapshotType!]
+  genericExport(id: ID!): UserGenericExportType
+  rssFields(url: String): [RssFieldType!]
+  atomFeedFields(url: String): [AtomFeedFieldType!]
+  publicLead(uuid: UUID!): PublicLeadMetaType
+  notification(id: ID!): NotificationType
+  notifications(timestamp: DateTime, timestampLte: DateTime, timestampGte: DateTime, isPending: Boolean, notificationType: NotificationTypeEnum, status: NotificationStatusEnum, page: Int = 1, ordering: String, pageSize: Int): NotificationListType
+  region(id: ID!): RegionDetailType
+  regions(id: Float, code: String, title: String, public: Boolean, project: [ID], createdAt: DateTime, createdBy: [ID], modifiedAt: DateTime, modifiedBy: [ID], createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, excludeProject: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): RegionListType
+  organization(id: ID!): OrganizationType
+  organizations(id: Float, verified: Boolean, search: String, usedInProject: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): OrganizationListType
+  publicOrganizations(id: Float, verified: Boolean, search: String, usedInProject: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): PublicOrganizationListObjectType
+  organizationType(id: ID!): OrganizationTypeType
+  organizationTypes(title: String, shortName: String, description: String, reliefWebId: Int, page: Int = 1, ordering: String, pageSize: Int): OrganizationTypeListType
+  userGroup(id: ID!): UserGroupType
+  userGroups(isCurrentUserMember: Boolean, search: String, membersIncludeProject: ID, membersExcludeProject: ID, page: Int = 1, ordering: String, pageSize: Int): UserGroupListType
+  me: UserMeType
+  user(id: ID!): UserType
+  users(id: Float, search: String, membersExcludeProject: ID, membersExcludeFramework: ID, membersExcludeUsergroup: ID, page: Int = 1, ordering: String, pageSize: Int): UserListType
+  analysisFramework(id: ID!): AnalysisFrameworkDetailType
+  analysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, isCurrentUserMember: Boolean, recentlyUsed: Boolean, tags: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkListType
+  publicAnalysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, isCurrentUserMember: Boolean, recentlyUsed: Boolean, tags: [ID!], page: Int = 1, ordering: String, pageSize: Int): PublicAnalysisFrameworkListType
+  analysisFrameworkTags(id: Float, search: String, page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkTagListType
+  project(id: ID!): ProjectDetailType
+  projects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, ordering: [ProjectOrderingEnum!], isTest: Boolean, page: Int = 1, pageSize: Int): ProjectListType
+  recentProjects: [ProjectDetailType!]
+  recentActivities: [RecentActivityType!]
+  projectExploreStats: ProjectExploreStatType
+  projectsByRegion(projectFilter: RegionProjectFilterData, ordering: String): ProjectByRegionListType
+  publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, ordering: [PublicProjectOrderingEnum!], isTest: Boolean, page: Int = 1, pageSize: Int): PublicProjectListType
+  publicProjectsByRegion(projectFilter: RegionProjectFilterData, page: Int = 1, ordering: String, pageSize: Int): PublicProjectByRegionListType
+  assistedTagging: AssistedTaggingRootQueryType
+  enums: AppEnumCollection
+  _debug: DjangoDebug
+}
+
+type QuestionType {
+  id: ID!
+  question: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  sector: AssessmentRegistryCNAQuestionSectorTypeEnum
+  sectorDisplay: EnumDescription
+  subSector: AssessmentRegistryCNAQuestionSubSectorTypeEnum
+  subSectorDisplay: EnumDescription
+}
+
+type RecentActivityType {
+  id: ID!
+  createdAt: DateTime
+  project: ProjectType
+  createdBy: UserType
+  type: RecentActivityTypeEnum!
+  typeDisplay: EnumDescription!
+  leadId: ID!
+  entryId: ID
+}
+
+enum RecentActivityTypeEnum {
+  LEAD
+  ENTRY
+  ENTRY_COMMENT
+}
+
+type RegionDetailType {
+  id: ID!
+  title: String!
+  public: Boolean!
+  isPublished: Boolean!
+  regionalGroups: GenericScalar
+  keyFigures: GenericScalar
+  populationData: GenericScalar
+  mediaSources: GenericScalar
+  centroid: PointScalar
+  adminLevels: [AdminLevelType!]
+}
+
+type RegionListType {
+  results: [RegionType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+input RegionProjectFilterData {
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  ids: [ID!]
+  excludeIds: [ID!]
+  status: ProjectStatusEnum
+  organizations: [ID!]
+  analysisFrameworks: [ID!]
+  regions: [ID!]
+  search: String
+  isCurrentUserMember: Boolean
+  hasPermissionAccess: ProjectPermission
+  ordering: [ProjectOrderingEnum!]
+  isTest: Boolean
+}
+
+type RegionType {
+  id: ID!
+  title: String!
+  public: Boolean!
+  isPublished: Boolean!
+  regionalGroups: GenericScalar
+  keyFigures: GenericScalar
+  populationData: GenericScalar
+  mediaSources: GenericScalar
+  centroid: PointScalar
+}
+
+type RegionWithProject {
+  id: ID!
+  centroid: PointScalar
+  projectsId: [ID!]
+}
+
+type Register {
+  errors: [GenericScalar!]
+  ok: Boolean!
+  captchaRequired: Boolean!
+}
+
+input RegisterInputType {
+  email: String!
+  firstName: String
+  lastName: String
+  organization: String!
+  captcha: String!
+}
+
+type ResetPassword {
+  errors: [GenericScalar!]
+  ok: Boolean!
+  captchaRequired: Boolean!
+}
+
+input ResetPasswordInputType {
+  email: String!
+  captcha: String!
+}
+
+type RssFieldType {
+  key: String
+  label: String
+}
+
+type SaveUserSavedLeadFilter {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserSavedLeadFilterType
+}
+
+input ScoreAnalyticalDensityInputType {
+  id: ID
+  clientId: String
+  sector: AssessmentRegistrySectorTypeEnum!
+  analysisLevelCovered: [AssessmentRegistryAnalysisLevelTypeEnum!]
+  figureProvided: [AssessmentRegistryAnalysisFigureTypeEnum!]
+  score: Int
+}
+
+type ScoreAnalyticalDensityType {
+  id: ID!
+  score: Int
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  sector: AssessmentRegistrySectorTypeEnum!
+  sectorDisplay: EnumDescription!
+  analysisLevelCovered: [AssessmentRegistryAnalysisLevelTypeEnum!]!
+  figureProvided: [AssessmentRegistryAnalysisFigureTypeEnum!]!
+}
+
+type ScoreOptionsType {
+  analyticalStatement: AssessmentRegistryScoreAnalyticalStatementTypeEnum!
+  analyticalStatementDisplay: EnumDescription!
+  scoreCriteria: AssessmentRegistryScoreCriteriaTypeEnum!
+  scoreCriteriaDisplay: EnumDescription!
+}
+
+input ScoreRatingInputType {
+  id: ID
+  clientId: String
+  scoreType: AssessmentRegistryScoreCriteriaTypeEnum!
+  rating: AssessmentRegistryRatingType
+  reason: String
+}
+
+type ScoreRatingType {
+  id: ID!
+  reason: String
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  scoreType: AssessmentRegistryScoreCriteriaTypeEnum!
+  scoreTypeDisplay: EnumDescription!
+  rating: AssessmentRegistryRatingType!
+  ratingDisplay: EnumDescription!
+}
+
+input SectionGqlInputType {
+  id: ID
+  title: String!
+  order: Int
+  tooltip: String
+  widgets: [WidgetGqlInputType!]
+  clientId: String
+}
+
+type SectionType {
+  id: ID!
+  title: String!
+  order: Int!
+  tooltip: String
+  clientId: ID!
+  widgets: [WidgetType!]
+}
+
+input SummaryFocusMetaInputType {
+  id: ID
+  clientId: String
+  sector: AssessmentRegistrySectorTypeEnum!
+  percentageOfPeopleAffected: Int
+  totalPeopleAffected: Int
+  percentageOfModerate: Int
+  percentageOfSevere: Int
+  percentageOfCritical: Int
+  percentageInNeed: Int
+  totalModerate: Int
+  totalSevere: Int
+  totalCritical: Int
+  totalInNeed: Int
+}
+
+type SummaryFocusMetaType {
+  id: ID!
+  percentageOfPeopleAffected: Int
+  totalPeopleAffected: Int
+  percentageOfModerate: Int
+  percentageOfSevere: Int
+  percentageOfCritical: Int
+  percentageInNeed: Int
+  totalModerate: Int
+  totalSevere: Int
+  totalCritical: Int
+  totalInNeed: Int
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  sector: AssessmentRegistrySectorTypeEnum
+  sectorDisplay: EnumDescription
+}
+
+type SummaryFocusOptionType {
+  dimension: AssessmentRegistrySummaryFocusDimensionTypeEnum!
+  dimensionDisplay: EnumDescription!
+  subDimension: AssessmentRegistrySummarySubDimensionTypeEnum!
+  subDimensionDisplay: EnumDescription!
+}
+
+type SummaryFocusSubDimensionIssueType {
+  id: ID!
+  summaryIssue: AssessmentRegistrySummaryIssueType!
+  text: String!
+  order: Int!
+  leadPreviewTextRef: GenericScalar
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  sector: AssessmentRegistrySectorTypeEnum!
+  sectorDisplay: EnumDescription!
+}
+
+input SummaryMetaInputType {
+  id: ID
+  totalPeopleAssessed: Int
+  totalDead: Int
+  totalInjured: Int
+  totalMissing: Int
+  totalPeopleFacingHumAccessCons: Int
+  percentageOfPeopleFacingHumAccessCons: Int
+}
+
+type SummaryMetaType {
+  id: ID!
+  totalPeopleAssessed: Int
+  totalDead: Int
+  totalInjured: Int
+  totalMissing: Int
+  totalPeopleFacingHumAccessCons: Int
+  percentageOfPeopleFacingHumAccessCons: Int
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+}
+
+type SummaryOptionType {
+  pillar: AssessmentRegistrySummaryPillarTypeEnum!
+  pillarDisplay: EnumDescription!
+  subPillar: AssessmentRegistrySummarySubPillarTypeEnum!
+  subPillarDisplay: EnumDescription!
+}
+
+input SummarySubDimensionInputType {
+  id: ID
+  clientId: String
+  summaryIssue: ID!
+  sector: AssessmentRegistrySectorTypeEnum!
+  text: String
+  order: Int!
+  leadPreviewTextRef: GenericScalar
+}
+
+input SummarySubPillarIssueInputType {
+  id: ID
+  clientId: String
+  summaryIssue: ID!
+  text: String
+  order: Int!
+  leadPreviewTextRef: GenericScalar
+}
+
+type SummarySubPillarIssueType {
+  id: ID!
+  summaryIssue: AssessmentRegistrySummaryIssueType!
+  text: String!
+  order: Int!
+  leadPreviewTextRef: GenericScalar
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+}
+
+enum TopicModelStatusEnum {
+  PENDING
+  STARTED
+  SUCCESS
+  FAILED
+  SEND_FAILED
+}
+
+type TriggerAnalysisAnalyticalGeoTask {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalyticalStatementGeoTaskType
+}
+
+type TriggerAnalysisAnalyticalStatementNGram {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalyticalStatementNGramType
+}
+
+type TriggerAnalysisAutomaticSummary {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisAutomaticSummaryType
+}
+
+type TriggerAnalysisTopicModel {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisTopicModelType
+}
+
+type TriggerAutoDraftEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+}
+
+input TriggerAutoDraftEntryInputType {
+  lead: ID!
+}
+
+type TriggerUnifiedConnector {
+  errors: [GenericScalar!]
+  ok: Boolean
+}
+
+scalar UUID
+
+input UnifiedConnectorInputType {
+  title: String!
+  isActive: Boolean
+  clientId: String
+}
+
+type UnifiedConnectorListType {
+  results: [UnifiedConnectorType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type UnifiedConnectorMutationType {
+  unifiedConnectorCreate(data: UnifiedConnectorWithSourceInputType!): CreateUnifiedConnector
+  unifiedConnectorUpdate(data: UnifiedConnectorInputType!, id: ID!): UpdateUnifiedConnector
+  unifiedConnectorWithSourceUpdate(data: UnifiedConnectorWithSourceInputType!, id: ID!): UpdateUnifiedConnectorWithSource
+  unifiedConnectorDelete(id: ID!): DeleteUnifiedConnector
+  unifiedConnectorTrigger(id: ID!): TriggerUnifiedConnector
+  connectorSourceLeadUpdate(data: ConnectorSourceLeadInputType!, id: ID!): UpdateConnectorSourceLead
+}
+
+enum UnifiedConnectorOrderingEnum {
+  ASC_ID
+  ASC_CREATED_AT
+  ASC_TITLE
+  DESC_ID
+  DESC_CREATED_AT
+  DESC_TITLE
+}
+
+type UnifiedConnectorQueryType {
+  unifiedConnector(id: ID!): UnifiedConnectorType
+  unifiedConnectors(search: String, ordering: [UnifiedConnectorOrderingEnum!], isActive: Boolean, page: Int = 1, pageSize: Int): UnifiedConnectorListType
+  connectorSource(id: ID!): ConnectorSourceType
+  connectorSources(search: String, ordering: [ConnectorSourceOrderingEnum!], sources: [ConnectorSourceSourceEnum!], statuses: [ConnectorSourceStatusEnum!], unifiedConnectors: [ID!], page: Int = 1, pageSize: Int): ConnectorSourceListType
+  connectorSourceLead(id: ID!): ConnectorSourceLeadType
+  connectorSourceLeads(ordering: [ConnectorSourceLeadOrderingEnum!], sources: [ID!], blocked: Boolean, alreadyAdded: Boolean, extractionStatus: [ConnectorLeadExtractionStatusEnum!], search: String, authorOrganizations: [ID!], publishedOn: Date, publishedOnGte: Date, publishedOnLte: Date, page: Int = 1, pageSize: Int): ConnectorSourceLeadListType
+  sourceCountWithoutIngnoredAndAdded: Int
+}
+
+type UnifiedConnectorType {
+  id: ID!
+  title: String!
+  isActive: Boolean!
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  project: ID!
+  sources: [ConnectorSourceType!]
+  leadsCount: ConnectorSourceLeadCountType!
+}
+
+input UnifiedConnectorWithSourceInputType {
+  title: String!
+  isActive: Boolean
+  clientId: String
+  sources: [ConnectorSourceGqInputType!]
+}
+
+type UpdateAnalysisFramework {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisFrameworkDetailType
+}
+
+type UpdateAnalysisPillar {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisPillarType
+}
+
+type UpdateAnalysisPillarDiscardedEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisPillarDiscardedEntryType
+}
+
+type UpdateAnalysisReport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisReportType
+}
+
+type UpdateAssessmentRegistry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssessmentRegistryType
+}
+
+type UpdateConnectorSourceLead {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ConnectorSourceLeadType
+}
+
+type UpdateDraftEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: DraftEntryType
+}
+
+input UpdateDraftEntryInputType {
+  lead: ID!
+  isDiscarded: Boolean
+}
+
+type UpdateEntry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: EntryType
+}
+
+type UpdateEntryReviewComment {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: EntryReviewCommentDetailType
+}
+
+type UpdateLead {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: LeadType
+}
+
+type UpdateMe {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserMeType
+}
+
+type UpdateProject {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectDetailType
+}
+
+type UpdateProjectVizConfiguration {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: ProjectVizDataType
+}
+
+type UpdateUnifiedConnector {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UnifiedConnectorType
+}
+
+type UpdateUnifiedConnectorWithSource {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UnifiedConnectorType
+}
+
+type UpdateUserExport {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserExportType
+}
+
+type UpdateUserGroup {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserGroupType
+}
+
+scalar Upload
+
+type UploadFile {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: GalleryFileType
+}
+
+type UserDelete {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: UserMeType
+}
+
+enum UserEmailConditionOptOutEnum {
+  JOIN_REQUESTS
+  NEWS_AND_UPDATES
+  EMAIL_COMMENT
+}
+
+type UserEntityCountType {
+  name: String
+  userId: String!
+  count: Int
+}
+
+type UserEntityDateType {
+  userId: String!
+  name: String
+  date: DateTime!
+}
+
+type UserExportListType {
+  results: [UserExportType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type UserExportType {
+  id: ID!
+  title: String!
+  exportedBy: UserType!
+  exportedAt: DateTime!
+  startedAt: DateTime
+  endedAt: DateTime
+  mimeType: String!
+  project: ID
+  extraOptions: ExportExtraOptionsType!
+  isPreview: Boolean!
+  isArchived: Boolean!
+  analysis: AnalysisType
+  format: ExportFormatEnum!
+  type: ExportDataTypeEnum!
+  status: ExportStatusEnum!
+  exportType: ExportExportTypeEnum!
+  file: FileFieldType
+  fileDownloadUrl: String
+  filters: LeadsFilterDataType
+  filtersData: LeadFilterDataType
+}
+
+type UserFeatureAccessType {
+  key: FeatureKey!
+  title: String!
+  featureType: FeatureFeatureType!
+}
+
+input UserGenericExportFiltersGqlInputType {
+  lead: LeadsFilterDataInputType
+  entry: EntriesFilterDataInputType
+  project: ProjectsFilterDataInputType
+  deepExplore: ExploreDeepFilterInputType
+}
+
+type UserGenericExportType {
+  id: ID!
+  title: String!
+  exportedBy: UserType!
+  exportedAt: DateTime!
+  startedAt: DateTime
+  endedAt: DateTime
+  mimeType: String!
+  format: GenericExportFormatEnum!
+  type: GenericExportDataTypeEnum!
+  status: GenericExportStatusEnum!
+  filters: GenericScalar
+  file: FileFieldType
+  fileDownloadUrl: String
+}
+
+input UserGroupInputType {
+  title: String
+  description: String
+  displayPicture: ID
+  globalCrisisMonitoring: Boolean
+  customProjectFields: GenericScalar
+}
+
+type UserGroupListType {
+  results: [UserGroupType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type UserGroupMutationType {
+  id: ID!
+  title: String!
+  userGroupUpdate(data: UserGroupInputType!): UpdateUserGroup
+  userGroupDelete: DeleteUserGroup
+  userGroupMembershipBulk(deleteIds: [ID!], items: [BulkUserGroupMembershipInputType!]): BulkUpdateUserGroupMembership
+}
+
+type UserGroupType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  clientId: String
+  title: String!
+  description: String!
+  globalCrisisMonitoring: Boolean!
+  customProjectFields: GenericScalar
+  currentUserRole: GroupMembershipRoleEnum
+  currentUserRoleDisplay: EnumDescription
+  membershipsCount: Int!
+  memberships: [GroupMembershipType!]
+}
+
+type UserListType {
+  results: [UserType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+input UserMeInputType {
+  firstName: String
+  lastName: String
+  organization: String
+  displayPicture: ID
+  language: String
+  emailOptOuts: [UserEmailConditionOptOutEnum!]
+  lastActiveProject: ID
+}
+
+type UserMeProjectType {
+  id: String
+  title: String
+}
+
+type UserMeType {
+  id: ID!
+  isActive: Boolean!
+  lastLogin: DateTime
+  firstName: String!
+  lastName: String!
+  email: String
+  displayName: String
+  displayPicture: ID
+  displayPictureUrl: String
+  organization: String
+  language: String
+  emailOptOuts: [UserEmailConditionOptOutEnum!]
+  jwtToken: JwtTokenType
+  lastActiveProject: ProjectDetailType
+  accessibleFeatures: [UserFeatureAccessType!]!
+  deletedAt: Date
+  soleProjects: [UserMeProjectType]
+  onlyMemberProjects: [UserMeProjectType]
+}
+
+type UserProfileType {
+  id: ID!
+  displayPictureUrl: String
+  organization: String
+}
+
+input UserSavedLeadFilterInputType {
+  title: String
+  filters: LeadsFilterDataInputType!
+}
+
+type UserSavedLeadFilterType {
+  id: ID!
+  title: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  filters: LeadsFilterDataType
+  filtersData: LeadFilterDataType
+}
+
+type UserType {
+  id: ID!
+  isActive: Boolean!
+  displayName: String
+  firstName: String
+  lastName: String
+  emailDisplay: String!
+  profile: UserProfileType!
+}
+
+input WidgetConditionalGqlInputType {
+  parentWidget: ID!
+  conditions: GenericScalar!
+}
+
+type WidgetConditionalType {
+  parentWidget: ID!
+  parentWidgetType: WidgetWidgetTypeEnum!
+  conditions: GenericScalar
+}
+
+enum WidgetFilterTypeEnum {
+  TEXT
+  NUMBER
+  LIST
+  INTERSECTS
+}
+
+input WidgetGqlInputType {
+  id: ID
+  key: String!
+  widgetId: WidgetWidgetTypeEnum!
+  title: String!
+  order: Int
+  width: WidgetWidthTypeEnum
+  version: Int!
+  properties: GenericScalar
+  conditional: WidgetConditionalGqlInputType
+  clientId: String
+}
+
+type WidgetType {
+  id: ID!
+  title: String!
+  properties: GenericScalar
+  order: Int!
+  version: Int!
+  clientId: ID!
+  widgetId: WidgetWidgetTypeEnum!
+  widgetIdDisplay: EnumDescription!
+  width: WidgetWidthTypeEnum!
+  widthDisplay: EnumDescription!
+  key: String!
+  conditional: WidgetConditionalType
+}
+
+enum WidgetWidgetTypeEnum {
+  DATE
+  DATE_RANGE
+  TIME
+  TIME_RANGE
+  NUMBER
+  SCALE
+  GEO
+  SELECT
+  MULTISELECT
+  ORGANIGRAM
+  MATRIX1D
+  MATRIX2D
+  NUMBER_MATRIX
+  CONDITIONAL
+  TEXT
+  EXCERPT
+}
+
+enum WidgetWidthTypeEnum {
+  FULL
+  HALF
+}
+
+input WrongPredictionReviewInputType {
+  prediction: ID!
+}
+
+type WrongPredictionReviewType {
+  id: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  prediction: ID!
+}

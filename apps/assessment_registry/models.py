@@ -13,32 +13,34 @@ from geo.models import GeoArea
 
 class AssessmentRegistry(UserResource):
     class CrisisType(models.IntegerChoices):
-        EARTH_QUAKE = 0, 'Earth Quake'
-        GROUND_SHAKING = 1, 'Ground Shaking'
-        TSUNAMI = 2, 'Tsunami'
-        VOLCANO = 3, 'Volcano'
-        VOLCANIC_ERUPTION = 4, 'Volcanic Eruption'
-        MASS_MOMENT_DRY = 5, 'Mass Movement (Dry)'
-        ROCK_FALL = 6, 'Rockfall'
-        AVALANCE = 7, 'Avalance'
-        LANDSLIDE = 8, 'Landslide'
-        SUBSIDENCE = 9, 'Subsidence'
-        EXTRA_TROPICAL_CYCLONE = 10, 'Extra Tropical Cyclone'
-        TROPICAL_CYCLONE = 11, 'Tropical Cyclone'
-        LOCAL_STROM = 12, 'Local/Convective Strom'
-        FLOOD_RAIN = 13, 'Flood/Rain'
-        GENERAL_RIVER_FLOOD = 14, 'General River Flood'
-        FLASH_FLOOD = 15, 'Flash flood'
-        STROM_SURGE_FLOOD = 16, 'Strom Surge/Coastal Flood'
-        MASS_MOVEMENT_WET = 17, 'Mass Movement (Wet)'
-        EXTREME_TEMPERATURE = 18, 'Extreme Temperature'
-        HEAT_WAVE = 19, 'Heat Wave'
-        COLD_WAVE = 20, 'Cold Wave'
-        EXTREME_WEATHER_CONDITION = 21, 'Extreme Weather Condition'
-        DROUGHT = 22, 'Drought'
-        WILDFIRE = 23, 'Wildfire'
-        POPULATION_DISPLACEMENT = 24, 'Population Displacement'
-        CONFLICT = 25, 'Conflict'
+        EARTH_QUAKE = 1, 'Earthquake'
+        GROUND_SHAKING = 2, 'Ground Shaking'
+        TSUNAMI = 3, 'Tsunami'
+        VOLCANO = 4, 'Volcano'
+        VOLCANIC_ERUPTION = 5, 'Volcanic Eruption'
+        MASS_MOMENT_DRY = 6, 'Mass Movement (Dry)'
+        ROCK_FALL = 7, 'Rockfall'
+        AVALANCE = 8, 'Avalance'
+        LANDSLIDE = 9, 'Landslide'
+        SUBSIDENCE = 10, 'Subsidence'
+        EXTRA_TROPICAL_CYCLONE = 11, 'Extra Tropical Cyclone'
+        TROPICAL_CYCLONE = 12, 'Tropical Cyclone'
+        LOCAL_STROM = 13, 'Local/Convective Strom'
+        FLOOD_RAIN = 14, 'Flood/Rain'
+        GENERAL_RIVER_FLOOD = 15, 'General River Flood'
+        FLASH_FLOOD = 16, 'Flash Flood'
+        STROM_SURGE_FLOOD = 17, 'Strom surge/Coastal Flood'
+        MASS_MOVEMENT_WET = 18, 'Mass Movement (wet)'
+        EXTREME_TEMPERATURE = 19, 'Extreme Temperature'
+        HEAT_WAVE = 20, 'Heat Wave'
+        COLD_WAVE = 21, 'Cold Wave'
+        EXTREME_WEATHER_CONDITION = 22, 'Extreme Weather Conditions'
+        DROUGHT = 23, 'Drought'
+        WILDFIRE = 24, 'Wildfire'
+        POPULATION_DISPLACEMENT = 25, 'Population displacement'
+        CONFLICT = 26, 'Conflict'
+        ECONOMIC = 27, 'Economic'
+        EPIDEMIC = 28, 'Epidemic'
 
     class PreparednessType(models.IntegerChoices):
         WITH_PREPAREDNESS = 1, 'With preparedness'
@@ -157,10 +159,6 @@ class AssessmentRegistry(UserResource):
     lead = models.OneToOneField(
         Lead, default=None, blank=True, null=True, on_delete=models.CASCADE,
     )
-    lead_group = models.OneToOneField(
-        LeadGroup, on_delete=models.CASCADE,
-        default=None, blank=True, null=True,
-    )
 
     # Metadata Group
     # -- Background Fields
@@ -245,9 +243,6 @@ class AssessmentRegistryOrganization(models.Model):
     organization_type = models.IntegerField(choices=Type.choices)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     assessment_registry = models.ForeignKey(AssessmentRegistry, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ('assessment_registry', 'organization_type', 'organization')
 
 
 class MethodologyAttribute(UserResource):
@@ -744,7 +739,6 @@ class Answer(UserResource):
 
     class Meta:
         ordering = ["id"]
-        unique_together = [["assessment_registry", "question"]]
 
     def __str__(self):
         return str(self.answer)
