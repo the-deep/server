@@ -116,7 +116,6 @@ class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSeria
     """
     Serialize deepl extractor
     """
-    url = serializers.CharField()
     # Data fields
     images_path = serializers.ListField(
         child=serializers.CharField(allow_blank=True),
@@ -125,20 +124,16 @@ class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSeria
     text_path = serializers.CharField(required=False, allow_null=True)
     total_words_count = serializers.IntegerField(required=False, default=0, allow_null=True)
     total_pages = serializers.IntegerField(required=False, default=0, allow_null=True)
-    text_extraction_id = serializers.CharField(required=False, allow_null=True)
+    text_extraction_id = serializers.UUIDField(required=False, allow_null=True)
 
     nlp_handler = UnifiedConnectorLeadHandler
 
     def validate(self, data):
         data = super().validate(data)
-        if data['object'].url != data['url']:
-            raise serializers.ValidationError({
-                'url': 'Different url found provided vs original connector lead',
-            })
         if data['status'] == self.Status.SUCCESS:
             errors = {}
             for key in ['text_path', 'total_words_count', 'total_pages', 'text_extraction_id']:
-                if key not in data:
+                if key not in data or data[key] is None:
                     errors[key] = f'<{key}> is missing. Required when the extraction is Success'
             if errors:
                 raise serializers.ValidationError(errors)

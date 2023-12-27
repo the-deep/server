@@ -25,4 +25,11 @@ class ConnectorSourceLeadAdmin(admin.ModelAdmin):
 
 @admin.register(ConnectorLead)
 class ConnectorLeadAdmin(admin.ModelAdmin):
+    list_display = [
+        'id',
+        'title',
+        'created_at'
+    ]
+    readonly_fields = ('created_at',)
+    autocomplete_fields = ('authors', 'source',)
     search_fields = ('title',)

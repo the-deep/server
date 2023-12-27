@@ -668,6 +668,7 @@ class LeadExtractionHandler(BaseHandler):
             text_extract=connector_lead.simplified_text,
             word_count=connector_lead.word_count,
             page_count=connector_lead.page_count,
+            text_extraction_id=connector_lead.text_extraction_id
         )
         # Save extracted images as LeadPreviewImage instances
         # TODO: The logic is same for unified_connector leads as well. Maybe have a single func?

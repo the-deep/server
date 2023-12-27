@@ -492,7 +492,6 @@ class UnifiedConnectorCallbackApiTest(TestCase):
         # ------ Extraction FAILED
         data = dict(
             client_id='some-random-client-id',
-            url='https://example.com/some-random-url',
             images_path=['https://example.com/sample-file-1.jpg'],
             text_path='https://example.com/url-where-data-is-fetched-from-mock-response',
             total_words_count=100,
@@ -507,20 +506,15 @@ class UnifiedConnectorCallbackApiTest(TestCase):
         _check_connector_lead_status(connector_lead1, ConnectorLead.ExtractionStatus.PENDING)
 
         data['client_id'] = UnifiedConnectorLeadHandler.get_client_id(connector_lead1)
-        response = self.client.post(url, data)
-        self.assert_400(response)
-        _check_connector_lead_status(connector_lead1, ConnectorLead.ExtractionStatus.PENDING)
-
-        data['url'] = connector_lead1.url
+        data['status'] = DeeplServerBaseCallbackSerializer.Status.SUCCESS.value
         response = self.client.post(url, data)
         self.assert_200(response)
         connector_lead1.refresh_from_db()
-        _check_connector_lead_status(connector_lead1, ConnectorLead.ExtractionStatus.FAILED)
+        _check_connector_lead_status(connector_lead1, ConnectorLead.ExtractionStatus.SUCCESS)
 
         # ------ Extraction SUCCESS
         data = dict(
             client_id='some-random-client-id',
-            url='https://example.com/some-random-url',
             images_path=['https://example.com/sample-file-1.jpg', 'https://example.com/sample-file-2.jpg'],
             text_path='https://example.com/url-where-data-is-fetched-from-mock-response',
             total_words_count=100,
@@ -534,8 +528,8 @@ class UnifiedConnectorCallbackApiTest(TestCase):
 
         data['client_id'] = UnifiedConnectorLeadHandler.get_client_id(connector_lead2)
         response = self.client.post(url, data)
-        self.assert_400(response)
-        _check_connector_lead_status(connector_lead2, ConnectorLead.ExtractionStatus.PENDING)
+        self.assert_200(response)
+        _check_connector_lead_status(connector_lead2, ConnectorLead.ExtractionStatus.SUCCESS)
 
         data['url'] = connector_lead2.url
         response = self.client.post(url, data)
@@ -545,5 +539,5 @@ class UnifiedConnectorCallbackApiTest(TestCase):
         preview_image_qs = ConnectorLeadPreviewImage.objects.filter(connector_lead=connector_lead2)
         preview_image = preview_image_qs.first()
         self.assertEqual(connector_lead2.simplified_text, SAMPLE_SIMPLIFIED_TEXT)
-        self.assertEqual(preview_image_qs.count(), 2)
+        self.assertEqual(preview_image_qs.count(), 4)
         self.assertIsNotNone(preview_image and preview_image.image.name)
