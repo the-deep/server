@@ -279,6 +279,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
         )
         self.force_login(self.member_user)
         content = _query_check(minput, okay=False)
+        print("Content********************", content)
         data = content['data']['project']['createAssessmentRegistry']['result']
         self.assertEqual(data['costEstimatesUsd'], minput['costEstimatesUsd'], data)
         self.assertIsNotNone(data['methodologyAttributes'])
