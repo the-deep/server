@@ -12,10 +12,7 @@ from analysis.enums import enum_map as analysis_enum_map
 from notification.enums import enum_map as notification_enum_map
 from unified_connector.enums import enum_map as unified_connector_enum_map
 from assisted_tagging.enums import enum_map as assisted_tagging_enum_map
-from ary.enums import (
-    AssessmentMethodologyProtectionInfoEnum,
-    enum_map as ary_enum_map,
-)
+from ary.enums import enum_map as ary_enum_map
 from assessment_registry.enums import enum_map as assessment_reg_enum_map
 
 ENUM_TO_GRAPHENE_ENUM_MAP = {

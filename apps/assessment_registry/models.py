@@ -239,9 +239,6 @@ class AssessmentRegistryOrganization(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     assessment_registry = models.ForeignKey(AssessmentRegistry, on_delete=models.CASCADE)
 
-    class Meta:
-        unique_together = ('assessment_registry', 'organization_type', 'organization')
-
 
 class MethodologyAttribute(UserResource):
     class CollectionTechniqueType(models.IntegerChoices):
@@ -737,7 +734,6 @@ class Answer(UserResource):
 
     class Meta:
         ordering = ["id"]
-        unique_together = [["assessment_registry", "question"]]
 
     def __str__(self):
         return str(self.answer)
