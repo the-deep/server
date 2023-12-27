@@ -62,6 +62,7 @@ class GlobalDataLoaders(WithContextMixin):
     def analysis(self):
         return AnalysisDataLoaders(context=self.context)
 
+    @cached_property
     def assessment_registry(self):
         return AssessmentRegistryDataLoaders(context=self.context)
 
