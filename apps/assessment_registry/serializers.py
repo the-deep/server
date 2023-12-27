@@ -260,6 +260,22 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             unique_sector.add(sector)
         return data
 
+    def validate_stakeholders(self, data):
+        stakeholders_list = []
+        for org in data:
+            org.pop('client_id', None)
+            if org in stakeholders_list:
+                raise serializers.ValidationError('Dublicate organization selected')
+            stakeholders_list.append(org)
+
+    def validate_cna(self, data):
+        question_list = []
+        for question in data:
+            question.pop('client_id', None)
+            if question in question_list:
+                raise serializers.ValidationError('Dublicate question selected')
+            question_list.append(question)
+
     def validate(self, data):
         data['project'] = self.project
         return data
