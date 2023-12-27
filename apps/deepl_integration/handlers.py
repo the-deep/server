@@ -182,24 +182,27 @@ class AssistedTaggingDraftEntryHandler(BaseHandler):
             'authoring_organization': author_organizations,
             'callback_url': cls.get_callback_url(),
         }
+        response_content = None
         try:
             response = requests.post(
                 DeeplServiceEndpoint.ASSISTED_TAGGING_ENTRY_PREDICT_ENDPOINT,
                 headers=cls.REQUEST_HEADERS,
                 json=payload
             )
+            response_content = response.content
             if response.status_code == 202:
                 return True
         except Exception:
             logger.error('Assisted tagging send failed, Exception occurred!!', exc_info=True)
             draft_entry.prediction_status = DraftEntry.PredictionStatus.SEND_FAILED
             draft_entry.save(update_fields=('prediction_status',))
-        _response = locals().get('response')
         logger.error(
             'Assisted tagging send failed!!',
             extra={
-                'payload': payload,
-                'response': _response.content if _response else None
+                'data': {
+                    'payload': payload,
+                    'response': response_content,
+                },
             },
         )
 
@@ -365,12 +368,14 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
             ],
             "callback_url": cls.get_callback_url()
         }
+        response_content = None
         try:
             response = requests.post(
                 url=DeeplServiceEndpoint.ENTRY_EXTRACTION_CLASSIFICATION,
                 headers=cls.REQUEST_HEADERS,
                 json=payload
             )
+            response_content = response.content
             if response.status_code == 202:
                 lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.PENDING
                 lead.save(update_fields=('auto_entry_extraction_status',))
@@ -380,12 +385,13 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
             logger.error('Entry Extraction send failed, Exception occurred!!', exc_info=True)
             lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.FAILED
             lead.save(update_fields=('auto_entry_extraction_status',))
-        _response = locals().get('response')
         logger.error(
             'Entry Extraction send failed!!',
             extra={
-                'payload': payload,
-                'response': _response.content if _response else None
+                'data': {
+                    'payload': payload,
+                    'response': response_content,
+                },
             },
         )
 
@@ -566,23 +572,24 @@ class LeadExtractionHandler(BaseHandler):
             'callback_url': callback_url,
             'request_type': NlpRequestType.USER if high_priority else NlpRequestType.SYSTEM,
         }
+        response_content = None
         try:
             response = requests.post(
                 DeeplServiceEndpoint.DOCS_EXTRACTOR_ENDPOINT,
                 headers=cls.REQUEST_HEADERS,
                 data=json.dumps(payload)
             )
+            response_content = response.content
             if response.status_code == 202:
                 return True
         except Exception:
             logger.error('Lead Extraction Failed, Exception occurred!!', exc_info=True)
-        _response = locals().get('response')
         logger.error(
             'Lead Extraction Request Failed!!',
             extra={
                 'data': {
                     'payload': payload,
-                    'response': _response.content if _response else None
+                    'response': response_content
                 }
             },
         )
@@ -871,7 +878,9 @@ class NewNlpServerBaseHandler(BaseHandler):
         logger.error(
             f'{cls.model.__name__} send failed!!',
             extra={
-                'context': error_extra_context
+                'data': {
+                    'context': error_extra_context
+                }
             }
         )
         obj.status = cls.model.Status.SEND_FAILED
