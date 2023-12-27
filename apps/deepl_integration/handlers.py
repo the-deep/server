@@ -360,7 +360,7 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
             "documents": [
                 {
                     "client_id": cls.get_client_id(lead),
-                    "text_extraction_id": str(lead_preview.text_extraction_id)
+                    "text_extraction_id": str(lead_preview.text_extraction_id),
                 }
             ],
             "callback_url": cls.get_callback_url()
@@ -625,18 +625,17 @@ class LeadExtractionHandler(BaseHandler):
         images_uri: List[str],
         word_count: int,
         page_count: int,
-        text_extraction_id: str
+        text_extraction_id: str,
     ):
         LeadPreview.objects.filter(lead=lead).delete()
         LeadPreviewImage.objects.filter(lead=lead).delete()
-        word_count, page_count = word_count, page_count
         # and create new one
         LeadPreview.objects.create(
             lead=lead,
             text_extract=RequestHelper(url=text_source_uri, ignore_error=True).get_text(sanitize=True) or '',
             word_count=word_count,
             page_count=page_count,
-            text_extraction_id=text_extraction_id
+            text_extraction_id=text_extraction_id,
         )
         # Save extracted images as LeadPreviewImage instances
         # TODO: The logic is same for unified_connector leads as well. Maybe have a single func?
@@ -668,7 +667,7 @@ class LeadExtractionHandler(BaseHandler):
             text_extract=connector_lead.simplified_text,
             word_count=connector_lead.word_count,
             page_count=connector_lead.page_count,
-            text_extraction_id=connector_lead.text_extraction_id
+            text_extraction_id=connector_lead.text_extraction_id,
         )
         # Save extracted images as LeadPreviewImage instances
         # TODO: The logic is same for unified_connector leads as well. Maybe have a single func?
