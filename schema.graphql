@@ -1569,7 +1569,7 @@ type AssessmentAffectedGroupCountByDateType {
   date: Date!
   count: Int!
   affectedGroup: AssessmentRegistryAffectedGroupTypeEnum!
-  affectedGroupDisplay: String!
+  affectedGroupDisplay: EnumDescription!
 }
 
 type AssessmentByGeographicalAndDataCollectionTechniqueCountByDateType {
@@ -1578,7 +1578,7 @@ type AssessmentByGeographicalAndDataCollectionTechniqueCountByDateType {
   geoArea: Int!
   dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
   count: Int!
-  dataCollectionTechniqueDisplay: String!
+  dataCollectionTechniqueDisplay: EnumDescription!
 }
 
 type AssessmentByGeographicalAndProximityCountByDateType {
@@ -1587,7 +1587,7 @@ type AssessmentByGeographicalAndProximityCountByDateType {
   geoArea: Int!
   proximity: AssessmentRegistryProximityTypeEnum!
   count: Int!
-  proximityDisplay: String!
+  proximityDisplay: EnumDescription!
 }
 
 type AssessmentByGeographicalAndSamplingApproachCountByDateType {
@@ -1596,7 +1596,7 @@ type AssessmentByGeographicalAndSamplingApproachCountByDateType {
   geoArea: Int!
   samplingApproach: AssessmentRegistrySamplingApproachTypeEnum!
   count: Int!
-  samplingApproachDisplay: String!
+  samplingApproachDisplay: EnumDescription!
 }
 
 type AssessmentByGeographicalAndUnit_Of_AnalysisCountByDateType {
@@ -1605,7 +1605,7 @@ type AssessmentByGeographicalAndUnit_Of_AnalysisCountByDateType {
   geoArea: Int!
   unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum!
   count: Int!
-  unitOfAnalysisDisplay: String!
+  unitOfAnalysisDisplay: EnumDescription!
 }
 
 type AssessmentByGeographicalAndUnit_Of_ReportingCountByDateType {
@@ -1614,7 +1614,7 @@ type AssessmentByGeographicalAndUnit_Of_ReportingCountByDateType {
   geoArea: Int!
   unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum!
   count: Int!
-  unitOfReportingDisplay: String!
+  unitOfReportingDisplay: EnumDescription!
 }
 
 type AssessmentByLeadOrganizationCountByDateType {
@@ -1630,7 +1630,7 @@ type AssessmentCountByDateType {
 
 type AssessmentCountType {
   coordinatedJoint: AssessmentRegistryCoordinationTypeEnum!
-  coordinatedJointDisplay: String
+  coordinatedJointDisplay: EnumDescription!
   count: Int
 }
 
@@ -1702,27 +1702,32 @@ type AssessmentDashboardStatisticsType {
   assessmentByUnitOfReportingAndGeolocation: [AssessmentByGeographicalAndUnit_Of_ReportingCountByDateType!]
   medianQualityScoreByGeoArea: [MedianQualityScoreByGeographicalAreaDateType!]
   medianQualityScoreOverTime: [MedianQualityScoreOverTimeDateType!]
+  medianQualityScoreOverTimeByMonth: [MedianQualityScoreOverTimeDateType!]
   medianQualityScoreOfEachDimension: [MedianScoreOfEachDimensionType!]
   medianQualityScoreOfEachDimensionByDate: [MedianScoreOfEachDimensionDateType!]
+  medianQualityScoreOfEachDimensionByDateMonth: [MedianScoreOfEachDimensionDateType!]
   medianQualityScoreOfAnalyticalDensity: [MedianScoreOfAnalyticalDensityType!]
   medianQualityScoreByAnalyticalDensityDate: [MedianScoreOfAnalyticalDensityDateType!]
+  medianQualityScoreByAnalyticalDensityDateMonth: [MedianScoreOfAnalyticalDensityDateType!]
   medianQualityScoreByGeoareaAndSector: [MedianScoreOfGeographicalAndSectorDateType!]
+  medianQualityScoreByGeoareaAndSectorByMonth: [MedianScoreOfGeographicalAndSectorDateType!]
   medianQualityScoreByGeoareaAndAffectedGroup: [MedianScoreOfGeoAreaAndAffectedGroupDateType!]
   medianScoreBySectorAndAffectedGroup: [MedianScoreOfSectorAndAffectedGroup!]
+  medianScoreBySectorAndAffectedGroupByMonth: [MedianScoreOfSectorAndAffectedGroup!]
 }
 
 type AssessmentFocusCountByDateType {
   date: Date!
   count: Int!
   focus: AssessmentRegistryFocusTypeEnum!
-  focusDisplay: String!
+  focusDisplay: EnumDescription!
 }
 
 type AssessmentHumanitrainSectorCountByDateType {
   date: Date!
   count: Int!
   sector: AssessmentRegistrySectorTypeEnum!
-  sectorDisplay: String!
+  sectorDisplay: EnumDescription!
 }
 
 type AssessmentListType {
@@ -1748,7 +1753,7 @@ type AssessmentPerAffectedGroupAndGeoAreaCountByDateType {
   count: Int!
   affectedGroup: AssessmentRegistryAffectedGroupTypeEnum!
   geoArea: ProjectGeoAreaType!
-  affectedGroupDisplay: String!
+  affectedGroupDisplay: EnumDescription!
 }
 
 type AssessmentPerAffectedGroupAndSectorCountByDateType {
@@ -1761,42 +1766,42 @@ type AssessmentPerDataCollectionTechniqueCountByDateType {
   date: Date!
   count: Int!
   dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
-  dataCollectionTechniqueDisplay: String!
+  dataCollectionTechniqueDisplay: EnumDescription!
 }
 
 type AssessmentPerProximityCountByDateType {
   date: Date!
   count: Int!
   proximity: AssessmentRegistryProximityTypeEnum!
-  proximityDisplay: String!
+  proximityDisplay: EnumDescription!
 }
 
 type AssessmentPerSamplingApproachCountByDateType {
   date: Date!
   count: Int!
   samplingApproach: AssessmentRegistrySamplingApproachTypeEnum!
-  samplingApproachDisplay: String!
+  samplingApproachDisplay: EnumDescription!
 }
 
 type AssessmentPerSectorAndGeoAreaCountByDateType {
   count: Int!
   sector: AssessmentRegistrySectorTypeEnum!
   geoArea: ProjectGeoAreaType!
-  sectorDisplay: String!
+  sectorDisplay: EnumDescription!
 }
 
 type AssessmentPerUnitofAnalysisCountByDateType {
   date: Date!
   count: Int!
   unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum!
-  unitOfAnalysisDisplay: String!
+  unitOfAnalysisDisplay: EnumDescription!
 }
 
 type AssessmentPerUnitofReportingCountByDateType {
   date: Date!
   count: Int!
   unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum!
-  unitOfReportingDisplay: String!
+  unitOfReportingDisplay: EnumDescription!
 }
 
 type AssessmentProtectionInformationCountByDateType {
@@ -2641,7 +2646,7 @@ type ChangeUserPassword {
 
 type CollectionTechniqueCountType {
   dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
-  dataCollectionTechniqueDisplay: String!
+  dataCollectionTechniqueDisplay: EnumDescription!
   count: Int!
 }
 
@@ -4106,14 +4111,14 @@ type MedianQualityScoreOverTimeDateType {
 type MedianScoreOfAnalyticalDensityDateType {
   sector: AssessmentRegistrySectorTypeEnum!
   finalScore: Float!
-  sectorDisplay: String!
+  sectorDisplay: EnumDescription!
   date: Date!
 }
 
 type MedianScoreOfAnalyticalDensityType {
   sector: AssessmentRegistrySectorTypeEnum!
   finalScore: Float!
-  sectorDisplay: String!
+  sectorDisplay: EnumDescription!
 }
 
 type MedianScoreOfEachDimensionDateType {
@@ -5114,7 +5119,7 @@ type SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType {
   date: Date!
   samplingSize: Int!
   dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
-  dataCollectionTechniqueDisplay: String!
+  dataCollectionTechniqueDisplay: EnumDescription!
 }
 
 type SaveUserSavedLeadFilter {

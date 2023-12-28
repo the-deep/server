@@ -11,6 +11,7 @@ from geo.schema import ProjectGeoAreaType
 
 
 from deep.caches import CacheHelper, CacheKey
+from utils.graphene.enums import EnumDescription
 from .enums import (
     AssessmentRegistryAffectedGroupTypeEnum,
     AssessmentRegistryCoordinationTypeEnum,
@@ -72,7 +73,7 @@ class AssessmentDashboardFilterInputType(graphene.InputObjectType):
 
 class AssessmentCountType(graphene.ObjectType):
     coordinated_joint = graphene.Field(AssessmentRegistryCoordinationTypeEnum, required=True)
-    coordinated_joint_display = graphene.String()
+    coordinated_joint_display = EnumDescription(required=True)
     count = graphene.Int()
 
     def resolve_coordinated_joint_display(root, info):
@@ -86,7 +87,7 @@ class StakeholderCountType(graphene.ObjectType):
 
 class CollectionTechniqueCountType(graphene.ObjectType):
     data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum, required=True)
-    data_collection_technique_display = graphene.String(required=True)  # Note reolver is used to get the enum values
+    data_collection_technique_display = EnumDescription(required=True)  # Note resolver is used to get the enum values
     count = graphene.Int(required=True)
 
     def resolve_data_collection_technique_display(root, info):
@@ -109,7 +110,7 @@ class AssessmentCountByDateType(graphene.ObjectType):
 
 class AssessmentFocusCountByDateType(AssessmentCountByDateType):
     focus = graphene.Field(AssessmentRegistryFocusTypeEnum, required=True)
-    focus_display = graphene.String(required=True)
+    focus_display = EnumDescription(required=True)
 
     def resolve_focus_display(root, info):
         return AssessmentRegistry.FocusType(root["focus"]).label
@@ -117,7 +118,7 @@ class AssessmentFocusCountByDateType(AssessmentCountByDateType):
 
 class AssessmentAffectedGroupCountByDateType(AssessmentCountByDateType):
     affected_group = graphene.Field(AssessmentRegistryAffectedGroupTypeEnum, required=True)
-    affected_group_display = graphene.String(required=True)
+    affected_group_display = EnumDescription(required=True)
 
     def resolve_affected_group_display(root, info):
         return AssessmentRegistry.AffectedGroupType(root["affected_group"]).label
@@ -125,7 +126,7 @@ class AssessmentAffectedGroupCountByDateType(AssessmentCountByDateType):
 
 class AssessmentHumanitrainSectorCountByDateType(AssessmentCountByDateType):
     sector = graphene.Field(AssessmentRegistrySectorTypeEnum, required=True)
-    sector_display = graphene.String(required=True)
+    sector_display = EnumDescription(required=True)
 
     def resolve_sector_display(root, info):
         return AssessmentRegistry.SectorType(root["sector"]).label
@@ -148,7 +149,7 @@ class AssessmentPerAffectedGroupAndSectorCountByDateType(graphene.ObjectType):
 class AssessmentPerAffectedGroupAndGeoAreaCountByDateType(AssessmentCountByDateType):
     affected_group = graphene.Field(AssessmentRegistryAffectedGroupTypeEnum, required=True)
     geo_area = graphene.Field(ProjectGeoAreaType, required=True)
-    affected_group_display = graphene.String(required=True)
+    affected_group_display = EnumDescription(required=True)
 
     def resolve_geo_area(root, info):
         return info.context.dl.geo.geo_area.load(root["geo_area"])
@@ -161,7 +162,7 @@ class AssessmentPerSectorAndGeoAreaCountByDateType(graphene.ObjectType):
     count = graphene.Int(required=True)
     sector = graphene.Field(AssessmentRegistrySectorTypeEnum, required=True)
     geo_area = graphene.Field(ProjectGeoAreaType, required=True)
-    sector_display = graphene.String(required=True)
+    sector_display = EnumDescription(required=True)
 
     def resolve_geo_area(root, info):
         return info.context.dl.geo.geo_area.load(root["geo_area"])
@@ -179,7 +180,7 @@ class AssessmentByLeadOrganizationCountByDateType(AssessmentCountByDateType):
 
 class AssessmentPerDataCollectionTechniqueCountByDateType(AssessmentCountByDateType):
     data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum, required=True)
-    data_collection_technique_display = graphene.String(required=True)
+    data_collection_technique_display = EnumDescription(required=True)
 
     def resolve_data_collection_technique_display(root, info):
         return MethodologyAttribute.CollectionTechniqueType(root["data_collection_technique"]).label
@@ -187,7 +188,7 @@ class AssessmentPerDataCollectionTechniqueCountByDateType(AssessmentCountByDateT
 
 class AssessmentPerUnitofAnalysisCountByDateType(AssessmentCountByDateType):
     unit_of_analysis = graphene.Field(AssessmentRegistryUnitOfAnalysisTypeEnum, required=True)
-    unit_of_analysis_display = graphene.String(required=True)
+    unit_of_analysis_display = EnumDescription(required=True)
 
     def resolve_unit_of_analysis_display(root, info):
         return MethodologyAttribute.UnitOfAnalysisType(root["unit_of_analysis"]).label
@@ -195,7 +196,7 @@ class AssessmentPerUnitofAnalysisCountByDateType(AssessmentCountByDateType):
 
 class AssessmentPerUnitofReportingCountByDateType(AssessmentCountByDateType):
     unit_of_reporting = graphene.Field(AssessmentRegistryUnitOfReportingTypeEnum, required=True)
-    unit_of_reporting_display = graphene.String(required=True)
+    unit_of_reporting_display = EnumDescription(required=True)
 
     def resolve_unit_of_reporting_display(root, info):
         return MethodologyAttribute.UnitOfReportingType(root["unit_of_reporting"]).label
@@ -203,7 +204,7 @@ class AssessmentPerUnitofReportingCountByDateType(AssessmentCountByDateType):
 
 class AssessmentPerSamplingApproachCountByDateType(AssessmentCountByDateType):
     sampling_approach = graphene.Field(AssessmentRegistrySamplingApproachTypeEnum, required=True)
-    sampling_approach_display = graphene.String(required=True)
+    sampling_approach_display = EnumDescription(required=True)
 
     def resolve_sampling_approach_display(root, info):
         return MethodologyAttribute.SamplingApproachType(root["sampling_approach"]).label
@@ -211,7 +212,7 @@ class AssessmentPerSamplingApproachCountByDateType(AssessmentCountByDateType):
 
 class AssessmentPerProximityCountByDateType(AssessmentCountByDateType):
     proximity = graphene.Field(AssessmentRegistryProximityTypeEnum, required=True)
-    proximity_display = graphene.String(required=True)
+    proximity_display = EnumDescription(required=True)
 
     def resolve_proximity_display(root, info):
         return MethodologyAttribute.ProximityType(root["proximity"]).label
@@ -221,7 +222,7 @@ class SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType(graphene.O
     date = graphene.Date(required=True)
     sampling_size = graphene.Int(required=True)
     data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum, required=True)
-    data_collection_technique_display = graphene.String(required=True)
+    data_collection_technique_display = EnumDescription(required=True)
 
     def resolve_data_collection_technique_display(root, info):
         return MethodologyAttribute.CollectionTechniqueType(root["data_collection_technique"]).label
@@ -233,7 +234,7 @@ class AssessmentByGeographicalAndDataCollectionTechniqueCountByDateType(graphene
     geo_area = graphene.Int(required=True)
     data_collection_technique = graphene.Field(AssessmentRegistryDataCollectionTechniqueTypeEnum, required=True)
     count = graphene.Int(required=True)
-    data_collection_technique_display = graphene.String(required=True)
+    data_collection_technique_display = EnumDescription(required=True)
 
     def resolve_data_collection_technique_display(root, info):
         return MethodologyAttribute.CollectionTechniqueType(root["data_collection_technique"]).label
@@ -245,7 +246,7 @@ class AssessmentByGeographicalAndSamplingApproachCountByDateType(graphene.Object
     geo_area = graphene.Int(required=True)
     sampling_approach = graphene.Field(AssessmentRegistrySamplingApproachTypeEnum, required=True)
     count = graphene.Int(required=True)
-    sampling_approach_display = graphene.String(required=True)
+    sampling_approach_display = EnumDescription(required=True)
 
     def resolve_sampling_approach_display(root, info):
         return MethodologyAttribute.SamplingApproachType(root["sampling_approach"]).label
@@ -257,7 +258,7 @@ class AssessmentByGeographicalAndProximityCountByDateType(graphene.ObjectType):
     geo_area = graphene.Int(required=True)
     proximity = graphene.Field(AssessmentRegistryProximityTypeEnum, required=True)
     count = graphene.Int(required=True)
-    proximity_display = graphene.String(required=True)
+    proximity_display = EnumDescription(required=True)
 
     def resolve_proximity_display(root, info):
         return MethodologyAttribute.ProximityType(root["proximity"]).label
@@ -269,7 +270,7 @@ class AssessmentByGeographicalAndUnit_Of_AnalysisCountByDateType(graphene.Object
     geo_area = graphene.Int(required=True)
     unit_of_analysis = graphene.Field(AssessmentRegistryUnitOfAnalysisTypeEnum, required=True)
     count = graphene.Int(required=True)
-    unit_of_analysis_display = graphene.String(required=True)
+    unit_of_analysis_display = EnumDescription(required=True)
 
     def resolve_unit_of_analysis_display(root, info):
         return MethodologyAttribute.UnitOfAnalysisType(root["unit_of_analysis"]).label
@@ -281,7 +282,7 @@ class AssessmentByGeographicalAndUnit_Of_ReportingCountByDateType(graphene.Objec
     geo_area = graphene.Int(required=True)
     unit_of_reporting = graphene.Field(AssessmentRegistryUnitOfReportingTypeEnum, required=True)
     count = graphene.Int(required=True)
-    unit_of_reporting_display = graphene.String(required=True)
+    unit_of_reporting_display = EnumDescription(required=True)
 
     def resolve_unit_of_reporting_display(root, info):
         return MethodologyAttribute.UnitOfReportingType(root["unit_of_reporting"]).label
@@ -311,7 +312,7 @@ class MedianScoreOfEachDimensionDateType(MedianScoreOfEachDimensionType):
 class MedianScoreOfAnalyticalDensityType(graphene.ObjectType):
     sector = graphene.Field(AssessmentRegistrySectorTypeEnum, required=True)
     final_score = graphene.Float(required=True)
-    sector_display = graphene.String(required=True)
+    sector_display = EnumDescription(required=True)
 
     def resolve_sector_display(root, info):
         return AssessmentRegistry.SectorType(root["sector"]).label
