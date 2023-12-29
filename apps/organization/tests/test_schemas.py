@@ -70,6 +70,7 @@ class TestOrganizationTypeQuery(GraphQLTestCase):
         org5 = OrganizationFactory.create(title='org-5', verified=False)
         org6 = OrganizationFactory.create(title='org-5', verified=False)
         org7 = OrganizationFactory.create(title='órg-7', verified=False)
+        all_org = [org7, org6, org5, org4, org3, org2, org1]
         user, non_member_user = UserFactory.create_batch(2)
         project = ProjectFactory.create()
         project.add_member(user)
@@ -98,11 +99,16 @@ class TestOrganizationTypeQuery(GraphQLTestCase):
                 }, [org7, org6, org5, org3, org1]),
                 (user, {
                     'usedInProject': str(project.id),
-                }, [org7, org6, org5, org3, org2, org1]),
+                }, [org6, org5, org3, org2, org1]),
                 (non_member_user, {
                     'usedInProject': str(project.id),
                     # Return all the organizations (Filter not applied)
-                }, [org7, org6, org5, org4, org3, org2, org1]),
+                }, all_org),
+                # unaccent search
+                (user, {'search': 'org'}, all_org),
+                (user, {'search': 'órg'}, all_org),
+                (user, {'search': 'org-7'}, [org7]),
+                (user, {'search': 'órg-7'}, [org7]),
         ]:
             # Without authentication -----
             self.logout()
