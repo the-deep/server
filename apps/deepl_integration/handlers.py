@@ -733,17 +733,20 @@ class UnifiedConnectorLeadHandler(BaseHandler):
 
     @classmethod
     def _send_trigger_request_to_extraction(cls, connector_leads: List[ConnectorLead]):
-        return LeadExtractionHandler.send_trigger_request_to_extractor(
-            [
-                {
-                    'url': connector_lead.url,
-                    'client_id': cls.get_client_id(connector_lead),
-                }
-                for connector_lead in connector_leads
-            ],
-            cls.get_callback_url(),
-            high_priority=False,
-        )
+        if connector_leads:
+            return LeadExtractionHandler.send_trigger_request_to_extractor(
+                [
+                    {
+                        'url': connector_lead.url,
+                        'client_id': cls.get_client_id(connector_lead),
+                    }
+                    for connector_lead in connector_leads
+                ],
+                cls.get_callback_url(),
+                high_priority=False,
+            )
+        # All good for empty connector_leads
+        return True
 
     @classmethod
     def send_retry_trigger_request_to_extractor(
