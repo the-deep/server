@@ -50,6 +50,7 @@ type AnalysisFrameworkDetailType {
   clonedFrom: ID
   allowedPermissions: [AnalysisFrameworkPermission!]!
   tags: [AnalysisFrameworkTagType!]!
+  usedInProjectCount: Int
   primaryTagging: [SectionType!]
   secondaryTagging: [WidgetType!]
   members: [AnalysisFrameworkMembershipType!]
@@ -218,6 +219,7 @@ type AnalysisFrameworkType {
   clonedFrom: ID
   allowedPermissions: [AnalysisFrameworkPermission!]!
   tags: [AnalysisFrameworkTagType!]!
+  usedInProjectCount: Int
 }
 
 type AnalysisFrameworkVisibleProjectType {
