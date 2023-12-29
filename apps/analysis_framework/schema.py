@@ -11,7 +11,7 @@ from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin, File
 from utils.graphene.fields import DjangoPaginatedListObjectField, generate_type_for_serializer
 from deep.permissions import AnalysisFrameworkPermissions as AfP
 from project.schema import AnalysisFrameworkVisibleProjectType
-from project.models import ProjectMembership, Project
+from project.models import ProjectMembership
 from assisted_tagging.models import PredictionTagAnalysisFrameworkWidgetMapping
 from .models import (
     AnalysisFramework,
@@ -97,6 +97,11 @@ class AnalysisFrameworkTagType(DjangoObjectType):
     icon = graphene.Field(FileFieldType, required=False)
 
 
+class AnalysisFrameworkProjectCount(graphene.ObjectType):
+    project_count = graphene.Int(required=True)
+    test_project_count = graphene.Int(required=True)
+
+
 # NOTE: We have AnalysisFrameworkDetailType for detailed AF Type.
 class AnalysisFrameworkType(DjangoObjectType):
     class Meta:
@@ -122,7 +127,7 @@ class AnalysisFrameworkType(DjangoObjectType):
         ),
         required=True,
     )
-    used_in_project_count = graphene.Int(required=True)
+    used_in_project_count = graphene.Field(AnalysisFrameworkProjectCount, required=True)
 
     @staticmethod
     def get_custom_node(_, info, id):
@@ -150,7 +155,7 @@ class AnalysisFrameworkType(DjangoObjectType):
 
     @staticmethod
     def resolve_used_in_project_count(root, info):
-        return Project.objects.filter(analysis_framework=root.id, is_test=False).count()
+        return info.context.dl.analysis_framework.af_project_count.load(root.id)
 
 
 class AnalysisFrameworkRoleType(DjangoObjectType):
