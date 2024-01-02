@@ -442,15 +442,18 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         return root.assessment_registry_qs.count()
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.TOTAL_STAKEHOLDER_COUNT)
     def resolve_total_stakeholder(root: AssessmentDashboardStat, info) -> int:
         qs = root.assessment_registry_qs.values("stakeholders").distinct()
         return qs.count()
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.TOTAL_COLLECTION_TECHNIQUE_COUNT)
     def resolve_total_collection_technique(root: AssessmentDashboardStat, info) -> int:
         return root.methodology_attribute_qs.values("data_collection_technique").distinct().count()
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.ASSESSMENT_COUNT)
     def resolve_assessment_count(root: AssessmentDashboardStat, info):
         return (
             root.assessment_registry_qs.values("coordinated_joint")
@@ -459,6 +462,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.STAKEHOLDER_COUNT)
     def resolve_stakeholder_count(root: AssessmentDashboardStat, info):
         stakeholder_counts = defaultdict(int)
         organization_type_fields = ["stakeholders__organization_type__title"]
@@ -477,6 +481,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         ]
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.COLLECTION_TECHNIQUE_COUNT)
     def resolve_collection_technique_count(root: AssessmentDashboardStat, info):
         return (
             root.methodology_attribute_qs.values("data_collection_technique")
@@ -485,10 +490,12 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.TOTAL_MULTISECTOR_ASSESSMENT_COUNT)
     def resolve_total_multisector_assessment(root: AssessmentDashboardStat, info) -> int:
         return root.assessment_registry_qs.filter(sectors__len__gte=2).count()
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.TOTAL_SINGLESECTOR_ASSESSMENT_COUNT)
     def resolve_total_singlesector_assessment(root: AssessmentDashboardStat, info) -> int:
         return root.assessment_registry_qs.filter(sectors__len=1).count()
 
@@ -652,6 +659,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.ASSESSMENT_PER_SAMPLE_APPROACH)
     def resolve_assessment_per_sampling_approach(root: AssessmentDashboardStat, info):
         return (
             root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__created_at"))
@@ -661,6 +669,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.ASSESSMENT_PER_PROXIMITY)
     def resolve_assessment_per_proximity(root: AssessmentDashboardStat, info):
         return (
             root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__created_at"))
@@ -670,6 +679,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.SAMPLE_SIZE_PER_DATA_COLLECTION_TECHNIQUE)
     def resolve_sample_size_per_data_collection_technique(root: AssessmentDashboardStat, info):
         return (
             root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__created_at"))
@@ -679,6 +689,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.DATA_COLLECTION_TECHNIQUE_AND_GEOLOCATION)
     def resolve_assessment_by_data_collection_technique_and_geolocation(root: AssessmentDashboardStat, info):
         return (
             root.methodology_attribute_qs.values(
@@ -692,6 +703,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.SAMPLING_APPROACH_AND_GEOLOCATION)
     def resolve_assessment_by_sampling_approach_and_geolocation(root: AssessmentDashboardStat, info):
         return (
             root.methodology_attribute_qs.values(
@@ -705,6 +717,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.PROXIMITY_AND_GEOLOCATION)
     def resolve_assessment_by_proximity_and_geolocation(root: AssessmentDashboardStat, info):
         return (
             root.methodology_attribute_qs.values(
@@ -718,6 +731,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.UNIT_OF_ANALYSIS_AND_GEOLOCATION)
     def resolve_assessment_by_unit_of_analysis_and_geolocation(root: AssessmentDashboardStat, info):
         return (
             root.methodology_attribute_qs.values(
@@ -731,6 +745,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.UNIT_REPORTING_AND_GEOLOCATION)
     def resolve_assessment_by_unit_of_reporting_and_geolocation(root: AssessmentDashboardStat, info):
         return (
             root.methodology_attribute_qs.values(
@@ -744,6 +759,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.MEDIAN_QUALITY_SCORE_BY_GEO_AREA)
     def resolve_median_quality_score_by_geo_area(root: AssessmentDashboardStat, info):
         # TODO final score value should be convert into  functions
         score = (
@@ -786,6 +802,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
 
     # per day data of median_quality_score_over_time
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.MEDIAN_QUALITY_SCORE_OVER_TIME)
     def resolve_median_quality_score_over_time(root: AssessmentDashboardStat, info):
         # TODO final score value should be convert into  functions
         score = (
@@ -819,6 +836,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         return score
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.MEDIAN_QUALITY_SCORE_OVER_TIME_BY_MONTH)
     def resolve_median_quality_score_over_time_by_month(root: AssessmentDashboardStat, info):
         # TODO final score value should be convert into  functions
         score = (
@@ -852,6 +870,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         return score
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.MEDIAN_QUALITY_SCORE_OF_EACH_DIMENSION)
     def resolve_median_quality_score_of_each_dimension(root: AssessmentDashboardStat, info):
         # TODO final score value should be convert into  functions
         return (
@@ -873,6 +892,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.MEDIAN_QUALITY_SCORE_OF_EACH_DIMENSION_BY_DATE)
     def resolve_median_quality_score_of_each_dimension_by_date(root: AssessmentDashboardStat, info):
         # TODO final score value should be convert into  functions
         return (
@@ -896,6 +916,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.MEDIAN_QUALITY_SCORE_OF_EACH_DIMENSION_BY_DATE_MONTH)
     def resolve_median_quality_score_of_each_dimension_by_date_month(root: AssessmentDashboardStat, info):
         # TODO final score value should be convert into  functions
         return (
@@ -919,6 +940,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.MEDIAN_QUALITY_SCORE_OF_ANALYTICAL_DENSITY)
     def resolve_median_quality_score_of_analytical_density(root: AssessmentDashboardStat, info):
         return (
             root.assessment_registry_qs.values("analytical_density__sector")
@@ -936,6 +958,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.MEDIAN_QUALITY_SCORE_BY_ANALYTICAL_DENSITY_DATE)
     def resolve_median_quality_score_by_analytical_density_date(root: AssessmentDashboardStat, info):
         return (
             root.assessment_registry_qs.values(date=TruncDay("created_at"))
@@ -952,6 +975,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.MEDIAN_QUALITY_SCORE_BY_ANALYTICAL_DENSITY_DATE_MONTH)
     def resolve_median_quality_score_by_analytical_density_date_month(root: AssessmentDashboardStat, info):
         return (
             root.assessment_registry_qs.values(date=TruncMonth("created_at"))
@@ -968,6 +992,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.MEDIAN_QUALITY_SCORE_BY_GEOAREA_AND_SECTOR)
     def resolve_median_quality_score_by_geoarea_and_sector(root: AssessmentDashboardStat, info):
         return (
             root.assessment_registry_qs.filter(locations__admin_level__level=1)
@@ -988,6 +1013,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         ).exclude(analytical_density__sector__isnull=True, analytical_density__analysis_level_covered__isnull=True)
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.MEDIAN_QUALITY_SCORE_BY_GEOAREA_AND_SECTOR_BY_MONTH)
     def resolve_median_quality_score_by_geoarea_and_sector_by_month(root: AssessmentDashboardStat, info):
         return (
             root.assessment_registry_qs.filter(locations__admin_level__level=1)
@@ -1008,6 +1034,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         ).exclude(analytical_density__sector__isnull=True, analytical_density__analysis_level_covered__isnull=True)
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.MEDIAN_QUALITY_SCORE_BY_GEOAREA_AND_AFFECTED_GROUP)
     def resolve_median_quality_score_by_geoarea_and_affected_group(root: AssessmentDashboardStat, info):
         score = (
             root.assessment_registry_qs.filter(locations__admin_level_id=1)
@@ -1042,6 +1069,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         return score
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.MEDIAN_QUALITY_SCORE_BY_GEOAREA_AND_SECTOR_BY_MONTH)
     def resolve_median_quality_score_by_geoarea_and_affected_group_by_month(root: AssessmentDashboardStat, info):
         score = (
             root.assessment_registry_qs.filter(locations__admin_level_id=1)
@@ -1076,6 +1104,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         return score
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.MEDIAN_SCORE_BY_SECTOR_AND_AFFECTED_GROUP)
     def resolve_median_score_by_sector_and_affected_group(root: AssessmentDashboardStat, info):
         return (
             root.assessment_registry_qs.values(
@@ -1097,6 +1126,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         ).exclude(analytical_density__sector__isnull=True, analytical_density__analysis_level_covered__isnull=True)
 
     @staticmethod
+    @node_cache(CacheKey.AssessmentDashboard.MEDIAN_SCORE_BY_SECTOR_AND_AFFECTED_GROUP_BY_MONTH)
     def resolve_median_score_by_sector_and_affected_group_by_month(root: AssessmentDashboardStat, info):
         return (
             root.assessment_registry_qs.values(
