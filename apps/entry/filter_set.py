@@ -574,6 +574,8 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
     lead_authoring_organization_types = IDListFilter(method='authoring_organization_types_filter')
     lead_author_organizations = IDListFilter(field_name='lead__authors')
     lead_source_organizations = IDListFilter(field_name='lead__source')
+    lead_has_assessment = django_filters.BooleanFilter(method='lead_has_assessment_filter', help_text='Lead has assessment.')
+    lead_is_assessment = django_filters.BooleanFilter(field_name='lead__is_assessment_lead')
 
     search = django_filters.CharFilter(method='search_filter')
     created_by = IDListFilter()
@@ -642,6 +644,12 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
         if value:
             return queryset.filter(entrygrouplabel__group__title__icontains=value)
         return queryset
+
+    def lead_has_assessment_filter(self, qs, _, value):
+        if value is None:
+            return qs
+        # TODO: We need to add new assessment module filter here after it is deployed
+        return qs.filter(lead__assessment__isnull=not value)
 
     def authoring_organization_types_filter(self, qs, name, value):
         if value:
