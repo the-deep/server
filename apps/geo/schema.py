@@ -20,7 +20,7 @@ def get_users_adminlevel_qs(info):
     return AdminLevel.get_for(info.context.user).defer('geo_area_titles')
 
 
-def get_geo_area_queryset_for_project_geo_area_type(queryset=None, defer_fields=('polygons', 'centroid')):
+def get_geo_area_queryset_for_project_geo_area_type(queryset=None, defer_fields=('polygons', 'centroid', 'cached_data')):
     _queryset = queryset
     if _queryset is None:
         _queryset = GeoArea.objects

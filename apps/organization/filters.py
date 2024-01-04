@@ -42,7 +42,7 @@ class IsFromReliefWeb(admin.SimpleListFilter):
 
 class OrganizationFilterSet(django_filters.FilterSet):
     search = django_filters.CharFilter(method='search_filter')
-    used_in_project = IDFilter(method='filter_used_in_project')
+    used_in_project_by_lead = IDFilter(method='filter_used_in_project_by_lead')
     used_in_project_by_assesment = IDFilter(method='filter_used_in_project_by_assesment')
     ordering = MultipleInputFilter(
         OrganizationOrderingEnum,
@@ -65,7 +65,7 @@ class OrganizationFilterSet(django_filters.FilterSet):
             ).distinct()
         return qs
 
-    def filter_used_in_project(self, qs, _, value):
+    def filter_used_in_project_by_lead(self, qs, _, value):
         if value:
             user = getattr(self.request, 'user', None)
             if user is None:

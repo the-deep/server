@@ -4,6 +4,7 @@ from promise import Promise
 
 from django.utils.functional import cached_property
 from django.db import connection as django_db_connection
+from geo.schema import get_geo_area_queryset_for_project_geo_area_type
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
 from .models import (
@@ -88,6 +89,15 @@ class SummaryIssueLevelLoader(DataLoaderWithContext):
         return Promise.resolve([_map.get(key, 0) for key in keys])
 
 
+class GeoAreaLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        geo_area_qs = get_geo_area_queryset_for_project_geo_area_type()
+        _map = {}
+        for geo_area in geo_area_qs:
+            _map[geo_area.id] = geo_area
+        return Promise.resolve([_map.get(key) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def stakeholders(self):
@@ -104,3 +114,7 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def summary_issue_level(self):
         return SummaryIssueLevelLoader(context=self.context)
+
+    @cached_property
+    def geo_area(self):
+        return GeoAreaLoader(context=self.context)

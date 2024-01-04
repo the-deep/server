@@ -1,5 +1,5 @@
 {
   "python.linting.mypyEnabled": true,
   "python.linting.enabled": true,
-  "python.formatting.provider": "none"
+  "python.formatting.provider": "true"
 }

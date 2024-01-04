@@ -24,6 +24,11 @@ class QuestionAdmin(admin.ModelAdmin):
         'modified_by',
         'client_id',
     )
+    exclude = (
+        'created_by',
+        'modified_by',
+        'client_id',
+    )
 
     def save_model(self, request, obj, form, change):
         if not obj.pk:

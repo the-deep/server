@@ -47,7 +47,6 @@ class Query(
     assessment_registry_schema.Query,
     # --
     graphene.ObjectType
-
 ):
     assisted_tagging = graphene.Field(assisted_tagging_schema.AssistedTaggingRootQueryType)
     enums = graphene.Field(AppEnumCollection)
