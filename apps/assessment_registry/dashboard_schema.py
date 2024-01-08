@@ -461,10 +461,11 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         )
 
     @staticmethod
-    # @node_cache(CacheKey.AssessmentDashboard.STAKEHOLDER_COUNT)
+    @node_cache(CacheKey.AssessmentDashboard.STAKEHOLDER_COUNT)
     def resolve_stakeholder_count(root: AssessmentDashboardStat, info):
         return (
-            root.assessment_registry_qs.values(stakeholder=models.F('stakeholders__organization_type__title'))
+            root.assessment_registry_qs.filter(stakeholders__organization_type__title__isnull=False)
+            .values(stakeholder=models.F('stakeholders__organization_type__title'))
             .annotate(count=Count('id'))
             .order_by('stakeholder')
             .values('count', 'stakeholder')
@@ -494,7 +495,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @node_cache(CacheKey.AssessmentDashboard.ASSESSMENT_BY_GEOAREA)
     def resolve_assessment_geographic_areas(root: AssessmentDashboardStat, info):
         return (
-            root.assessment_registry_qs.values("locations")
+            root.assessment_registry_qs.filter(locations__isnull=False).values("locations")
             .annotate(
                 region=models.F("locations__admin_level__region"),
                 count=Count("locations__id"),
@@ -510,6 +511,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
                 'geo_area',
                 'admin_level_id',
                 'code',
+                'region',
             )
             .order_by("locations")
         )
@@ -703,14 +705,15 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @node_cache(CacheKey.AssessmentDashboard.DATA_COLLECTION_TECHNIQUE_AND_GEOLOCATION)
     def resolve_assessment_by_data_collection_technique_and_geolocation(root: AssessmentDashboardStat, info):
         return (
-            root.methodology_attribute_qs.values(
+            root.methodology_attribute_qs.filter(assessment_registry__locations__isnull=False)
+            .values(
                 "data_collection_technique",
                 geo_area=models.F("assessment_registry__locations"),
                 region=models.F("assessment_registry__locations__admin_level__region"),
                 admin_level_id=models.F("assessment_registry__locations__admin_level_id"),
             )
             .annotate(count=Count("assessment_registry__locations"))
-            .values('data_collection_technique', 'geo_area', 'region', 'admin_level_id')
+            .values('data_collection_technique', 'geo_area', 'region', 'admin_level_id', 'count')
             .order_by("assessment_registry__locations")
         )
 
@@ -718,14 +721,15 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @node_cache(CacheKey.AssessmentDashboard.SAMPLING_APPROACH_AND_GEOLOCATION)
     def resolve_assessment_by_sampling_approach_and_geolocation(root: AssessmentDashboardStat, info):
         return (
-            root.methodology_attribute_qs.values(
+            root.methodology_attribute_qs.filter(assessment_registry__locations__isnull=False)
+            .values(
                 "sampling_approach",
                 geo_area=models.F("assessment_registry__locations"),
                 region=models.F("assessment_registry__locations__admin_level__region"),
                 admin_level_id=models.F("assessment_registry__locations__admin_level_id"),
             )
             .annotate(count=Count("assessment_registry__locations"))
-            .values('sampling_approach', 'geo_area', 'region', 'admin_level_id')
+            .values('sampling_approach', 'geo_area', 'region', 'admin_level_id', 'count')
             .order_by("assessment_registry__locations")
         )
 
@@ -733,14 +737,15 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @node_cache(CacheKey.AssessmentDashboard.PROXIMITY_AND_GEOLOCATION)
     def resolve_assessment_by_proximity_and_geolocation(root: AssessmentDashboardStat, info):
         return (
-            root.methodology_attribute_qs.values(
+            root.methodology_attribute_qs.filter(assessment_registry__locations__isnull=False)
+            .values(
                 "proximity",
                 geo_area=models.F("assessment_registry__locations"),
                 region=models.F("assessment_registry__locations__admin_level__region"),
                 admin_level_id=models.F("assessment_registry__locations__admin_level_id"),
             )
             .annotate(count=Count("assessment_registry__locations"))
-            .values('proximity', 'geo_area', 'region', 'admin_level_id')
+            .values('proximity', 'geo_area', 'region', 'admin_level_id', 'count')
             .order_by("assessment_registry__locations")
         )
 
@@ -748,13 +753,14 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @node_cache(CacheKey.AssessmentDashboard.UNIT_OF_ANALYSIS_AND_GEOLOCATION)
     def resolve_assessment_by_unit_of_analysis_and_geolocation(root: AssessmentDashboardStat, info):
         return (
-            root.methodology_attribute_qs.values(
+            root.methodology_attribute_qs.filter(assessment_registry__locations__isnull=False).values(
                 "unit_of_analysis",
                 geo_area=models.F("assessment_registry__locations"),
                 region=models.F("assessment_registry__locations__admin_level__region"),
                 admin_level_id=models.F("assessment_registry__locations__admin_level_id"),
             )
             .annotate(count=Count("assessment_registry__locations"))
+            .values('geo_area', 'region', 'admin_level_id', 'unit_of_analysis', 'count')
             .order_by("assessment_registry__locations")
         )
 
@@ -762,14 +768,14 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @node_cache(CacheKey.AssessmentDashboard.UNIT_REPORTING_AND_GEOLOCATION)
     def resolve_assessment_by_unit_of_reporting_and_geolocation(root: AssessmentDashboardStat, info):
         return (
-            root.methodology_attribute_qs.values(
+            root.methodology_attribute_qs.filter(assessment_registry__locations__isnull=False).values(
                 "unit_of_reporting",
                 geo_area=models.F("assessment_registry__locations"),
                 region=models.F("assessment_registry__locations__admin_level__region"),
                 admin_level_id=models.F("assessment_registry__locations__admin_level_id"),
             )
             .annotate(count=Count("assessment_registry__locations"))
-            .values('unit_of_reporting' 'geo_area', 'region', 'admin_level_id')
+            .values('unit_of_reporting', 'count', 'geo_area', 'region', 'admin_level_id')
             .order_by("assessment_registry__locations")
         )
 

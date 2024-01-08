@@ -1,4 +1,5 @@
 from django.contrib import admin
+from admin_auto_filters.filters import AutocompleteFilterFactory
 
 from .models import (
     AssessmentRegistry,
@@ -101,8 +102,12 @@ class SummaryIssueAdmin(admin.ModelAdmin):
 
 @admin.register(AssessmentRegistry)
 class AssessmentRegistryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'lead', 'project', 'coordinated_joint', 'created_at')
-
+    list_display = ('id', 'lead', 'project', 'created_at')
+    list_filter = (
+        AutocompleteFilterFactory('Project', 'project'),
+        AutocompleteFilterFactory('Created By', 'created_by'),
+        'created_at',
+    )
     inlines = [
         MethodologyAttributeInline,
         ScoreInline,

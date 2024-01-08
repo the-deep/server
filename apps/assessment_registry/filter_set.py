@@ -38,6 +38,12 @@ class AssessmentDashboardFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
     def filter_sectors(self, qs, _, value):
         return qs if value is None else qs.filter(sectors__overlap=value)
 
+    def filter_details_type(self, qs, _, value):
+        return qs if value is None else qs.filter(details_type__overlap=value)
+
+    def filter_coordinated_joint(self, qs, _, value):
+        return qs if value is None else qs.filter(coordinated_joint__overlap=value)
+
 
 AssessmentDashboardFilterDataType, AssessmentDashboardFilterDataInputType = generate_type_for_filter_set(
     AssessmentDashboardFilterSet,
