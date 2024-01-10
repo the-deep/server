@@ -50,6 +50,7 @@ type AnalysisFrameworkDetailType {
   clonedFrom: ID
   allowedPermissions: [AnalysisFrameworkPermission!]!
   tags: [AnalysisFrameworkTagType!]!
+  usedInProjectCount: AnalysisFrameworkProjectCount!
   primaryTagging: [SectionType!]
   secondaryTagging: [WidgetType!]
   members: [AnalysisFrameworkMembershipType!]
@@ -136,6 +137,11 @@ type AnalysisFrameworkPredictionMappingType {
   widgetType: WidgetWidgetTypeEnum!
 }
 
+type AnalysisFrameworkProjectCount {
+  projectCount: Int!
+  testProjectCount: Int!
+}
+
 input AnalysisFrameworkPropertiesGqlInputType {
   statsConfig: AnalysisFrameworkPropertiesStatsConfigInputType
 }
@@ -218,6 +224,7 @@ type AnalysisFrameworkType {
   clonedFrom: ID
   allowedPermissions: [AnalysisFrameworkPermission!]!
   tags: [AnalysisFrameworkTagType!]!
+  usedInProjectCount: AnalysisFrameworkProjectCount!
 }
 
 type AnalysisFrameworkVisibleProjectType {

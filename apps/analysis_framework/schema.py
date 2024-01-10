@@ -97,6 +97,11 @@ class AnalysisFrameworkTagType(DjangoObjectType):
     icon = graphene.Field(FileFieldType, required=False)
 
 
+class AnalysisFrameworkProjectCount(graphene.ObjectType):
+    project_count = graphene.Int(required=True)
+    test_project_count = graphene.Int(required=True)
+
+
 # NOTE: We have AnalysisFrameworkDetailType for detailed AF Type.
 class AnalysisFrameworkType(DjangoObjectType):
     class Meta:
@@ -122,6 +127,7 @@ class AnalysisFrameworkType(DjangoObjectType):
         ),
         required=True,
     )
+    used_in_project_count = graphene.Field(AnalysisFrameworkProjectCount, required=True)
 
     @staticmethod
     def get_custom_node(_, info, id):
@@ -146,6 +152,10 @@ class AnalysisFrameworkType(DjangoObjectType):
     @staticmethod
     def resolve_tags(root, info):
         return info.context.dl.analysis_framework.af_tags.load(root.id)
+
+    @staticmethod
+    def resolve_used_in_project_count(root, info):
+        return info.context.dl.analysis_framework.af_project_count.load(root.id)
 
 
 class AnalysisFrameworkRoleType(DjangoObjectType):

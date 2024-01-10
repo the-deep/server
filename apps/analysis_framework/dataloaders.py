@@ -3,6 +3,7 @@ from collections import defaultdict
 from promise import Promise
 from django.utils.functional import cached_property
 from django.db import models
+from project.models import Project
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
@@ -102,6 +103,38 @@ class AnalysisFrameworkTagsLoader(DataLoaderWithContext):
         return Promise.resolve([_map[key] for key in keys])
 
 
+class AnalysisFrameworkProjectCountLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        stat_qs = Project.objects\
+            .filter(analysis_framework__in=keys)\
+            .order_by('analysis_framework').values('analysis_framework')\
+            .annotate(
+                project_count=models.functions.Coalesce(
+                    models.Count(
+                        'id',
+                        filter=models.Q(is_test=False)
+                    ),
+                    0,
+                ),
+                test_project_count=models.functions.Coalesce(
+                    models.Count(
+                        'id',
+                        filter=models.Q(is_test=True)
+                    ),
+                    0,
+                ),
+            ).values('analysis_framework', 'project_count', 'test_project_count')
+        _map = {
+            stat.pop('analysis_framework'): stat
+            for stat in stat_qs
+        }
+        _dummy = {
+            'project_count': 0,
+            'test_project_count': 0,
+        }
+        return Promise.resolve([_map.get(key, _dummy) for key in keys])
+
+
 class DataLoaders(WithContextMixin):
     @cached_property
     def secondary_widgets(self):
@@ -130,3 +163,7 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def af_tags(self):
         return AnalysisFrameworkTagsLoader(context=self.context)
+
+    @cached_property
+    def af_project_count(self):
+        return AnalysisFrameworkProjectCountLoader(context=self.context)
