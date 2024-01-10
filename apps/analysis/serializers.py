@@ -580,6 +580,7 @@ class ReportEnum:
 
 class AnalysisReportVariableSerializer(serializers.Serializer):
     name = serializers.CharField(required=False, allow_null=True)
+    client_id= serializers.CharField(required=False)
     type = serializers.ChoiceField(choices=ReportEnum.VariableType.choices, required=False, allow_null=True)
     completeness = serializers.IntegerField(required=False, allow_null=True)
 
@@ -857,6 +858,7 @@ class AnalysisReportSnapshotSerializer(ProjectPropertySerializerMixin, serialize
 class AnalysisReportUploadMetadataXlsxSheetSerializer(serializers.Serializer):
     name = serializers.CharField(required=False)
     header_row = serializers.IntegerField(required=False)
+    client_id = serializers.CharField(required=False)
     variables = AnalysisReportVariableSerializer(many=True)
 
 
