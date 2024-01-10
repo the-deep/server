@@ -423,6 +423,8 @@ enum AnalysisReportContainerContentTypeEnum {
   HEADING
   IMAGE
   URL
+  TIMELINE_CHART
+  KPI
 }
 
 input AnalysisReportContainerDataInputType {
@@ -762,12 +764,14 @@ input AnalysisReportUploadMetadataXlsxInputType {
 input AnalysisReportUploadMetadataXlsxSheetInputType {
   name: String
   headerRow: Int
+  clientId: String
   variables: [AnalysisReportVariableInputType!]!
 }
 
 type AnalysisReportUploadMetadataXlsxSheetType {
   name: String
   headerRow: Int
+  clientId: String
   variables: [AnalysisReportVariableType!]!
 }
 
@@ -800,12 +804,14 @@ type AnalysisReportUrlConfigurationType {
 
 input AnalysisReportVariableInputType {
   name: String
+  clientId: String
   type: AnalysisReportVariableTypeEnum
   completeness: Int
 }
 
 type AnalysisReportVariableType {
   name: String
+  clientId: String
   type: AnalysisReportVariableTypeEnum
   completeness: Int
 }
