@@ -601,6 +601,8 @@ class AnalysisReportContainer(models.Model):
         HEADING = 2, 'Heading'
         IMAGE = 3, 'Image'
         URL = 4, 'URL'
+        TIMELINE_CHART = 5, 'Timeline Chart'
+        KPI = 6, 'KPIs'
 
     report = models.ForeignKey(AnalysisReport, on_delete=models.CASCADE)
     row = models.SmallIntegerField()
