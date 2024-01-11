@@ -492,35 +492,34 @@ class UnifiedConnectorCallbackApiTest(TestCase):
         # ------ Extraction FAILED
         data = dict(
             client_id='some-random-client-id',
-            url='https://example.com/some-random-url',
             images_path=['https://example.com/sample-file-1.jpg'],
             text_path='https://example.com/url-where-data-is-fetched-from-mock-response',
             total_words_count=100,
             total_pages=10,
             status=DeeplServerBaseCallbackSerializer.Status.FAILED.value,
             text_extraction_id='c4c3c256-f307-4a85-a50e-5516a6f1ce8e',
-
         )
 
         response = self.client.post(url, data)
         self.assert_400(response)
         _check_connector_lead_status(connector_lead1, ConnectorLead.ExtractionStatus.PENDING)
+        connector_lead1.refresh_from_db()
+        assert connector_lead1.text_extraction_id is None
 
         data['client_id'] = UnifiedConnectorLeadHandler.get_client_id(connector_lead1)
-        response = self.client.post(url, data)
-        self.assert_400(response)
-        _check_connector_lead_status(connector_lead1, ConnectorLead.ExtractionStatus.PENDING)
-
-        data['url'] = connector_lead1.url
+        data['status'] = DeeplServerBaseCallbackSerializer.Status.FAILED.value
         response = self.client.post(url, data)
         self.assert_200(response)
         connector_lead1.refresh_from_db()
         _check_connector_lead_status(connector_lead1, ConnectorLead.ExtractionStatus.FAILED)
+        assert connector_lead1.text_extraction_id is None
+        assert connector_lead1.simplified_text == ''
+        assert connector_lead1.word_count is None
+        assert connector_lead1.page_count is None
 
         # ------ Extraction SUCCESS
         data = dict(
             client_id='some-random-client-id',
-            url='https://example.com/some-random-url',
             images_path=['https://example.com/sample-file-1.jpg', 'https://example.com/sample-file-2.jpg'],
             text_path='https://example.com/url-where-data-is-fetched-from-mock-response',
             total_words_count=100,
@@ -534,13 +533,14 @@ class UnifiedConnectorCallbackApiTest(TestCase):
 
         data['client_id'] = UnifiedConnectorLeadHandler.get_client_id(connector_lead2)
         response = self.client.post(url, data)
-        self.assert_400(response)
-        _check_connector_lead_status(connector_lead2, ConnectorLead.ExtractionStatus.PENDING)
-
-        data['url'] = connector_lead2.url
-        response = self.client.post(url, data)
         self.assert_200(response)
         connector_lead2.refresh_from_db()
+        _check_connector_lead_status(connector_lead2, ConnectorLead.ExtractionStatus.SUCCESS)
+        assert str(connector_lead2.text_extraction_id) == data['text_extraction_id']
+        assert connector_lead2.simplified_text is not None
+        assert connector_lead2.word_count == 100
+        assert connector_lead2.page_count == 10
+
         _check_connector_lead_status(connector_lead2, ConnectorLead.ExtractionStatus.SUCCESS)
         preview_image_qs = ConnectorLeadPreviewImage.objects.filter(connector_lead=connector_lead2)
         preview_image = preview_image_qs.first()

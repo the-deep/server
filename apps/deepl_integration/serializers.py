@@ -73,7 +73,7 @@ class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
     text_path = serializers.CharField(required=False, allow_null=True)
     total_words_count = serializers.IntegerField(required=False, default=0, allow_null=True)
     total_pages = serializers.IntegerField(required=False, default=0, allow_null=True)
-    text_extraction_id = serializers.CharField(required=True)
+    text_extraction_id = serializers.UUIDField(required=False, allow_null=True)
     nlp_handler = LeadExtractionHandler
 
     def validate(self, data):
@@ -85,9 +85,11 @@ class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
             })
         if data['status'] == self.Status.SUCCESS:
             errors = {}
-            for key in ['text_path', 'total_words_count', 'total_pages']:
-                if key not in data:
-                    errors[key] = f'<{key}> is missing. Required when the extraction status is Success'
+            for key in ['text_path', 'total_words_count', 'total_pages', 'text_extraction_id']:
+                if key not in data or data[key] is None:
+                    errors[key] = (
+                        f"<{key=} or {data.get('key')=}> is missing. Required when the extraction status is Success"
+                    )
             if errors:
                 raise serializers.ValidationError(errors)
         return data
@@ -102,7 +104,7 @@ class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
                 data.get('images_path', [])[:10],   # TODO: Support for more images, too much image will error.
                 data.get('total_words_count'),
                 data.get('total_pages'),
-                data.get('text_extraction_id')
+                data.get('text_extraction_id'),
             )
             # Add to deduplication index
             transaction.on_commit(lambda: index_lead_and_calculate_duplicates.delay(lead.id))
@@ -116,7 +118,6 @@ class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSeria
     """
     Serialize deepl extractor
     """
-    url = serializers.CharField()
     # Data fields
     images_path = serializers.ListField(
         child=serializers.CharField(allow_blank=True),
@@ -125,21 +126,19 @@ class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSeria
     text_path = serializers.CharField(required=False, allow_null=True)
     total_words_count = serializers.IntegerField(required=False, default=0, allow_null=True)
     total_pages = serializers.IntegerField(required=False, default=0, allow_null=True)
-    text_extraction_id = serializers.CharField(required=False, allow_null=True)
+    text_extraction_id = serializers.UUIDField(required=False, allow_null=True)
 
     nlp_handler = UnifiedConnectorLeadHandler
 
     def validate(self, data):
         data = super().validate(data)
-        if data['object'].url != data['url']:
-            raise serializers.ValidationError({
-                'url': 'Different url found provided vs original connector lead',
-            })
         if data['status'] == self.Status.SUCCESS:
             errors = {}
             for key in ['text_path', 'total_words_count', 'total_pages', 'text_extraction_id']:
-                if key not in data:
-                    errors[key] = f'<{key}> is missing. Required when the extraction is Success'
+                if key not in data or data[key] is None:
+                    errors[key] = (
+                        f"<{key=} or {data.get('key')=}> is missing. Required when the extraction status is Success"
+                    )
             if errors:
                 raise serializers.ValidationError(errors)
         return data
@@ -154,7 +153,7 @@ class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSeria
                 data.get('images_path', [])[:10],  # TODO: Support for more images, to much image will error.
                 data['total_words_count'],
                 data['total_pages'],
-                data['text_extraction_id']
+                data['text_extraction_id'],
             )
         connector_lead.update_extraction_status(ConnectorLead.ExtractionStatus.FAILED)
         return connector_lead

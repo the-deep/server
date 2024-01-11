@@ -834,7 +834,7 @@ class AnalysisReportSnapshotSerializer(ProjectPropertySerializerMixin, serialize
         if snaphost_file is None:
             logger.error(
                 f'Failed to generate snapshot for report-pk: {report.id}',
-                extra={'context': errors}
+                extra={'data': {'errors': errors}},
             )
             raise serializers.ValidationError('Failed to generate snapshot')
         data['report_data_file'] = snaphost_file
