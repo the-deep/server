@@ -2741,6 +2741,7 @@ type LeadDetailType {
   emmEntities: [EmmEntityType!]
   emmTriggers: [LeadEmmTriggerType!]
   assessmentId: ID
+  connectorLead: ID
   entriesCount: EntriesCountType
   filteredEntriesCount: Int
   duplicateLeadsCount: Int
@@ -2931,6 +2932,7 @@ type LeadType {
   emmEntities: [EmmEntityType!]
   emmTriggers: [LeadEmmTriggerType!]
   assessmentId: ID
+  connectorLead: ID
   entriesCount: EntriesCountType
   filteredEntriesCount: Int
   duplicateLeadsCount: Int
