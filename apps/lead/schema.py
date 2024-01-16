@@ -355,6 +355,7 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     emm_entities = DjangoListField(EmmEntityType)
     emm_triggers = DjangoListField(LeadEmmTriggerType)
     assessment_id = graphene.ID()
+    connector_lead = graphene.ID(source='connector_lead_id', required=False)
     # Entries count
     entries_count = graphene.Field(EntriesCountType)
     filtered_entries_count = graphene.Int(
