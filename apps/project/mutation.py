@@ -102,7 +102,7 @@ ProjectPinnedInputType = generate_input_type_for_serializer(
 )
 
 UserPinnedProjectReOrderInputType = generate_input_type_for_serializer(
-    'BulkUpdateProjectPinned',
+    'UserPinnedProjectReOrderInputType',
     serializer_class=BulkProjectPinnedSerializer,
 )
 
@@ -333,7 +333,7 @@ class UpdateProjectVizConfiguration(PsGrapheneMutation):
 
 class CreateUserPinnedProject(PsGrapheneMutation):
     class Arguments:
-        data = ProjectPinnedInputType(required=False)
+        data = ProjectPinnedInputType(required=True)
     model = ProjectPinned
     result = graphene.Field(UserPinnedProjectType)
     serializer_class = UserPinnedProjectSerializer
@@ -412,7 +412,7 @@ class ReorderPinnedProjects(PsGrapheneMutation):
             serializer = cls.serializer_class(data=data, instance=instance, context={'request': info.context.request})
             errors_data.append(mutation_is_not_valid(serializer))  # errors_data also add empty list
             serializers_data.append(serializer)
-        errors_data = [items for items in errors_data if items]  # list compreshive removing empty list
+        errors_data = [items for items in errors_data if items]  # list comprehension removing empty list
         if errors_data:
             return cls(errors=errors_data, ok=False)
         for serializer in serializers_data:

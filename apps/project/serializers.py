@@ -15,7 +15,7 @@ from deep.serializers import (
     URLCachedFileField,
     IntegerIDField,
     TempClientIdMixin,
-    ProjectPropertySerializerMixin,
+    ProjectPropertySerializerMixin
 )
 from geo.models import Region
 from geo.serializers import SimpleRegionSerializer
@@ -930,7 +930,7 @@ class UserPinnedProjectSerializer(serializers.ModelSerializer):
 
 
 class BulkProjectPinnedSerializer(TempClientIdMixin, UserResourceSerializer):
-    id = serializers.IntegerField(required=True)
+    id = IntegerIDField(required=True)
 
     class Meta:
         model = ProjectPinned
