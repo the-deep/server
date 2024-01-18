@@ -26,7 +26,12 @@ from lead.factories import LeadFactory
 from entry.factories import EntryFactory, EntryAttributeFactory
 from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
 from user_group.factories import UserGroupFactory
-from project.factories import ProjectFactory, ProjectJoinRequestFactory, ProjectOrganizationFactory
+from project.factories import (
+    ProjectFactory,
+    ProjectJoinRequestFactory,
+    ProjectOrganizationFactory,
+    ProjectPinnedFactory,
+)
 from organization.factories import OrganizationFactory
 from geo.factories import RegionFactory
 
@@ -1381,3 +1386,98 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 project6.id,
             ]
         )
+
+    def test_create_user_pinned_project(self):
+        query = '''
+            mutation MyMutation($project: ID!) {
+             createUserPinnedProject(data: {project: $project}) {
+             ok
+             errors
+            result {
+                clientId
+                order
+                user{
+                    id
+                }
+                project{
+                    id
+                }
+            }
+         }
+        }
+        '''
+        project1 = ProjectFactory.create(
+            title='Test Project 1',
+        )
+        project2 = ProjectFactory.create(
+            title='Test Project 2',
+        )
+        member_user = UserFactory.create()
+        owner_user = UserFactory.create()
+        project1.add_member(member_user, role=self.project_role_member)
+        project2.add_member(owner_user, role=self.project_role_owner)
+        minput = dict(
+            project=project1.id
+        )
+
+        def _query_check(**kwargs):
+            return self.query_check(
+                query,
+                variables=minput,
+                **kwargs,
+            )
+        self.force_login(member_user)
+        response = _query_check()['data']['createUserPinnedProject']['result']
+        self.assertEqual(response['clientId'], str(project1.id))
+        self.assertEqual(response['order'], 1)
+        self.assertEqual(response['user']['id'], str(member_user.id))
+        self.assertEqual(response['project']['id'], str(project1.id))
+        # pin project which is already pinned by user
+        response = _query_check(assert_for_error=True)['errors']
+        self.assertIn("Project already pinned!!", response[0]['message'])
+        # pin another project
+        minput['project'] = project2.id
+        response = _query_check()['data']['createUserPinnedProject']['result']
+        self.assertEqual(response['clientId'], str(project2.id))
+        self.assertEqual(response['order'], 2)
+        self.assertEqual(response['project']['id'], str(project2.id))
+
+    def test_bulk_reorder_pinned_project(self):
+        project1 = ProjectFactory.create(title='Test project 3')
+        project2 = ProjectFactory.create(title='Test project 4')
+        member_user = UserFactory.create()
+        project1.add_member(member_user, role=self.project_role_member)
+        project2.add_member(member_user, role=self.project_role_member)
+        pinned_project1 = ProjectPinnedFactory.create(project=project1, user=member_user, order=10)
+        # pinned_project2 = ProjectPinnedFactory.create(project=project2, user=member_user, order=12)
+        minput = dict(
+            order=14,
+            id=pinned_project1.id
+        )
+        query = '''
+              mutation MyMutation($bulkReorder: UserPinnedProjectReOrderInputType!) {
+              reorderPinnedProjects(items: $bulkReorder) {
+                errors
+                ok
+                result {
+                  clientId
+                  order
+                  project {
+                    title
+                    id
+                  }
+                  user {
+                    id
+                  }
+                }
+              }
+            }
+        '''
+
+        def _query_check(**kwargs):
+            return self.query_check(
+                query,
+                variable=minput,
+                **kwargs
+            )
+        self.force_login(member_user)
