@@ -59,7 +59,9 @@ def trigger_connector_sources(max_execution_time, threshold, limit):
     # Trigger connector leads
     for unified_connector_id in processed_unified_connectors:
         UnifiedConnectorLeadHandler.send_trigger_request_to_extractor(
-            ConnectorLead.objects.filter(connectorsourcelead__source__unified_connector=unified_connector_id)
+            ConnectorLead.objects.filter(
+                connectorsourcelead__source__unified_connector=unified_connector_id
+            )
         )
 
 
@@ -86,7 +88,7 @@ def schedule_trigger_heavy_unified_connectors():
 
 
 @shared_task
-@redis_lock('schedule_trigger_heavy_unified_connectors', 60 * 60)
+@redis_lock('schedule_trigger_super_heavy_unified_connectors', 60 * 60)
 def schedule_trigger_super_heavy_unified_connectors():
     # NOTE: Process connectors sources which have runtime <= 1 hour and was processed 24 hours ago.
     trigger_connector_sources(

@@ -43,6 +43,7 @@ def generate_previews(lead_ids=None):
         extract_from_lead.apply_async((lead_id,), countdown=1)
 
 
+@shared_task
 @redis_lock('remaining_lead_extract', 60 * 60 * 0.5)
 def remaining_lead_extract():
     """
