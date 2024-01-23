@@ -1304,9 +1304,11 @@ class ProjectApiTest(TestCase):
                 **config_kwargs,
             }
             invalid_stat_config[widget_identifier] = {'pk': 0}
+            if data_identifier in ['matrix1dWidget', 'matrix2dWidget', 'multiselectWidget']:
+                valid_stat_config[widget_identifier] = [valid_stat_config[widget_identifier]]
+                invalid_stat_config[widget_identifier] = [invalid_stat_config[widget_identifier]]
 
         url = f'/api/v1/projects/{project.pk}/project-viz/'
-
         # 404 for non project user
         self.authenticate(non_project_user)
         response = self.client.get(url)

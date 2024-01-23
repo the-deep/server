@@ -430,7 +430,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                           widget2d {
                             pk
                           }
-                          multiselectWidgets {
+                        multiselectWidgets {
                             pk
                           }
                           organigramWidgets {
@@ -492,6 +492,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                 variables={'id': id},
                 **kwargs,
             )
+
         # ---------- Without login
         valid_minput = copy.deepcopy(self.valid_minput)
         new_widgets = [
@@ -511,6 +512,15 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                 version=1,
                 key='scale-widget-104-key',
                 order=4,
+                properties=dict(),
+            ),
+            dict(
+                clientId='organigram-widget-104-client-id',
+                title='Organigram',
+                widgetId=self.genum(Widget.WidgetType.ORGANIGRAM),
+                version=1,
+                key='organigram-widget-104-key',
+                order=5,
                 properties=dict(),
             ),
         ]
