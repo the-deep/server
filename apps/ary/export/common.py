@@ -82,6 +82,9 @@ def get_languages(assessment):
 
 def get_assessment_meta(assessment):
     lead = assessment.lead
+    admin_levels = set(
+        [geo_area.admin_level.region.title for geo_area in assessment.locations.all() if geo_area.admin_level.level == 0]
+    )
 
     return {
         'lead': {
@@ -94,9 +97,10 @@ def get_assessment_meta(assessment):
         },
 
         'background': {
-            'country': ', '.join(country.title for country in assessment.locations.all()),
+            'country': ','.join(admin_levels),
             'crisis_type': assessment.get_bg_crisis_type_display(),
-            'crisis_start_date': assessment.bg_crisis_start_date,
+            'crisis_start_date': assessment.bg_crisis_start_date.strftime("%d-%m-%Y") if
+            assessment.bg_crisis_start_date else assessment.bg_crisis_start_date,
             'preparedness': assessment.get_bg_preparedness_display(),
             'external_support': assessment.get_external_support_display(),
             'coordination': assessment.get_coordinated_joint_display(),
@@ -114,8 +118,11 @@ def get_assessment_meta(assessment):
         'language': get_languages(assessment),
 
         'dates': {
-            'data_collection_start_date': assessment.data_collection_start_date,
-            'data_collection_end_date': assessment.data_collection_end_date,
-            'publication_date': assessment.publication_date,
+            'data_collection_start_date': assessment.data_collection_start_date.strftime("%d-%m-%Y") if
+            assessment.data_collection_start_date else assessment.data_collection_start_date,
+            'data_collection_end_date': assessment.data_collection_end_date.strftime("%d-%m-%Y") if
+            assessment.data_collection_end_date else assessment.data_collection_end_date,
+            'publication_date': assessment.publication_date.strftime("%d-%m-%Y") if
+            assessment.publication_date else assessment.publication_date
         },
     }

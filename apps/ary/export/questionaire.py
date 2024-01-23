@@ -11,4 +11,5 @@ def get_questionaire(assessment):
             answer.question.question: 1 if answer.answer else 0
             for answer in answers if answer.question.get_sub_sector_display() == sub_sector
         }
+
     return questionaire_dict

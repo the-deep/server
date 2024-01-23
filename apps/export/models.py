@@ -224,7 +224,7 @@ class Export(ExportBaseModel):
                 isinstance(d, datetime.datetime) or
                 isinstance(d, datetime.date)
             ):
-                return d.strftime(date_format)
+                return d.strftime(date_format) if date_format else fallback
             return fallback
 
         return custom_format
