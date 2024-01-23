@@ -715,6 +715,17 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
             'title': 'Scale',
             'version': 1,
             'widgetId': 'SCALE'
+        },
+        {
+            'clientId': 'organigram-widget-104-client-id',
+            'id': '9',
+            'key': 'organigram-widget-104-key',
+            'order': 5,
+            'properties': {
+            },
+            'title': 'Organigram',
+            'version': 1,
+            'widgetId': 'ORGANIGRAM'
         }
     ],
     'title': 'AF (TEST)'
@@ -783,6 +794,13 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                     {
                                         'arrayErrors': None,
                                         'clientId': None,
+                                        'field': 'multiselectWidgets',
+                                        'messages': "Different widget type was provided. Required: multiselectWidget Provided: ['organigramWidget']",
+                                        'objectErrors': None
+                                    },
+                                    {
+                                        'arrayErrors': None,
+                                        'clientId': None,
                                         'field': 'organigramWidgets',
                                         'messages': "Different widget type was provided. Required: organigramWidget Provided: ['multiselectWidget']",
                                         'objectErrors': None
@@ -843,7 +861,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 {
                                     'clientId': 'section-2-text-101-client-id',
                                     'conditional': None,
-                                    'id': '9',
+                                    'id': '10',
                                     'key': 'section-2-text-101',
                                     'order': 1,
                                     'properties': {
@@ -1018,7 +1036,11 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                     'pk': '6'
                                 }
                             ],
-                            'organigramWidgets': None,
+                            'organigramWidgets': [
+                                {
+                                    'pk': '9'
+                                }
+                            ],
                             'reliabilityWidget': {
                                 'pk': '8'
                             },
@@ -1041,7 +1063,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                         {
                             'clientId': 'multi-select-widget-102-client-id',
                             'conditional': None,
-                            'id': '10',
+                            'id': '11',
                             'key': 'multi-select-widget-102-key',
                             'order': 2,
                             'properties': {
@@ -1073,6 +1095,18 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             'title': 'Scale',
                             'version': 1,
                             'widgetId': 'SCALE'
+                        },
+                        {
+                            'clientId': 'organigram-widget-104-client-id',
+                            'conditional': None,
+                            'id': '9',
+                            'key': 'organigram-widget-104-key',
+                            'order': 5,
+                            'properties': {
+                            },
+                            'title': 'Organigram',
+                            'version': 1,
+                            'widgetId': 'ORGANIGRAM'
                         }
                     ],
                     'title': 'Updated AF (TEST)'
@@ -1143,7 +1177,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 {
                                     'clientId': 'section-2-text-101-client-id',
                                     'conditional': None,
-                                    'id': '12',
+                                    'id': '13',
                                     'key': 'section-2-text-101',
                                     'order': 1,
                                     'properties': {
@@ -1320,7 +1354,11 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             },
                             'multiselectWidgets': [
                             ],
-                            'organigramWidgets': None,
+                            'organigramWidgets': [
+                                {
+                                    'pk': '9'
+                                }
+                            ],
                             'reliabilityWidget': {
                                 'pk': '8'
                             },
@@ -1348,7 +1386,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 'parentWidget': '1',
                                 'parentWidgetType': 'MATRIX1D'
                             },
-                            'id': '13',
+                            'id': '14',
                             'key': 'multi-select-widget-102-key',
                             'order': 2,
                             'properties': {
@@ -1380,6 +1418,18 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             'title': 'Scale',
                             'version': 1,
                             'widgetId': 'SCALE'
+                        },
+                        {
+                            'clientId': 'organigram-widget-104-client-id',
+                            'conditional': None,
+                            'id': '9',
+                            'key': 'organigram-widget-104-key',
+                            'order': 5,
+                            'properties': {
+                            },
+                            'title': 'Organigram',
+                            'version': 1,
+                            'widgetId': 'ORGANIGRAM'
                         }
                     ],
                     'title': 'Updated AF (TEST)'
@@ -1412,7 +1462,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                                 {
                                     'clientId': 'section-2-text-101-client-id',
                                     'conditional': None,
-                                    'id': '14',
+                                    'id': '15',
                                     'key': 'section-2-text-101',
                                     'order': 1,
                                     'properties': {
@@ -1589,7 +1639,11 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             },
                             'multiselectWidgets': [
                             ],
-                            'organigramWidgets': None,
+                            'organigramWidgets': [
+                                {
+                                    'pk': '9'
+                                }
+                            ],
                             'reliabilityWidget': {
                                 'pk': '8'
                             },
@@ -1612,7 +1666,7 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                         {
                             'clientId': 'multi-select-widget-102-client-id',
                             'conditional': None,
-                            'id': '15',
+                            'id': '16',
                             'key': 'multi-select-widget-102-key',
                             'order': 2,
                             'properties': {
@@ -1644,6 +1698,18 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
                             'title': 'Scale',
                             'version': 1,
                             'widgetId': 'SCALE'
+                        },
+                        {
+                            'clientId': 'organigram-widget-104-client-id',
+                            'conditional': None,
+                            'id': '9',
+                            'key': 'organigram-widget-104-key',
+                            'order': 5,
+                            'properties': {
+                            },
+                            'title': 'Organigram',
+                            'version': 1,
+                            'widgetId': 'ORGANIGRAM'
                         }
                     ],
                     'title': 'Updated AF (TEST)'
