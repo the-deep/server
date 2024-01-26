@@ -31,7 +31,6 @@ services:
       DEEP_ENVIRONMENT: development
       DJANGO_SECRET_KEY: "XXXXXXXXXXXXXXXXXXXXXXXXXX"
       DEEP_FRONTEND_HOST: localhost:3000
-      DEEP_FRONTEND_ARY_HOST: localhost:3001
       DEEP_BACKEND_HOST: localhost:8000
       DJANGO_ALLOWED_HOST: localhost
       SESSION_COOKIE_DOMAIN: localhost
