@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="d_9db89df6a82c861c_change_log_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.4.0">coverage.py v7.4.0</a>,
-            created at 2024-01-16 08:25 +0000
+            created at 2024-01-26 04:09 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"/>
@@ -95,7 +95,7 @@
     <p class="run"><span class="n"><a id="t11" href="#t11">11</a></span><span class="t"><span class="key">from</span> <span class="nam">deep</span><span class="op">.</span><span class="nam">admin</span> <span class="key">import</span> <span class="nam">linkify</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t12" href="#t12">12</a></span><span class="t"><span class="key">from</span> <span class="nam">lead</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Lead</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t13" href="#t13">13</a></span><span class="t"><span class="key">from</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Entry</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t14" href="#t14">14</a></span><span class="t"><span class="key">from</span> <span class="nam">ary</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Assessment</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t14" href="#t14">14</a></span><span class="t"><span class="key">from</span> <span class="nam">assessment_registry</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">AssessmentRegistry</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t15" href="#t15">15</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t16" href="#t16">16</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="nam">tasks</span> <span class="key">import</span> <span class="nam">generate_viz_stats</span><span class="op">,</span> <span class="nam">generate_project_stats_cache</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t17" href="#t17">17</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="nam">forms</span> <span class="key">import</span> <span class="nam">ProjectRoleForm</span>&nbsp;</span><span class="r"></span></p>
@@ -212,7 +212,7 @@
     <p class="pln"><span class="n"><a id="t128" href="#t128">128</a></span><span class="t">        <span class="op">)</span><span class="op">.</span><span class="nam">annotate</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t129" href="#t129">129</a></span><span class="t">            <span class="nam">leads_count</span><span class="op">=</span><span class="nam">_count_subquery</span><span class="op">(</span><span class="nam">Lead</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t130" href="#t130">130</a></span><span class="t">            <span class="nam">entries_count</span><span class="op">=</span><span class="nam">_count_subquery</span><span class="op">(</span><span class="nam">Entry</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t131" href="#t131">131</a></span><span class="t">            <span class="nam">assessment_count</span><span class="op">=</span><span class="nam">_count_subquery</span><span class="op">(</span><span class="nam">Assessment</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t131" href="#t131">131</a></span><span class="t">            <span class="nam">assessment_count</span><span class="op">=</span><span class="nam">_count_subquery</span><span class="op">(</span><span class="nam">AssessmentRegistry</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t132" href="#t132">132</a></span><span class="t">            <span class="nam">members_count</span><span class="op">=</span><span class="nam">_count_subquery</span><span class="op">(</span><span class="nam">ProjectMembership</span><span class="op">,</span> <span class="nam">count_field</span><span class="op">=</span><span class="str">'member'</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t133" href="#t133">133</a></span><span class="t">            <span class="nam">associated_regions_count</span><span class="op">=</span><span class="nam">models</span><span class="op">.</span><span class="nam">Count</span><span class="op">(</span><span class="str">'regions'</span><span class="op">,</span> <span class="nam">distinct</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t134" href="#t134">134</a></span><span class="t">            <span class="nam">associated_regions</span><span class="op">=</span><span class="nam">StringAgg</span><span class="op">(</span><span class="str">'regions__title'</span><span class="op">,</span> <span class="str">','</span><span class="op">,</span> <span class="nam">distinct</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
@@ -306,7 +306,7 @@
             <a id="nextFileLink" class="nav" href="d_9db89df6a82c861c_change_log_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.4.0">coverage.py v7.4.0</a>,
-            created at 2024-01-16 08:25 +0000
+            created at 2024-01-26 04:09 +0000
         </p>
     </div>
 </footer>

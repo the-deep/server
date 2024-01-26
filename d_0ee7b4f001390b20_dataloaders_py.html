@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="d_0ee7b4f001390b20_enums_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.4.0">coverage.py v7.4.0</a>,
-            created at 2024-01-16 08:25 +0000
+            created at 2024-01-26 04:09 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"/>
@@ -92,12 +92,12 @@
     <p class="pln"><span class="n"><a id="t8" href="#t8">8</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t9" href="#t9">9</a></span><span class="t"><span class="key">from</span> <span class="nam">entry</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Entry</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t10" href="#t10">10</a></span><span class="t"><span class="key">from</span> <span class="nam">organization</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Organization</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t11" href="#t11">11</a></span><span class="t"><span class="key">from</span> <span class="nam">ary</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Assessment</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t12" href="#t12">12</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t13" href="#t13">13</a></span><span class="t"><span class="key">from</span> <span class="nam">organization</span><span class="op">.</span><span class="nam">dataloaders</span> <span class="key">import</span> <span class="nam">OrganizationLoader</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t14" href="#t14">14</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t15" href="#t15">15</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Lead</span><span class="op">,</span> <span class="nam">LeadPreview</span><span class="op">,</span> <span class="nam">LeadGroup</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t16" href="#t16">16</a></span><span class="t"><span class="key">from</span> <span class="nam">assisted_tagging</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">DraftEntry</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t11" href="#t11">11</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t12" href="#t12">12</a></span><span class="t"><span class="key">from</span> <span class="nam">organization</span><span class="op">.</span><span class="nam">dataloaders</span> <span class="key">import</span> <span class="nam">OrganizationLoader</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t13" href="#t13">13</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t14" href="#t14">14</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">Lead</span><span class="op">,</span> <span class="nam">LeadPreview</span><span class="op">,</span> <span class="nam">LeadGroup</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t15" href="#t15">15</a></span><span class="t"><span class="key">from</span> <span class="nam">assisted_tagging</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">DraftEntry</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t16" href="#t16">16</a></span><span class="t"><span class="key">from</span> <span class="nam">assessment_registry</span><span class="op">.</span><span class="nam">models</span> <span class="key">import</span> <span class="nam">AssessmentRegistry</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t17" href="#t17">17</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t18" href="#t18">18</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t19" href="#t19">19</a></span><span class="t"><span class="key">class</span> <span class="nam">LeadPreviewLoader</span><span class="op">(</span><span class="nam">DataLoaderWithContext</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -181,7 +181,7 @@
     <p class="pln"><span class="n"><a id="t97" href="#t97">97</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t98" href="#t98">98</a></span><span class="t"><span class="key">class</span> <span class="nam">LeadAssessmentIdLoader</span><span class="op">(</span><span class="nam">DataLoaderWithContext</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t99" href="#t99">99</a></span><span class="t">    <span class="key">def</span> <span class="nam">batch_load_fn</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">keys</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t100" href="#t100">100</a></span><span class="t">        <span class="nam">assessments_qs</span> <span class="op">=</span> <span class="nam">Assessment</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">lead__in</span><span class="op">=</span><span class="nam">keys</span><span class="op">)</span><span class="op">.</span><span class="nam">values_list</span><span class="op">(</span><span class="str">'id'</span><span class="op">,</span> <span class="str">'lead'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t100" href="#t100">100</a></span><span class="t">        <span class="nam">assessments_qs</span> <span class="op">=</span> <span class="nam">AssessmentRegistry</span><span class="op">.</span><span class="nam">objects</span><span class="op">.</span><span class="nam">filter</span><span class="op">(</span><span class="nam">lead__in</span><span class="op">=</span><span class="nam">keys</span><span class="op">)</span><span class="op">.</span><span class="nam">values_list</span><span class="op">(</span><span class="str">'id'</span><span class="op">,</span> <span class="str">'lead'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t101" href="#t101">101</a></span><span class="t">        <span class="nam">_map</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t102" href="#t102">102</a></span><span class="t">            <span class="nam">lead_id</span><span class="op">:</span> <span class="nam">_id</span> <span class="key">for</span> <span class="nam">_id</span><span class="op">,</span> <span class="nam">lead_id</span> <span class="key">in</span> <span class="nam">assessments_qs</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t103" href="#t103">103</a></span><span class="t">        <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
@@ -253,7 +253,7 @@
             <a id="nextFileLink" class="nav" href="d_0ee7b4f001390b20_enums_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.4.0">coverage.py v7.4.0</a>,
-            created at 2024-01-16 08:25 +0000
+            created at 2024-01-26 04:09 +0000
         </p>
     </div>
 </footer>

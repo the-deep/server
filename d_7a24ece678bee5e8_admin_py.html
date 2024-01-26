@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="d_7a24ece678bee5e8_dataloaders_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.4.0">coverage.py v7.4.0</a>,
-            created at 2024-01-16 08:25 +0000
+            created at 2024-01-26 04:09 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"/>
@@ -92,7 +92,7 @@
     <p class="run"><span class="n"><a id="t8" href="#t8">8</a></span><span class="t"><span class="key">from</span> <span class="op">.</span><span class="nam">tasks</span> <span class="key">import</span> <span class="nam">cal_region_cache</span><span class="op">,</span> <span class="nam">cal_admin_level_cache</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t9" href="#t9">9</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t10" href="#t10">10</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t11" href="#t11">11</a></span><span class="t"><span class="key">def</span> <span class="nam">trigger_region_cache_reset</span><span class="op">(</span><span class="nam">modeladmin</span><span class="op">,</span> <span class="nam">request</span><span class="op">,</span> <span class="nam">queryset</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t11" href="#t11">11</a></span><span class="t"><span class="key">def</span> <span class="nam">trigger_region_cache_reset</span><span class="op">(</span><span class="nam">_</span><span class="op">,</span> <span class="nam">request</span><span class="op">,</span> <span class="nam">queryset</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t12" href="#t12">12</a></span><span class="t">    <span class="nam">cal_region_cache</span><span class="op">.</span><span class="nam">delay</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t13" href="#t13">13</a></span><span class="t">        <span class="nam">list</span><span class="op">(</span><span class="nam">queryset</span><span class="op">.</span><span class="nam">values_list</span><span class="op">(</span><span class="str">'id'</span><span class="op">,</span> <span class="nam">flat</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="op">.</span><span class="nam">distinct</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t14" href="#t14">14</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -111,7 +111,7 @@
     <p class="run"><span class="n"><a id="t27" href="#t27">27</a></span><span class="t"><span class="nam">trigger_region_cache_reset</span><span class="op">.</span><span class="nam">short_description</span> <span class="op">=</span> <span class="str">'Trigger cache reset for selected Regions'</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t28" href="#t28">28</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t29" href="#t29">29</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t30" href="#t30">30</a></span><span class="t"><span class="key">def</span> <span class="nam">trigger_admin_level_cache_reset</span><span class="op">(</span><span class="nam">modeladmin</span><span class="op">,</span> <span class="nam">request</span><span class="op">,</span> <span class="nam">queryset</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t30" href="#t30">30</a></span><span class="t"><span class="key">def</span> <span class="nam">trigger_admin_level_cache_reset</span><span class="op">(</span><span class="nam">_</span><span class="op">,</span> <span class="nam">request</span><span class="op">,</span> <span class="nam">queryset</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t31" href="#t31">31</a></span><span class="t">    <span class="nam">cal_admin_level_cache</span><span class="op">.</span><span class="nam">delay</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t32" href="#t32">32</a></span><span class="t">        <span class="nam">list</span><span class="op">(</span><span class="nam">queryset</span><span class="op">.</span><span class="nam">values_list</span><span class="op">(</span><span class="str">'id'</span><span class="op">,</span> <span class="nam">flat</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="op">.</span><span class="nam">distinct</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t33" href="#t33">33</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -176,7 +176,7 @@
             <a id="nextFileLink" class="nav" href="d_7a24ece678bee5e8_dataloaders_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.4.0">coverage.py v7.4.0</a>,
-            created at 2024-01-16 08:25 +0000
+            created at 2024-01-26 04:09 +0000
         </p>
     </div>
 </footer>
