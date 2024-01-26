@@ -1,6 +1,3 @@
-from apps.entry.widgets.geo_widget import get_valid_geo_ids
-from geo.models import GeoArea
-
 default_values = {
 }
 
@@ -22,21 +19,7 @@ def get_title_from_geo_json_data(x):
 
 
 def get_locations_info(assessment):
-    all_locations = (assessment.methodology or {}).get('locations') or []
-    locations = get_valid_geo_ids(all_locations)
-
-    # Custom locations include custom added points and polygons
-    custom_points = ','.join([get_title_from_geo_json_data(x) for x in all_locations if is_point_data(x)])
-    custom_polygons = ','.join([get_title_from_geo_json_data(x) for x in all_locations if is_polygon_data(x)])
-
-    geo_areas = GeoArea.objects.filter(id__in=locations).prefetch_related('admin_level', 'parent')
-
-    # custom_data = []
-    # custom_datum = {
-    #     'custom_polygons': custom_polygons,
-    #     'custom_points': custom_points,
-    # }
-
+    geo_areas = assessment.locations.all()
     data = []
 
     if not geo_areas:
@@ -70,13 +53,8 @@ def get_locations_info(assessment):
             key = f'Admin {level}'
             admin_levels[key] = geo_info['title']
 
-        # Add custom data for each row
-        admin_levels['custom_polygons'] = custom_polygons
-        admin_levels['custom_points'] = custom_points
-
         data.append(admin_levels)
 
     return {
         'locations': data,
-        # 'custom_locations': custom_data,
     }

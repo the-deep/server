@@ -252,7 +252,9 @@ class ProjectPermissions(BasePermissions):
         # ---------------------- Lead
         CREATE_LEAD = auto()
         VIEW_ONLY_UNPROTECTED_LEAD = auto()
+        VIEW_ONLY_UNPROTECTED_ASSESSMENT_REGISTRY = auto()
         VIEW_ALL_LEAD = auto()
+        VIEW_ASSESSMENT_REGISTRY = auto()
         UPDATE_LEAD = auto()
         DELETE_LEAD = auto()
         # ---------------------- Entry
@@ -267,6 +269,10 @@ class ProjectPermissions(BasePermissions):
         # ---------------------- Analysis Module
         CREATE_ANALYSIS_MODULE = auto()
 
+        # ---------------------AssessmentRegistry
+        CREATE_ASSESSMENT_REGISTRY = auto()
+        UPDATE_ASSESSMENT_REGISTRY = auto()
+
     Permission.__name__ = 'ProjectPermission'
 
     __error_message__ = {
@@ -274,7 +280,9 @@ class ProjectPermissions(BasePermissions):
         Permission.CAN_ADD_MEMBER: "You don't have permission to add member to project",
         Permission.CREATE_LEAD: "You don't have permission to create lead",
         Permission.VIEW_ONLY_UNPROTECTED_LEAD: "You don't have permission to view lead",
+        Permission.VIEW_ONLY_UNPROTECTED_ASSESSMENT_REGISTRY: "You don't have permission to view assessment registry",
         Permission.VIEW_ALL_LEAD: "You don't have permission to view confidential lead",
+        Permission.VIEW_ASSESSMENT_REGISTRY: "You don't have permission to view confidential assessment registry",
         Permission.UPDATE_LEAD: "You don't have permission to update lead",
         Permission.DELETE_LEAD: "You don't have permission to delete lead",
         Permission.CREATE_ENTRY: "You don't have permission to create entry",
@@ -284,6 +292,8 @@ class ProjectPermissions(BasePermissions):
         Permission.CREATE_EXPORT: "You don't have permission to create exports",
         Permission.CAN_QUALITY_CONTROL: "You don't have permission to Quality Control",
         Permission.CREATE_ANALYSIS_MODULE: "You don't have permission to Analysis Module",
+        Permission.CREATE_ASSESSMENT_REGISTRY: "You don't have permission to create Assessment Registry",
+        Permission.UPDATE_ASSESSMENT_REGISTRY: "You don't have permission to update Assessment Registry",
     }
 
     # NOTE: If we need to have delete permission as well make sure to update queryset in schema and mutations.
@@ -291,12 +301,14 @@ class ProjectPermissions(BasePermissions):
         Permission.BASE_ACCESS,
         Permission.VIEW_ENTRY,
         Permission.VIEW_ONLY_UNPROTECTED_LEAD,
+        Permission.VIEW_ONLY_UNPROTECTED_ASSESSMENT_REGISTRY,
         Permission.CREATE_EXPORT,
     ]
     READER = [
         Permission.BASE_ACCESS,
         Permission.VIEW_ENTRY,
         Permission.VIEW_ALL_LEAD,
+        Permission.VIEW_ASSESSMENT_REGISTRY,
         Permission.CREATE_EXPORT,
     ]
     MEMBER = [
@@ -308,10 +320,13 @@ class ProjectPermissions(BasePermissions):
         Permission.UPDATE_ENTRY,
         Permission.UPDATE_LEAD,
         Permission.VIEW_ALL_LEAD,
+        Permission.VIEW_ASSESSMENT_REGISTRY,
         Permission.VIEW_UNIFIED_CONNECTOR,
         Permission.CREATE_UNIFIED_CONNECTOR,
         Permission.UPDATE_UNIFIED_CONNECTOR,
         Permission.CREATE_ANALYSIS_MODULE,
+        Permission.CREATE_ASSESSMENT_REGISTRY,
+        Permission.UPDATE_ASSESSMENT_REGISTRY,
     ]
     ADMIN = [
         *MEMBER,

@@ -459,7 +459,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
     def filter_has_assessment(self, qs, _, value):
         if value is None:
             return qs
-        return qs.filter(assessment__isnull=not value)
+        return qs.filter(assessmentregistry__isnull=not value)
 
     def filtered_entries_filter_data(self, qs, _, value):
         if value is None:

@@ -99,6 +99,8 @@ env = environ.Env(
     ELASTI_CACHE_PORT=str,
     # UNHCR Token
     UNHCR_PORTAL_API_KEY=(str, None),
+    # Misc
+    ALLOW_DUMMY_DATA_GENERATION=(bool, False),
 )
 
 # Quick-start development settings - unsuitable for production
@@ -144,6 +146,7 @@ LOCAL_APPS = [
     'analysis',
     'analysis_framework',
     'ary',
+    'assessment_registry',
     'category_editor',
     'connector',
     'deep_migration',
@@ -977,3 +980,6 @@ DELETED_USER_LAST_NAME = 'User'
 USER_AND_PROJECT_DELETE_IN_DAYS = 30
 DELETED_USER_ORGANIZATION = 'The Deep Organization'
 DELETED_USER_EMAIL_DOMAIN = 'deleted.thedeep.io'
+
+# MISC
+ALLOW_DUMMY_DATA_GENERATION = env('ALLOW_DUMMY_DATA_GENERATION')

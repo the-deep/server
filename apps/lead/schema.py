@@ -408,6 +408,10 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     def resolve_share_view_url(root: Lead, info, **kwargs):
         return Permalink.lead_share_view(root.uuid)
 
+    def resolve_attachment(root, info, **kwargs):
+        if root.attachment_id:
+            return info.context.dl.deep_gallery.file.load(root.attachment_id)
+
 
 class DraftEntryCountByLead(graphene.ObjectType):
     undiscarded_draft_entry = graphene.Int(required=False)
@@ -436,6 +440,11 @@ class LeadDetailType(LeadType):
     @staticmethod
     def resolve_draft_entry_stat(root, info, **kwargs):
         return info.context.dl.lead.draftentry_count.load(root.pk)
+
+    @staticmethod
+    def resolve_attachment(root, info, **kwargs):
+        if root.attachment_id:
+            return info.context.dl.deep_gallery.file.load(root.attachment_id)
 
 
 class LeadListType(CustomDjangoListObjectType):

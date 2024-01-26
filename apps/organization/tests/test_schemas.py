@@ -42,12 +42,12 @@ class TestOrganizationTypeQuery(GraphQLTestCase):
             query MyQuery (
                 $verified: Boolean
                 $search: String
-                $usedInProject: ID
+                $usedInProjectByLead: ID
             ) {
               organizations(
                   search: $search
                   verified: $verified
-                  usedInProject: $usedInProject
+                  usedInProjectByLead: $usedInProjectByLead
                   ordering: DESC_TITLE
               ) {
                 results {
@@ -98,10 +98,10 @@ class TestOrganizationTypeQuery(GraphQLTestCase):
                     'verified': False,
                 }, [org7, org6, org5, org3, org1]),
                 (user, {
-                    'usedInProject': str(project.id),
+                    'usedInProjectByLead': str(project.id),
                 }, [org6, org5, org3, org2, org1]),
                 (non_member_user, {
-                    'usedInProject': str(project.id),
+                    'usedInProjectByLead': str(project.id),
                     # Return all the organizations (Filter not applied)
                 }, all_org),
                 # unaccent search

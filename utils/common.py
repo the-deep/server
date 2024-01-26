@@ -599,3 +599,12 @@ def generate_sha256(text: str):
     m = hashlib.sha256()
     m.update(text.encode('utf-8'))
     return m.hexdigest()
+
+
+def render_string_for_graphql(text):
+    """
+    Return null if text is empty ("")
+    """
+    if text == '':
+        return None
+    return text

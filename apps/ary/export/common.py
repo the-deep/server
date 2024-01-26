@@ -1,5 +1,6 @@
 from datetime import datetime
 from utils.common import combine_dicts as _combine_dicts, deep_date_format
+from assessment_registry.models import AssessmentRegistry
 
 ISO_FORMAT = '%Y-%m-%d'
 
@@ -67,19 +68,28 @@ default_values = {
 }
 
 
+def get_languages(assessment):
+    all_language = {choice.value: choice.label for choice in AssessmentRegistry.Language}
+    languages_raw = [all_language.get(lang) for lang in assessment.language]
+    assessment_language = {}
+    for k, lang in all_language.items():
+        if lang in languages_raw:
+            assessment_language[all_language[k]] = 1
+        else:
+            assessment_language[all_language[k]] = 0
+    return assessment_language
+
+
 def get_assessment_meta(assessment):
     lead = assessment.lead
-    metadata = assessment.get_metadata_json()
-
-    metadata_bg = get_name_values(metadata, 'Background')
-    metadata_dates = get_name_values(metadata, 'Dates')
-
-    metadata_details = get_name_values_options(metadata, ['Details', 'Status', 'Report Details'])
+    admin_levels = set(
+        [geo_area.admin_level.region.title for geo_area in assessment.locations.all() if geo_area.admin_level.level == 0]
+    )
 
     return {
         'lead': {
             'date_of_lead_publication': deep_date_format(lead.published_on),
-            'unique_assessment_id': assessment.id,  # TODO: something else like id hash
+            'unique_assessment_id': assessment.id,
             'imported_by': ', '.join([user.username for user in lead.assignee.all()]),
             'lead_title': lead.title,
             'url': lead.url,
@@ -87,46 +97,32 @@ def get_assessment_meta(assessment):
         },
 
         'background': {
-            'country': ','.join(metadata_bg.get('Country', [])),
-            'crisis_type': metadata_bg.get('Crisis Type'),
-            'crisis_start_date': str_to_dmy_date(metadata_bg.get('Crisis Start Date')),
-            'preparedness': metadata_bg.get('Preparedness'),
-            'external_support': ','.join(metadata_bg.get('External Support', [])),
-            'coordination': metadata_bg.get('Coordination'),
-            'cost_estimates_in_USD': metadata_bg.get('Cost estimates in USD'),
+            'country': ','.join(admin_levels),
+            'crisis_type': assessment.get_bg_crisis_type_display(),
+            'crisis_start_date': assessment.bg_crisis_start_date.strftime("%d-%m-%Y") if
+            assessment.bg_crisis_start_date else assessment.bg_crisis_start_date,
+            'preparedness': assessment.get_bg_preparedness_display(),
+            'external_support': assessment.get_external_support_display(),
+            'coordination': assessment.get_coordinated_joint_display(),
+            'cost_estimates_in_USD': assessment.cost_estimates_usd,
         },
 
         'details': {
-            'type': get_value(metadata_details, 'Type'),
-            'family': get_value(metadata_details, 'Family'),
-            'status': get_value(metadata_details, 'Status'),
-            'frequency': get_value(metadata_details, 'Frequency'),
-            'confidentiality': get_value(metadata_details, 'Confidentiality'),
-            'number_of_pages': get_value(metadata_details, 'Number of Pages'),
+            'type': assessment.get_details_type_display(),
+            'family': assessment.get_family_display(),
+            'frequency': assessment.get_frequency_display(),
+            'confidentiality': assessment.get_confidentiality_display(),
+            'number_of_pages': assessment.no_of_pages,
         },
 
-        'language': populate_with_all_values(metadata_details, 'Language', []),
+        'language': get_languages(assessment),
 
         'dates': {
-            'data_collection_start_date': str_to_dmy_date(metadata_dates.get('Data Collection Start Date')),
-            'data_collection_end_date': str_to_dmy_date(metadata_dates.get('Data Collection End Date')),
-            'publication_date': str_to_dmy_date(metadata_dates.get('Publication Date')),
+            'data_collection_start_date': assessment.data_collection_start_date.strftime("%d-%m-%Y") if
+            assessment.data_collection_start_date else assessment.data_collection_start_date,
+            'data_collection_end_date': assessment.data_collection_end_date.strftime("%d-%m-%Y") if
+            assessment.data_collection_end_date else assessment.data_collection_end_date,
+            'publication_date': assessment.publication_date.strftime("%d-%m-%Y") if
+            assessment.publication_date else assessment.publication_date
         },
-    }
-
-
-def get_planned_assessment_meta(assessment):
-    metadata = assessment.get_metadata_json()
-    metadata_bg = get_name_values(metadata, 'Background')
-
-    return {
-        'assessment': {
-            'created_date': deep_date_format(assessment.created_at),
-            'title': assessment.title,
-            'project': assessment.project.title,
-
-        },
-        'background': {
-            'country': ','.join(metadata_bg.get('Country', [])),
-        }
     }

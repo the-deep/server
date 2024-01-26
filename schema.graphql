@@ -3,6 +3,27 @@ schema {
   mutation: Mutation
 }
 
+input AdditionalDocumentInputType {
+  id: ID
+  clientId: String
+  documentType: AssessmentRegistryDocumentTypeEnum!
+  file: ID
+  externalLink: String
+}
+
+type AdditionalDocumentType {
+  id: ID!
+  file: GalleryFileType
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  documentType: AssessmentRegistryDocumentTypeEnum!
+  documentTypeDisplay: EnumDescription!
+  externalLink: String
+}
+
 type AdminLevelType {
   id: ID!
   title: String!
@@ -110,7 +131,7 @@ type AnalysisFrameworkMembershipType {
   role: AnalysisFrameworkRoleType!
   joinedAt: DateTime!
   addedBy: UserType
-  clientId: String!
+  clientId: ID!
 }
 
 type AnalysisFrameworkMutationType {
@@ -133,7 +154,7 @@ type AnalysisFrameworkPredictionMappingType {
   widget: ID!
   tag: ID
   association: GenericScalar
-  clientId: String!
+  clientId: ID!
   widgetType: WidgetWidgetTypeEnum!
 }
 
@@ -294,7 +315,7 @@ type AnalysisPillarType {
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
-  clientId: String!
+  clientId: ID!
   assignee: UserType!
   analysis: ID!
   clonedFrom: ID
@@ -415,7 +436,7 @@ type AnalysisReportContainerDataType {
   id: ID!
   upload: AnalysisReportUploadType!
   data: GenericScalar!
-  clientId: String!
+  clientId: ID!
 }
 
 input AnalysisReportContainerInputType {
@@ -449,7 +470,7 @@ type AnalysisReportContainerType {
   column: Int!
   width: Int!
   height: Int
-  clientId: String!
+  clientId: ID!
   contentType: AnalysisReportContainerContentTypeEnum!
   report: ID!
   style: AnalysisReportContainerStyleType
@@ -867,7 +888,7 @@ type AnalyticalStatementEntryGeoType {
 type AnalyticalStatementEntryType {
   id: ID!
   order: Int!
-  clientId: String!
+  clientId: ID!
   entry: EntryType!
   entryId: ID!
   analyticalStatement: ID!
@@ -950,7 +971,7 @@ type AnalyticalStatementType {
   order: Int!
   reportText: String!
   informationGaps: String!
-  clientId: String!
+  clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -1015,6 +1036,41 @@ type AppEnumCollection {
   AssistedTaggingPredictionDataType: [AppEnumCollectionAssistedTaggingPredictionDataType!]
   DraftEntryType: [AppEnumCollectionDraftEntryType!]
   UnusedAssessmentMethodologyProtectionInfo: [AppEnumCollectionUnusedAssessmentMethodologyProtectionInfo!]
+  AssessmentRegistryBgCrisisType: [AppEnumCollectionAssessmentRegistryBgCrisisType!]
+  AssessmentRegistryBgPreparedness: [AppEnumCollectionAssessmentRegistryBgPreparedness!]
+  AssessmentRegistryExternalSupport: [AppEnumCollectionAssessmentRegistryExternalSupport!]
+  AssessmentRegistryCoordinatedJoint: [AppEnumCollectionAssessmentRegistryCoordinatedJoint!]
+  AssessmentRegistryDetailsType: [AppEnumCollectionAssessmentRegistryDetailsType!]
+  AssessmentRegistryFamily: [AppEnumCollectionAssessmentRegistryFamily!]
+  AssessmentRegistryFrequency: [AppEnumCollectionAssessmentRegistryFrequency!]
+  AssessmentRegistryConfidentiality: [AppEnumCollectionAssessmentRegistryConfidentiality!]
+  AssessmentRegistryLanguage: [AppEnumCollectionAssessmentRegistryLanguage!]
+  AssessmentRegistryFocuses: [AppEnumCollectionAssessmentRegistryFocuses!]
+  AssessmentRegistrySectors: [AppEnumCollectionAssessmentRegistrySectors!]
+  AssessmentRegistryProtectionInfoMgmts: [AppEnumCollectionAssessmentRegistryProtectionInfoMgmts!]
+  AssessmentRegistryAffectedGroups: [AppEnumCollectionAssessmentRegistryAffectedGroups!]
+  MethodologyAttributeDataCollectionTechnique: [AppEnumCollectionMethodologyAttributeDataCollectionTechnique!]
+  MethodologyAttributeSamplingApproach: [AppEnumCollectionMethodologyAttributeSamplingApproach!]
+  MethodologyAttributeProximity: [AppEnumCollectionMethodologyAttributeProximity!]
+  MethodologyAttributeUnitOfAnalysis: [AppEnumCollectionMethodologyAttributeUnitOfAnalysis!]
+  MethodologyAttributeUnitOfReporting: [AppEnumCollectionMethodologyAttributeUnitOfReporting!]
+  AdditionalDocumentDocumentType: [AppEnumCollectionAdditionalDocumentDocumentType!]
+  ScoreRatingScoreType: [AppEnumCollectionScoreRatingScoreType!]
+  ScoreRatingRating: [AppEnumCollectionScoreRatingRating!]
+  ScoreAnalyticalDensitySector: [AppEnumCollectionScoreAnalyticalDensitySector!]
+  ScoreAnalyticalDensityAnalysisLevelCovered: [AppEnumCollectionScoreAnalyticalDensityAnalysisLevelCovered!]
+  ScoreAnalyticalDensityFigureProvided: [AppEnumCollectionScoreAnalyticalDensityFigureProvided!]
+  SummarySubDimensionIssueSector: [AppEnumCollectionSummarySubDimensionIssueSector!]
+  SummaryIssueSubPillar: [AppEnumCollectionSummaryIssueSubPillar!]
+  SummaryIssueSubDimension: [AppEnumCollectionSummaryIssueSubDimension!]
+  SummaryFocusSector: [AppEnumCollectionSummaryFocusSector!]
+  AssessmentRegistryOrganizationOrganizationType: [AppEnumCollectionAssessmentRegistryOrganizationOrganizationType!]
+}
+
+type AppEnumCollectionAdditionalDocumentDocumentType {
+  enum: AssessmentRegistryDocumentTypeEnum!
+  label: String!
+  description: String
 }
 
 type AppEnumCollectionAnalysisFrameworkRoleType {
@@ -1073,6 +1129,90 @@ type AppEnumCollectionAnalyticalStatementGeoTaskStatus {
 
 type AppEnumCollectionAnalyticalStatementNGramStatus {
   enum: AnalyticalStatementNGramStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryAffectedGroups {
+  enum: AssessmentRegistryAffectedGroupTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryBgCrisisType {
+  enum: AssessmentRegistryCrisisTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryBgPreparedness {
+  enum: AssessmentRegistryPreparednessTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryConfidentiality {
+  enum: AssessmentRegistryConfidentialityTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryCoordinatedJoint {
+  enum: AssessmentRegistryCoordinationTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryDetailsType {
+  enum: AssessmentRegistryDetailTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryExternalSupport {
+  enum: AssessmentRegistryExternalTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryFamily {
+  enum: AssessmentRegistryFamilyTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryFocuses {
+  enum: AssessmentRegistryFocusTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryFrequency {
+  enum: AssessmentRegistryFrequencyTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryLanguage {
+  enum: AssessmentRegistryLanguageTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryOrganizationOrganizationType {
+  enum: AssessmentRegistryOrganizationTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryProtectionInfoMgmts {
+  enum: AssessmentRegistryProtectionInfoTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistrySectors {
+  enum: AssessmentRegistrySectorTypeEnum!
   label: String!
   description: String
 }
@@ -1245,6 +1385,36 @@ type AppEnumCollectionLeadStatus {
   description: String
 }
 
+type AppEnumCollectionMethodologyAttributeDataCollectionTechnique {
+  enum: AssessmentRegistryDataCollectionTechniqueTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionMethodologyAttributeProximity {
+  enum: AssessmentRegistryProximityTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionMethodologyAttributeSamplingApproach {
+  enum: AssessmentRegistrySamplingApproachTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionMethodologyAttributeUnitOfAnalysis {
+  enum: AssessmentRegistryUnitOfAnalysisTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionMethodologyAttributeUnitOfReporting {
+  enum: AssessmentRegistryUnitOfReportingTypeEnum!
+  label: String!
+  description: String
+}
+
 type AppEnumCollectionNotificationNotificationType {
   enum: NotificationTypeEnum!
   label: String!
@@ -1311,6 +1481,60 @@ type AppEnumCollectionProjectUserGroupMembershipBadges {
   description: String
 }
 
+type AppEnumCollectionScoreAnalyticalDensityAnalysisLevelCovered {
+  enum: AssessmentRegistryAnalysisLevelTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionScoreAnalyticalDensityFigureProvided {
+  enum: AssessmentRegistryAnalysisFigureTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionScoreAnalyticalDensitySector {
+  enum: AssessmentRegistrySectorTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionScoreRatingRating {
+  enum: AssessmentRegistryRatingType!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionScoreRatingScoreType {
+  enum: AssessmentRegistryScoreCriteriaTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionSummaryFocusSector {
+  enum: AssessmentRegistrySectorTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionSummaryIssueSubDimension {
+  enum: AssessmentRegistrySummarySubDimensionTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionSummaryIssueSubPillar {
+  enum: AssessmentRegistrySummarySubPillarTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionSummarySubDimensionIssueSector {
+  enum: AssessmentRegistrySectorTypeEnum!
+  label: String!
+  description: String
+}
+
 type AppEnumCollectionTopicModelStatus {
   enum: TopicModelStatusEnum!
   label: String!
@@ -1341,6 +1565,171 @@ type AppEnumCollectionWidgetWidth {
   description: String
 }
 
+type AssessmentAffectedGroupCountByDateType {
+  date: Date!
+  count: Int!
+  affectedGroup: AssessmentRegistryAffectedGroupTypeEnum!
+  affectedGroupDisplay: EnumDescription!
+}
+
+type AssessmentByGeographicalAndDataCollectionTechniqueCountByDateType {
+  adminLevelId: ID!
+  region: ID!
+  geoArea: ID!
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
+  count: Int!
+  dataCollectionTechniqueDisplay: EnumDescription!
+}
+
+type AssessmentByGeographicalAndProximityCountByDateType {
+  adminLevelId: ID!
+  region: ID!
+  geoArea: ID!
+  proximity: AssessmentRegistryProximityTypeEnum!
+  count: Int!
+  proximityDisplay: EnumDescription!
+}
+
+type AssessmentByGeographicalAndSamplingApproachCountByDateType {
+  adminLevelId: ID!
+  region: ID!
+  geoArea: ID!
+  samplingApproach: AssessmentRegistrySamplingApproachTypeEnum!
+  count: Int!
+  samplingApproachDisplay: EnumDescription!
+}
+
+type AssessmentByGeographicalAndUnit_Of_AnalysisCountByDateType {
+  adminLevelId: ID!
+  region: ID!
+  geoArea: ID!
+  unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum!
+  count: Int!
+  unitOfAnalysisDisplay: EnumDescription!
+}
+
+type AssessmentByGeographicalAndUnit_Of_ReportingCountByDateType {
+  adminLevelId: ID!
+  region: ID!
+  geoArea: ID!
+  unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum!
+  count: Int!
+  unitOfReportingDisplay: EnumDescription!
+}
+
+type AssessmentByLeadOrganizationCountByDateType {
+  date: Date!
+  count: Int!
+  organization: OrganizationType!
+}
+
+type AssessmentCountByDateType {
+  date: Date!
+  count: Int!
+}
+
+type AssessmentCountType {
+  coordinatedJoint: AssessmentRegistryCoordinationTypeEnum!
+  coordinatedJointDisplay: EnumDescription!
+  count: Int
+}
+
+input AssessmentDashboardFilterDataInputType {
+  createdAt: DateTime
+  createdAtGte: DateTime
+  createdAtLte: DateTime
+  modifiedAt: DateTime
+  modifiedAtGte: DateTime
+  modifiedAtLte: DateTime
+  createdBy: [ID!]
+  modifiedBy: [ID!]
+  stakeholder: [ID!]
+  leadOrganization: [ID!]
+  location: [ID!]
+  affectedGroup: [AssessmentRegistryAffectedGroupTypeEnum!]
+  family: [AssessmentRegistryFamilyTypeEnum!]
+  frequency: [AssessmentRegistryFrequencyTypeEnum!]
+  coordinationType: [AssessmentRegistryCoordinationTypeEnum!]
+  assessmentType: [AssessmentRegistryDetailTypeEnum!]
+  focuses: [AssessmentRegistryFocusTypeEnum!]
+  sectors: [AssessmentRegistrySectorTypeEnum!]
+}
+
+input AssessmentDashboardFilterInputType {
+  dateFrom: Date!
+  dateTo: Date!
+  assessment: AssessmentDashboardFilterDataInputType
+}
+
+type AssessmentDashboardGeographicalAreaType {
+  region: ID!
+  geoArea: ID!
+  adminLevelId: ID!
+  code: ID!
+  count: Int!
+  assessmentIds: [ID!]!
+}
+
+type AssessmentDashboardStatisticsType {
+  totalAssessment: Int!
+  totalStakeholder: Int!
+  totalCollectionTechnique: Int!
+  assessmentCount: [AssessmentCountType!]
+  stakeholderCount: [StakeholderCountType!]
+  collectionTechniqueCount: [CollectionTechniqueCountType!]
+  totalMultisectorAssessment: Int!
+  totalSinglesectorAssessment: Int!
+  assessmentGeographicAreas: [AssessmentDashboardGeographicalAreaType!]
+  assessmentByOverTime: [AssessmentCountByDateType!]
+  assessmentPerFrameworkPillar: [AssessmentFocusCountByDateType!]
+  assessmentPerAffectedGroup: [AssessmentAffectedGroupCountByDateType!]
+  assessmentPerHumanitarianSector: [AssessmentHumanitrainSectorCountByDateType!]
+  assessmentPerProtectionManagement: [AssessmentProtectionInformationCountByDateType!]
+  assessmentPerAffectedGroupAndSector: [AssessmentPerAffectedGroupAndSectorCountByDateType!]
+  assessmentPerAffectedGroupAndGeoarea: [AssessmentPerAffectedGroupAndGeoAreaCountByDateType!]
+  assessmentPerSectorAndGeoarea: [AssessmentPerSectorAndGeoAreaCountByDateType!]
+  assessmentByLeadOrganization: [AssessmentByLeadOrganizationCountByDateType!]
+  assessmentPerDatatechnique: [AssessmentPerDataCollectionTechniqueCountByDateType!]
+  assessmentPerUnitOfAnalysis: [AssessmentPerUnitofAnalysisCountByDateType!]
+  assessmentPerUnitOfReporting: [AssessmentPerUnitofReportingCountByDateType!]
+  assessmentPerSamplingApproach: [AssessmentPerSamplingApproachCountByDateType!]
+  assessmentPerProximity: [AssessmentPerProximityCountByDateType!]
+  sampleSizePerDataCollectionTechnique: [SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType!]
+  assessmentByDataCollectionTechniqueAndGeolocation: [AssessmentByGeographicalAndDataCollectionTechniqueCountByDateType!]
+  assessmentBySamplingApproachAndGeolocation: [AssessmentByGeographicalAndSamplingApproachCountByDateType!]
+  assessmentByProximityAndGeolocation: [AssessmentByGeographicalAndProximityCountByDateType!]
+  assessmentByUnitOfAnalysisAndGeolocation: [AssessmentByGeographicalAndUnit_Of_AnalysisCountByDateType!]
+  assessmentByUnitOfReportingAndGeolocation: [AssessmentByGeographicalAndUnit_Of_ReportingCountByDateType!]
+  medianQualityScoreByGeoArea: [MedianQualityScoreByGeographicalAreaDateType!]
+  medianQualityScoreOverTime: [MedianQualityScoreOverTimeDateType!]
+  medianQualityScoreOverTimeByMonth: [MedianQualityScoreOverTimeDateType!]
+  medianQualityScoreOfEachDimension: [MedianScoreOfEachDimensionType!]
+  medianQualityScoreOfEachDimensionByDate: [MedianScoreOfEachDimensionDateType!]
+  medianQualityScoreOfEachDimensionByDateMonth: [MedianScoreOfEachDimensionDateType!]
+  medianQualityScoreOfAnalyticalDensity: [MedianScoreOfAnalyticalDensityType!]
+  medianQualityScoreByAnalyticalDensityDate: [MedianScoreOfAnalyticalDensityDateType!]
+  medianQualityScoreByAnalyticalDensityDateMonth: [MedianScoreOfAnalyticalDensityDateType!]
+  medianQualityScoreByGeoareaAndSector: [MedianScoreOfGeographicalAndSectorDateType!]
+  medianQualityScoreByGeoareaAndSectorByMonth: [MedianScoreOfGeographicalAndSectorDateType!]
+  medianQualityScoreByGeoareaAndAffectedGroup: [MedianScoreOfGeoAreaAndAffectedGroupDateType!]
+  medianScoreBySectorAndAffectedGroup: [MedianScoreOfSectorAndAffectedGroup!]
+  medianScoreBySectorAndAffectedGroupByMonth: [MedianScoreOfSectorAndAffectedGroup!]
+}
+
+type AssessmentFocusCountByDateType {
+  date: Date!
+  count: Int!
+  focus: AssessmentRegistryFocusTypeEnum!
+  focusDisplay: EnumDescription!
+}
+
+type AssessmentHumanitrainSectorCountByDateType {
+  date: Date!
+  count: Int!
+  sector: AssessmentRegistrySectorTypeEnum!
+  sectorDisplay: EnumDescription!
+}
+
 type AssessmentListType {
   results: [AssessmentType!]
   totalCount: Int
@@ -1357,6 +1746,643 @@ enum AssessmentMethodologyProtectionInfoEnum {
   COMMUNICATING_WITH_OR_IN_AFFECTED_COMMUNITIES
   SECURITY_AND_SITUATIONAL_AWARENESS
   SECTORAL_SYSTEMS_OR_OTHER
+}
+
+type AssessmentPerAffectedGroupAndGeoAreaCountByDateType {
+  date: Date!
+  count: Int!
+  affectedGroup: AssessmentRegistryAffectedGroupTypeEnum!
+  geoArea: ProjectGeoAreaType!
+  affectedGroupDisplay: EnumDescription!
+}
+
+type AssessmentPerAffectedGroupAndSectorCountByDateType {
+  affectedGroup: AssessmentRegistryAffectedGroupTypeEnum!
+  sector: AssessmentRegistrySectorTypeEnum!
+  count: Int!
+}
+
+type AssessmentPerDataCollectionTechniqueCountByDateType {
+  date: Date!
+  count: Int!
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
+  dataCollectionTechniqueDisplay: EnumDescription!
+}
+
+type AssessmentPerProximityCountByDateType {
+  date: Date!
+  count: Int!
+  proximity: AssessmentRegistryProximityTypeEnum!
+  proximityDisplay: EnumDescription!
+}
+
+type AssessmentPerSamplingApproachCountByDateType {
+  date: Date!
+  count: Int!
+  samplingApproach: AssessmentRegistrySamplingApproachTypeEnum!
+  samplingApproachDisplay: EnumDescription!
+}
+
+type AssessmentPerSectorAndGeoAreaCountByDateType {
+  count: Int!
+  sector: AssessmentRegistrySectorTypeEnum!
+  geoArea: ProjectGeoAreaType!
+  sectorDisplay: EnumDescription!
+}
+
+type AssessmentPerUnitofAnalysisCountByDateType {
+  date: Date!
+  count: Int!
+  unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum!
+  unitOfAnalysisDisplay: EnumDescription!
+}
+
+type AssessmentPerUnitofReportingCountByDateType {
+  date: Date!
+  count: Int!
+  unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum!
+  unitOfReportingDisplay: EnumDescription!
+}
+
+type AssessmentProtectionInformationCountByDateType {
+  date: Date!
+  count: Int!
+  protectionManagement: AssessmentRegistryProtectionInfoTypeEnum!
+  protectionManagementDisplay: String!
+}
+
+enum AssessmentRegistryAffectedGroupTypeEnum {
+  ALL
+  ALL_AFFECTED
+  ALL_NOT_AFFECTED
+  ALL_AFFECTED_NOT_DISPLACED
+  ALL_AFFECTED_DISPLACED
+  ALL_AFFECTED_DISPLACED_IN_TRANSIT
+  ALL_AFFECTED_DISPLACED_MIGRANTS
+  ALL_AFFECTED_DISPLACED_IDPS
+  ALL_AFFECTED_DISPLACED_ASYLUM_SEEKER
+  ALL_AFFECTED_DISPLACED_OTHER_OF_CONCERN
+  ALL_AFFECTED_DISPLACED_RETURNEES
+  ALL_AFFECTED_DISPLACED_REFUGEES
+  ALL_AFFECTED_DISPLACED_MIGRANTS_IN_TRANSIT
+  ALL_AFFECTED_DISPLACED_MIGRANTS_PERMANENTS
+  ALL_AFFECTED_DISPLACED_MIGRANTS_PENDULAR
+  ALL_AFFECTED_NOT_DISPLACED_NO_HOST
+  ALL_AFFECTED_NOT_DISPLACED_HOST
+}
+
+enum AssessmentRegistryAnalysisFigureTypeEnum {
+  TOTAL_POP_IN_THE_ASSESSED_AREAS
+  TOTAL_POP_EXPOSED_TO_THE_SHOCK_EVENT
+  TOTAL_POP_AFFECTED_LIVING_IN_THE_AFFECTED_AREAS
+  TOTAL_POP_FACING_HUMANITARIAN_ACCESS_CONSTRAINTS
+  TOTAL_POP_IN_NEED
+  TOTAL_POP_IN_CRITICAL_NEED
+  TOTAL_POP_IN_SEVERE_NEED
+  TOTAL_POP_IN_MODERATE_NEED
+  TOTAL_POP_AT_RISK_VULNERABLE
+  TOTAL_POP_REACHED_BY_ASSISTANCE
+}
+
+enum AssessmentRegistryAnalysisLevelTypeEnum {
+  ISSUE_UNMET_NEEDS_ARE_DETAILED
+  ISSUE_UNMET_NEEDS_ARE_PRIORITIZED_RANKED
+  CAUSES_OR_UNDERLYING_MECHANISMS_BEHIND_ISSUES_UNMET_NEEDS_ARE_DETAILED
+  CAUSES_OR_UNDERLYING_MECHANISMS_BEHIND_ISSUES_UNMET_NEEDS_ARE_PRIORITIZED_RANKED
+  SEVERITY_OF_SOME_ALL_ISSUE_UNMET_NEEDS_IS_DETAILED
+  FUTURE_ISSUES_UNMET_NEEDS_ARE_DETAILED
+  FUTURE_ISSUES_UNMET_NEEDS_ARE_PRIORITIZED_RANKED
+  SEVERITY_OF_SOME_ALL_FUTURE_ISSUE_UNMET_NEEDS_IS_DETAILED
+  RECOMMENDATIONS_INTERVENTIONS_ARE_DETAILED
+  RECOMMENDATIONS_INTERVENTIONS_ARE_PRIORITIZED_RANKED
+}
+
+enum AssessmentRegistryCNAQuestionSectorTypeEnum {
+  RELEVANCE
+  COMPREHENSIVENESS
+  ETHICS
+  METHODOLOGICAL_RIGOR
+  ANALYTICAL_VALUE
+  TIMELINESS
+  EFFECTIVE_COMMUNICATION
+  USE
+  PEOPLE_CENTERED_AND_INCLUSIVE
+  ACCOUNTABILITY_TO_AFFECTED_POPULATIONS
+  DO_NOT_HARM
+  DESIGNED_WITH_PURPOSE
+  COMPETENCY_AND_CAPACITY
+  IMPARTIALITY
+  COORDINATION_AND_DATA_MINIMIZATION
+  JOINT_ANALYSIS
+  ACKNOWLEDGE_DISSENTING_VOICES_IN_JOINT_NEEDS_ANALYSIS
+  IFORMED_CONSENT_CONFIDENTIALITY_AND_DATA_SECURITY
+  SHARING_RESULTS
+  TRANSPARENCY_BETWEEN_ACTORS
+  MINIMUM_TECHNICAL_STANDARDS
+}
+
+enum AssessmentRegistryCNAQuestionSubSectorTypeEnum {
+  RELEVANCE
+  GEOGRAPHIC_COMPREHENSIVENESS
+  SECTORAL_COMPREHENSIVENESS
+  AFFECTED_AND_VULNERABLE_GROUPS_COMPREHENSIVENESS
+  SAFETY_AND_PROTECTION
+  HUMANITARIAN_PRINCIPLES
+  CONTRIBUTION
+  TRANSPARENCY
+  MITIGATING_BIAS
+  PARTICIPATION
+  CONTEXT_SPECIFICITY
+  ANALYTICAL_STANDARDS
+  DESCRIPTIONS
+  EXPLANATION
+  INTERPRETATION
+  ANTICIPATION
+  TIMELINESS
+  USER_FRIENDLY_PRESENTATION
+  ACTIVE_DISSEMINATION
+  USE_FOR_COLLECTIVE_PLANNING
+  BUY_IN_AND_USE_BY_HUMANITARIAN_CLUSTERS_SECTORS
+  BUY_IN_AND_USE_BY_UN_AGENCIES
+  BUY_IN_AND_USE_BY_INTERNATIONAL_NGO
+  BUY_IN_AND_USE_BY_LOCAL_NGO
+  BUY_IN_AND_USE_BY_MEMBER_OF_RED_CROSS_RED_CRESENT_MOVEMENT
+  BUY_IN_AND_USE_BY_DONORS
+  BUY_IN_AND_USE_BY_NATIONAL_AND_LOCAL_GOVERNMENT_AGENCIES
+  BUY_IN_AND_USE_BY_DEVELOPMENT_AND_STABILIZATION_ACTORS
+}
+
+enum AssessmentRegistryConfidentialityTypeEnum {
+  UNPROTECTED
+  CONFIDENTIAL
+}
+
+enum AssessmentRegistryCoordinationTypeEnum {
+  COORDINATED
+  HARMONIZED
+  UNCOORDINATED
+}
+
+input AssessmentRegistryCreateInputType {
+  lead: ID
+  bgCountries: [ID!]!
+  bgCrisisStartDate: Date
+  costEstimatesUsd: Int
+  noOfPages: Int
+  dataCollectionStartDate: Date
+  dataCollectionEndDate: Date
+  publicationDate: Date
+  executiveSummary: String
+  objectives: String
+  dataCollectionTechniques: String
+  sampling: String
+  limitations: String
+  locations: [ID!]
+  bgCrisisType: AssessmentRegistryCrisisTypeEnum!
+  bgPreparedness: AssessmentRegistryPreparednessTypeEnum!
+  externalSupport: AssessmentRegistryExternalTypeEnum!
+  coordinatedJoint: AssessmentRegistryCoordinationTypeEnum!
+  detailsType: AssessmentRegistryDetailTypeEnum!
+  family: AssessmentRegistryFamilyTypeEnum!
+  frequency: AssessmentRegistryFrequencyTypeEnum!
+  confidentiality: AssessmentRegistryConfidentialityTypeEnum!
+  stakeholders: [AssessmentRegistryOrganizationInputType!]
+  language: [AssessmentRegistryLanguageTypeEnum!]!
+  focuses: [AssessmentRegistryFocusTypeEnum!]
+  sectors: [AssessmentRegistrySectorTypeEnum!]
+  protectionInfoMgmts: [AssessmentRegistryProtectionInfoTypeEnum!]
+  affectedGroups: [AssessmentRegistryAffectedGroupTypeEnum!]
+  methodologyAttributes: [MethodologyAttributeInputType!]
+  additionalDocuments: [AdditionalDocumentInputType!]
+  scoreRatings: [ScoreRatingInputType!]
+  scoreAnalyticalDensity: [ScoreAnalyticalDensityInputType!]
+  cna: [CNAAnswerInputType!]
+  summaryPillarMeta: SummaryMetaInputType
+  summarySubPillarIssue: [SummarySubPillarIssueInputType!]
+  summaryDimensionMeta: [SummaryFocusMetaInputType!]
+  summarySubDimensionIssue: [SummarySubDimensionInputType!]
+  metadataComplete: Boolean
+  additionalDocumentComplete: Boolean
+  focusComplete: Boolean
+  methodologyComplete: Boolean
+  summaryComplete: Boolean
+  cnaComplete: Boolean
+  scoreComplete: Boolean
+}
+
+type AssessmentRegistryCreateIssue {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssessmentRegistrySummaryIssueType
+}
+
+enum AssessmentRegistryCrisisTypeEnum {
+  EARTH_QUAKE
+  GROUND_SHAKING
+  TSUNAMI
+  VOLCANO
+  VOLCANIC_ERUPTION
+  MASS_MOMENT_DRY
+  ROCK_FALL
+  AVALANCE
+  LANDSLIDE
+  SUBSIDENCE
+  EXTRA_TROPICAL_CYCLONE
+  TROPICAL_CYCLONE
+  LOCAL_STROM
+  FLOOD_RAIN
+  GENERAL_RIVER_FLOOD
+  FLASH_FLOOD
+  STROM_SURGE_FLOOD
+  MASS_MOVEMENT_WET
+  EXTREME_TEMPERATURE
+  HEAT_WAVE
+  COLD_WAVE
+  EXTREME_WEATHER_CONDITION
+  DROUGHT
+  WILDFIRE
+  POPULATION_DISPLACEMENT
+  CONFLICT
+  ECONOMIC
+  EPIDEMIC
+}
+
+enum AssessmentRegistryDataCollectionTechniqueTypeEnum {
+  SECONDARY_DATA_REVIEW
+  KEY_INFORMAT_INTERVIEW
+  DIRECT_OBSERVATION
+  COMMUNITY_GROUP_DISCUSSION
+  FOCUS_GROUP_DISCUSSION
+  HOUSEHOLD_INTERVIEW
+  INDIVIDUAL_INTERVIEW
+  SATELLITE_IMAGERY
+}
+
+enum AssessmentRegistryDetailTypeEnum {
+  INITIAL
+  RAPID
+  IN_DEPTH
+  MONITORING
+  REGISTRATION
+  OTHER
+}
+
+enum AssessmentRegistryDocumentTypeEnum {
+  ASSESSMENT_DATABASE
+  QUESTIONNAIRE
+  MISCELLANEOUS
+}
+
+enum AssessmentRegistryExternalTypeEnum {
+  EXTERNAL_SUPPORT_RECIEVED
+  NO_EXTERNAL_SUPPORT_RECEIVED
+}
+
+enum AssessmentRegistryFamilyTypeEnum {
+  DISPLACEMENT_TRAKING_MATRIX
+  MULTI_CLUSTER_INITIAL_AND_RAPID_ASSESSMENT
+  MULTI_SECTORIAL_NEEDS_ASSESSMENT
+  EMERGENCY_FOOD_SECURITY_ASSESSMENT
+  COMPREHENSIVE_FOOD_SECURITY_AND_VULNERABILITY_ANALYSIS
+  PROTECTION_MONITORING
+  HUMANITARIAN_NEEDS_OVERVIEW
+  BRIEFING_NOTE
+  REGISTRATION
+  IDP_PROFILING_EXERCISE
+  CENSUS
+  REFUGEE_AND_MIGRANT_RESPONSE_PLAN
+  RUFUGEE_RESPONSE_PLAN
+  SMART_NUTRITION_SURVEY
+  OTHER
+}
+
+enum AssessmentRegistryFocusTypeEnum {
+  CONTEXT
+  SHOCK_EVENT
+  DISPLACEMENT
+  CASUALTIES
+  INFORMATION_AND_COMMUNICATION
+  HUMANITERIAN_ACCESS
+  IMPACT
+  HUMANITARIAN_CONDITIONS
+  PEOPLE_AT_RISK
+  PRIORITIES_AND_PREFERENCES
+  RESPONSE_AND_CAPACITIES
+}
+
+enum AssessmentRegistryFrequencyTypeEnum {
+  ONE_OFF
+  REGULAR
+}
+
+enum AssessmentRegistryLanguageTypeEnum {
+  ENGLISH
+  FRENCH
+  SPANISH
+  ARABIC
+  PORTUGESE
+}
+
+type AssessmentRegistryListType {
+  results: [AssessmentRegistryType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AssessmentRegistryOptionsType {
+  cnaQuestions: [QuestionType!]!
+  summaryOptions: [SummaryOptionType!]!
+  summaryFocusOptions: [SummaryFocusOptionType!]!
+  scoreOptions: [ScoreOptionsType!]!
+}
+
+input AssessmentRegistryOrganizationInputType {
+  id: ID
+  clientId: String
+  organization: ID!
+  organizationType: AssessmentRegistryOrganizationTypeEnum!
+}
+
+type AssessmentRegistryOrganizationType {
+  id: ID!
+  organization: OrganizationType!
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  organizationType: AssessmentRegistryOrganizationTypeEnum!
+  organizationTypeDisplay: EnumDescription!
+}
+
+enum AssessmentRegistryOrganizationTypeEnum {
+  LEAD_ORGANIZATION
+  INTERNATIONAL_PARTNER
+  NATIONAL_PARTNER
+  DONOR
+  GOVERNMENT
+}
+
+enum AssessmentRegistryPreparednessTypeEnum {
+  WITH_PREPAREDNESS
+  WITHOUT_PREPAREDNESS
+}
+
+enum AssessmentRegistryProtectionInfoTypeEnum {
+  PROTECTION_MONITORING
+  PROTECTION_NEEDS_ASSESSMENT
+  CASE_MANAGEMENT
+  POPULATION_DATA
+  PROTECTION_RESPONSE_M_E
+  COMMUNICATING_WITH_IN_AFFECTED_COMMUNITIES
+  SECURITY_AND_SITUATIONAL_AWARENESS
+  SECTORAL_SYSTEM_OTHER
+}
+
+enum AssessmentRegistryProximityTypeEnum {
+  FACE_TO_FACE
+  REMOTE
+  MIXED
+}
+
+enum AssessmentRegistryRatingType {
+  VERY_POOR
+  POOR
+  FAIR
+  GOOD
+  VERY_GOOD
+}
+
+enum AssessmentRegistrySamplingApproachTypeEnum {
+  NON_RANDOM_SELECTION
+  RANDOM_SELECTION
+  FULL_ENUMERATION
+}
+
+enum AssessmentRegistryScoreAnalyticalStatementTypeEnum {
+  FIT_FOR_PURPOSE
+  TRUSTWORTHINESS
+  ANALYTICAL_RIGOR
+  ANALYTICAL_WRITING
+}
+
+enum AssessmentRegistryScoreCriteriaTypeEnum {
+  RELEVANCE
+  COMPREHENSIVENESS
+  TIMELINESS
+  GRANULARITY
+  COMPARABILITY
+  SOURCE_REABILITY
+  METHODS
+  TRIANGULATION
+  PLAUSIBILITY
+  INCLUSIVENESS
+  ASSUMPTIONS
+  CORROBORATION
+  STRUCTURED_ANALYTICAL_TECHNIQUE
+  CONSENSUS
+  REPRODUCIBILITY
+  CLEARLY_ARTICULATED_RESULT
+  LEVEL_OF_CONFIDENCE
+  ILLUSTRATION
+  SOURCED_DATA_EVIDENCE
+  CLEARLY_STATED_OUTLIERS
+}
+
+enum AssessmentRegistrySectorTypeEnum {
+  FOOD_SECURITY
+  HEALTH
+  SHELTER
+  WASH
+  PROTECTION
+  NUTRITION
+  LIVELIHOOD
+  EDUCATION
+  LOGISTICS
+  INTER_CROSS_SECTOR
+}
+
+enum AssessmentRegistrySummaryFocusDimensionTypeEnum {
+  IMPACT
+  HUMANITARIAN_CONDITIONS
+  PRIORITIES_AND_PREFERENCES
+  CONCLUSIONS
+  HUMANITARIAN_POPULATION_FIGURES
+}
+
+input AssessmentRegistrySummaryIssueCreateInputType {
+  subPillar: AssessmentRegistrySummarySubPillarTypeEnum
+  subDimension: AssessmentRegistrySummarySubDimensionTypeEnum
+  parent: ID
+  label: String!
+}
+
+type AssessmentRegistrySummaryIssueListType {
+  results: [AssessmentRegistrySummaryIssueType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AssessmentRegistrySummaryIssueType {
+  id: ID!
+  parent: AssessmentRegistrySummaryIssueType
+  label: String!
+  fullLabel: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  subPillar: AssessmentRegistrySummarySubPillarTypeEnum
+  subPillarDisplay: EnumDescription
+  subDimension: AssessmentRegistrySummarySubDimensionTypeEnum
+  subDimensionDisplay: EnumDescription
+  childCount: Int!
+  level: Int
+}
+
+enum AssessmentRegistrySummaryPillarTypeEnum {
+  CONTEXT
+  EVENT_SHOCK
+  DISPLACEMENT
+  INFORMATION_AND_COMMUNICATION
+  HUMANITARIAN_ACCESS
+}
+
+enum AssessmentRegistrySummarySubDimensionTypeEnum {
+  DRIVERS
+  IMPACT_ON_PEOPLE
+  IMPACT_ON_SYSTEM
+  LIVING_STANDARDS
+  COPING_MECHANISMS
+  PHYSICAL_AND_MENTAL_WELL_BEING
+  NEEDS_POP
+  NEEDS_HUMAN
+  INTERVENTIONS_POP
+  INTERVENTIONS_HUMAN
+  DEMOGRAPHIC_GROUPS
+  GROUPS_WITH_SPECIFIC_NEEDS
+  GEOGRAPHICAL_AREAS
+  PEOPLE_AT_RISKS
+  FOCAL_ISSUES
+}
+
+enum AssessmentRegistrySummarySubPillarTypeEnum {
+  POLITICS
+  DEMOGRAPHY
+  SOCIO_CULTURAL
+  ENVIRONMENT
+  SECURITY_AND_STABILITY
+  ECONOMICS
+  CHARACTERISTICS
+  DRIVERS_AND_AGGRAVATING_FACTORS
+  MITIGATING_FACTORS
+  HAZARDS_AND_THREATS
+  DISPLACEMENT_CHARACTERISTICS
+  PUSH_FACTORS
+  PULL_FACTORS
+  INTENTIONS
+  LOCAL_INTREGATIONS
+  SOURCE_AND_MEANS
+  CHALLANGES_AND_BARRIERS
+  KNOWLEDGE_AND_INFO_GAPS_HUMAN
+  KNOWLEDGE_AND_INFO_GAPS_POP
+  POPULATION_TO_RELIEF
+  RELIEF_TO_POPULATION
+  PHYSICAL_AND_SECURITY
+}
+
+type AssessmentRegistryType {
+  id: ID!
+  bgCountries: [RegionType!]!
+  bgCrisisStartDate: Date
+  costEstimatesUsd: Int
+  noOfPages: Int
+  dataCollectionStartDate: Date
+  dataCollectionEndDate: Date
+  publicationDate: Date
+  executiveSummary: String
+  objectives: String
+  dataCollectionTechniques: String
+  sampling: String
+  limitations: String
+  metadataComplete: Boolean!
+  additionalDocumentComplete: Boolean!
+  focusComplete: Boolean!
+  methodologyComplete: Boolean!
+  summaryComplete: Boolean!
+  cnaComplete: Boolean!
+  scoreComplete: Boolean!
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  project: ID!
+  bgCrisisType: AssessmentRegistryCrisisTypeEnum!
+  bgCrisisTypeDisplay: EnumDescription!
+  bgPreparedness: AssessmentRegistryPreparednessTypeEnum!
+  bgPreparednessDisplay: EnumDescription!
+  externalSupport: AssessmentRegistryExternalTypeEnum!
+  externalSupportDisplay: EnumDescription!
+  coordinatedJoint: AssessmentRegistryCoordinationTypeEnum!
+  coordinatedJointDisplay: EnumDescription!
+  detailsType: AssessmentRegistryDetailTypeEnum!
+  detailsTypeDisplay: EnumDescription!
+  family: AssessmentRegistryFamilyTypeEnum!
+  familyDisplay: EnumDescription!
+  frequency: AssessmentRegistryFrequencyTypeEnum!
+  frequencyDisplay: EnumDescription!
+  confidentiality: AssessmentRegistryConfidentialityTypeEnum!
+  confidentialityDisplay: EnumDescription!
+  language: [AssessmentRegistryLanguageTypeEnum!]!
+  focuses: [AssessmentRegistryFocusTypeEnum!]!
+  sectors: [AssessmentRegistrySectorTypeEnum!]!
+  protectionInfoMgmts: [AssessmentRegistryProtectionInfoTypeEnum!]
+  affectedGroups: [AssessmentRegistryAffectedGroupTypeEnum!]!
+  methodologyAttributes: [MethodologyAttributeType!]
+  additionalDocuments: [AdditionalDocumentType!]
+  scoreRatings: [ScoreRatingType!]!
+  scoreAnalyticalDensity: [ScoreAnalyticalDensityType!]!
+  locations: [ProjectGeoAreaType!]
+  cna: [CNAType!]
+  summaryPillarMeta: SummaryMetaType
+  summarySubPillarIssue: [SummarySubPillarIssueType!]
+  summaryDimensionMeta: [SummaryFocusMetaType!]
+  summarySubDimensionIssue: [SummaryFocusSubDimensionIssueType!]
+  lead: LeadDetailType!
+  stakeholders: [AssessmentRegistryOrganizationType!]
+}
+
+enum AssessmentRegistryUnitOfAnalysisTypeEnum {
+  CRISIS
+  COUNTRY
+  REGION
+  PROVINCE_GOV_PREFECTURE
+  DEPARTMENT_DISTRICT
+  SUB_DISTRICT_COUNTRY
+  MUNICIPALITY
+  NEIGHBORHOOD_QUARTIER
+  COMMUNITY_SITE
+  AFFECTED_GROUP
+  HOUSEHOLD
+  INDIVIDUAL
+}
+
+enum AssessmentRegistryUnitOfReportingTypeEnum {
+  CRISIS
+  COUNTRY
+  REGION
+  PROVINCE_GOV_PREFECTURE
+  DEPARTMENT_DISTRICT
+  SUB_DISTRICT_COUNTRY
+  MUNICIPALITY
+  NEIGHBORHOOD_QUARTIER
+  COMMUNITY_SITE
+  AFFECTED_GROUP
+  HOUSEHOLD
+  INDIVIDUAL
 }
 
 type AssessmentType {
@@ -1458,7 +2484,7 @@ type AttributeType {
   id: ID!
   widgetVersion: Int!
   data: GenericScalar
-  clientId: String!
+  clientId: ID!
   widget: ID!
   widgetType: WidgetWidgetTypeEnum!
   widgetTypeDisplay: EnumDescription!
@@ -1586,6 +2612,24 @@ input BulkUserGroupMembershipInputType {
   clientId: String
 }
 
+input CNAAnswerInputType {
+  id: ID
+  clientId: String
+  question: ID!
+  answer: Boolean!
+}
+
+type CNAType {
+  id: ID!
+  question: QuestionType!
+  answer: Boolean!
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+}
+
 type CancelUserExport {
   errors: [GenericScalar!]
   ok: Boolean
@@ -1601,6 +2645,12 @@ type CancelUserGenericExport {
 type ChangeUserPassword {
   errors: [GenericScalar!]
   ok: Boolean
+}
+
+type CollectionTechniqueCountType {
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
+  dataCollectionTechniqueDisplay: EnumDescription!
+  count: Int!
 }
 
 enum ConnectorLeadExtractionStatusEnum {
@@ -1713,7 +2763,7 @@ type ConnectorSourceType {
   unifiedConnector: ID!
   params: GenericScalar!
   lastFetchedAt: DateTime
-  clientId: String!
+  clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -1754,6 +2804,12 @@ type CreateAnalysisReportUpload {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisReportUploadType
+}
+
+type CreateAssessmentRegistry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssessmentRegistryType
 }
 
 type CreateDraftEntry {
@@ -1861,6 +2917,12 @@ type DeleteAssessment {
   errors: [GenericScalar!]
   ok: Boolean
   result: AssessmentType
+}
+
+type DeleteAssessmentRegistry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssessmentRegistryType
 }
 
 type DeleteEntry {
@@ -2230,7 +3292,7 @@ enum EntryTagTypeEnum {
 
 type EntryType {
   id: ID!
-  clientId: String!
+  clientId: ID!
   lead: LeadType!
   project: ProjectType!
   order: Int!
@@ -2668,7 +3730,7 @@ type GroupMembershipType {
   member: UserType!
   joinedAt: DateTime!
   addedBy: UserType
-  clientId: String!
+  clientId: ID!
   role: GroupMembershipRoleEnum!
   roleDisplay: EnumDescription!
 }
@@ -2712,7 +3774,7 @@ input LeadCopyInputType {
 
 type LeadDetailType {
   id: ID!
-  clientId: String!
+  clientId: ID!
   leadGroup: LeadGroupType
   title: String!
   assignee: UserType
@@ -2903,7 +3965,7 @@ enum LeadStatusEnum {
 
 type LeadType {
   id: ID!
-  clientId: String!
+  clientId: ID!
   leadGroup: LeadGroupType
   title: String!
   assignee: UserType
@@ -3039,6 +4101,62 @@ type Logout {
   ok: Boolean
 }
 
+type MedianQualityScoreByGeographicalAreaDateType {
+  adminLevelId: ID!
+  region: ID!
+  geoArea: ID!
+  finalScore: Float!
+}
+
+type MedianQualityScoreOverTimeDateType {
+  date: Date!
+  finalScore: Float!
+}
+
+type MedianScoreOfAnalyticalDensityDateType {
+  sector: AssessmentRegistrySectorTypeEnum!
+  finalScore: Float!
+  sectorDisplay: EnumDescription!
+  date: Date!
+}
+
+type MedianScoreOfAnalyticalDensityType {
+  sector: AssessmentRegistrySectorTypeEnum!
+  finalScore: Float!
+  sectorDisplay: EnumDescription!
+}
+
+type MedianScoreOfEachDimensionDateType {
+  finalScore: Float!
+  scoreType: AssessmentRegistryScoreCriteriaTypeEnum!
+  date: Date!
+}
+
+type MedianScoreOfEachDimensionType {
+  finalScore: Float!
+  scoreType: AssessmentRegistryScoreCriteriaTypeEnum!
+}
+
+type MedianScoreOfGeoAreaAndAffectedGroupDateType {
+  date: Date!
+  finalScore: Float!
+  geoArea: ProjectGeoAreaType!
+  affectedGroup: AssessmentRegistryAffectedGroupTypeEnum!
+}
+
+type MedianScoreOfGeographicalAndSectorDateType {
+  date: Date!
+  finalScore: Float!
+  geoArea: ProjectGeoAreaType!
+  sector: AssessmentRegistrySectorTypeEnum!
+}
+
+type MedianScoreOfSectorAndAffectedGroup {
+  finalScore: Float!
+  sector: AssessmentRegistrySectorTypeEnum!
+  affectedGroup: AssessmentRegistryAffectedGroupTypeEnum!
+}
+
 type MergedAsOrganizationType {
   id: ID!
   title: String!
@@ -3047,6 +4165,37 @@ type MergedAsOrganizationType {
   url: String!
   logo: GalleryFileType
   verified: Boolean!
+}
+
+input MethodologyAttributeInputType {
+  id: ID
+  clientId: String
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
+  samplingApproach: AssessmentRegistrySamplingApproachTypeEnum
+  samplingSize: Int
+  proximity: AssessmentRegistryProximityTypeEnum
+  unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum
+  unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum
+}
+
+type MethodologyAttributeType {
+  id: ID!
+  samplingSize: Int
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum
+  dataCollectionTechniqueDisplay: EnumDescription
+  samplingApproach: AssessmentRegistrySamplingApproachTypeEnum
+  samplingAppraochDisplay: EnumDescription
+  proximity: AssessmentRegistryProximityTypeEnum
+  proximityDisplay: EnumDescription
+  unitOfAnalysis: AssessmentRegistryUnitOfAnalysisTypeEnum
+  unitOfAnalysisDisplay: EnumDescription
+  unitOfReporting: AssessmentRegistryUnitOfReportingTypeEnum
+  unitOfReportingDisplay: EnumDescription
 }
 
 input MissingPredictionReviewInputType {
@@ -3067,6 +4216,7 @@ type MissingPredictionReviewType {
 }
 
 type Mutation {
+  createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType!): AssessmentRegistryCreateIssue
   fileUpload(data: FileUploadInputType!): UploadFile
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
   genericExportCancel(id: ID!): CancelUserGenericExport
@@ -3171,7 +4321,7 @@ type OrganizationType {
   url: String!
   logo: GalleryFileType
   verified: Boolean!
-  regions: [RegionWithProject!]!
+  regions: [RegionType!]!
   organizationType: OrganizationTypeType
   mergedAs: MergedAsOrganizationType
 }
@@ -3231,6 +4381,7 @@ input ProjectCreateInputType {
   status: ProjectStatusEnum
   isPrivate: Boolean
   isTest: Boolean
+  isAssessmentEnabled: Boolean
   analysisFramework: ID
   isVisualizationEnabled: Boolean
   hasPubliclyViewableUnprotectedLeads: Boolean
@@ -3260,6 +4411,7 @@ type ProjectDetailType {
   isDefault: Boolean!
   isPrivate: Boolean!
   isTest: Boolean!
+  isAssessmentEnabled: Boolean!
   isVisualizationEnabled: Boolean!
   data: GenericScalar
   hasPubliclyViewableUnprotectedLeads: Boolean!
@@ -3276,7 +4428,10 @@ type ProjectDetailType {
   statusDisplay: EnumDescription!
   organizations: [ProjectOrganizationType!]
   hasAnalysisFramework: Boolean!
-  hasAssessmentTemplate: Boolean!
+  assessmentDashboardStatistics(filter: AssessmentDashboardFilterInputType!): AssessmentDashboardStatisticsType
+  assessmentRegistry(id: ID!): AssessmentRegistryType
+  assessmentRegistries(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID], modifiedBy: [ID!], dateFrom: Date, dateTo: Date, project: [ID], lead: [ID], publicationDateLte: Date, publicationDateGte: Date, search: String, page: Int = 1, pageSize: Int): AssessmentRegistryListType
+  assessmentRegistryOptions: AssessmentRegistryOptionsType
   analysisOverview: AnalysisOverviewType
   analysis(id: ID!): AnalysisType
   analyses(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisListType
@@ -3407,13 +4562,16 @@ type ProjectMembershipType {
   linkedGroup: UserGroupType
   joinedAt: DateTime!
   addedBy: UserType
-  clientId: String!
+  clientId: ID!
   badges: [ProjectMembershipBadgeTypeEnum!]
 }
 
 type ProjectMutationType {
   id: ID!
   title: String!
+  createAssessmentRegistry(data: AssessmentRegistryCreateInputType!): CreateAssessmentRegistry
+  updateAssessmentRegistry(data: AssessmentRegistryCreateInputType!, id: ID): UpdateAssessmentRegistry
+  deleteAssessmentRegistry(id: ID!): DeleteAssessmentRegistry
   analysisPillarUpdate(data: AnalysisPillarUpdateInputType!, id: ID!): UpdateAnalysisPillar
   discardedEntryCreate(data: DiscardedEntryCreateInputType!): CreateAnalysisPillarDiscardedEntry
   discardedEntryUpdate(data: DiscardedEntryUpdateInputType!, id: ID!): UpdateAnalysisPillarDiscardedEntry
@@ -3472,7 +4630,7 @@ enum ProjectOrderingEnum {
 }
 
 input ProjectOrganizationGqInputType {
-  id: Int
+  id: ID
   organization: ID!
   organizationType: ProjectOrganizationTypeEnum!
   clientId: String
@@ -3481,6 +4639,11 @@ input ProjectOrganizationGqInputType {
 type ProjectOrganizationType {
   id: ID!
   organization: OrganizationType!
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
   organizationType: ProjectOrganizationTypeEnum!
   organizationTypeDisplay: EnumDescription!
 }
@@ -3504,7 +4667,9 @@ enum ProjectPermission {
   DELETE_UNIFIED_CONNECTOR
   CREATE_LEAD
   VIEW_ONLY_UNPROTECTED_LEAD
+  VIEW_ONLY_UNPROTECTED_ASSESSMENT_REGISTRY
   VIEW_ALL_LEAD
+  VIEW_ASSESSMENT_REGISTRY
   UPDATE_LEAD
   DELETE_LEAD
   CREATE_ENTRY
@@ -3514,6 +4679,8 @@ enum ProjectPermission {
   CREATE_EXPORT
   CAN_QUALITY_CONTROL
   CREATE_ANALYSIS_MODULE
+  CREATE_ASSESSMENT_REGISTRY
+  UPDATE_ASSESSMENT_REGISTRY
 }
 
 type ProjectRoleType {
@@ -3591,6 +4758,7 @@ type ProjectType {
   isDefault: Boolean!
   isPrivate: Boolean!
   isTest: Boolean!
+  isAssessmentEnabled: Boolean!
   isVisualizationEnabled: Boolean!
   currentUserRole: ProjectRoleTypeEnum
   allowedPermissions: [ProjectPermission!]!
@@ -3602,7 +4770,6 @@ type ProjectType {
   statusDisplay: EnumDescription!
   organizations: [ProjectOrganizationType!]
   hasAnalysisFramework: Boolean!
-  hasAssessmentTemplate: Boolean!
 }
 
 input ProjectUpdateInputType {
@@ -3613,6 +4780,7 @@ input ProjectUpdateInputType {
   status: ProjectStatusEnum
   isPrivate: Boolean
   isTest: Boolean
+  isAssessmentEnabled: Boolean
   analysisFramework: ID
   isVisualizationEnabled: Boolean
   hasPubliclyViewableUnprotectedLeads: Boolean
@@ -3635,7 +4803,7 @@ type ProjectUserGroupMembershipType {
   role: ProjectRoleType!
   joinedAt: DateTime!
   addedBy: UserType
-  clientId: String!
+  clientId: ID!
   badges: [ProjectMembershipBadgeTypeEnum!]
 }
 
@@ -3794,6 +4962,8 @@ type PublicProjectWithMembershipData {
 }
 
 type Query {
+  assessmentRegSummaryIssue(id: ID!): AssessmentRegistrySummaryIssueType
+  assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimension: AssessmentRegistrySummarySubDimensionTypeEnum, search: String, isParent: Boolean, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
   publicAnalysisReportSnapshot(slug: String!): AnalysisReportSnapshotType
   deepExploreStats(filter: ExploreDeepFilterInputType!): ExploreDashboardStatType
   publicDeepExploreYearlySnapshots: [PublicExploreSnapshotType!]
@@ -3807,8 +4977,8 @@ type Query {
   region(id: ID!): RegionDetailType
   regions(id: Float, code: String, title: String, public: Boolean, project: [ID], createdAt: DateTime, createdBy: [ID], modifiedAt: DateTime, modifiedBy: [ID], createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, excludeProject: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): RegionListType
   organization(id: ID!): OrganizationType
-  organizations(id: Float, verified: Boolean, search: String, usedInProject: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): OrganizationListType
-  publicOrganizations(id: Float, verified: Boolean, search: String, usedInProject: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): PublicOrganizationListObjectType
+  organizations(id: Float, verified: Boolean, search: String, usedInProjectByLead: ID, usedInProjectByAssesment: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): OrganizationListType
+  publicOrganizations(id: Float, verified: Boolean, search: String, usedInProjectByLead: ID, usedInProjectByAssesment: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): PublicOrganizationListObjectType
   organizationType(id: ID!): OrganizationTypeType
   organizationTypes(title: String, shortName: String, description: String, reliefWebId: Int, page: Int = 1, ordering: String, pageSize: Int): OrganizationTypeListType
   userGroup(id: ID!): UserGroupType
@@ -3831,6 +5001,19 @@ type Query {
   assistedTagging: AssistedTaggingRootQueryType
   enums: AppEnumCollection
   _debug: DjangoDebug
+}
+
+type QuestionType {
+  id: ID!
+  question: String!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  sector: AssessmentRegistryCNAQuestionSectorTypeEnum
+  sectorDisplay: EnumDescription
+  subSector: AssessmentRegistryCNAQuestionSubSectorTypeEnum
+  subSectorDisplay: EnumDescription
 }
 
 type RecentActivityType {
@@ -3940,10 +5123,69 @@ type RssFieldType {
   label: String
 }
 
+type SamplingSizeAssessmentPerDataCollectionTechniqueCountByDateType {
+  date: Date!
+  samplingSize: Int!
+  dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
+  dataCollectionTechniqueDisplay: EnumDescription!
+}
+
 type SaveUserSavedLeadFilter {
   errors: [GenericScalar!]
   ok: Boolean
   result: UserSavedLeadFilterType
+}
+
+input ScoreAnalyticalDensityInputType {
+  id: ID
+  clientId: String
+  sector: AssessmentRegistrySectorTypeEnum!
+  analysisLevelCovered: [AssessmentRegistryAnalysisLevelTypeEnum!]
+  figureProvided: [AssessmentRegistryAnalysisFigureTypeEnum!]
+  score: Int
+}
+
+type ScoreAnalyticalDensityType {
+  id: ID!
+  score: Int
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  sector: AssessmentRegistrySectorTypeEnum!
+  sectorDisplay: EnumDescription!
+  analysisLevelCovered: [AssessmentRegistryAnalysisLevelTypeEnum!]!
+  figureProvided: [AssessmentRegistryAnalysisFigureTypeEnum!]!
+}
+
+type ScoreOptionsType {
+  analyticalStatement: AssessmentRegistryScoreAnalyticalStatementTypeEnum!
+  analyticalStatementDisplay: EnumDescription!
+  scoreCriteria: AssessmentRegistryScoreCriteriaTypeEnum!
+  scoreCriteriaDisplay: EnumDescription!
+}
+
+input ScoreRatingInputType {
+  id: ID
+  clientId: String
+  scoreType: AssessmentRegistryScoreCriteriaTypeEnum!
+  rating: AssessmentRegistryRatingType
+  reason: String
+}
+
+type ScoreRatingType {
+  id: ID!
+  reason: String
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  scoreType: AssessmentRegistryScoreCriteriaTypeEnum!
+  scoreTypeDisplay: EnumDescription!
+  rating: AssessmentRegistryRatingType!
+  ratingDisplay: EnumDescription!
 }
 
 input SectionGqlInputType {
@@ -3960,8 +5202,135 @@ type SectionType {
   title: String!
   order: Int!
   tooltip: String
-  clientId: String!
+  clientId: ID!
   widgets: [WidgetType!]
+}
+
+type StakeholderCountType {
+  stakeholder: String!
+  count: Int
+}
+
+input SummaryFocusMetaInputType {
+  id: ID
+  clientId: String
+  sector: AssessmentRegistrySectorTypeEnum!
+  percentageOfPeopleAffected: Int
+  totalPeopleAffected: Int
+  percentageOfModerate: Int
+  percentageOfSevere: Int
+  percentageOfCritical: Int
+  percentageInNeed: Int
+  totalModerate: Int
+  totalSevere: Int
+  totalCritical: Int
+  totalInNeed: Int
+}
+
+type SummaryFocusMetaType {
+  id: ID!
+  percentageOfPeopleAffected: Int
+  totalPeopleAffected: Int
+  percentageOfModerate: Int
+  percentageOfSevere: Int
+  percentageOfCritical: Int
+  percentageInNeed: Int
+  totalModerate: Int
+  totalSevere: Int
+  totalCritical: Int
+  totalInNeed: Int
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  sector: AssessmentRegistrySectorTypeEnum
+  sectorDisplay: EnumDescription
+}
+
+type SummaryFocusOptionType {
+  dimension: AssessmentRegistrySummaryFocusDimensionTypeEnum!
+  dimensionDisplay: EnumDescription!
+  subDimension: AssessmentRegistrySummarySubDimensionTypeEnum!
+  subDimensionDisplay: EnumDescription!
+}
+
+type SummaryFocusSubDimensionIssueType {
+  id: ID!
+  summaryIssue: AssessmentRegistrySummaryIssueType!
+  text: String!
+  order: Int!
+  leadPreviewTextRef: GenericScalar
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+  sector: AssessmentRegistrySectorTypeEnum!
+  sectorDisplay: EnumDescription!
+}
+
+input SummaryMetaInputType {
+  id: ID
+  totalPeopleAssessed: Int
+  totalDead: Int
+  totalInjured: Int
+  totalMissing: Int
+  totalPeopleFacingHumAccessCons: Int
+  percentageOfPeopleFacingHumAccessCons: Int
+}
+
+type SummaryMetaType {
+  id: ID!
+  totalPeopleAssessed: Int
+  totalDead: Int
+  totalInjured: Int
+  totalMissing: Int
+  totalPeopleFacingHumAccessCons: Int
+  percentageOfPeopleFacingHumAccessCons: Int
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
+}
+
+type SummaryOptionType {
+  pillar: AssessmentRegistrySummaryPillarTypeEnum!
+  pillarDisplay: EnumDescription!
+  subPillar: AssessmentRegistrySummarySubPillarTypeEnum!
+  subPillarDisplay: EnumDescription!
+}
+
+input SummarySubDimensionInputType {
+  id: ID
+  clientId: String
+  summaryIssue: ID!
+  sector: AssessmentRegistrySectorTypeEnum!
+  text: String
+  order: Int!
+  leadPreviewTextRef: GenericScalar
+}
+
+input SummarySubPillarIssueInputType {
+  id: ID
+  clientId: String
+  summaryIssue: ID!
+  text: String
+  order: Int!
+  leadPreviewTextRef: GenericScalar
+}
+
+type SummarySubPillarIssueType {
+  id: ID!
+  summaryIssue: AssessmentRegistrySummaryIssueType!
+  text: String!
+  order: Int!
+  leadPreviewTextRef: GenericScalar
+  clientId: ID!
+  createdAt: DateTime!
+  modifiedAt: DateTime!
+  createdBy: UserType
+  modifiedBy: UserType
 }
 
 enum TopicModelStatusEnum {
@@ -4057,7 +5426,7 @@ type UnifiedConnectorType {
   id: ID!
   title: String!
   isActive: Boolean!
-  clientId: String!
+  clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -4096,6 +5465,12 @@ type UpdateAnalysisReport {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisReportType
+}
+
+type UpdateAssessmentRegistry {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssessmentRegistryType
 }
 
 type UpdateConnectorSourceLead {
@@ -4416,7 +5791,7 @@ type WidgetType {
   properties: GenericScalar
   order: Int!
   version: Int!
-  clientId: String!
+  clientId: ID!
   widgetId: WidgetWidgetTypeEnum!
   widgetIdDisplay: EnumDescription!
   width: WidgetWidthTypeEnum!

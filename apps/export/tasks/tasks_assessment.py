@@ -4,14 +4,13 @@ from deep.permissions import ProjectPermissions as PP
 from deep.filter_set import get_dummy_request
 from lead.models import Lead
 from lead.filter_set import LeadGQFilterSet
-from ary.models import Assessment, PlannedAssessment
 from ary.export import (
     get_export_data_for_assessments,
-    get_export_data_for_planned_assessments,
 )
 from export.models import Export
 from export.exporters import JsonExporter
 from export.assessments import NewExcelExporter
+from assessment_registry.models import AssessmentRegistry
 
 
 def _export_assessments(export, AssessmentModel, excel_sheet_data_generator):
@@ -21,7 +20,7 @@ def _export_assessments(export, AssessmentModel, excel_sheet_data_generator):
     is_preview = export.is_preview
 
     arys = AssessmentModel.objects.filter(project=project).select_related('project').distinct()
-    if AssessmentModel == Assessment:  # Filter is only available for Assessments (not PlannedAssessment)
+    if AssessmentModel == AssessmentRegistry:  # Filter is only available for Assessments (not PlannedAssessment)
         user_project_permissions = PP.get_permissions(project, user)
         filters = copy.deepcopy(export.filters)  # Avoid mutating database values
         # Lead filtered queryset
@@ -53,8 +52,4 @@ def _export_assessments(export, AssessmentModel, excel_sheet_data_generator):
 
 
 def export_assessments(export):
-    return _export_assessments(export, Assessment, get_export_data_for_assessments)
-
-
-def export_planned_assessments(export):
-    return _export_assessments(export, PlannedAssessment, get_export_data_for_planned_assessments)
+    return _export_assessments(export, AssessmentRegistry, get_export_data_for_assessments)

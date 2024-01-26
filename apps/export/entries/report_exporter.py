@@ -13,7 +13,7 @@ from django.db.models import (
 )
 from docx.shared import Inches
 from deep.permalinks import Permalink
-from utils.common import deep_date_parse
+from utils.common import deep_date_parse, deep_date_format
 
 from export.formats.docx import Document
 
@@ -36,7 +36,6 @@ from entry.widgets import (
     organigram_widget,
 )
 from entry.widgets.store import widget_store
-from entry.widgets.geo_widget import get_valid_geo_ids
 
 from ary.export.affected_groups_info import get_affected_groups_info as ary_get_affected_groups_info
 from ary.export.data_collection_techniques_info import (
@@ -445,7 +444,7 @@ class ReportExporter:
             cache = {}
             # Collect Assessment GEO Data
             cache['locations'] = self._get_geo_admin_level_1_data(
-                get_valid_geo_ids((assessment.methodology or {}).get('locations') or [])
+                assessment.locations.values_list('id', flat=True),
             )
             cache['affected_groups_info'] = INTERNAL_SEPARATOR.join([
                 '/'.join([str(s) for s in info.values() if s])
@@ -456,8 +455,8 @@ class ReportExporter:
                 for info in ary_get_data_collection_techniques_info(assessment)['data_collection_technique']
                 if info.get('Sampling Size')
             ])
-            dc_start_date = (assessment.metadata or {}).get('basic_information', {}).get('12')
-            dc_end_date = (assessment.metadata or {}).get('basic_information', {}).get('13')
+            dc_start_date = deep_date_format(assessment.data_collection_start_date)
+            dc_end_date = deep_date_format(assessment.data_collection_end_date)
             if dc_start_date or dc_end_date:
                 cache['data_collection_date'] = f'Data collection: {dc_start_date} - {dc_end_date}'
             self.assessment_data_cache[assessment.pk] = cache
@@ -465,7 +464,7 @@ class ReportExporter:
         locations = cache['locations']
         affected_groups_info = cache['affected_groups_info']
         data_collection_techniques_info = cache['data_collection_techniques_info']
-        data_collection_date = cache.get('data_collection_date')
+        data_collection_date = cache['data_collection_date']
 
         to_process_fuctions = [
             func
@@ -544,7 +543,7 @@ class ReportExporter:
 
         # Assessment Data
         if self.show_assessment_data and getattr(entry.lead, 'assessment', None):
-            self._add_assessment_info_for_entry(entry.lead.assessment, para, bold=True)
+            self._add_assessment_info_for_entry(entry.lead.assessmentregistry, para, bold=True)
 
         # Entry widget Data
         if self.show_entry_widget_data:

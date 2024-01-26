@@ -22,6 +22,7 @@ from geo.models import Region
 from geo.schema import RegionDetailType
 from lead.mutation import Mutation as LeadMutation
 from entry.mutation import Mutation as EntryMutation
+from assessment_registry.mutation import ProjectMutation as AssessmentRegistryMutation
 from quality_assurance.mutation import Mutation as QualityAssuranceMutation
 from ary.mutation import Mutation as AryMutation
 from export.mutation import ProjectMutation as ExportMutation
@@ -323,6 +324,7 @@ class ProjectMutationType(
     AryMutation,
     ExportMutation,
     AnalysisMutation,
+    AssessmentRegistryMutation,
     # --End Project Scoped Mutation
     DjangoObjectType
 ):
