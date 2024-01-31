@@ -648,8 +648,7 @@ class EntryGQFilterSet(GrapheneFilterSetMixin, UserResourceGqlFilterSet):
     def lead_has_assessment_filter(self, qs, _, value):
         if value is None:
             return qs
-        # TODO: We need to add new assessment module filter here after it is deployed
-        return qs.filter(lead__assessment__isnull=not value)
+        return qs.filter(lead__assessmentregistry__isnull=not value)
 
     def authoring_organization_types_filter(self, qs, name, value):
         if value:
