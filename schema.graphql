@@ -1924,7 +1924,7 @@ enum AssessmentRegistryCoordinationTypeEnum {
 }
 
 input AssessmentRegistryCreateInputType {
-  lead: ID
+  lead: ID!
   bgCountries: [ID!]!
   bgCrisisStartDate: Date
   costEstimatesUsd: Int
