@@ -9,11 +9,11 @@ from utils.graphene.tests import GraphQLTestCase
 from user.factories import UserFactory
 from geo.factories import RegionFactory, AdminLevelFactory, GeoAreaFactory
 from project.factories import ProjectFactory
-from ary.factories import AssessmentFactory
 from lead.factories import LeadFactory
 from entry.factories import EntryFactory, EntryAttributeFactory
 from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
 from organization.factories import OrganizationFactory, OrganizationTypeFactory
+from assessment_registry.factories import AssessmentRegistryFactory
 from quality_assurance.factories import EntryReviewCommentFactory
 
 from lead.tests.test_schemas import TestLeadQuerySchema
@@ -369,7 +369,7 @@ class TestEntryQuery(GraphQLTestCase):
             project=project, analysis_framework=af, lead=lead4, entry_type=Entry.TagType.EXCERPT, controlled=False)
 
         # For assessment filters
-        AssessmentFactory.create(project=project, lead=lead1)
+        AssessmentRegistryFactory.create(project=project, lead=lead1)
 
         # create entry review comment for entry
         EntryReviewCommentFactory(entry=entry1_1, created_by=user, comment_type=EntryReviewComment.CommentType.COMMENT)
