@@ -239,6 +239,7 @@ class AutoAssistedBlockPredicationCallbackSerializer(serializers.Serializer):
     relevant = serializers.BooleanField()
     prediction_status = serializers.BooleanField()
     classification = serializers.DictField(child=serializers.DictField())
+    geolocations = serializers.DictField(child=serializers.DictField())
 
 
 class AutoAssistedTaggingDraftEntryCallbackSerializer(BaseCallbackSerializer):

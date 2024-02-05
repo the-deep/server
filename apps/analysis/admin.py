@@ -6,7 +6,7 @@ from .models import (
     AnalysisPillar,
     AnalyticalStatement,
     AnalyticalStatementEntry,
-    DiscardedEntry
+    DiscardedEntry,
 )
 
 

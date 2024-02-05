@@ -49,9 +49,10 @@ from analysis.models import (
     AnalyticalStatementGeoTask,
     AnalyticalStatementGeoEntry,
 )
+from geo.models import GeoArea
 
 from .models import DeeplTrackBaseModel
-
+from geo.filter_set import GeoAreaGqlFilterSet
 
 logger = logging.getLogger(__name__)
 
@@ -535,7 +536,6 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
             models_version_map = cls._get_or_create_models_version([
                 data['classification_model_info']
             ])
-
             draft = DraftEntry.objects.create(
                 page=model_preds['page'],
                 text_order=model_preds['textOrder'],
@@ -545,6 +545,11 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
                 prediction_status=DraftEntry.PredictionStatus.DONE,
                 type=DraftEntry.Type.AUTO
             )
+            geo_areas_qs = GeoAreaGqlFilterSet(
+                data={'titles': [geo['entity'] for geo in model_preds['geolocations']]},
+                queryset=GeoArea.get_for_project(lead.project)
+            ).qs
+            draft.related_geoareas.set(geo_areas_qs)
             model_version = models_version_map[
                 (data['classification_model_info']['name'], data['classification_model_info']['version'])
             ]
@@ -1016,15 +1021,16 @@ class AnalyticalStatementGeoHandler(NewNlpServerBaseHandler):
             )
             for entry_geo_data in geo_data:
                 entry_id = int(entry_geo_data['entry_id'])
-                data = entry_geo_data['entities']
+                data = entry_geo_data['locations']
                 if data and entry_id in existing_entries_id:
-                    geo_entry_objs.append(
-                        AnalyticalStatementGeoEntry(
-                            task=geo_task,
-                            entry_id=entry_id,
-                            data=data,
+                    for geo_entries in data:
+                        geo_entry_objs.append(
+                            AnalyticalStatementGeoEntry(
+                                task=geo_task,
+                                entry_id=entry_id,
+                                data=geo_entries['entity'],
+                            )
                         )
-                    )
             # Save all in bulk
             AnalyticalStatementGeoEntry.objects.bulk_create(geo_entry_objs, ignore_conflicts=True)
             geo_task.status = AnalyticalStatementGeoTask.Status.SUCCESS
