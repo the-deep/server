@@ -409,6 +409,7 @@ input AnalysisReportContainerContentConfigurationInputType {
   heading: AnalysisReportHeadingConfigurationInputType
   image: AnalysisReportImageConfigurationInputType
   url: AnalysisReportUrlConfigurationInputType
+  kpi: AnalysisReportKpiConfigurationInputType
 }
 
 type AnalysisReportContainerContentConfigurationType {
@@ -416,6 +417,7 @@ type AnalysisReportContainerContentConfigurationType {
   heading: AnalysisReportHeadingConfigurationType
   image: AnalysisReportImageConfigurationType
   url: AnalysisReportUrlConfigurationType
+  kpi: AnalysisReportKpiConfigurationType
 }
 
 enum AnalysisReportContainerContentTypeEnum {
@@ -587,6 +589,46 @@ input AnalysisReportInputUpdateType {
   organizations: [ID!]
   configuration: AnalysisReportConfigurationInputType
   containers: [AnalysisReportContainerInputType!]
+}
+
+input AnalysisReportKpiConfigurationInputType {
+  items: [AnalysisReportKpiItemConfigurationInputType!]!
+  titleContentStyle: AnalysisReportTextContentStyleInputType
+  subtitleContentStyle: AnalysisReportTextContentStyleInputType
+  sourceContentStyle: AnalysisReportTextContentStyleInputType
+  valueContentStyle: AnalysisReportTextContentStyleInputType
+}
+
+type AnalysisReportKpiConfigurationType {
+  items: [AnalysisReportKpiItemConfigurationType!]!
+  titleContentStyle: AnalysisReportTextContentStyleType
+  subtitleContentStyle: AnalysisReportTextContentStyleType
+  sourceContentStyle: AnalysisReportTextContentStyleType
+  valueContentStyle: AnalysisReportTextContentStyleType
+}
+
+input AnalysisReportKpiItemConfigurationInputType {
+  title: String
+  subtitle: String
+  source: String
+  sourceUrl: String
+  color: String
+  date: Date
+  value: Int
+  clientId: String
+  abbreviateValue: Boolean
+}
+
+type AnalysisReportKpiItemConfigurationType {
+  title: String
+  subtitle: String
+  source: String
+  sourceUrl: String
+  color: String
+  date: Date
+  value: Int
+  clientId: String
+  abbreviateValue: Boolean
 }
 
 type AnalysisReportListType {

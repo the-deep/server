@@ -328,6 +328,39 @@ class SnapshotQuery:
                                 }
                             }
                         }
+                        kpi {
+                            items {
+                                abbreviateValue
+                                clientId
+                                color
+                                date
+                                source
+                                sourceUrl
+                                subtitle
+                                title
+                                value
+                            }
+                            sourceContentStyle {
+                                content {
+                                    ...TextStyle
+                                }
+                            }
+                            subtitleContentStyle {
+                                content {
+                                    ...TextStyle
+                                }
+                            }
+                            titleContentStyle {
+                                content {
+                                    ...TextStyle
+                                }
+                            }
+                            valueContentStyle {
+                                content {
+                                    ...TextStyle
+                                }
+                            }
+                        }
                         url {
                             url
                         }

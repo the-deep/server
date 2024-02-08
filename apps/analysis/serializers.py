@@ -678,6 +678,26 @@ class AnalysisReportUrlConfigurationSerializer(serializers.Serializer):
     url = serializers.CharField(required=False, allow_null=True)
 
 
+class AnalysisReportKpiItemConfigurationSerializer(serializers.Serializer):
+    title = serializers.CharField(required=False, allow_null=True)
+    subtitle = serializers.CharField(required=False, allow_null=True)
+    source = serializers.CharField(required=False, allow_null=True)
+    source_url = serializers.CharField(required=False, allow_null=True)
+    color = serializers.CharField(required=False, allow_null=True)
+    date = serializers.DateField(required=False, allow_null=True)
+    value = serializers.IntegerField(required=False, allow_null=True)
+    client_id = serializers.CharField(required=False, allow_null=True)
+    abbreviate_value = serializers.BooleanField(required=False, allow_null=True)
+
+
+class AnalysisReportKpiConfigurationSerializer(serializers.Serializer):
+    items = AnalysisReportKpiItemConfigurationSerializer(many=True)
+    title_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
+    subtitle_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
+    source_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
+    value_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
+
+
 class AnalysisReportImageConfigurationSerializer(serializers.Serializer):
     caption = serializers.CharField(required=False, allow_null=True)
     altText = serializers.CharField(required=False, allow_null=True)
@@ -709,6 +729,7 @@ class AnalysisReportContainerContentConfigurationSerializer(serializers.Serializ
     heading = AnalysisReportHeadingConfigurationSerializer(required=False, allow_null=True)
     image = AnalysisReportImageConfigurationSerializer(required=False, allow_null=True)
     url = AnalysisReportUrlConfigurationSerializer(required=False, allow_null=True)
+    kpi = AnalysisReportKpiConfigurationSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportContainerDataSerializer(TempClientIdMixin, serializers.ModelSerializer):
