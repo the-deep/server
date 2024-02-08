@@ -50,9 +50,10 @@ from analysis.models import (
     AnalyticalStatementGeoEntry,
 )
 from geo.models import GeoArea
+from geo.filter_set import GeoAreaGqlFilterSet
 
 from .models import DeeplTrackBaseModel
-from geo.filter_set import GeoAreaGqlFilterSet
+
 
 logger = logging.getLogger(__name__)
 
@@ -1009,7 +1010,9 @@ class AnalyticalStatementGeoHandler(NewNlpServerBaseHandler):
         if geo_data is not None:
             geo_entry_objs = []
             # Clear out existing
-            AnalyticalStatementGeoEntry.objects.filter().delete()
+            AnalyticalStatementGeoEntry.objects.filter(
+                task=geo_task
+            ).delete()
             existing_entries_id = set(
                 Entry.objects.filter(
                     project=geo_task.project,
@@ -1021,16 +1024,15 @@ class AnalyticalStatementGeoHandler(NewNlpServerBaseHandler):
             )
             for entry_geo_data in geo_data:
                 entry_id = int(entry_geo_data['entry_id'])
-                data = entry_geo_data['locations']
+                data = entry_geo_data.get('locations')
                 if data and entry_id in existing_entries_id:
-                    for geo_entries in data:
-                        geo_entry_objs.append(
-                            AnalyticalStatementGeoEntry(
-                                task=geo_task,
-                                entry_id=entry_id,
-                                data=geo_entries['entity'],
-                            )
+                    geo_entry_objs.append(
+                        AnalyticalStatementGeoEntry(
+                            task=geo_task,
+                            entry_id=entry_id,
+                            data=data,
                         )
+                    )
             # Save all in bulk
             AnalyticalStatementGeoEntry.objects.bulk_create(geo_entry_objs, ignore_conflicts=True)
             geo_task.status = AnalyticalStatementGeoTask.Status.SUCCESS

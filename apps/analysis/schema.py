@@ -511,19 +511,14 @@ class AnalyticalStatementEntryGeoType(DjangoObjectType):
     entry_id = graphene.ID(required=True)
     data = graphene.List(graphene.NonNull(
         type('AnalyticalStatementEntryGeoDataType', (graphene.ObjectType,), {
-            'ent': graphene.String(),
-            'offset_start': graphene.Int(),
-            'offset_end': graphene.Int(),
-            'geoids': graphene.List(graphene.NonNull(
-                type('AnalyticalStatementEntryGeoIDsDataType', (graphene.ObjectType,), {
-                    'match': graphene.String(),
-                    'geonameid': graphene.Int(),
+            'entity': graphene.String(),
+            'meta': graphene.NonNull(
+                type('AnalyticalStatementEntryGeoMetaDataType', (graphene.ObjectType,), {
                     'latitude': graphene.Float(),
                     'longitude': graphene.Float(),
-                    'featurecode': graphene.String(),
-                    'countrycode': graphene.String(),
-                })
-            ))
+                    'offset_start': graphene.Int(),
+                    'offset_end': graphene.Int(),
+                }))
         })
     ))
 
