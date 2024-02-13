@@ -1,7 +1,9 @@
 import logging
+import json
 from typing import Callable
 from django.conf import settings
 from django.shortcuts import get_object_or_404
+from django.core.serializers.json import DjangoJSONEncoder
 
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
@@ -687,6 +689,10 @@ class AnalysisReportKpiItemConfigurationSerializer(serializers.Serializer):
     value = serializers.IntegerField(required=False, allow_null=True)
     client_id = serializers.CharField(required=False, allow_null=True)
     abbreviate_value = serializers.BooleanField(required=False, allow_null=True)
+
+    def validate_date(self, date):
+        if date:
+            return date.isoformat()
 
 
 class AnalysisReportKpiConfigurationSerializer(serializers.Serializer):
