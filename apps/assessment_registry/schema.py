@@ -42,6 +42,7 @@ from .enums import (
     AssessmentRegistryFocusTypeEnum,
     AssessmentRegistrySectorTypeEnum,
     AssessmentRegistryProtectionInfoTypeEnum,
+    AssessmentRegistryStatusTypeEnum,
     AssessmentRegistryAffectedGroupTypeEnum,
     AssessmentRegistryDataCollectionTechniqueTypeEnum,
     AssessmentRegistrySamplingApproachTypeEnum,
@@ -414,6 +415,8 @@ class AssessmentRegistryType(
     frequency_display = EnumDescription(source='get_frequency_display', required=True)
     confidentiality = graphene.Field(AssessmentRegistryConfidentialityTypeEnum, required=True)
     confidentiality_display = EnumDescription(source='get_confidentiality_display', required=True)
+    status = graphene.Field(AssessmentRegistryStatusTypeEnum, required=True)
+    status_display = EnumDescription(source='get_status_display', required=True)
     language = graphene.List(graphene.NonNull(AssessmentRegistryLanguageTypeEnum), required=True)
     focuses = graphene.List(graphene.NonNull(AssessmentRegistryFocusTypeEnum), required=True)
     sectors = graphene.List(graphene.NonNull(AssessmentRegistrySectorTypeEnum), required=True)

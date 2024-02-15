@@ -1,6 +1,6 @@
-from django.core.management.base import BaseCommand
-
 from django.db import transaction
+from django.core.management.base import BaseCommand
+from django.db.models import Subquery, OuterRef
 
 from ary.models import (
     Assessment,
@@ -241,6 +241,15 @@ def migrate_cna_data(old_ary, new_assessment_registry):
                         )
 
 
+def update_new_ary_created_update_date():
+    AssessmentRegistry.objects.update(
+        created_at=Subquery(Assessment.objects.filter(lead=OuterRef('lead')).values('created_at')),
+        created_by=Subquery(Assessment.objects.filter(lead=OuterRef('lead')).values('created_by')),
+        modified_at=Subquery(Assessment.objects.filter(lead=OuterRef('lead')).values('modified_at')),
+        modified_by=Subquery(Assessment.objects.filter(lead=OuterRef('lead')).values('modified_by'))
+    )
+
+
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         migrate_cna_questions()
@@ -252,6 +261,7 @@ class Command(BaseCommand):
                 failed_ids.append(ary.id)
         if not failed_ids == []:
             self.stdout.write(f'Failed to migrate data IDs: {failed_ids}')
+        update_new_ary_created_update_date()
 
     @transaction.atomic
     def map_old_to_new_data(self, assessment_id):

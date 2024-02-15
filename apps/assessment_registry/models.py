@@ -131,6 +131,11 @@ class AssessmentRegistry(UserResource):
         SECURITY_AND_SITUATIONAL_AWARENESS = 7, 'Security & Situational Awareness'
         SECTORAL_SYSTEM_OTHER = 8, 'Sectoral Systems/Other'
 
+    class StatusType(models.IntegerChoices):
+        PLANNED = 1, 'Planned'
+        ONGOING = 2, 'Ongoing'
+        FINALIZED = 3, 'Finalized'
+
     class AffectedGroupType(models.IntegerChoices):
         ALL = 1, 'All'
         ALL_AFFECTED = 2, 'All/Affected'
@@ -154,12 +159,6 @@ class AssessmentRegistry(UserResource):
     lead = models.OneToOneField(
         Lead, on_delete=models.CASCADE,
     )
-
-    project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
-    lead = models.OneToOneField(
-        Lead, default=None, blank=True, null=True, on_delete=models.CASCADE,
-    )
-
     # Metadata Group
     # -- Background Fields
     bg_countries = models.ManyToManyField(Region)
@@ -171,6 +170,7 @@ class AssessmentRegistry(UserResource):
     coordinated_joint = models.IntegerField(choices=CoordinationType.choices)
 
     # -- Details Field
+    status = models.IntegerField(choices=StatusType.choices)
     details_type = models.IntegerField(choices=Type.choices)
     family = models.IntegerField(choices=FamilyType.choices)
     frequency = models.IntegerField(choices=FrequencyType.choices)
@@ -333,7 +333,7 @@ class AdditionalDocument(UserResource):
 
 class ScoreRating(UserResource):
     class AnalyticalStatement(models.IntegerChoices):
-        FIT_FOR_PURPOSE = 1, 'Fit for purpose'
+        FIT_FOR_PURPOSE = 1, 'Fit for Purpose'
         TRUSTWORTHINESS = 2, 'Trustworthiness'
         ANALYTICAL_RIGOR = 3, 'Analytical Rigor'
         ANALYTICAL_WRITING = 4, 'Analytical Writing'
@@ -603,101 +603,6 @@ class Question(UserResource):
         ],
     }
 
-    QUESTION_SECTOR_SUB_SECTOR_MAP = {
-        QuestionSector.RELEVANCE: [
-            QuestionSubSector.RELEVANCE,
-        ],
-        QuestionSector.COMPREHENSIVENESS: [
-            QuestionSubSector.GEOGRAPHIC_COMPREHENSIVENESS,
-            QuestionSubSector.SECTORAL_COMPREHENSIVENESS,
-            QuestionSubSector.AFFECTED_AND_VULNERABLE_GROUPS_COMPREHENSIVENESS,
-        ],
-        QuestionSector.ETHICS: [
-            QuestionSubSector.SAFETY_AND_PROTECTION,
-            QuestionSubSector.HUMANITARIAN_PRINCIPLES,
-            QuestionSubSector.CONTRIBUTION,
-        ],
-        QuestionSector.METHODOLOGICAL_RIGOR: [
-            QuestionSubSector.TRANSPARENCY,
-            QuestionSubSector.MITIGATING_BIAS,
-            QuestionSubSector.PARTICIPATION,
-            QuestionSubSector.CONTEXT_SPECIFICITY,
-        ],
-        QuestionSector.ANALYTICAL_VALUE: [
-            QuestionSubSector.ANALYTICAL_STANDARDS,
-            QuestionSubSector.DESCRIPTIONS,
-            QuestionSubSector.EXPLANATION,
-            QuestionSubSector.INTERPRETATION,
-            QuestionSubSector.ANTICIPATION,
-            QuestionSubSector.TIMELINESS,
-        ],
-        QuestionSector.EFFECTIVE_COMMUNICATION: [
-            QuestionSubSector.USER_FRIENDLY_PRESENTATION,
-            QuestionSubSector.ACTIVE_DISSEMINATION,
-        ],
-        QuestionSector.USE: [
-            QuestionSubSector.USE_FOR_COLLECTIVE_PLANNING,
-            QuestionSubSector.BUY_IN_AND_USE_BY_HUMANITARIAN_CLUSTERS_SECTORS,
-            QuestionSubSector.BUY_IN_AND_USE_BY_UN_AGENCIES,
-            QuestionSubSector.BUY_IN_AND_USE_BY_INTERNATIONAL_NGO,
-            QuestionSubSector.BUY_IN_AND_USE_BY_LOCAL_NGO,
-            QuestionSubSector.BUY_IN_AND_USE_BY_MEMBER_OF_RED_CROSS_RED_CRESENT_MOVEMENT,
-            QuestionSubSector.BUY_IN_AND_USE_BY_DONORS,
-            QuestionSubSector.BUY_IN_AND_USE_BY_NATIONAL_AND_LOCAL_GOVERNMENT_AGENCIES,
-            QuestionSubSector.BUY_IN_AND_USE_BY_DEVELOPMENT_AND_STABILIZATION_ACTORS,
-        ],
-        QuestionSector.PEOPLE_CENTERED_AND_INCLUSIVE: [
-            QuestionSubSector.AFFECTED_AND_VULNERABLE_GROUPS_COMPREHENSIVENESS,
-            QuestionSubSector.SAFETY_AND_PROTECTION,
-            QuestionSubSector.PARTICIPATION,
-            QuestionSubSector.CONTEXT_SPECIFICITY,
-        ],
-        QuestionSector.ACCOUNTABILITY_TO_AFFECTED_POPULATIONS: [
-            QuestionSubSector.PARTICIPATION,
-            QuestionSubSector.CONTEXT_SPECIFICITY,
-            QuestionSubSector.DESCRIPTIONS,
-            QuestionSubSector.ACTIVE_DISSEMINATION,
-        ],
-        QuestionSector.DO_NOT_HARM: [
-            QuestionSubSector.SAFETY_AND_PROTECTION,
-        ],
-        QuestionSector.DESIGNED_WITH_PURPOSE: [
-            QuestionSubSector.RELEVANCE,
-        ],
-        QuestionSector.COMPETENCY_AND_CAPACITY: [
-            QuestionSubSector.SAFETY_AND_PROTECTION,
-            QuestionSubSector.CONTEXT_SPECIFICITY,
-        ],
-        QuestionSector.IMPARTIALITY: [
-            QuestionSubSector.HUMANITARIAN_PRINCIPLES,
-        ],
-        QuestionSector.COORDINATION_AND_DATA_MINIMIZATION: [
-            QuestionSubSector.RELEVANCE,
-            QuestionSubSector.CONTRIBUTION,
-        ],
-        QuestionSector.JOINT_ANALYSIS: [
-            QuestionSubSector.MITIGATING_BIAS,
-            QuestionSubSector.ANALYTICAL_STANDARDS,
-        ],
-        QuestionSector.ACKNOWLEDGE_DISSENTING_VOICES_IN_JOINT_NEEDS_ANALYSIS: [
-            QuestionSubSector.ANALYTICAL_STANDARDS,
-        ],
-        QuestionSector.IFORMED_CONSENT_CONFIDENTIALITY_AND_DATA_SECURITY: [
-            QuestionSubSector.SAFETY_AND_PROTECTION,
-        ],
-        QuestionSector.SHARING_RESULTS: [
-            QuestionSubSector.ACTIVE_DISSEMINATION,
-        ],
-        QuestionSector.TRANSPARENCY_BETWEEN_ACTORS: [
-            QuestionSubSector.TRANSPARENCY,
-            QuestionSubSector.ANALYTICAL_STANDARDS,
-        ],
-        QuestionSector.MINIMUM_TECHNICAL_STANDARDS: [
-            QuestionSubSector.MITIGATING_BIAS,
-            QuestionSubSector.ANALYTICAL_STANDARDS,
-        ],
-    }
-
     sector = models.IntegerField(choices=QuestionSector.choices)
     sub_sector = models.IntegerField(choices=QuestionSubSector.choices)
     question = models.CharField(max_length=500)
@@ -811,43 +716,42 @@ class SummaryIssue(models.Model):
     class SubPillar(models.IntegerChoices):
         POLITICS = 1, 'Politics'
         DEMOGRAPHY = 2, 'Demography'
-        SOCIO_CULTURAL = 3, 'Socio-Cultural'
+        SOCIO_CULTURAL = 3, 'Socio-cultural'
         ENVIRONMENT = 4, 'Environment'
         SECURITY_AND_STABILITY = 5, 'Security & Stability'
         ECONOMICS = 6, 'Economics'
         CHARACTERISTICS = 7, 'Characteristics'
         DRIVERS_AND_AGGRAVATING_FACTORS = 8, 'Drivers and Aggravating Factors'
-        MITIGATING_FACTORS = 9, 'Mitigating Factors'
+        MITIGATING_FACTORS = 9, 'Mitigating factors'
         HAZARDS_AND_THREATS = 10, 'Hazards & Threats'
         DISPLACEMENT_CHARACTERISTICS = 11, 'Characteristics'
-        PUSH_FACTORS = 12, 'Push Factors'
-        PULL_FACTORS = 13, 'Pull Factors'
+        PUSH_FACTORS = 12, 'Push factors'
+        PULL_FACTORS = 13, 'Pull factors'
         INTENTIONS = 14, 'Intentions'
         LOCAL_INTREGATIONS = 15, 'Local Integrations'
         SOURCE_AND_MEANS = 16, 'Source & Means'
-        CHALLANGES_AND_BARRIERS = 17, 'Challanges & Barriers'
-        KNOWLEDGE_AND_INFO_GAPS_HUMAN = 18, 'Knowledge & Info Gaps (Humanitarian)'
-        KNOWLEDGE_AND_INFO_GAPS_POP = 19, 'Knowledge & Info Gaps (Population)'
-        POPULATION_TO_RELIEF = 20, 'Population To Relief'
-        RELIEF_TO_POPULATION = 21, 'Relief To Population'
-        PHYSICAL_AND_SECURITY = 22, 'Physical & Security'
+        CHALLANGES_AND_BARRIERS = 17, 'Challenges & Barriers'
+        KNOWLEDGE_AND_INFO_GAPS_HUMAN = 18, 'Knowledge & Info Gaps (by humanitarians)'
+        KNOWLEDGE_AND_INFO_GAPS_POP = 19, 'Knowledge & Info Gaps (by population)'
+        POPULATION_TO_RELIEF = 20, 'Population to Relief'
+        RELIEF_TO_POPULATION = 21, 'Relief to Population'
 
     class SubDimension(models.IntegerChoices):
         DRIVERS = 1, 'Drivers'
-        IMPACT_ON_PEOPLE = 2, 'Impact on People'
-        IMPACT_ON_SYSTEM = 3, 'Impact On System, Network And Services'
-        LIVING_STANDARDS = 4, 'Living Standards'
-        COPING_MECHANISMS = 5, 'Coping Mechanisms'
-        PHYSICAL_AND_MENTAL_WELL_BEING = 6, 'Physical And Mental Well Being'
-        NEEDS_POP = 7, 'Needs (Population)'
-        NEEDS_HUMAN = 8, 'Needs (Humanitarian)'
-        INTERVENTIONS_POP = 9, 'Interventions (Population)'
-        INTERVENTIONS_HUMAN = 10, 'Interventions (Humanitarian)'
+        IMPACT_ON_PEOPLE = 2, 'Impact on people'
+        IMPACT_ON_SYSTEM = 3, 'Impact on System, Network and services'
+        LIVING_STANDARDS = 4, 'Living standards'
+        COPING_MECHANISMS = 5, 'Coping mechanisms'
+        PHYSICAL_AND_MENTAL_WELL_BEING = 6, 'Physical and Mental well being'
+        NEEDS_POP = 7, 'Needs (by population)'
+        NEEDS_HUMAN = 8, 'Needs (by humanitarians)'
+        INTERVENTIONS_POP = 9, 'Interventions (by population)'
+        INTERVENTIONS_HUMAN = 10, 'Interventions (by humanitarians)'
         DEMOGRAPHIC_GROUPS = 11, 'Demographic Groups'
-        GROUPS_WITH_SPECIFIC_NEEDS = 12, 'Groups With Specific Needs'
-        GEOGRAPHICAL_AREAS = 13, 'Geographical Areas'
-        PEOPLE_AT_RISKS = 14, 'People At Risks'
-        FOCAL_ISSUES = 15, 'Focal Issues'
+        GROUPS_WITH_SPECIFIC_NEEDS = 12, 'Groups with Specific Needs'
+        GEOGRAPHICAL_AREAS = 13, 'Geographical areas'
+        PEOPLE_AT_RISKS = 14, 'People at risk'
+        FOCAL_ISSUES = 15, 'Focal issues'
 
     PILLAR_SUB_PILLAR_MAP = {
         Summary.Pillar.CONTEXT: [
@@ -880,7 +784,6 @@ class SummaryIssue(models.Model):
         Summary.Pillar.HUMANITARIAN_ACCESS: [
             SubPillar.POPULATION_TO_RELIEF,
             SubPillar.RELIEF_TO_POPULATION,
-            SubPillar.PHYSICAL_AND_SECURITY,
         ]
     }
 

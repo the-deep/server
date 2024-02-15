@@ -201,6 +201,7 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             "bg_crisis_start_date",
             "cost_estimates_usd",
             "no_of_pages",
+            "status",
             "data_collection_start_date",
             "data_collection_end_date",
             "publication_date",
