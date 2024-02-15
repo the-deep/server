@@ -23,7 +23,7 @@ from assessment_registry.models import (
 
 class AssessmentDashboardQuerySchema(GraphQLTestCase):
     CREATE_ASSESSMENT_REGISTRY_QUERY = """
-            mutation MyMutation ($projectId: ID!, $input: AssessmentRegistryCreateInputType!) {
+        mutation MyMutation ($projectId: ID!, $input: AssessmentRegistryCreateInputType!) {
             project(id:$projectId) {
                  createAssessmentRegistry(data: $input) {
                  ok
@@ -41,6 +41,7 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
                     dataCollectionEndDate
                     dataCollectionStartDate
                     dataCollectionTechniques
+                    status
                     detailsType
                     detailsTypeDisplay
                     externalSupport
@@ -157,6 +158,7 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
             confidentiality=self.genum(AssessmentRegistry.ConfidentialityType.UNPROTECTED),
             coordinatedJoint=self.genum(AssessmentRegistry.CoordinationType.COORDINATED),
             costEstimatesUsd=10,
+            status=self.genum(AssessmentRegistry.StatusType.PLANNED),
             detailsType=self.genum(AssessmentRegistry.Type.INITIAL),
             externalSupport=self.genum(AssessmentRegistry.ExternalSupportType.EXTERNAL_SUPPORT_RECIEVED),
             family=self.genum(AssessmentRegistry.FamilyType.DISPLACEMENT_TRAKING_MATRIX),
@@ -266,64 +268,66 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         _query_check(minput, okay=False)
 
     def test_assessment_registry_dashboard_stats(self):
-        query = """query MyQuery($filter: AssessmentDashboardFilterInputType! , $id: ID!) {
-        project(id:  $id) {
-        assessmentDashboardStatistics(filter: $filter) {
-        totalAssessment
-        totalCollectionTechnique
-        totalMultisectorAssessment
-        totalSinglesectorAssessment
-        totalStakeholder
-        collectionTechniqueCount {
-            count
-            dataCollectionTechnique
-            dataCollectionTechniqueDisplay
-      }
-      assessmentByOverTime {
-        count
-        date
-      }
-      assessmentGeographicAreas {
-        adminLevelId
-        assessmentIds
-        code
-        count
-        geoArea
-      }
-       assessmentByOverTime {
-        count
-        date
-      }
-      assessmentPerFrameworkPillar {
-        count
-        date
-        focus
-      }
-       assessmentByDataCollectionTechniqueAndGeolocation {
-        count
-        dataCollectionTechnique
-        geoArea
-      }
-      assessmentByProximityAndGeolocation {
-        count
-        geoArea
-        proximity
-      },
-      medianQualityScoreByAnalyticalDensityDate {
-        date
-        finalScore
-        sector
-        sectorDisplay
-      },
-      medianQualityScoreByGeoArea {
-        adminLevelId
-        finalScore
-        geoArea
-        region
-      }
-    }
-    }
-    }"""
+        query = """
+            query MyQuery($filter: AssessmentDashboardFilterInputType!, $id: ID!) {
+                project(id: $id) {
+                    assessmentDashboardStatistics(filter: $filter) {
+                        totalAssessment
+                        totalCollectionTechnique
+                        totalMultisectorAssessment
+                        totalSinglesectorAssessment
+                        totalStakeholder
+                        collectionTechniqueCount {
+                            count
+                            dataCollectionTechnique
+                            dataCollectionTechniqueDisplay
+                        }
+                        assessmentByOverTime {
+                            count
+                            date
+                        }
+                        assessmentGeographicAreas {
+                            adminLevelId
+                            assessmentIds
+                            code
+                            count
+                            geoArea
+                        }
+                        assessmentByOverTime {
+                            count
+                            date
+                        }
+                        assessmentPerFrameworkPillar {
+                            count
+                            date
+                            focus
+                        }
+                        assessmentByDataCollectionTechniqueAndGeolocation {
+                            count
+                            dataCollectionTechnique
+                            geoArea
+                        }
+                        assessmentByProximityAndGeolocation {
+                            count
+                            geoArea
+                            proximity
+                        }
+                        medianQualityScoreByAnalyticalDensityDate {
+                            date
+                            finalScore
+                            sector
+                            sectorDisplay
+                        }
+                        medianQualityScoreByGeoArea {
+                            adminLevelId
+                            finalScore
+                            geoArea
+                            region
+                        }
+                    }
+                }
+            }
+        """
         self.create_assessment_registry()
 
         def _query_check(filter=None, **kwargs):

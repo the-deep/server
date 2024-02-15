@@ -159,6 +159,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
             confidentiality=self.genum(AssessmentRegistry.ConfidentialityType.UNPROTECTED),
             coordinatedJoint=self.genum(AssessmentRegistry.CoordinationType.COORDINATED),
             costEstimatesUsd=10,
+            status=self.genum(AssessmentRegistry.StatusType.PLANNED),
             detailsType=self.genum(AssessmentRegistry.Type.INITIAL),
             externalSupport=self.genum(AssessmentRegistry.ExternalSupportType.EXTERNAL_SUPPORT_RECIEVED),
             family=self.genum(AssessmentRegistry.FamilyType.DISPLACEMENT_TRAKING_MATRIX),

@@ -1042,6 +1042,7 @@ type AppEnumCollection {
   AssessmentRegistryCoordinatedJoint: [AppEnumCollectionAssessmentRegistryCoordinatedJoint!]
   AssessmentRegistryDetailsType: [AppEnumCollectionAssessmentRegistryDetailsType!]
   AssessmentRegistryFamily: [AppEnumCollectionAssessmentRegistryFamily!]
+  AssessmentRegistryStatus: [AppEnumCollectionAssessmentRegistryStatus!]
   AssessmentRegistryFrequency: [AppEnumCollectionAssessmentRegistryFrequency!]
   AssessmentRegistryConfidentiality: [AppEnumCollectionAssessmentRegistryConfidentiality!]
   AssessmentRegistryLanguage: [AppEnumCollectionAssessmentRegistryLanguage!]
@@ -1213,6 +1214,12 @@ type AppEnumCollectionAssessmentRegistryProtectionInfoMgmts {
 
 type AppEnumCollectionAssessmentRegistrySectors {
   enum: AssessmentRegistrySectorTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryStatus {
+  enum: AssessmentRegistryStatusTypeEnum!
   label: String!
   description: String
 }
@@ -1929,6 +1936,7 @@ input AssessmentRegistryCreateInputType {
   bgCrisisStartDate: Date
   costEstimatesUsd: Int
   noOfPages: Int
+  status: AssessmentRegistryStatusTypeEnum!
   dataCollectionStartDate: Date
   dataCollectionEndDate: Date
   publicationDate: Date
@@ -2203,6 +2211,12 @@ enum AssessmentRegistrySectorTypeEnum {
   INTER_CROSS_SECTOR
 }
 
+enum AssessmentRegistryStatusTypeEnum {
+  PLANNED
+  ONGOING
+  FINALIZED
+}
+
 enum AssessmentRegistrySummaryFocusDimensionTypeEnum {
   IMPACT
   HUMANITARIAN_CONDITIONS
@@ -2290,7 +2304,6 @@ enum AssessmentRegistrySummarySubPillarTypeEnum {
   KNOWLEDGE_AND_INFO_GAPS_POP
   POPULATION_TO_RELIEF
   RELIEF_TO_POPULATION
-  PHYSICAL_AND_SECURITY
 }
 
 type AssessmentRegistryType {
@@ -2336,6 +2349,8 @@ type AssessmentRegistryType {
   frequencyDisplay: EnumDescription!
   confidentiality: AssessmentRegistryConfidentialityTypeEnum!
   confidentialityDisplay: EnumDescription!
+  status: AssessmentRegistryStatusTypeEnum!
+  statusDisplay: EnumDescription!
   language: [AssessmentRegistryLanguageTypeEnum!]!
   focuses: [AssessmentRegistryFocusTypeEnum!]!
   sectors: [AssessmentRegistrySectorTypeEnum!]!

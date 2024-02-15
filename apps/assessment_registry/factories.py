@@ -165,6 +165,7 @@ class AssessmentRegistryFactory(DjangoModelFactory):
     cost_estimates_usd = fuzzy.FuzzyInteger(low=0)
 
     # -- Details Field
+    status = fuzzy.FuzzyChoice(_choices(AssessmentRegistry.StatusType))
     details_type = fuzzy.FuzzyChoice(_choices(AssessmentRegistry.Type))
     family = fuzzy.FuzzyChoice(_choices(AssessmentRegistry.FamilyType))
     frequency = fuzzy.FuzzyChoice(_choices(AssessmentRegistry.FrequencyType))
