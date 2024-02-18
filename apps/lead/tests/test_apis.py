@@ -1862,20 +1862,77 @@ class AutoEntryExtractionTestCase(TestCase):
         self.lead = LeadFactory.create()
         self.lead_preview = LeadPreviewFactory.create(lead=self.lead, text_extraction_id=str(uuid.uuid1()))
 
-    def test_entry_extraction_callback(self):
+    @mock.patch('deepl_integration.handlers.RequestHelper.json')
+    def test_entry_extraction_callback_url(self, get_json_mock):
         url = '/api/v1/callback/auto-assisted-tagging-draft-entry-prediction/'
         self.authenticate()
-        data = {
+        SAMPLE_AUTO_ASSISTED_TAGGING = {
+            "metadata": {"total_pages": 10, "total_words_count": 5876},
+            "blocks": [
+                {
+                    "type": "text",
+                    "page": 1,
+                    "text": "Entry-Text-1",
+                    "textOrder": 1,
+                    "relevant": True,
+                    "prediction_status": True,
+                    "geolocations": [
+                        {
+                            "entity": "Somalia",
+                            "meta": {"offset_start": 88, "offset_end": 94, "latitude": -10, "longitude": -55},
+                        }
+                    ],
+                    "classification": {"1": {"101": {"prediction": 2.70270529e-05, "threshold": 0.14, "is_selected": True}}},
+                },
+                {
+                    "type": "text",
+                    "page": 2,
+                    "text": "Entry-Text-2",
+                    "textOrder": 2,
+                    "relevant": True,
+                    "prediction_status": True,
+                    "geolocations": [
+                        {
+                            "entity": "Nigeria",
+                            "meta": {"offset_start": 183, "offset_end": 191, "latitude": None, "longitude": None},
+                        }
+                    ],
+                    "classification": {
+                        "1": {"101": {"prediction": 2.0000270270529, "threshold": 0.14, "is_selected": True}}
+                    },
+                },
+                {
+                    "type": "text",
+                    "page": 3,
+                    "text": "This is a non-relevant text",
+                    "textOrder": 3,
+                    "relevant": False,
+                    "prediction_status": False,
+                    "geolocations": [],
+                    "classification": {},
+                },
+            ],
+            "classification_model_info": {"name": "all_tags_model", "version": "1.0.0"},
             "client_id": AutoAssistedTaggingDraftEntryHandler.get_client_id(self.lead),
-            'entry_extraction_classification_path': 'https://server-deepl.dev.datafriendlyspace.org/media/mock_responses/entry_extraction/entry-extraction-client-6ppp.json',  # noqa: E501
+            "entry_extraction_id": "73f9ca13-deb2-4f39-8e86-a856490bfc0d",
+            "text_extraction_id": str(self.lead_preview.text_extraction_id),
+        }
+        get_json_mock.return_value = SAMPLE_AUTO_ASSISTED_TAGGING
+
+        # Invalid clientId
+        data = {
+            'client_id': 'invalid-client-id',
+            'entry_extraction_classification_path': 'https://random-domain.com/random-url.json',
             'text_extraction_id': str(self.lead_preview.text_extraction_id),
             'status': 1
         }
         response = self.client.post(url, data)
+        self.assert_400(response)
+
+        # valid ClientID
+        data['client_id'] = AutoAssistedTaggingDraftEntryHandler.get_client_id(self.lead)
+        response = self.client.post(url, data)
         self.assert_200(response)
         self.lead.refresh_from_db()
-        self.assertEqual(self.lead.auto_entry_extraction_status, Lead.AutoExtractionStatus.SUCCESS)
         self.assertEqual(str(LeadPreview.objects.get(lead=self.lead).text_extraction_id), data['text_extraction_id'])
-
-    def test_auto_extraction_mutation(self):
-        pass
+        self.assertEqual(self.lead.auto_entry_extraction_status, Lead.AutoExtractionStatus.SUCCESS)

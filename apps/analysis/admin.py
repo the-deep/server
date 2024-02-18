@@ -6,8 +6,6 @@ from .models import (
     AnalysisPillar,
     AnalyticalStatement,
     AnalyticalStatementEntry,
-    AnalyticalStatementGeoEntry,
-    AnalyticalStatementGeoTask,
     DiscardedEntry,
 )
 
@@ -33,14 +31,4 @@ class AnalyticalStatementAdmin(admin.ModelAdmin):
 
 @admin.register(DiscardedEntry)
 class DiscardedEntryAdmin(admin.ModelAdmin):
-    pass
-
-
-@admin.register(AnalyticalStatementGeoEntry)
-class AnalyticalStatementGeoEntryAdmin(admin.ModelAdmin):
-    pass
-
-
-@admin.register(AnalyticalStatementGeoTask)
-class AnalyticalStatementGeoTaskAdmin(admin.ModelAdmin):
     pass
