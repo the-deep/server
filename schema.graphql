@@ -862,6 +862,7 @@ enum AnalysisReportVariableTypeEnum {
   TEXT
   NUMBER
   DATE
+  BOOLEAN
 }
 
 type AnalysisTopicModelClusterType {
@@ -4510,7 +4511,7 @@ type ProjectDetailType {
   analysisReport(id: ID!): AnalysisReportType
   analysisReports(search: String, analyses: [ID!], isPublic: Boolean, organizations: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportListType
   analysisReportUpload(id: ID!): AnalysisReportUploadType
-  analysisReportUploads(report: [ID!], types: [AnalysisReportUploadTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportUploadListType
+  analysisReportUploads(search: String, report: [ID!], types: [AnalysisReportUploadTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportUploadListType
   analysisReportSnapshot(id: ID!): AnalysisReportSnapshotType
   analysisReportSnapshots(report: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportSnapshotListType
   assessment(id: ID!): AssessmentType
