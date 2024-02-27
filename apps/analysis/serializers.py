@@ -552,6 +552,7 @@ class ReportEnum:
         TEXT = 'text'
         NUMBER = 'number'
         DATE = 'date'
+        BOOLEAN = 'boolean'
 
     class TextStyleAlign(models.TextChoices):
         START = 'start'

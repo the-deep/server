@@ -130,12 +130,20 @@ class AnalysisReportGQFilterSet(django_filters.FilterSet):
 
 
 class AnalysisReportUploadGQFilterSet(django_filters.FilterSet):
+    search = django_filters.CharFilter(method='search_filter')
     report = IDListFilter(field_name='report')
     types = MultipleInputFilter(AnalysisReportUploadTypeEnum, field_name='type')
 
     class Meta:
         model = AnalysisReportUpload
         fields = []
+
+    def search_filter(self, qs, _, value):
+        if value:
+            qs = qs.filter(
+                models.Q(file__title__icontains=value)
+            ).distinct()
+        return qs
 
 
 class AnalysisReportSnapshotGQFilterSet(django_filters.FilterSet):
