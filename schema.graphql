@@ -528,6 +528,7 @@ input AnalysisReportContainerContentConfigurationInputType {
   url: AnalysisReportUrlConfigurationInputType
   kpi: AnalysisReportKpiConfigurationInputType
   barChart: AnalysisReportBarChartConfigurationInputType
+  timelineChart: AnalysisReportTimelineChartConfigurationInputType
 }
 
 type AnalysisReportContainerContentConfigurationType {
@@ -537,6 +538,7 @@ type AnalysisReportContainerContentConfigurationType {
   url: AnalysisReportUrlConfigurationType
   kpi: AnalysisReportKpiConfigurationType
   barChart: AnalysisReportBarChartConfigurationType
+  timelineChart: AnalysisReportTimelineChartConfigurationType
 }
 
 enum AnalysisReportContainerContentTypeEnum {
@@ -911,6 +913,26 @@ type AnalysisReportTickStyleType {
   lineOpacity: Int
 }
 
+input AnalysisReportTimelineChartConfigurationInputType {
+  sheet: String
+  date: String!
+  title: String!
+  detail: String
+  category: String
+  source: String
+  sourceUrl: String
+}
+
+type AnalysisReportTimelineChartConfigurationType {
+  sheet: String
+  date: String!
+  title: String!
+  detail: String
+  category: String
+  source: String
+  sourceUrl: String
+}
+
 type AnalysisReportType {
   id: ID!
   isPublic: Boolean!
@@ -1041,6 +1063,7 @@ enum AnalysisReportVariableTypeEnum {
 
 input AnalysisReportVerticalAxisInputType {
   clientId: String
+  label: String
   field: String
   aggregationType: AnalysisReportAggregationTypeEnum
   color: String
@@ -1048,6 +1071,7 @@ input AnalysisReportVerticalAxisInputType {
 
 type AnalysisReportVerticalAxisType {
   clientId: String
+  label: String
   field: String
   aggregationType: AnalysisReportAggregationTypeEnum
   color: String
