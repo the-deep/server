@@ -1,9 +1,7 @@
 import logging
-import json
 from typing import Callable
 from django.conf import settings
 from django.shortcuts import get_object_or_404
-from django.core.serializers.json import DjangoJSONEncoder
 
 from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
@@ -615,7 +613,7 @@ class ReportEnum:
 
 class AnalysisReportVariableSerializer(serializers.Serializer):
     name = serializers.CharField(required=False, allow_null=True)
-    client_id= serializers.CharField(required=False)
+    client_id = serializers.CharField(required=False)
     type = serializers.ChoiceField(choices=ReportEnum.VariableType.choices, required=False, allow_null=True)
     completeness = serializers.IntegerField(required=False, allow_null=True)
 
@@ -776,6 +774,7 @@ class AnalysisReportHorizontalAxisSerializer(serializers.Serializer):
 
 class AnalysisReportVerticalAxisSerializer(serializers.Serializer):
     client_id = serializers.CharField(required=False)
+    label = serializers.CharField(required=False)
     field = serializers.CharField(required=False, allow_null=True)
     aggregation_type = serializers.ChoiceField(choices=ReportEnum.AggregationType.choices, required=False, allow_null=True)
     color = serializers.CharField(required=False, allow_null=True)
@@ -808,6 +807,16 @@ class AnalysisReportBarChartConfigurationSerializer(serializers.Serializer):
     horizontal_tick_visible = serializers.BooleanField(required=False, allow_null=True)
 
     style = AnalysisReportBarChartStyleSerializer(required=False, allow_null=True)
+
+
+class AnalysisReportTimelineChartConfigurationSerializer(serializers.Serializer):
+    sheet = serializers.CharField(required=False, allow_null=True)
+    date = serializers.CharField(required=True)
+    title = serializers.CharField(required=True)
+    detail = serializers.CharField(required=False, allow_null=True)
+    category = serializers.CharField(required=False, allow_null=True)
+    source = serializers.CharField(required=False, allow_null=True)
+    source_url = serializers.CharField(required=False, allow_null=True)
 
 
 class AnalysisReportKpiConfigurationSerializer(serializers.Serializer):
@@ -851,6 +860,7 @@ class AnalysisReportContainerContentConfigurationSerializer(serializers.Serializ
     url = AnalysisReportUrlConfigurationSerializer(required=False, allow_null=True)
     kpi = AnalysisReportKpiConfigurationSerializer(required=False, allow_null=True)
     bar_chart = AnalysisReportBarChartConfigurationSerializer(required=False, allow_null=True)
+    timeline_chart = AnalysisReportTimelineChartConfigurationSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportContainerDataSerializer(TempClientIdMixin, serializers.ModelSerializer):
