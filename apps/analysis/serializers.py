@@ -580,6 +580,39 @@ class ReportEnum:
         H3 = 'h3'
         H4 = 'h4'
 
+    class HorizontalAxisType(models.TextChoices):
+        CATEGORICAL = 'categorical'
+        NUMERIC = 'numeric'
+        DATE = 'date'
+
+    class BarChartType(models.TextChoices):
+        SIDE_BY_SIDE = 'side-by-side'
+        STACKED = 'stacked'
+
+    class BarChartDirection(models.TextChoices):
+        VERTICAL = 'vertical'
+        HORIZONTAL = 'horizontal'
+
+    class LegendPosition(models.TextChoices):
+        TOP = 'top'
+        LEFT = 'left'
+        BOTTOM = 'bottom'
+        RIGHT = 'right'
+
+    class LegendDotShape(models.TextChoices):
+        CIRCLE = 'circle'
+        TRIANGLE = 'triangle'
+        SQUARE = 'square'
+        DIAMOND = 'diamond'
+
+    class AggregationType(models.TextChoices):
+        COUNT = 'count'
+        SUM = 'sum'
+        MEAN = 'mean'
+        MEDIAN = 'median'
+        MIN = 'min'
+        MAX = 'max'
+
 
 class AnalysisReportVariableSerializer(serializers.Serializer):
     name = serializers.CharField(required=False, allow_null=True)
@@ -697,6 +730,87 @@ class AnalysisReportKpiItemConfigurationSerializer(serializers.Serializer):
             return date.isoformat()
 
 
+class AnalysisReportCategoricalLegendStyleSerializer(serializers.Serializer):
+    position = serializers.ChoiceField(choices=ReportEnum.LegendPosition.choices, required=False, allow_null=True)
+    shape = serializers.ChoiceField(choices=ReportEnum.LegendDotShape.choices, required=False, allow_null=True)
+    heading = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    label = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+
+
+class AnalysisReportBarStyleSerializer(serializers.Serializer):
+    border = AnalysisReportBorderStyleSerializer(required=False, allow_null=True)
+
+
+class AnalysisReportGridLineStyleSerializer(serializers.Serializer):
+    line_color = serializers.CharField(required=False, allow_null=True)
+    line_width = serializers.IntegerField(required=False, allow_null=True)
+    line_opacity = serializers.IntegerField(required=False, allow_null=True)
+
+
+class AnalysisReportTickStyleSerializer(serializers.Serializer):
+    line_color = serializers.CharField(required=False, allow_null=True)
+    line_width = serializers.IntegerField(required=False, allow_null=True)
+    line_opacity = serializers.IntegerField(required=False, allow_null=True)
+
+
+class AnalysisReportBarChartStyleSerializer(serializers.Serializer):
+    title = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    sub_title = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    legend = AnalysisReportCategoricalLegendStyleSerializer(required=False, allow_null=True)
+    bar = AnalysisReportBarStyleSerializer(required=False, allow_null=True)
+
+    horizontal_axis_title = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    vertical_axis_title = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    horizontal_axis_tick_label = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    vertical_axis_tick_label = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+
+    vertical_grid_line = AnalysisReportGridLineStyleSerializer(required=False, allow_null=True)
+    horizontal_grid_line = AnalysisReportGridLineStyleSerializer(required=False, allow_null=True)
+    vertical_tick = AnalysisReportTickStyleSerializer(required=False, allow_null=True)
+    horizontal_tick = AnalysisReportTickStyleSerializer(required=False, allow_null=True)
+
+
+class AnalysisReportHorizontalAxisSerializer(serializers.Serializer):
+    field = serializers.CharField(required=False, allow_null=True)
+    type = serializers.ChoiceField(choices=ReportEnum.HorizontalAxisType.choices, required=False, allow_null=True)
+
+
+class AnalysisReportVerticalAxisSerializer(serializers.Serializer):
+    client_id = serializers.CharField(required=False)
+    field = serializers.CharField(required=False, allow_null=True)
+    aggregation_type = serializers.ChoiceField(choices=ReportEnum.AggregationType.choices, required=False, allow_null=True)
+    color = serializers.CharField(required=False, allow_null=True)
+
+
+class AnalysisReportBarChartConfigurationSerializer(serializers.Serializer):
+    sheet = serializers.CharField(required=False, allow_null=True)
+    type = serializers.ChoiceField(choices=ReportEnum.BarChartType.choices, required=True)
+    direction = serializers.ChoiceField(choices=ReportEnum.BarChartDirection.choices, required=True)
+
+    horizontal_axis = AnalysisReportHorizontalAxisSerializer(required=True)
+    vertical_axis = AnalysisReportVerticalAxisSerializer(many=True)
+
+    horizontal_axis_title = serializers.CharField(required=False, allow_null=True)
+    vertical_axis_title = serializers.CharField(required=False, allow_null=True)
+
+    title = serializers.CharField(required=False, allow_null=True)
+    sub_title = serializers.CharField(required=False, allow_null=True)
+
+    legend_heading = serializers.CharField(required=False, allow_null=True)
+
+    horizontal_tick_label_rotation = serializers.IntegerField(required=False, allow_null=True)
+    horizontal_axis_line_visible = serializers.BooleanField(required=False, allow_null=True)
+    vertical_axis_line_visible = serializers.BooleanField(required=False, allow_null=True)
+    vertical_axis_extend_minimum_value = serializers.IntegerField(required=False, allow_null=True)
+    vertical_axis_extend_maximum_value = serializers.IntegerField(required=False, allow_null=True)
+    vertical_grid_line_visible = serializers.BooleanField(required=False, allow_null=True)
+    horizontal_grid_line_visible = serializers.BooleanField(required=False, allow_null=True)
+    vertical_tick_visible = serializers.BooleanField(required=False, allow_null=True)
+    horizontal_tick_visible = serializers.BooleanField(required=False, allow_null=True)
+
+    style = AnalysisReportBarChartStyleSerializer(required=False, allow_null=True)
+
+
 class AnalysisReportKpiConfigurationSerializer(serializers.Serializer):
     items = AnalysisReportKpiItemConfigurationSerializer(many=True)
     title_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
@@ -737,6 +851,7 @@ class AnalysisReportContainerContentConfigurationSerializer(serializers.Serializ
     image = AnalysisReportImageConfigurationSerializer(required=False, allow_null=True)
     url = AnalysisReportUrlConfigurationSerializer(required=False, allow_null=True)
     kpi = AnalysisReportKpiConfigurationSerializer(required=False, allow_null=True)
+    bar_chart = AnalysisReportBarChartConfigurationSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportContainerDataSerializer(TempClientIdMixin, serializers.ModelSerializer):
