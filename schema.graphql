@@ -342,6 +342,15 @@ type AnalysisPublicationDateType {
   endDate: Date!
 }
 
+enum AnalysisReportAggregationTypeEnum {
+  COUNT
+  SUM
+  MEAN
+  MEDIAN
+  MIN
+  MAX
+}
+
 input AnalysisReportBackgroundStyleInputType {
   color: String
   opacity: Int
@@ -350,6 +359,100 @@ input AnalysisReportBackgroundStyleInputType {
 type AnalysisReportBackgroundStyleType {
   color: String
   opacity: Int
+}
+
+input AnalysisReportBarChartConfigurationInputType {
+  sheet: String
+  type: AnalysisReportBarChartTypeEnum!
+  direction: AnalysisReportBarChartDirectionEnum!
+  horizontalAxis: AnalysisReportHorizontalAxisInputType!
+  verticalAxis: [AnalysisReportVerticalAxisInputType!]!
+  horizontalAxisTitle: String
+  verticalAxisTitle: String
+  title: String
+  subTitle: String
+  legendHeading: String
+  horizontalTickLabelRotation: Int
+  horizontalAxisLineVisible: Boolean
+  verticalAxisLineVisible: Boolean
+  verticalAxisExtendMinimumValue: Int
+  verticalAxisExtendMaximumValue: Int
+  verticalGridLineVisible: Boolean
+  horizontalGridLineVisible: Boolean
+  verticalTickVisible: Boolean
+  horizontalTickVisible: Boolean
+  style: AnalysisReportBarChartStyleInputType
+}
+
+type AnalysisReportBarChartConfigurationType {
+  sheet: String
+  type: AnalysisReportBarChartTypeEnum!
+  direction: AnalysisReportBarChartDirectionEnum!
+  horizontalAxis: AnalysisReportHorizontalAxisType!
+  verticalAxis: [AnalysisReportVerticalAxisType!]!
+  horizontalAxisTitle: String
+  verticalAxisTitle: String
+  title: String
+  subTitle: String
+  legendHeading: String
+  horizontalTickLabelRotation: Int
+  horizontalAxisLineVisible: Boolean
+  verticalAxisLineVisible: Boolean
+  verticalAxisExtendMinimumValue: Int
+  verticalAxisExtendMaximumValue: Int
+  verticalGridLineVisible: Boolean
+  horizontalGridLineVisible: Boolean
+  verticalTickVisible: Boolean
+  horizontalTickVisible: Boolean
+  style: AnalysisReportBarChartStyleType
+}
+
+enum AnalysisReportBarChartDirectionEnum {
+  VERTICAL
+  HORIZONTAL
+}
+
+input AnalysisReportBarChartStyleInputType {
+  title: AnalysisReportTextStyleInputType
+  subTitle: AnalysisReportTextStyleInputType
+  legend: AnalysisReportCategoricalLegendStyleInputType
+  bar: AnalysisReportBarStyleInputType
+  horizontalAxisTitle: AnalysisReportTextStyleInputType
+  verticalAxisTitle: AnalysisReportTextStyleInputType
+  horizontalAxisTickLabel: AnalysisReportTextStyleInputType
+  verticalAxisTickLabel: AnalysisReportTextStyleInputType
+  verticalGridLine: AnalysisReportGridLineStyleInputType
+  horizontalGridLine: AnalysisReportGridLineStyleInputType
+  verticalTick: AnalysisReportTickStyleInputType
+  horizontalTick: AnalysisReportTickStyleInputType
+}
+
+type AnalysisReportBarChartStyleType {
+  title: AnalysisReportTextStyleType
+  subTitle: AnalysisReportTextStyleType
+  legend: AnalysisReportCategoricalLegendStyleType
+  bar: AnalysisReportBarStyleType
+  horizontalAxisTitle: AnalysisReportTextStyleType
+  verticalAxisTitle: AnalysisReportTextStyleType
+  horizontalAxisTickLabel: AnalysisReportTextStyleType
+  verticalAxisTickLabel: AnalysisReportTextStyleType
+  verticalGridLine: AnalysisReportGridLineStyleType
+  horizontalGridLine: AnalysisReportGridLineStyleType
+  verticalTick: AnalysisReportTickStyleType
+  horizontalTick: AnalysisReportTickStyleType
+}
+
+enum AnalysisReportBarChartTypeEnum {
+  SIDE_BY_SIDE
+  STACKED
+}
+
+input AnalysisReportBarStyleInputType {
+  border: AnalysisReportBorderStyleInputType
+}
+
+type AnalysisReportBarStyleType {
+  border: AnalysisReportBorderStyleType
 }
 
 input AnalysisReportBodyStyleInputType {
@@ -382,6 +485,20 @@ type AnalysisReportBorderStyleType {
   style: AnalysisReportBorderStyleStyleEnum
 }
 
+input AnalysisReportCategoricalLegendStyleInputType {
+  position: AnalysisReportLegendPositionEnum
+  shape: AnalysisReportLegendDotShapeEnum
+  heading: AnalysisReportTextStyleInputType
+  label: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportCategoricalLegendStyleType {
+  position: AnalysisReportLegendPositionEnum
+  shape: AnalysisReportLegendDotShapeEnum
+  heading: AnalysisReportTextStyleType
+  label: AnalysisReportTextStyleType
+}
+
 input AnalysisReportConfigurationInputType {
   pageStyle: AnalysisReportPageStyleInputType
   headerStyle: AnalysisReportHeaderStyleInputType
@@ -410,6 +527,7 @@ input AnalysisReportContainerContentConfigurationInputType {
   image: AnalysisReportImageConfigurationInputType
   url: AnalysisReportUrlConfigurationInputType
   kpi: AnalysisReportKpiConfigurationInputType
+  barChart: AnalysisReportBarChartConfigurationInputType
 }
 
 type AnalysisReportContainerContentConfigurationType {
@@ -418,6 +536,7 @@ type AnalysisReportContainerContentConfigurationType {
   image: AnalysisReportImageConfigurationType
   url: AnalysisReportUrlConfigurationType
   kpi: AnalysisReportKpiConfigurationType
+  barChart: AnalysisReportBarChartConfigurationType
 }
 
 enum AnalysisReportContainerContentTypeEnum {
@@ -427,6 +546,7 @@ enum AnalysisReportContainerContentTypeEnum {
   URL
   TIMELINE_CHART
   KPI
+  BAR_CHART
 }
 
 input AnalysisReportContainerDataInputType {
@@ -480,6 +600,18 @@ type AnalysisReportContainerType {
   style: AnalysisReportContainerStyleType
   contentConfiguration: AnalysisReportContainerContentConfigurationType
   contentData: [AnalysisReportContainerDataType!]!
+}
+
+input AnalysisReportGridLineStyleInputType {
+  lineColor: String
+  lineWidth: Int
+  lineOpacity: Int
+}
+
+type AnalysisReportGridLineStyleType {
+  lineColor: String
+  lineWidth: Int
+  lineOpacity: Int
 }
 
 input AnalysisReportHeaderStyleInputType {
@@ -537,6 +669,22 @@ type AnalysisReportHeadingContentStyleType {
   h2: AnalysisReportTextStyleType
   h3: AnalysisReportTextStyleType
   h4: AnalysisReportTextStyleType
+}
+
+input AnalysisReportHorizontalAxisInputType {
+  field: String
+  type: AnalysisReportHorizontalAxisTypeEnum
+}
+
+type AnalysisReportHorizontalAxisType {
+  field: String
+  type: AnalysisReportHorizontalAxisTypeEnum
+}
+
+enum AnalysisReportHorizontalAxisTypeEnum {
+  CATEGORICAL
+  NUMERIC
+  DATE
 }
 
 input AnalysisReportImageConfigurationInputType {
@@ -629,6 +777,20 @@ type AnalysisReportKpiItemConfigurationType {
   value: Int
   clientId: String
   abbreviateValue: Boolean
+}
+
+enum AnalysisReportLegendDotShapeEnum {
+  CIRCLE
+  TRIANGLE
+  SQUARE
+  DIAMOND
+}
+
+enum AnalysisReportLegendPositionEnum {
+  TOP
+  LEFT
+  BOTTOM
+  RIGHT
 }
 
 type AnalysisReportListType {
@@ -735,6 +897,18 @@ type AnalysisReportTextStyleType {
   size: Int
   weight: Int
   align: AnalysisReportTextStyleAlignEnum
+}
+
+input AnalysisReportTickStyleInputType {
+  lineColor: String
+  lineWidth: Int
+  lineOpacity: Int
+}
+
+type AnalysisReportTickStyleType {
+  lineColor: String
+  lineWidth: Int
+  lineOpacity: Int
 }
 
 type AnalysisReportType {
@@ -863,6 +1037,20 @@ enum AnalysisReportVariableTypeEnum {
   NUMBER
   DATE
   BOOLEAN
+}
+
+input AnalysisReportVerticalAxisInputType {
+  clientId: String
+  field: String
+  aggregationType: AnalysisReportAggregationTypeEnum
+  color: String
+}
+
+type AnalysisReportVerticalAxisType {
+  clientId: String
+  field: String
+  aggregationType: AnalysisReportAggregationTypeEnum
+  color: String
 }
 
 type AnalysisTopicModelClusterType {
@@ -1076,6 +1264,12 @@ type AppEnumCollection {
   AnalysisReportBorderStyleSerializerStyle: [AppEnumCollectionAnalysisReportBorderStyleSerializerStyle!]
   AnalysisReportImageContentStyleSerializerFit: [AppEnumCollectionAnalysisReportImageContentStyleSerializerFit!]
   AnalysisReportHeadingConfigurationSerializerVariant: [AppEnumCollectionAnalysisReportHeadingConfigurationSerializerVariant!]
+  AnalysisReportHorizontalAxisSerializerType: [AppEnumCollectionAnalysisReportHorizontalAxisSerializerType!]
+  AnalysisReportBarChartConfigurationSerializerType: [AppEnumCollectionAnalysisReportBarChartConfigurationSerializerType!]
+  AnalysisReportBarChartConfigurationSerializerDirection: [AppEnumCollectionAnalysisReportBarChartConfigurationSerializerDirection!]
+  AnalysisReportCategoricalLegendStyleSerializerPosition: [AppEnumCollectionAnalysisReportCategoricalLegendStyleSerializerPosition!]
+  AnalysisReportCategoricalLegendStyleSerializerShape: [AppEnumCollectionAnalysisReportCategoricalLegendStyleSerializerShape!]
+  AnalysisReportVerticalAxisSerializerAggregationType: [AppEnumCollectionAnalysisReportVerticalAxisSerializerAggregationType!]
   NotificationNotificationType: [AppEnumCollectionNotificationNotificationType!]
   NotificationStatus: [AppEnumCollectionNotificationStatus!]
   ConnectorSourceSource: [AppEnumCollectionConnectorSourceSource!]
@@ -1129,8 +1323,32 @@ type AppEnumCollectionAnalysisFrameworkRoleType {
   description: String
 }
 
+type AppEnumCollectionAnalysisReportBarChartConfigurationSerializerDirection {
+  enum: AnalysisReportBarChartDirectionEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportBarChartConfigurationSerializerType {
+  enum: AnalysisReportBarChartTypeEnum!
+  label: String!
+  description: String
+}
+
 type AppEnumCollectionAnalysisReportBorderStyleSerializerStyle {
   enum: AnalysisReportBorderStyleStyleEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportCategoricalLegendStyleSerializerPosition {
+  enum: AnalysisReportLegendPositionEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportCategoricalLegendStyleSerializerShape {
+  enum: AnalysisReportLegendDotShapeEnum!
   label: String!
   description: String
 }
@@ -1143,6 +1361,12 @@ type AppEnumCollectionAnalysisReportContainerContentType {
 
 type AppEnumCollectionAnalysisReportHeadingConfigurationSerializerVariant {
   enum: AnalysisReportHeadingConfigurationVariantEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportHorizontalAxisSerializerType {
+  enum: AnalysisReportHorizontalAxisTypeEnum!
   label: String!
   description: String
 }
@@ -1167,6 +1391,12 @@ type AppEnumCollectionAnalysisReportUploadType {
 
 type AppEnumCollectionAnalysisReportVariableSerializerType {
   enum: AnalysisReportVariableTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportVerticalAxisSerializerAggregationType {
+  enum: AnalysisReportAggregationTypeEnum!
   label: String!
   description: String
 }
