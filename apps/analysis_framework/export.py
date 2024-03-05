@@ -27,7 +27,7 @@ def export_af_to_csv(af, file):
     writer = csv.DictWriter(file, fieldnames=AF_EXPORT_COLUMNS)
     writer.writeheader()
 
-    for widget in af.widget_set.order_by('widget_id'):
+    for widget in af.widget_set.filter(is_deleted=False).order_by('widget_id'):
         w_type = widget.widget_id
         w_title = widget.title
 
