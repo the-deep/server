@@ -200,6 +200,16 @@ class SnapshotQuery:
                     }
                 }
             }
+            fragment GridLineStyle on AnalysisReportGridLineStyleType {
+                lineColor
+                lineOpacity
+                lineWidth
+            }
+            fragment TickStyle on AnalysisReportTickStyleType {
+                lineColor
+                lineOpacity
+                lineWidth
+            }
             fragment TextStyle on AnalysisReportTextStyleType {
                 align
                 color
@@ -298,6 +308,31 @@ class SnapshotQuery:
                             file {
                                 id
                             }
+                            type
+                            metadata {
+                                csv {
+                                    headerRow
+                                    variables {
+                                        clientId
+                                        completeness
+                                        name
+                                        type
+                                    }
+                                }
+                                xlsx {
+                                    sheets {
+                                        clientId
+                                        headerRow
+                                        name
+                                        variables {
+                                            clientId
+                                            completeness
+                                            name
+                                            type
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                     contentConfiguration {
@@ -358,6 +393,83 @@ class SnapshotQuery:
                             valueContentStyle {
                                 content {
                                     ...TextStyle
+                                }
+                            }
+                        }
+                        barChart {
+                            direction
+                            horizontalAxis {
+                                field
+                                type
+                            }
+                            horizontalAxisLineVisible
+                            horizontalAxisTitle
+                            horizontalGridLineVisible
+                            horizontalTickVisible
+                            legendHeading
+                            sheet
+                            subTitle
+                            title
+                            type
+                            verticalAxis {
+                                label
+                                aggregationType
+                                clientId
+                                color
+                                field
+                            }
+                            verticalAxisExtendMinimumValue
+                            verticalAxisExtendMaximumValue
+                            verticalAxisLineVisible
+                            verticalAxisTitle
+                            verticalGridLineVisible
+                            verticalTickVisible
+                            horizontalTickLabelRotation
+                            style {
+                                bar {
+                                    border {
+                                        ...BorderStyle
+                                    }
+                                }
+                                horizontalAxisTickLabel {
+                                    ...TextStyle
+                                }
+                                horizontalAxisTitle {
+                                    ...TextStyle
+                                }
+                                horizontalGridLine {
+                                    ...GridLineStyle
+                                }
+                                horizontalTick {
+                                    ...TickStyle
+                                }
+                                legend {
+                                    heading {
+                                        ...TextStyle
+                                    }
+                                    label {
+                                        ...TextStyle
+                                    }
+                                    position
+                                    shape
+                                }
+                                subTitle {
+                                    ...TextStyle
+                                }
+                                title {
+                                    ...TextStyle
+                                }
+                                verticalAxisTickLabel {
+                                    ...TextStyle
+                                }
+                                verticalAxisTitle {
+                                    ...TextStyle
+                                }
+                                verticalGridLine {
+                                    ...GridLineStyle
+                                }
+                                verticalTick {
+                                    ...TickStyle
                                 }
                             }
                         }
