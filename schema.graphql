@@ -767,6 +767,7 @@ input AnalysisReportKpiItemConfigurationInputType {
   value: Int
   clientId: String
   abbreviateValue: Boolean
+  style: AnalysisReportKpiItemStyleConfigurationInputType
 }
 
 type AnalysisReportKpiItemConfigurationType {
@@ -779,6 +780,21 @@ type AnalysisReportKpiItemConfigurationType {
   value: Int
   clientId: String
   abbreviateValue: Boolean
+  style: AnalysisReportKpiItemStyleConfigurationType
+}
+
+input AnalysisReportKpiItemStyleConfigurationInputType {
+  titleContentStyle: AnalysisReportTextContentStyleInputType
+  subtitleContentStyle: AnalysisReportTextContentStyleInputType
+  sourceContentStyle: AnalysisReportTextContentStyleInputType
+  valueContentStyle: AnalysisReportTextContentStyleInputType
+}
+
+type AnalysisReportKpiItemStyleConfigurationType {
+  titleContentStyle: AnalysisReportTextContentStyleType
+  subtitleContentStyle: AnalysisReportTextContentStyleType
+  sourceContentStyle: AnalysisReportTextContentStyleType
+  valueContentStyle: AnalysisReportTextContentStyleType
 }
 
 enum AnalysisReportLegendDotShapeEnum {
