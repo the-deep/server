@@ -473,6 +473,15 @@ class SnapshotQuery:
                                 }
                             }
                         }
+                        timelineChart {
+                            category
+                            date
+                            detail
+                            sheet
+                            source
+                            sourceUrl
+                            title
+                        }
                         url {
                             url
                         }
