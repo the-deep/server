@@ -710,6 +710,11 @@ class AnalysisReportHeadingConfigurationSerializer(serializers.Serializer):
 class AnalysisReportUrlConfigurationSerializer(serializers.Serializer):
     url = serializers.CharField(required=False, allow_null=True)
 
+class AnalysisReportKpiItemStyleConfigurationSerializer(serializers.Serializer):
+    title_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
+    subtitle_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
+    source_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
+    value_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
 
 class AnalysisReportKpiItemConfigurationSerializer(serializers.Serializer):
     title = serializers.CharField(required=False, allow_null=True)
@@ -721,6 +726,7 @@ class AnalysisReportKpiItemConfigurationSerializer(serializers.Serializer):
     value = serializers.IntegerField(required=False, allow_null=True)
     client_id = serializers.CharField(required=False, allow_null=True)
     abbreviate_value = serializers.BooleanField(required=False, allow_null=True)
+    style = AnalysisReportKpiItemStyleConfigurationSerializer(required=False, allow_null=True)
 
     def validate_date(self, date):
         if date:
