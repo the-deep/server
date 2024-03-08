@@ -710,11 +710,13 @@ class AnalysisReportHeadingConfigurationSerializer(serializers.Serializer):
 class AnalysisReportUrlConfigurationSerializer(serializers.Serializer):
     url = serializers.CharField(required=False, allow_null=True)
 
+
 class AnalysisReportKpiItemStyleConfigurationSerializer(serializers.Serializer):
-    title_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
-    subtitle_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
-    source_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
-    value_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
+    title_content_style = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    subtitle_content_style = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    source_content_style = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    value_content_style = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+
 
 class AnalysisReportKpiItemConfigurationSerializer(serializers.Serializer):
     title = serializers.CharField(required=False, allow_null=True)
@@ -827,10 +829,10 @@ class AnalysisReportTimelineChartConfigurationSerializer(serializers.Serializer)
 
 class AnalysisReportKpiConfigurationSerializer(serializers.Serializer):
     items = AnalysisReportKpiItemConfigurationSerializer(many=True)
-    title_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
-    subtitle_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
-    source_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
-    value_content_style = AnalysisReportTextContentStyleSerializer(required=False, allow_null=True)
+    title_content_style = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    subtitle_content_style = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    source_content_style = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    value_content_style = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportImageConfigurationSerializer(serializers.Serializer):

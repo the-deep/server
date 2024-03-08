@@ -743,18 +743,18 @@ input AnalysisReportInputUpdateType {
 
 input AnalysisReportKpiConfigurationInputType {
   items: [AnalysisReportKpiItemConfigurationInputType!]!
-  titleContentStyle: AnalysisReportTextContentStyleInputType
-  subtitleContentStyle: AnalysisReportTextContentStyleInputType
-  sourceContentStyle: AnalysisReportTextContentStyleInputType
-  valueContentStyle: AnalysisReportTextContentStyleInputType
+  titleContentStyle: AnalysisReportTextStyleInputType
+  subtitleContentStyle: AnalysisReportTextStyleInputType
+  sourceContentStyle: AnalysisReportTextStyleInputType
+  valueContentStyle: AnalysisReportTextStyleInputType
 }
 
 type AnalysisReportKpiConfigurationType {
   items: [AnalysisReportKpiItemConfigurationType!]!
-  titleContentStyle: AnalysisReportTextContentStyleType
-  subtitleContentStyle: AnalysisReportTextContentStyleType
-  sourceContentStyle: AnalysisReportTextContentStyleType
-  valueContentStyle: AnalysisReportTextContentStyleType
+  titleContentStyle: AnalysisReportTextStyleType
+  subtitleContentStyle: AnalysisReportTextStyleType
+  sourceContentStyle: AnalysisReportTextStyleType
+  valueContentStyle: AnalysisReportTextStyleType
 }
 
 input AnalysisReportKpiItemConfigurationInputType {
@@ -784,17 +784,17 @@ type AnalysisReportKpiItemConfigurationType {
 }
 
 input AnalysisReportKpiItemStyleConfigurationInputType {
-  titleContentStyle: AnalysisReportTextContentStyleInputType
-  subtitleContentStyle: AnalysisReportTextContentStyleInputType
-  sourceContentStyle: AnalysisReportTextContentStyleInputType
-  valueContentStyle: AnalysisReportTextContentStyleInputType
+  titleContentStyle: AnalysisReportTextStyleInputType
+  subtitleContentStyle: AnalysisReportTextStyleInputType
+  sourceContentStyle: AnalysisReportTextStyleInputType
+  valueContentStyle: AnalysisReportTextStyleInputType
 }
 
 type AnalysisReportKpiItemStyleConfigurationType {
-  titleContentStyle: AnalysisReportTextContentStyleType
-  subtitleContentStyle: AnalysisReportTextContentStyleType
-  sourceContentStyle: AnalysisReportTextContentStyleType
-  valueContentStyle: AnalysisReportTextContentStyleType
+  titleContentStyle: AnalysisReportTextStyleType
+  subtitleContentStyle: AnalysisReportTextStyleType
+  sourceContentStyle: AnalysisReportTextStyleType
+  valueContentStyle: AnalysisReportTextStyleType
 }
 
 enum AnalysisReportLegendDotShapeEnum {
