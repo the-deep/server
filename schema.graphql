@@ -528,6 +528,7 @@ input AnalysisReportContainerContentConfigurationInputType {
   url: AnalysisReportUrlConfigurationInputType
   kpi: AnalysisReportKpiConfigurationInputType
   barChart: AnalysisReportBarChartConfigurationInputType
+  map: AnalysisReportMapConfigurationInputType
   timelineChart: AnalysisReportTimelineChartConfigurationInputType
 }
 
@@ -538,6 +539,7 @@ type AnalysisReportContainerContentConfigurationType {
   url: AnalysisReportUrlConfigurationType
   kpi: AnalysisReportKpiConfigurationType
   barChart: AnalysisReportBarChartConfigurationType
+  map: AnalysisReportMapConfigurationType
   timelineChart: AnalysisReportTimelineChartConfigurationType
 }
 
@@ -549,6 +551,7 @@ enum AnalysisReportContainerContentTypeEnum {
   TIMELINE_CHART
   KPI
   BAR_CHART
+  MAP
 }
 
 input AnalysisReportContainerDataInputType {
@@ -797,6 +800,20 @@ type AnalysisReportKpiItemStyleConfigurationType {
   valueContentStyle: AnalysisReportTextStyleType
 }
 
+input AnalysisReportLayerConfigInputType {
+  mapboxLayer: AnalysisReportMapboxLayerConfigurationInputType
+  lineLayer: AnalysisReportLineLayerConfigurationInputType
+  symbolLayer: AnalysisReportSymbolLayerConfigurationInputType
+  polygonLayer: AnalysisReportPolygonLayerConfigurationInputType
+}
+
+type AnalysisReportLayerConfigType {
+  mapboxLayer: AnalysisReportMapboxLayerConfigurationType
+  lineLayer: AnalysisReportLineLayerConfigurationType
+  symbolLayer: AnalysisReportSymbolLayerConfigurationType
+  polygonLayer: AnalysisReportPolygonLayerConfigurationType
+}
+
 enum AnalysisReportLegendDotShapeEnum {
   CIRCLE
   TRIANGLE
@@ -811,11 +828,70 @@ enum AnalysisReportLegendPositionEnum {
   RIGHT
 }
 
+input AnalysisReportLineLayerConfigurationInputType {
+  uploadId: String!
+  labelColumn: String!
+  showLabels: Boolean
+  showInLegend: Boolean
+}
+
+type AnalysisReportLineLayerConfigurationType {
+  uploadId: String!
+  labelColumn: String!
+  showLabels: Boolean
+  showInLegend: Boolean
+}
+
 type AnalysisReportListType {
   results: [AnalysisReportType!]
   totalCount: Int
   page: Int
   pageSize: Int
+}
+
+input AnalysisReportMapConfigurationInputType {
+  layers: [AnalysisReportMapLayerConfigurationInputType!]!
+}
+
+type AnalysisReportMapConfigurationType {
+  layers: [AnalysisReportMapLayerConfigurationType!]!
+}
+
+input AnalysisReportMapLayerConfigurationInputType {
+  clientId: String!
+  name: String!
+  visible: String!
+  order: Int!
+  opacity: Int
+  type: AnalysisReportMapLayerTypeEnum
+  layerConfig: AnalysisReportLayerConfigInputType
+}
+
+type AnalysisReportMapLayerConfigurationType {
+  clientId: String!
+  name: String!
+  visible: String!
+  order: Int!
+  opacity: Int
+  type: AnalysisReportMapLayerTypeEnum
+  layerConfig: AnalysisReportLayerConfigType
+}
+
+enum AnalysisReportMapLayerTypeEnum {
+  OSM_LAYER
+  MAPBOX_LAYER
+  SYMBOL_LAYER
+  POLYGON_LAYER
+  LINE_LAYER
+  HEAT_MAP_LAYER
+}
+
+input AnalysisReportMapboxLayerConfigurationInputType {
+  mapboxStyle: String
+}
+
+type AnalysisReportMapboxLayerConfigurationType {
+  mapboxStyle: String
 }
 
 input AnalysisReportMarginStyleInputType {
@@ -856,6 +932,16 @@ type AnalysisReportPageStyleType {
   background: AnalysisReportBackgroundStyleType
 }
 
+input AnalysisReportPolygonLayerConfigurationInputType {
+  uploadId: String!
+  labelColumn: String!
+}
+
+type AnalysisReportPolygonLayerConfigurationType {
+  uploadId: String!
+  labelColumn: String!
+}
+
 input AnalysisReportSnapshotInputType {
   report: ID!
 }
@@ -874,6 +960,16 @@ type AnalysisReportSnapshotType {
   publishedBy: UserType!
   reportDataFile: FileFieldType
   files: [GalleryFileType!]!
+}
+
+input AnalysisReportSymbolLayerConfigurationInputType {
+  uploadId: String!
+  labelColumn: String!
+}
+
+type AnalysisReportSymbolLayerConfigurationType {
+  uploadId: String!
+  labelColumn: String!
 }
 
 input AnalysisReportTextConfigurationInputType {
@@ -1310,6 +1406,7 @@ type AppEnumCollection {
   AnalysisReportCategoricalLegendStyleSerializerPosition: [AppEnumCollectionAnalysisReportCategoricalLegendStyleSerializerPosition!]
   AnalysisReportCategoricalLegendStyleSerializerShape: [AppEnumCollectionAnalysisReportCategoricalLegendStyleSerializerShape!]
   AnalysisReportVerticalAxisSerializerAggregationType: [AppEnumCollectionAnalysisReportVerticalAxisSerializerAggregationType!]
+  AnalysisReportMapLayerConfigurationSerializerType: [AppEnumCollectionAnalysisReportMapLayerConfigurationSerializerType!]
   NotificationNotificationType: [AppEnumCollectionNotificationNotificationType!]
   NotificationStatus: [AppEnumCollectionNotificationStatus!]
   ConnectorSourceSource: [AppEnumCollectionConnectorSourceSource!]
@@ -1413,6 +1510,12 @@ type AppEnumCollectionAnalysisReportHorizontalAxisSerializerType {
 
 type AppEnumCollectionAnalysisReportImageContentStyleSerializerFit {
   enum: AnalysisReportImageContentStyleFitEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportMapLayerConfigurationSerializerType {
+  enum: AnalysisReportMapLayerTypeEnum!
   label: String!
   description: String
 }

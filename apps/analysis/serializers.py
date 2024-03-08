@@ -610,6 +610,14 @@ class ReportEnum:
         MIN = 'min'
         MAX = 'max'
 
+    class MapLayerType(models.TextChoices):
+        OSM_LAYER = 'OSM Layer'
+        MAPBOX_LAYER = 'Mapbox Layer'
+        SYMBOL_LAYER = 'Symbol Layer'
+        POLYGON_LAYER = 'Polygon Layer'
+        LINE_LAYER = 'Line Layer'
+        HEAT_MAP_LAYER = 'Heatmap Layer'
+
 
 class AnalysisReportVariableSerializer(serializers.Serializer):
     name = serializers.CharField(required=False, allow_null=True)
@@ -861,6 +869,51 @@ class AnalysisReportConfigurationSerializer(serializers.Serializer):
     url_content_style = AnalysisReportUrlConfigurationSerializer(required=False, allow_null=True)
 
 
+class AnalysisReportMapboxLayerConfigurationSerializer(serializers.Serializer):
+    mapbox_style = serializers.CharField(required=False, allow_null=True)
+
+
+class AnalysisReportLineLayerConfigurationSerializer(serializers.Serializer):
+    # NOTE: This reference will be handled in frontend
+    upload_id = serializers.CharField(required=True)
+    label_column = serializers.CharField(required=True)
+    show_labels = serializers.BooleanField(required=False, allow_null=True)
+    show_in_legend = serializers.BooleanField(required=False, allow_null=True)
+
+
+class AnalysisReportSymbolLayerConfigurationSerializer(serializers.Serializer):
+    # NOTE: This reference will be handled in frontend
+    upload_id = serializers.CharField(required=True)
+    label_column = serializers.CharField(required=True)
+
+
+class AnalysisReportPolygonLayerConfigurationSerializer(serializers.Serializer):
+    # NOTE: This reference will be handled in frontend
+    upload_id = serializers.CharField(required=True)
+    label_column = serializers.CharField(required=True)
+
+
+class AnalysisReportLayerConfigSerializer(serializers.Serializer):
+    mapbox_layer = AnalysisReportMapboxLayerConfigurationSerializer(required=False, allow_null=True)
+    line_layer = AnalysisReportLineLayerConfigurationSerializer(required=False, allow_null=True)
+    symbol_layer = AnalysisReportSymbolLayerConfigurationSerializer(required=False, allow_null=True)
+    polygon_layer = AnalysisReportPolygonLayerConfigurationSerializer(required=False, allow_null=True)
+
+
+class AnalysisReportMapLayerConfigurationSerializer(serializers.Serializer):
+    client_id = serializers.CharField(required=True)
+    name = serializers.CharField(required=True)
+    visible = serializers.CharField(required=True)
+    order = serializers.IntegerField(required=True)
+    opacity = serializers.IntegerField(required=False, allow_null=True)
+    type = serializers.ChoiceField(choices=ReportEnum.MapLayerType.choices, required=False, allow_null=True)
+    layer_config = AnalysisReportLayerConfigSerializer(required=False, allow_null=True)
+
+
+class AnalysisReportMapConfigurationSerializer(serializers.Serializer):
+    layers = AnalysisReportMapLayerConfigurationSerializer(many=True)
+
+
 class AnalysisReportContainerContentConfigurationSerializer(serializers.Serializer):
     text = AnalysisReportTextConfigurationSerializer(required=False, allow_null=True)
     heading = AnalysisReportHeadingConfigurationSerializer(required=False, allow_null=True)
@@ -868,6 +921,7 @@ class AnalysisReportContainerContentConfigurationSerializer(serializers.Serializ
     url = AnalysisReportUrlConfigurationSerializer(required=False, allow_null=True)
     kpi = AnalysisReportKpiConfigurationSerializer(required=False, allow_null=True)
     bar_chart = AnalysisReportBarChartConfigurationSerializer(required=False, allow_null=True)
+    map = AnalysisReportMapConfigurationSerializer(required=False, allow_null=True)
     timeline_chart = AnalysisReportTimelineChartConfigurationSerializer(required=False, allow_null=True)
 
 
