@@ -23,6 +23,7 @@ from .serializers import (
     AnalysisReportVerticalAxisSerializer,
     AnalysisReportBarChartConfigurationSerializer,
     AnalysisReportCategoricalLegendStyleSerializer,
+    AnalysisReportMapLayerConfigurationSerializer,
 )
 
 
@@ -66,6 +67,8 @@ AnalysisReportLegendDotShapeEnum = convert_enum_to_graphene_enum(
     ReportEnum.LegendDotShape, name='AnalysisReportLegendDotShapeEnum')
 AnalysisReportAggregationTypeEnum = convert_enum_to_graphene_enum(
     ReportEnum.AggregationType, name='AnalysisReportAggregationTypeEnum')
+AnalysisReportMapLayerTypeEnum = convert_enum_to_graphene_enum(
+    ReportEnum.MapLayerType, name='AnalysisReportMapLayerTypeEnum')
 
 # Model field mapping
 enum_map = {
@@ -97,5 +100,6 @@ enum_map.update({
         (AnalysisReportCategoricalLegendStyleSerializer, 'position', AnalysisReportLegendPositionEnum),
         (AnalysisReportCategoricalLegendStyleSerializer, 'shape', AnalysisReportLegendDotShapeEnum),
         (AnalysisReportVerticalAxisSerializer, 'aggregation_type', AnalysisReportAggregationTypeEnum),
+        (AnalysisReportMapLayerConfigurationSerializer, 'type', AnalysisReportMapLayerTypeEnum),
     ]
 })
