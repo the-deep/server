@@ -374,26 +374,32 @@ class SnapshotQuery:
                                 subtitle
                                 title
                                 value
+                                style {
+                                    sourceContentStyle {
+                                        ...TextStyle
+                                    }
+                                    subtitleContentStyle {
+                                        ...TextStyle
+                                    }
+                                    titleContentStyle {
+                                        ...TextStyle
+                                    }
+                                    valueContentStyle {
+                                        ...TextStyle
+                                    }
+                                }
                             }
                             sourceContentStyle {
-                                content {
-                                    ...TextStyle
-                                }
+                                ...TextStyle
                             }
                             subtitleContentStyle {
-                                content {
-                                    ...TextStyle
-                                }
+                                ...TextStyle
                             }
                             titleContentStyle {
-                                content {
-                                    ...TextStyle
-                                }
+                                ...TextStyle
                             }
                             valueContentStyle {
-                                content {
-                                    ...TextStyle
-                                }
+                                ...TextStyle
                             }
                         }
                         barChart {
