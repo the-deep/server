@@ -557,6 +557,7 @@ enum AnalysisReportContainerContentTypeEnum {
 input AnalysisReportContainerDataInputType {
   id: ID
   clientId: String
+  clientReferenceId: String!
   upload: ID!
   data: GenericScalar
 }
@@ -564,6 +565,7 @@ input AnalysisReportContainerDataInputType {
 type AnalysisReportContainerDataType {
   id: ID!
   upload: AnalysisReportUploadType!
+  clientReferenceId: String!
   data: GenericScalar!
   clientId: ID!
 }
@@ -829,14 +831,14 @@ enum AnalysisReportLegendPositionEnum {
 }
 
 input AnalysisReportLineLayerConfigurationInputType {
-  uploadId: String!
+  contentReferenceId: String!
   labelColumn: String!
   showLabels: Boolean
   showInLegend: Boolean
 }
 
 type AnalysisReportLineLayerConfigurationType {
-  uploadId: String!
+  contentReferenceId: String!
   labelColumn: String!
   showLabels: Boolean
   showInLegend: Boolean
@@ -888,10 +890,12 @@ enum AnalysisReportMapLayerTypeEnum {
 
 input AnalysisReportMapboxLayerConfigurationInputType {
   mapboxStyle: String
+  accessToken: String
 }
 
 type AnalysisReportMapboxLayerConfigurationType {
   mapboxStyle: String
+  accessToken: String
 }
 
 input AnalysisReportMarginStyleInputType {
@@ -933,12 +937,12 @@ type AnalysisReportPageStyleType {
 }
 
 input AnalysisReportPolygonLayerConfigurationInputType {
-  uploadId: String!
+  contentReferenceId: String!
   labelColumn: String!
 }
 
 type AnalysisReportPolygonLayerConfigurationType {
-  uploadId: String!
+  contentReferenceId: String!
   labelColumn: String!
 }
 
@@ -963,12 +967,12 @@ type AnalysisReportSnapshotType {
 }
 
 input AnalysisReportSymbolLayerConfigurationInputType {
-  uploadId: String!
+  contentReferenceId: String!
   labelColumn: String!
 }
 
 type AnalysisReportSymbolLayerConfigurationType {
-  uploadId: String!
+  contentReferenceId: String!
   labelColumn: String!
 }
 
