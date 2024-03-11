@@ -871,11 +871,12 @@ class AnalysisReportConfigurationSerializer(serializers.Serializer):
 
 class AnalysisReportMapboxLayerConfigurationSerializer(serializers.Serializer):
     mapbox_style = serializers.CharField(required=False, allow_null=True)
+    access_token = serializers.CharField(required=False, allow_null=True)
 
 
 class AnalysisReportLineLayerConfigurationSerializer(serializers.Serializer):
     # NOTE: This reference will be handled in frontend
-    upload_id = serializers.CharField(required=True)
+    content_reference_id = serializers.CharField(required=True, allow_null=False)
     label_column = serializers.CharField(required=True)
     show_labels = serializers.BooleanField(required=False, allow_null=True)
     show_in_legend = serializers.BooleanField(required=False, allow_null=True)
@@ -883,13 +884,13 @@ class AnalysisReportLineLayerConfigurationSerializer(serializers.Serializer):
 
 class AnalysisReportSymbolLayerConfigurationSerializer(serializers.Serializer):
     # NOTE: This reference will be handled in frontend
-    upload_id = serializers.CharField(required=True)
+    content_reference_id = serializers.CharField(required=True, allow_null=False)
     label_column = serializers.CharField(required=True)
 
 
 class AnalysisReportPolygonLayerConfigurationSerializer(serializers.Serializer):
     # NOTE: This reference will be handled in frontend
-    upload_id = serializers.CharField(required=True)
+    content_reference_id = serializers.CharField(required=True, allow_null=False)
     label_column = serializers.CharField(required=True)
 
 
@@ -933,6 +934,7 @@ class AnalysisReportContainerDataSerializer(TempClientIdMixin, serializers.Model
         fields = (
             'id',
             'client_id',
+            'client_reference_id',
             'upload',
             'data',
         )

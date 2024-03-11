@@ -590,6 +590,7 @@ class AnalysisReportContainerDataType(ClientIdMixin, DjangoObjectType):
             'id',
             'upload',  # AnalysisReportUploadType
             'data',  # NOTE: This is Generic for now
+            'client_reference_id'
         )
 
     @staticmethod
