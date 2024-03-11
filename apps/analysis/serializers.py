@@ -903,7 +903,7 @@ class AnalysisReportLayerConfigSerializer(serializers.Serializer):
 class AnalysisReportMapLayerConfigurationSerializer(serializers.Serializer):
     client_id = serializers.CharField(required=True)
     name = serializers.CharField(required=True)
-    visible = serializers.CharField(required=True)
+    visible = serializers.BooleanField(required=True)
     order = serializers.IntegerField(required=True)
     opacity = serializers.IntegerField(required=False, allow_null=True)
     type = serializers.ChoiceField(choices=ReportEnum.MapLayerType.choices, required=False, allow_null=True)
