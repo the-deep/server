@@ -473,6 +473,7 @@ class TopicModel(UserResource, DeeplTrackBaseModel):
 
 class TopicModelCluster(models.Model):
     id: int
+    label = models.CharField(max_length=150, null=True, blank=True)
     topic_model = models.ForeignKey(TopicModel, on_delete=models.CASCADE)
     entries = models.ManyToManyField(Entry)
 
