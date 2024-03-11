@@ -620,6 +620,8 @@ class AnalysisReportContainer(models.Model):
 class AnalysisReportContainerData(models.Model):
     container = models.ForeignKey(AnalysisReportContainer, on_delete=models.CASCADE)
     upload = models.ForeignKey(AnalysisReportUpload, on_delete=models.PROTECT)
+    # NOTE: This is used by client for internal references in JSON data
+    client_reference_id = models.CharField(max_length=20)
     # Generic for now. Client will define this later
     data = models.JSONField(default=dict)
 
