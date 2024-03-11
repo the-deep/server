@@ -860,7 +860,7 @@ type AnalysisReportMapConfigurationType {
 input AnalysisReportMapLayerConfigurationInputType {
   clientId: String!
   name: String!
-  visible: String!
+  visible: Boolean!
   order: Int!
   opacity: Int
   type: AnalysisReportMapLayerTypeEnum
@@ -870,7 +870,7 @@ input AnalysisReportMapLayerConfigurationInputType {
 type AnalysisReportMapLayerConfigurationType {
   clientId: String!
   name: String!
-  visible: String!
+  visible: Boolean!
   order: Int!
   opacity: Int
   type: AnalysisReportMapLayerTypeEnum
