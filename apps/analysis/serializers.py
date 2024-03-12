@@ -804,9 +804,29 @@ class AnalysisReportBarChartStyleSerializer(serializers.Serializer):
     horizontal_tick = AnalysisReportTickStyleSerializer(required=False, allow_null=True)
 
 
+class AnalysisReportLineChartStyleSerializer(serializers.Serializer):
+    title = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    sub_title = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    legend = AnalysisReportCategoricalLegendStyleSerializer(required=False, allow_null=True)
+
+    horizontal_axis_title = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    vertical_axis_title = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    horizontal_axis_tick_label = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    vertical_axis_tick_label = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+
+    vertical_grid_line = AnalysisReportGridLineStyleSerializer(required=False, allow_null=True)
+    horizontal_grid_line = AnalysisReportGridLineStyleSerializer(required=False, allow_null=True)
+    vertical_tick = AnalysisReportTickStyleSerializer(required=False, allow_null=True)
+    horizontal_tick = AnalysisReportTickStyleSerializer(required=False, allow_null=True)
+
+
 class AnalysisReportHorizontalAxisSerializer(serializers.Serializer):
     field = serializers.CharField(required=False, allow_null=True)
     type = serializers.ChoiceField(choices=ReportEnum.HorizontalAxisType.choices, required=False, allow_null=True)
+
+
+class AnalysisReportLineHorizontalAxisSerializer(serializers.Serializer):
+    field = serializers.CharField(required=False, allow_null=True)
 
 
 class AnalysisReportVerticalAxisSerializer(serializers.Serializer):
@@ -844,6 +864,33 @@ class AnalysisReportBarChartConfigurationSerializer(serializers.Serializer):
     horizontal_tick_visible = serializers.BooleanField(required=False, allow_null=True)
 
     style = AnalysisReportBarChartStyleSerializer(required=False, allow_null=True)
+
+
+class AnalysisReportLineChartConfigurationSerializer(serializers.Serializer):
+    sheet = serializers.CharField(required=False, allow_null=True)
+
+    horizontal_axis = AnalysisReportLineHorizontalAxisSerializer(required=True)
+    vertical_axis = AnalysisReportVerticalAxisSerializer(many=True)
+
+    horizontal_axis_title = serializers.CharField(required=False, allow_null=True)
+    vertical_axis_title = serializers.CharField(required=False, allow_null=True)
+
+    title = serializers.CharField(required=False, allow_null=True)
+    sub_title = serializers.CharField(required=False, allow_null=True)
+
+    legend_heading = serializers.CharField(required=False, allow_null=True)
+
+    horizontal_tick_label_rotation = serializers.IntegerField(required=False, allow_null=True)
+    horizontal_axis_line_visible = serializers.BooleanField(required=False, allow_null=True)
+    vertical_axis_line_visible = serializers.BooleanField(required=False, allow_null=True)
+    vertical_axis_extend_minimum_value = serializers.IntegerField(required=False, allow_null=True)
+    vertical_axis_extend_maximum_value = serializers.IntegerField(required=False, allow_null=True)
+    vertical_grid_line_visible = serializers.BooleanField(required=False, allow_null=True)
+    horizontal_grid_line_visible = serializers.BooleanField(required=False, allow_null=True)
+    vertical_tick_visible = serializers.BooleanField(required=False, allow_null=True)
+    horizontal_tick_visible = serializers.BooleanField(required=False, allow_null=True)
+
+    style = AnalysisReportLineChartStyleSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportTimelineChartConfigurationSerializer(serializers.Serializer):
@@ -985,6 +1032,7 @@ class AnalysisReportContainerContentConfigurationSerializer(serializers.Serializ
     url = AnalysisReportUrlConfigurationSerializer(required=False, allow_null=True)
     kpi = AnalysisReportKpiConfigurationSerializer(required=False, allow_null=True)
     bar_chart = AnalysisReportBarChartConfigurationSerializer(required=False, allow_null=True)
+    line_chart = AnalysisReportLineChartConfigurationSerializer(required=False, allow_null=True)
     map = AnalysisReportMapConfigurationSerializer(required=False, allow_null=True)
     timeline_chart = AnalysisReportTimelineChartConfigurationSerializer(required=False, allow_null=True)
 
