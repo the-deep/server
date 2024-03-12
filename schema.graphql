@@ -678,6 +678,26 @@ type AnalysisReportHeadingContentStyleType {
   h4: AnalysisReportTextStyleType
 }
 
+input AnalysisReportHeatmapLayerConfigurationInputType {
+  contentReferenceId: String!
+  weightPropertyKey: String!
+  fillPalette: String
+  radius: Int
+  blur: Int
+  scaleDataMax: Int
+  weighted: Boolean
+}
+
+type AnalysisReportHeatmapLayerConfigurationType {
+  contentReferenceId: String!
+  weightPropertyKey: String!
+  fillPalette: String
+  radius: Int
+  blur: Int
+  scaleDataMax: Int
+  weighted: Boolean
+}
+
 input AnalysisReportHorizontalAxisInputType {
   field: String
   type: AnalysisReportHorizontalAxisTypeEnum
@@ -807,6 +827,7 @@ input AnalysisReportLayerConfigInputType {
   lineLayer: AnalysisReportLineLayerConfigurationInputType
   symbolLayer: AnalysisReportSymbolLayerConfigurationInputType
   polygonLayer: AnalysisReportPolygonLayerConfigurationInputType
+  heatmapLayer: AnalysisReportHeatmapLayerConfigurationInputType
 }
 
 type AnalysisReportLayerConfigType {
@@ -814,6 +835,7 @@ type AnalysisReportLayerConfigType {
   lineLayer: AnalysisReportLineLayerConfigurationType
   symbolLayer: AnalysisReportSymbolLayerConfigurationType
   polygonLayer: AnalysisReportPolygonLayerConfigurationType
+  heatmapLayer: AnalysisReportHeatmapLayerConfigurationType
 }
 
 enum AnalysisReportLegendDotShapeEnum {
@@ -832,16 +854,39 @@ enum AnalysisReportLegendPositionEnum {
 
 input AnalysisReportLineLayerConfigurationInputType {
   contentReferenceId: String!
-  labelColumn: String!
-  showLabels: Boolean
-  showInLegend: Boolean
+  style: AnalysisReportLineLayerStyleConfigurationInputType
 }
 
 type AnalysisReportLineLayerConfigurationType {
   contentReferenceId: String!
-  labelColumn: String!
-  showLabels: Boolean
-  showInLegend: Boolean
+  style: AnalysisReportLineLayerStyleConfigurationType
+}
+
+enum AnalysisReportLineLayerStrokeTypeEnum {
+  DASH
+  SOLID
+}
+
+input AnalysisReportLineLayerStyleConfigurationInputType {
+  line: AnalysisReportLineLayerStyleInputType
+}
+
+type AnalysisReportLineLayerStyleConfigurationType {
+  line: AnalysisReportLineLayerStyleType
+}
+
+input AnalysisReportLineLayerStyleInputType {
+  dashSpacing: Int
+  stroke: String
+  strokeType: AnalysisReportLineLayerStrokeTypeEnum
+  strokeWidth: Int
+}
+
+type AnalysisReportLineLayerStyleType {
+  dashSpacing: Int
+  stroke: String
+  strokeType: AnalysisReportLineLayerStrokeTypeEnum
+  strokeWidth: Int
 }
 
 type AnalysisReportListType {
@@ -946,6 +991,16 @@ type AnalysisReportPolygonLayerConfigurationType {
   labelColumn: String!
 }
 
+enum AnalysisReportScaleTypeEnum {
+  FIXED
+  PROPORTIONAL
+}
+
+enum AnalysisReportScalingTechniqueEnum {
+  ABSOLUTE
+  FLANNERY
+}
+
 input AnalysisReportSnapshotInputType {
   report: ID!
 }
@@ -968,12 +1023,34 @@ type AnalysisReportSnapshotType {
 
 input AnalysisReportSymbolLayerConfigurationInputType {
   contentReferenceId: String!
-  labelColumn: String!
+  labelPropertyKey: String!
+  scale: Int
+  scaleType: AnalysisReportScaleTypeEnum
+  scalingTechnique: AnalysisReportScalingTechniqueEnum
+  showLabels: Boolean
+  symbol: String!
+  style: AnalysisReportSymbolLayerStyleConfigurationInputType
 }
 
 type AnalysisReportSymbolLayerConfigurationType {
   contentReferenceId: String!
-  labelColumn: String!
+  labelPropertyKey: String!
+  scale: Int
+  scaleType: AnalysisReportScaleTypeEnum
+  scalingTechnique: AnalysisReportScalingTechniqueEnum
+  showLabels: Boolean
+  symbol: String!
+  style: AnalysisReportSymbolLayerStyleConfigurationType
+}
+
+input AnalysisReportSymbolLayerStyleConfigurationInputType {
+  symbol: AnalysisReportTextStyleInputType
+  label: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportSymbolLayerStyleConfigurationType {
+  symbol: AnalysisReportTextStyleType
+  label: AnalysisReportTextStyleType
 }
 
 input AnalysisReportTextConfigurationInputType {
@@ -1411,6 +1488,9 @@ type AppEnumCollection {
   AnalysisReportCategoricalLegendStyleSerializerShape: [AppEnumCollectionAnalysisReportCategoricalLegendStyleSerializerShape!]
   AnalysisReportVerticalAxisSerializerAggregationType: [AppEnumCollectionAnalysisReportVerticalAxisSerializerAggregationType!]
   AnalysisReportMapLayerConfigurationSerializerType: [AppEnumCollectionAnalysisReportMapLayerConfigurationSerializerType!]
+  AnalysisReportSymbolLayerConfigurationSerializerScaleType: [AppEnumCollectionAnalysisReportSymbolLayerConfigurationSerializerScaleType!]
+  AnalysisReportSymbolLayerConfigurationSerializerScalingTechnique: [AppEnumCollectionAnalysisReportSymbolLayerConfigurationSerializerScalingTechnique!]
+  AnalysisReportLineLayerStyleSerializerStrokeType: [AppEnumCollectionAnalysisReportLineLayerStyleSerializerStrokeType!]
   NotificationNotificationType: [AppEnumCollectionNotificationNotificationType!]
   NotificationStatus: [AppEnumCollectionNotificationStatus!]
   ConnectorSourceSource: [AppEnumCollectionConnectorSourceSource!]
@@ -1518,8 +1598,26 @@ type AppEnumCollectionAnalysisReportImageContentStyleSerializerFit {
   description: String
 }
 
+type AppEnumCollectionAnalysisReportLineLayerStyleSerializerStrokeType {
+  enum: AnalysisReportLineLayerStrokeTypeEnum!
+  label: String!
+  description: String
+}
+
 type AppEnumCollectionAnalysisReportMapLayerConfigurationSerializerType {
   enum: AnalysisReportMapLayerTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportSymbolLayerConfigurationSerializerScaleType {
+  enum: AnalysisReportScaleTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportSymbolLayerConfigurationSerializerScalingTechnique {
+  enum: AnalysisReportScalingTechniqueEnum!
   label: String!
   description: String
 }

@@ -24,6 +24,8 @@ from .serializers import (
     AnalysisReportBarChartConfigurationSerializer,
     AnalysisReportCategoricalLegendStyleSerializer,
     AnalysisReportMapLayerConfigurationSerializer,
+    AnalysisReportSymbolLayerConfigurationSerializer,
+    AnalysisReportLineLayerStyleSerializer,
 )
 
 
@@ -69,6 +71,12 @@ AnalysisReportAggregationTypeEnum = convert_enum_to_graphene_enum(
     ReportEnum.AggregationType, name='AnalysisReportAggregationTypeEnum')
 AnalysisReportMapLayerTypeEnum = convert_enum_to_graphene_enum(
     ReportEnum.MapLayerType, name='AnalysisReportMapLayerTypeEnum')
+AnalysisReportScaleTypeEnum = convert_enum_to_graphene_enum(
+    ReportEnum.ScaleType, name='AnalysisReportScaleTypeEnum')
+AnalysisReportScalingTechniqueEnum = convert_enum_to_graphene_enum(
+    ReportEnum.ScalingTechnique, name='AnalysisReportScalingTechniqueEnum')
+AnalysisReportLineLayerStrokeTypeEnum = convert_enum_to_graphene_enum(
+    ReportEnum.LineLayerStrokeType, name='AnalysisReportLineLayerStrokeTypeEnum')
 
 # Model field mapping
 enum_map = {
@@ -101,5 +109,8 @@ enum_map.update({
         (AnalysisReportCategoricalLegendStyleSerializer, 'shape', AnalysisReportLegendDotShapeEnum),
         (AnalysisReportVerticalAxisSerializer, 'aggregation_type', AnalysisReportAggregationTypeEnum),
         (AnalysisReportMapLayerConfigurationSerializer, 'type', AnalysisReportMapLayerTypeEnum),
+        (AnalysisReportSymbolLayerConfigurationSerializer, 'scale_type', AnalysisReportScaleTypeEnum),
+        (AnalysisReportSymbolLayerConfigurationSerializer, 'scaling_technique', AnalysisReportScalingTechniqueEnum),
+        (AnalysisReportLineLayerStyleSerializer, 'stroke_type', AnalysisReportLineLayerStrokeTypeEnum),
     ]
 })
