@@ -897,11 +897,35 @@ type AnalysisReportListType {
 }
 
 input AnalysisReportMapConfigurationInputType {
+  title: String
+  subTitle: String
+  minZoom: Int
+  maxZoom: Int
+  zoom: Int
+  showScale: Boolean
+  mapHeight: Int
+  scaleBar: Boolean
+  enableZoomControls: Boolean
+  centerLongitude: Int
+  centerLatitude: Int
   layers: [AnalysisReportMapLayerConfigurationInputType!]!
+  style: AnalysisReportMapStyleConfigInputType
 }
 
 type AnalysisReportMapConfigurationType {
+  title: String
+  subTitle: String
+  minZoom: Int
+  maxZoom: Int
+  zoom: Int
+  showScale: Boolean
+  mapHeight: Int
+  scaleBar: Boolean
+  enableZoomControls: Boolean
+  centerLongitude: Int
+  centerLatitude: Int
   layers: [AnalysisReportMapLayerConfigurationType!]!
+  style: AnalysisReportMapStyleConfigType
 }
 
 input AnalysisReportMapLayerConfigurationInputType {
@@ -931,6 +955,16 @@ enum AnalysisReportMapLayerTypeEnum {
   POLYGON_LAYER
   LINE_LAYER
   HEAT_MAP_LAYER
+}
+
+input AnalysisReportMapStyleConfigInputType {
+  title: AnalysisReportTextStyleInputType
+  subTitle: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportMapStyleConfigType {
+  title: AnalysisReportTextStyleType
+  subTitle: AnalysisReportTextStyleType
 }
 
 input AnalysisReportMapboxLayerConfigurationInputType {
