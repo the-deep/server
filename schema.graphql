@@ -528,6 +528,7 @@ input AnalysisReportContainerContentConfigurationInputType {
   url: AnalysisReportUrlConfigurationInputType
   kpi: AnalysisReportKpiConfigurationInputType
   barChart: AnalysisReportBarChartConfigurationInputType
+  lineChart: AnalysisReportLineChartConfigurationInputType
   map: AnalysisReportMapConfigurationInputType
   timelineChart: AnalysisReportTimelineChartConfigurationInputType
 }
@@ -539,6 +540,7 @@ type AnalysisReportContainerContentConfigurationType {
   url: AnalysisReportUrlConfigurationType
   kpi: AnalysisReportKpiConfigurationType
   barChart: AnalysisReportBarChartConfigurationType
+  lineChart: AnalysisReportLineChartConfigurationType
   map: AnalysisReportMapConfigurationType
   timelineChart: AnalysisReportTimelineChartConfigurationType
 }
@@ -552,6 +554,7 @@ enum AnalysisReportContainerContentTypeEnum {
   KPI
   BAR_CHART
   MAP
+  LINE_CHART
 }
 
 input AnalysisReportContainerDataInputType {
@@ -850,6 +853,84 @@ enum AnalysisReportLegendPositionEnum {
   LEFT
   BOTTOM
   RIGHT
+}
+
+input AnalysisReportLineChartConfigurationInputType {
+  sheet: String
+  horizontalAxis: AnalysisReportLineHorizontalAxisInputType!
+  verticalAxis: [AnalysisReportVerticalAxisInputType!]!
+  horizontalAxisTitle: String
+  verticalAxisTitle: String
+  title: String
+  subTitle: String
+  legendHeading: String
+  horizontalTickLabelRotation: Int
+  horizontalAxisLineVisible: Boolean
+  verticalAxisLineVisible: Boolean
+  verticalAxisExtendMinimumValue: Int
+  verticalAxisExtendMaximumValue: Int
+  verticalGridLineVisible: Boolean
+  horizontalGridLineVisible: Boolean
+  verticalTickVisible: Boolean
+  horizontalTickVisible: Boolean
+  style: AnalysisReportLineChartStyleInputType
+}
+
+type AnalysisReportLineChartConfigurationType {
+  sheet: String
+  horizontalAxis: AnalysisReportLineHorizontalAxisType!
+  verticalAxis: [AnalysisReportVerticalAxisType!]!
+  horizontalAxisTitle: String
+  verticalAxisTitle: String
+  title: String
+  subTitle: String
+  legendHeading: String
+  horizontalTickLabelRotation: Int
+  horizontalAxisLineVisible: Boolean
+  verticalAxisLineVisible: Boolean
+  verticalAxisExtendMinimumValue: Int
+  verticalAxisExtendMaximumValue: Int
+  verticalGridLineVisible: Boolean
+  horizontalGridLineVisible: Boolean
+  verticalTickVisible: Boolean
+  horizontalTickVisible: Boolean
+  style: AnalysisReportLineChartStyleType
+}
+
+input AnalysisReportLineChartStyleInputType {
+  title: AnalysisReportTextStyleInputType
+  subTitle: AnalysisReportTextStyleInputType
+  legend: AnalysisReportCategoricalLegendStyleInputType
+  horizontalAxisTitle: AnalysisReportTextStyleInputType
+  verticalAxisTitle: AnalysisReportTextStyleInputType
+  horizontalAxisTickLabel: AnalysisReportTextStyleInputType
+  verticalAxisTickLabel: AnalysisReportTextStyleInputType
+  verticalGridLine: AnalysisReportGridLineStyleInputType
+  horizontalGridLine: AnalysisReportGridLineStyleInputType
+  verticalTick: AnalysisReportTickStyleInputType
+  horizontalTick: AnalysisReportTickStyleInputType
+}
+
+type AnalysisReportLineChartStyleType {
+  title: AnalysisReportTextStyleType
+  subTitle: AnalysisReportTextStyleType
+  legend: AnalysisReportCategoricalLegendStyleType
+  horizontalAxisTitle: AnalysisReportTextStyleType
+  verticalAxisTitle: AnalysisReportTextStyleType
+  horizontalAxisTickLabel: AnalysisReportTextStyleType
+  verticalAxisTickLabel: AnalysisReportTextStyleType
+  verticalGridLine: AnalysisReportGridLineStyleType
+  horizontalGridLine: AnalysisReportGridLineStyleType
+  verticalTick: AnalysisReportTickStyleType
+  horizontalTick: AnalysisReportTickStyleType
+}
+
+input AnalysisReportLineHorizontalAxisInputType {
+  field: String
+}
+
+type AnalysisReportLineHorizontalAxisType {
+  field: String
 }
 
 input AnalysisReportLineLayerConfigurationInputType {

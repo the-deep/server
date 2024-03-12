@@ -603,6 +603,7 @@ class AnalysisReportContainer(models.Model):
         KPI = 6, 'KPIs'
         BAR_CHART = 7, 'Bar Chart'
         MAP = 8, 'Map'
+        LINE_CHART = 9, 'Line Chart'
 
     report = models.ForeignKey(AnalysisReport, on_delete=models.CASCADE)
     row = models.SmallIntegerField()
