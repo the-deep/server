@@ -610,6 +610,14 @@ class ReportEnum:
         MIN = 'min'
         MAX = 'max'
 
+    class ScaleType(models.TextChoices):
+        FIXED = 'fixed'
+        PROPORTIONAL = 'proportional'
+
+    class ScalingTechnique(models.TextChoices):
+        ABSOLUTE = 'absolute'
+        FLANNERY = 'flannery'
+
     class MapLayerType(models.TextChoices):
         OSM_LAYER = 'OSM Layer'
         MAPBOX_LAYER = 'Mapbox Layer'
@@ -617,6 +625,10 @@ class ReportEnum:
         POLYGON_LAYER = 'Polygon Layer'
         LINE_LAYER = 'Line Layer'
         HEAT_MAP_LAYER = 'Heatmap Layer'
+
+    class LineLayerStrokeType(models.TextChoices):
+        DASH = 'dash'
+        SOLID = 'solid'
 
 
 class AnalysisReportVariableSerializer(serializers.Serializer):
@@ -632,6 +644,14 @@ class AnalysisReportTextStyleSerializer(serializers.Serializer):
     size = serializers.IntegerField(required=False, allow_null=True)
     weight = serializers.IntegerField(required=False, allow_null=True)
     align = serializers.ChoiceField(choices=ReportEnum.TextStyleAlign.choices, required=False, allow_null=True)
+
+
+class AnalysisReportLineLayerStyleSerializer(serializers.Serializer):
+    dash_spacing = serializers.IntegerField(required=False, allow_null=True)
+    stroke = serializers.CharField(required=False, allow_null=True)
+    # NOTE: Might need to change this later to enum
+    stroke_type = serializers.ChoiceField(choices=ReportEnum.LineLayerStrokeType.choices, required=False, allow_null=True)
+    stroke_width = serializers.IntegerField(required=False, allow_null=True)
 
 
 class AnalysisReportMarginStyleSerializer(serializers.Serializer):
@@ -874,18 +894,31 @@ class AnalysisReportMapboxLayerConfigurationSerializer(serializers.Serializer):
     access_token = serializers.CharField(required=False, allow_null=True)
 
 
+class AnalysisReportLineLayerStyleConfigurationSerializer(serializers.Serializer):
+    line = AnalysisReportLineLayerStyleSerializer(required=False, allow_null=True)
+
+
 class AnalysisReportLineLayerConfigurationSerializer(serializers.Serializer):
     # NOTE: This reference will be handled in frontend
     content_reference_id = serializers.CharField(required=True, allow_null=False)
-    label_column = serializers.CharField(required=True)
-    show_labels = serializers.BooleanField(required=False, allow_null=True)
-    show_in_legend = serializers.BooleanField(required=False, allow_null=True)
+    style = AnalysisReportLineLayerStyleConfigurationSerializer(required=False)
+
+
+class AnalysisReportSymbolLayerStyleConfigurationSerializer(serializers.Serializer):
+    symbol = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    label = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportSymbolLayerConfigurationSerializer(serializers.Serializer):
     # NOTE: This reference will be handled in frontend
     content_reference_id = serializers.CharField(required=True, allow_null=False)
-    label_column = serializers.CharField(required=True)
+    label_property_key = serializers.CharField(required=True)
+    scale = serializers.IntegerField(required=False, allow_null=False)
+    scale_type = serializers.ChoiceField(choices=ReportEnum.ScaleType.choices, required=False, allow_null=True)
+    scaling_technique = serializers.ChoiceField(choices=ReportEnum.ScalingTechnique.choices, required=False, allow_null=True)
+    show_labels = serializers.BooleanField(required=False, allow_null=False)
+    symbol = serializers.CharField(required=True)
+    style = AnalysisReportSymbolLayerStyleConfigurationSerializer(required=False)
 
 
 class AnalysisReportPolygonLayerConfigurationSerializer(serializers.Serializer):
@@ -894,11 +927,23 @@ class AnalysisReportPolygonLayerConfigurationSerializer(serializers.Serializer):
     label_column = serializers.CharField(required=True)
 
 
+class AnalysisReportHeatmapLayerConfigurationSerializer(serializers.Serializer):
+    # NOTE: This reference will be handled in frontend
+    content_reference_id = serializers.CharField(required=True, allow_null=False)
+    weight_property_key = serializers.CharField(required=True)
+    fill_palette = serializers.CharField(required=False, allow_null=False)
+    radius = serializers.IntegerField(required=False, allow_null=False)
+    blur = serializers.IntegerField(required=False, allow_null=False)
+    scale_data_max = serializers.IntegerField(required=False, allow_null=False)
+    weighted = serializers.BooleanField(required=False, allow_null=False)
+
+
 class AnalysisReportLayerConfigSerializer(serializers.Serializer):
     mapbox_layer = AnalysisReportMapboxLayerConfigurationSerializer(required=False, allow_null=True)
     line_layer = AnalysisReportLineLayerConfigurationSerializer(required=False, allow_null=True)
     symbol_layer = AnalysisReportSymbolLayerConfigurationSerializer(required=False, allow_null=True)
     polygon_layer = AnalysisReportPolygonLayerConfigurationSerializer(required=False, allow_null=True)
+    heatmap_layer = AnalysisReportHeatmapLayerConfigurationSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportMapLayerConfigurationSerializer(serializers.Serializer):
