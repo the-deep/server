@@ -957,8 +957,25 @@ class AnalysisReportMapLayerConfigurationSerializer(serializers.Serializer):
     layer_config = AnalysisReportLayerConfigSerializer(required=False, allow_null=True)
 
 
+class AnalysisReportMapStyleConfigSerializer(serializers.Serializer):
+    title = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+    sub_title = AnalysisReportTextStyleSerializer(required=False, allow_null=True)
+
+
 class AnalysisReportMapConfigurationSerializer(serializers.Serializer):
+    title = serializers.CharField(required=False, allow_null=True)
+    sub_title = serializers.CharField(required=False, allow_null=True)
+    min_zoom = serializers.IntegerField(required=False, allow_null=True)
+    max_zoom = serializers.IntegerField(required=False, allow_null=True)
+    zoom = serializers.IntegerField(required=False, allow_null=True)
+    show_scale = serializers.BooleanField(required=False, allow_null=True)
+    map_height = serializers.IntegerField(required=False, allow_null=True)
+    scale_bar = serializers.BooleanField(required=False, allow_null=True)
+    enable_zoom_controls = serializers.BooleanField(required=False, allow_null=True)
+    center_longitude = serializers.IntegerField(required=False, allow_null=True)
+    center_latitude = serializers.IntegerField(required=False, allow_null=True)
     layers = AnalysisReportMapLayerConfigurationSerializer(many=True)
+    style = AnalysisReportMapStyleConfigSerializer(required=False, allow_null=True)
 
 
 class AnalysisReportContainerContentConfigurationSerializer(serializers.Serializer):
