@@ -18,6 +18,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='analysisreportcontainerdata',
             name='client_reference_id',
+            # NOTE: This will not generate random values, we don't have much data before this migrations.
+            # So, for now just ignoring.
             field=models.CharField(default=generate_random_reference_id, max_length=20),
             preserve_default=False,
         ),
