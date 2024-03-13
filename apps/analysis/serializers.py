@@ -299,6 +299,7 @@ class AnalyticalStatementGqlSerializer(
     class Meta:
         model = AnalyticalStatement
         fields = (
+            'title',
             'id',
             'statement',
             'report_text',

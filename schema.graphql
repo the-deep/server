@@ -914,6 +914,7 @@ type AnalyticalStatementGeoTaskType {
 }
 
 input AnalyticalStatementGqlInputType {
+  title: String
   id: ID
   statement: String!
   reportText: String
@@ -964,6 +965,7 @@ type AnalyticalStatementNGramType {
 type AnalyticalStatementType {
   id: ID!
   statement: String!
+  title: String
   includeInReport: Boolean!
   order: Int!
   reportText: String!

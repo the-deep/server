@@ -129,6 +129,7 @@ class AnalyticalStatementType(UserResourceMixin, ClientIdMixin, DjangoObjectType
     class Meta:
         model = AnalyticalStatement
         only_fields = (
+            'title',
             'id',
             'statement',
             'report_text',

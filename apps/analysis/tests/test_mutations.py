@@ -326,14 +326,20 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
 
         # -- Callback test (Mocking NLP part)
         SAMPLE_TOPIC_MODEL_RESPONSE = {
-            'cluster_1': [
-                entry.id
-                for entry in lead2_entries[:1]
-            ],
-            'cluster_2': [
-                entry.id
-                for entry in lead2_entries[1:]
-            ]
+            'cluster_1': {
+                "entry_id": [
+                    entry.id
+                    for entry in lead2_entries[:1]
+                ],
+                'label': "Label 1",
+            },
+            'cluster_2': {
+                "entry_id": [
+                    entry.id
+                    for entry in lead2_entries[1:]
+                ],
+                'label': "Label 2"
+            }
         }
         RequestHelperMock.return_value.json.return_value = SAMPLE_TOPIC_MODEL_RESPONSE
 
