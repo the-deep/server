@@ -1080,9 +1080,10 @@ class TestAnalysisReportQueryAndMutationSchema(GraphQLTestCase):
 
         report1_upload1, report1_upload2 = AnalysisReportUploadFactory.create_batch(2, report_id=report1_id)
 
-        minput['containers'][0]['contentData'] = [
-            {'upload': str(report1_upload1.pk)},
-        ]
+        minput['containers'][0]['contentData'] = [{
+            'clientReferenceId': 'upload-1-id',
+            'upload': str(report1_upload1.pk),
+        }]
 
         # -- Validation check
         errors = _create_mutation_check(
@@ -1129,9 +1130,10 @@ class TestAnalysisReportQueryAndMutationSchema(GraphQLTestCase):
         }
         minput.pop('id')
         # Invalid data
-        minput['containers'][0]['contentData'] = [
-            {'upload': str(report1_upload2.pk)},
-        ]
+        minput['containers'][0]['contentData'] = [{
+            'clientReferenceId': 'upload-2-id',
+            'upload': str(report1_upload2.pk),
+        }]
         errors = _update_mutation_check(
             report2_id,
             minput,
@@ -1141,9 +1143,10 @@ class TestAnalysisReportQueryAndMutationSchema(GraphQLTestCase):
         assert errors == error_2_data
 
         report2_upload1 = AnalysisReportUploadFactory.create(report_id=report2_id)
-        minput['containers'][0]['contentData'] = [
-            {'upload': str(report2_upload1.pk)},
-        ]
+        minput['containers'][0]['contentData'] = [{
+            'clientReferenceId': 'upload-1-id',
+            'upload': str(report2_upload1.pk),
+        }]
         response = _update_mutation_check(report2_id, minput, okay=True)
         updated_report_data = response['data']['project']['analysisReportUpdate']['result']
         assert updated_report_data != created_report2_data
