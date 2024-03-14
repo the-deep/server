@@ -54,6 +54,9 @@ AssessmentRegistrySectorTypeEnum = convert_enum_to_graphene_enum(
 AssessmentRegistryProtectionInfoTypeEnum = convert_enum_to_graphene_enum(
     AssessmentRegistry.ProtectionInfoType, name='AssessmentRegistryProtectionInfoTypeEnum'
 )
+AssessmentRegistryProtectionRiskTypeEnum = convert_enum_to_graphene_enum(
+    AssessmentRegistry.ProtectionRiskType, name='AssessmentRegistryProtectionRiskTypeEnum'
+)
 AssessmentRegistryStatusTypeEnum = convert_enum_to_graphene_enum(
     AssessmentRegistry.StatusType, name='AssessmentRegistryStatusTypeEnum'
 )
@@ -130,6 +133,7 @@ enum_map = {
         (AssessmentRegistry.focuses, AssessmentRegistryFocusTypeEnum),
         (AssessmentRegistry.sectors, AssessmentRegistrySectorTypeEnum),
         (AssessmentRegistry.protection_info_mgmts, AssessmentRegistryProtectionInfoTypeEnum),
+        (AssessmentRegistry.protection_risks, AssessmentRegistryProtectionRiskTypeEnum),
         (AssessmentRegistry.affected_groups, AssessmentRegistryAffectedGroupTypeEnum),
         (MethodologyAttribute.data_collection_technique, AssessmentRegistryDataCollectionTechniqueTypeEnum),
         (MethodologyAttribute.sampling_approach, AssessmentRegistrySamplingApproachTypeEnum),
