@@ -156,11 +156,13 @@ class AssessmentRegistry(UserResource):
         ALL_AFFECTED_NOT_DISPLACED_HOST = 17, 'All/Affected/Not Displaced/Host'
 
     class ProtectionRiskType(models.IntegerChoices):
-        ABDUCATION_KIDNAPPING = 1, 'Abduction, kidnapping, enforced disappearance, arbitrary or unlawful arrest and/or detention'
+        ABDUCATION_KIDNAPPING = 1, \
+            'Abduction, kidnapping, enforced disappearance, arbitrary or unlawful arrest and/or detention'
         ATTACKS_ON_CIVILIANS = 2, 'Attacks on civilians and other unlawful killings, and attacks on civilian objects'
         CHILD_AND_FORCED = 3, 'Child and forced family separation'
         EARLY_AND_FORCED_MARRIAGE = 4, 'Child, early or forced marriage'
-        DISCRIMINATION_AND_STIGMATIZATION = 5, 'Discrimination and stigmatization, denial of resources, opportunities, services and/or humanitarian access'
+        DISCRIMINATION_AND_STIGMATIZATION = 5, \
+            'Discrimination and stigmatization, denial of resources, opportunities, services and/or humanitarian access'
         DISINFORMATION_AND_DENIAL = 6, 'Disinformation and denial of access to information'
         FORCED_RECRUITMENT = 7, 'Forced recruitment and association of children in armed forces and groups'
         GENDER_BASED_VIOLENCE = 8, 'Gender-based violence'
@@ -170,7 +172,8 @@ class AssessmentRegistry(UserResource):
         DESTRUCTION_OF_PERSONAL_PROPERTY = 12, 'Theft, extortion, forced eviction or destruction of personal property'
         DEGRADING_TREATMENT = 13, 'Torture or cruel, inhuman, degrading treatment or punishment'
         TRAFFICKING_IN_PERSONS = 14, 'Trafficking in persons, forced labour or slavery-like practices'
-        UNLAWFUL_IMPEDIMENTS = 15 ,'Unlawful impediments or restrictions to freedom of movement, siege and forced displacement'
+        UNLAWFUL_IMPEDIMENTS = 15, \
+            'Unlawful impediments or restrictions to freedom of movement, siege and forced displacement'
 
     project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
     lead = models.OneToOneField(

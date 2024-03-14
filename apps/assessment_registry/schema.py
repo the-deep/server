@@ -42,6 +42,7 @@ from .enums import (
     AssessmentRegistryFocusTypeEnum,
     AssessmentRegistrySectorTypeEnum,
     AssessmentRegistryProtectionInfoTypeEnum,
+    AssessmentRegistryProtectionRiskTypeEnum,
     AssessmentRegistryStatusTypeEnum,
     AssessmentRegistryAffectedGroupTypeEnum,
     AssessmentRegistryDataCollectionTechniqueTypeEnum,
@@ -421,6 +422,7 @@ class AssessmentRegistryType(
     focuses = graphene.List(graphene.NonNull(AssessmentRegistryFocusTypeEnum), required=True)
     sectors = graphene.List(graphene.NonNull(AssessmentRegistrySectorTypeEnum), required=True)
     protection_info_mgmts = graphene.List(graphene.NonNull(AssessmentRegistryProtectionInfoTypeEnum), required=False)
+    protection_risks = graphene.List(graphene.NonNull(AssessmentRegistryProtectionRiskTypeEnum), required=False)
     affected_groups = graphene.List(graphene.NonNull(AssessmentRegistryAffectedGroupTypeEnum), required=True)
     methodology_attributes = graphene.List(graphene.NonNull(MethodologyAttributeType), required=False)
     additional_documents = graphene.List(graphene.NonNull(AdditionalDocumentType), required=False)

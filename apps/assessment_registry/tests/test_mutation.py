@@ -56,6 +56,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     noOfPages
                     objectives
                     protectionInfoMgmts
+                    protectionRisks
                     publicationDate
                     sampling
                     sectors
@@ -173,6 +174,10 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                 self.genum(AssessmentRegistry.ProtectionInfoType.PROTECTION_MONITORING),
                 self.genum(AssessmentRegistry.ProtectionInfoType.PROTECTION_NEEDS_ASSESSMENT)
             ],
+            protectionRisks=[
+                self.genum(AssessmentRegistry.ProtectionRiskType.ABDUCATION_KIDNAPPING),
+                self.genum(AssessmentRegistry.ProtectionRiskType.ATTACKS_ON_CIVILIANS)
+            ],
             sectors=[
                 self.genum(AssessmentRegistry.SectorType.HEALTH),
                 self.genum(AssessmentRegistry.SectorType.SHELTER),
@@ -280,7 +285,6 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
         )
         self.force_login(self.member_user)
         content = _query_check(minput, okay=False)
-        print("Content********************", content)
         data = content['data']['project']['createAssessmentRegistry']['result']
         self.assertEqual(data['costEstimatesUsd'], minput['costEstimatesUsd'], data)
         self.assertIsNotNone(data['methodologyAttributes'])
@@ -291,3 +295,4 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
         self.assertIsNotNone(data['summarySubPillarIssue'])
         self.assertIsNotNone(data['summarySubDimensionIssue'])
         self.assertEqual(data['metadataComplete'], True)
+        self.assertIsNotNone(data['protectionRisks'])
