@@ -224,6 +224,7 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             "focuses",
             "sectors",
             "protection_info_mgmts",
+            "protection_risks",
             "affected_groups",
             "methodology_attributes",
             "additional_documents",
