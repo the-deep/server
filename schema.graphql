@@ -1049,6 +1049,7 @@ type AppEnumCollection {
   AssessmentRegistryFocuses: [AppEnumCollectionAssessmentRegistryFocuses!]
   AssessmentRegistrySectors: [AppEnumCollectionAssessmentRegistrySectors!]
   AssessmentRegistryProtectionInfoMgmts: [AppEnumCollectionAssessmentRegistryProtectionInfoMgmts!]
+  AssessmentRegistryProtectionRisks: [AppEnumCollectionAssessmentRegistryProtectionRisks!]
   AssessmentRegistryAffectedGroups: [AppEnumCollectionAssessmentRegistryAffectedGroups!]
   MethodologyAttributeDataCollectionTechnique: [AppEnumCollectionMethodologyAttributeDataCollectionTechnique!]
   MethodologyAttributeSamplingApproach: [AppEnumCollectionMethodologyAttributeSamplingApproach!]
@@ -1208,6 +1209,12 @@ type AppEnumCollectionAssessmentRegistryOrganizationOrganizationType {
 
 type AppEnumCollectionAssessmentRegistryProtectionInfoMgmts {
   enum: AssessmentRegistryProtectionInfoTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAssessmentRegistryProtectionRisks {
+  enum: AssessmentRegistryProtectionRiskTypeEnum!
   label: String!
   description: String
 }
@@ -1959,6 +1966,7 @@ input AssessmentRegistryCreateInputType {
   focuses: [AssessmentRegistryFocusTypeEnum!]
   sectors: [AssessmentRegistrySectorTypeEnum!]
   protectionInfoMgmts: [AssessmentRegistryProtectionInfoTypeEnum!]
+  protectionRisks: [AssessmentRegistryProtectionRiskTypeEnum!]
   affectedGroups: [AssessmentRegistryAffectedGroupTypeEnum!]
   methodologyAttributes: [MethodologyAttributeInputType!]
   additionalDocuments: [AdditionalDocumentInputType!]
@@ -2146,6 +2154,24 @@ enum AssessmentRegistryProtectionInfoTypeEnum {
   COMMUNICATING_WITH_IN_AFFECTED_COMMUNITIES
   SECURITY_AND_SITUATIONAL_AWARENESS
   SECTORAL_SYSTEM_OTHER
+}
+
+enum AssessmentRegistryProtectionRiskTypeEnum {
+  ABDUCATION_KIDNAPPING
+  ATTACKS_ON_CIVILIANS
+  CHILD_AND_FORCED
+  EARLY_AND_FORCED_MARRIAGE
+  DISCRIMINATION_AND_STIGMATIZATION
+  DISINFORMATION_AND_DENIAL
+  FORCED_RECRUITMENT
+  GENDER_BASED_VIOLENCE
+  IMPEDIMENTS_AND_RESTRICTIONS
+  PRESENCE_OF_MINE
+  PSYCHOLOGICAL_INFLICATED_DISTRESS
+  DESTRUCTION_OF_PERSONAL_PROPERTY
+  DEGRADING_TREATMENT
+  TRAFFICKING_IN_PERSONS
+  UNLAWFUL_IMPEDIMENTS
 }
 
 enum AssessmentRegistryProximityTypeEnum {
@@ -2355,6 +2381,7 @@ type AssessmentRegistryType {
   focuses: [AssessmentRegistryFocusTypeEnum!]!
   sectors: [AssessmentRegistrySectorTypeEnum!]!
   protectionInfoMgmts: [AssessmentRegistryProtectionInfoTypeEnum!]
+  protectionRisks: [AssessmentRegistryProtectionRiskTypeEnum!]
   affectedGroups: [AssessmentRegistryAffectedGroupTypeEnum!]!
   methodologyAttributes: [MethodologyAttributeType!]
   additionalDocuments: [AdditionalDocumentType!]

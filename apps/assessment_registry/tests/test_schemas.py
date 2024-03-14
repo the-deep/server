@@ -58,6 +58,7 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
                   focuses
                   sectors
                   protectionInfoMgmts
+                  protectionRisks
                   lead {
                     id
                   }
@@ -127,6 +128,10 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
             bg_countries=[self.country1.id, self.country2.id],
             metadata_complete=True,
             cna_complete=False,
+            protection_risks=[
+                AssessmentRegistry.ProtectionRiskType.ABDUCATION_KIDNAPPING,
+                AssessmentRegistry.ProtectionRiskType.ATTACKS_ON_CIVILIANS
+            ],
         )
 
         methodology_attribute1, methodology_attribute2 = MethodologyAttributeFactory.create_batch(
@@ -228,6 +233,7 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['summaryDimensionMeta']), 1)
         self.assertEqual(len(content['data']['project']['assessmentRegistry']['summarySubDimensionIssue']), 1)
         self.assertEqual(content['data']['project']['assessmentRegistry']['cnaComplete'], False)
+        self.assertEqual(len(content['data']['project']['assessmentRegistry']['protectionRisks']), 2)
 
     def test_list_assessment_registry_query(self):
         query = '''
