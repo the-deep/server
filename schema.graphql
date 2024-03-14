@@ -818,7 +818,7 @@ enum AnalysisReportVariableTypeEnum {
 
 type AnalysisTopicModelClusterType {
   id: ID!
-  label: String
+  title: String
   entries: [EntryType]!
 }
 
@@ -965,7 +965,7 @@ type AnalyticalStatementNGramType {
 type AnalyticalStatementType {
   id: ID!
   statement: String!
-  title: String
+  title: String!
   includeInReport: Boolean!
   order: Int!
   reportText: String!

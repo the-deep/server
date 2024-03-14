@@ -921,7 +921,7 @@ class AnalysisTopicModelHandler(NewNlpServerBaseHandler):
             TopicModelCluster.objects.filter(topic_model=topic_model).delete()
             # Create new cluster in bulk
             new_clusters = TopicModelCluster.objects.bulk_create([
-                TopicModelCluster(topic_model=topic_model, label=_['label'])
+                TopicModelCluster(topic_model=topic_model, title=_['label'])
                 for _ in entries_data.values()
             ])
             # Create new cluster-entry relation in bulk

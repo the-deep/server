@@ -410,7 +410,7 @@ class AnalyticalStatementListType(CustomDjangoListObjectType):
 
 # NLP Trigger queries
 class AnalysisTopicModelClusterType(DjangoObjectType):
-    label = graphene.String(required=False)
+    title = graphene.String(required=False)
     entries = graphene.List(EntryType, required=True)
 
     class Meta:
