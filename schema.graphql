@@ -685,8 +685,8 @@ input AnalysisReportHeatmapLayerConfigurationInputType {
   contentReferenceId: String!
   weightPropertyKey: String!
   fillPalette: String
-  radius: Int
-  blur: Int
+  radius: Float
+  blur: Float
   scaleDataMax: Int
   weighted: Boolean
 }
@@ -695,8 +695,8 @@ type AnalysisReportHeatmapLayerConfigurationType {
   contentReferenceId: String!
   weightPropertyKey: String!
   fillPalette: String
-  radius: Int
-  blur: Int
+  radius: Float
+  blur: Float
   scaleDataMax: Int
   weighted: Boolean
 }
@@ -987,8 +987,8 @@ input AnalysisReportMapConfigurationInputType {
   mapHeight: Int
   scaleBar: Boolean
   enableZoomControls: Boolean
-  centerLongitude: Int
-  centerLatitude: Int
+  centerLongitude: Float
+  centerLatitude: Float
   layers: [AnalysisReportMapLayerConfigurationInputType!]!
   style: AnalysisReportMapStyleConfigInputType
 }
@@ -1003,8 +1003,8 @@ type AnalysisReportMapConfigurationType {
   mapHeight: Int
   scaleBar: Boolean
   enableZoomControls: Boolean
-  centerLongitude: Int
-  centerLatitude: Int
+  centerLongitude: Float
+  centerLatitude: Float
   layers: [AnalysisReportMapLayerConfigurationType!]!
   style: AnalysisReportMapStyleConfigType
 }
