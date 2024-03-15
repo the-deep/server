@@ -423,7 +423,8 @@ class AnalysisFrameworkPropertiesStatsConfigSerializer(serializers.Serializer):
     @staticmethod
     def _validate_widget_with_widget_type(data, widget_type, many=False):
         if not data:
-            return
+            if many:
+                return []
         if many:
             ids = [item['pk'] for item in data]
             widgets = list(Widget.objects.filter(pk__in=ids))
