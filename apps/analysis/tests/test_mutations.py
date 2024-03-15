@@ -170,17 +170,13 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
                 entryGeo {
                   entryId
                   data {
-                    geoids {
-                      countrycode
-                      featurecode
-                      geonameid
+                    meta {
                       latitude
                       longitude
-                      match
+                      offsetStart
+                      offsetEnd
                     }
-                    ent
-                    offsetStart
-                    offsetEnd
+                    entity
                   }
                 }
               }
@@ -198,17 +194,13 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
               entryGeo {
                 entryId
                 data {
-                  geoids {
-                    countrycode
-                    featurecode
-                    geonameid
+                  meta {
                     latitude
                     longitude
-                    match
+                    offsetStart
+                    offsetEnd
                   }
-                  ent
-                  offsetStart
-                  offsetEnd
+                  entity
                 }
               }
             }
@@ -759,21 +751,17 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         SAMPLE_GEO_DATA_RESPONSE = [
             {
                 'entry_id': str(entry.id),
-                'entities': [
+                'locations': [
                     {
-                        'ent': 'test',
-                        'offset_start': 0,
-                        'offset_end': 3,
-                        'geoids': [
+                        'entity': 'test',
+                        'meta':
                             {
-                                'match': 'tes',
-                                'geonameid': 11,
                                 'latitude': 11,
                                 'longitude': 11,
-                                'featurecode': 'NLP',
-                                'countrycode': 'Nepal',
+                                'offset_start': 0,
+                                'offset_end': 3,
                             }
-                        ],
+
                     }
                 ]
             }
@@ -804,21 +792,17 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         assert geo_task.status == AnalyticalStatementGeoTask.Status.SUCCESS.value
         assert _query_check(geo_task.id)['data']['project']['analysisGeoTask']['entryGeo'] == [
             {
-                'data': [
+                'data':
+                [
                     {
-                        'ent': 'test',
-                        'geoids': [
+                        'entity': 'test',
+                        'meta':
                             {
-                                'countrycode': 'Nepal',
-                                'featurecode': 'NLP',
-                                'geonameid': 11,
-                                'latitude': 11.0,
-                                'longitude': 11.0,
-                                'match': 'tes',
+                                'latitude': 11,
+                                'longitude': 11,
+                                'offsetStart': 0,
+                                'offsetEnd': 3,
                             },
-                        ],
-                        'offsetEnd': 3,
-                        'offsetStart': 0,
                     },
                 ],
                 'entryId': str(entry.id),

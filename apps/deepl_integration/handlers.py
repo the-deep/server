@@ -49,6 +49,8 @@ from analysis.models import (
     AnalyticalStatementGeoTask,
     AnalyticalStatementGeoEntry,
 )
+from geo.models import GeoArea
+from geo.filter_set import GeoAreaGqlFilterSet
 
 from .models import DeeplTrackBaseModel
 
@@ -535,7 +537,6 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
             models_version_map = cls._get_or_create_models_version([
                 data['classification_model_info']
             ])
-
             draft = DraftEntry.objects.create(
                 page=model_preds['page'],
                 text_order=model_preds['textOrder'],
@@ -545,6 +546,11 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
                 prediction_status=DraftEntry.PredictionStatus.DONE,
                 type=DraftEntry.Type.AUTO
             )
+            geo_areas_qs = GeoAreaGqlFilterSet(
+                data={'titles': [geo['entity'] for geo in model_preds['geolocations']]},
+                queryset=GeoArea.get_for_project(lead.project)
+            ).qs
+            draft.related_geoareas.set(geo_areas_qs)
             model_version = models_version_map[
                 (data['classification_model_info']['name'], data['classification_model_info']['version'])
             ]
@@ -1004,7 +1010,9 @@ class AnalyticalStatementGeoHandler(NewNlpServerBaseHandler):
         if geo_data is not None:
             geo_entry_objs = []
             # Clear out existing
-            AnalyticalStatementGeoEntry.objects.filter().delete()
+            AnalyticalStatementGeoEntry.objects.filter(
+                task=geo_task
+            ).delete()
             existing_entries_id = set(
                 Entry.objects.filter(
                     project=geo_task.project,
@@ -1016,7 +1024,7 @@ class AnalyticalStatementGeoHandler(NewNlpServerBaseHandler):
             )
             for entry_geo_data in geo_data:
                 entry_id = int(entry_geo_data['entry_id'])
-                data = entry_geo_data['entities']
+                data = entry_geo_data.get('locations')
                 if data and entry_id in existing_entries_id:
                     geo_entry_objs.append(
                         AnalyticalStatementGeoEntry(

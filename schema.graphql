@@ -863,19 +863,15 @@ input AnalyticalEntriesGqlInputType {
 }
 
 type AnalyticalStatementEntryGeoDataType {
-  ent: String
-  offsetStart: Int
-  offsetEnd: Int
-  geoids: [AnalyticalStatementEntryGeoIDsDataType!]
+  entity: String
+  meta: AnalyticalStatementEntryGeoMetaDataType!
 }
 
-type AnalyticalStatementEntryGeoIDsDataType {
-  match: String
-  geonameid: Int
+type AnalyticalStatementEntryGeoMetaDataType {
   latitude: Float
   longitude: Float
-  featurecode: String
-  countrycode: String
+  offsetStart: Int
+  offsetEnd: Int
 }
 
 type AnalyticalStatementEntryGeoType {
