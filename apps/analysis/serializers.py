@@ -979,8 +979,8 @@ class AnalysisReportHeatmapLayerConfigurationSerializer(serializers.Serializer):
     content_reference_id = serializers.CharField(required=True, allow_null=False)
     weight_property_key = serializers.CharField(required=True)
     fill_palette = serializers.CharField(required=False, allow_null=False)
-    radius = serializers.IntegerField(required=False, allow_null=False)
-    blur = serializers.IntegerField(required=False, allow_null=False)
+    radius = serializers.FloatField(required=False, allow_null=False)
+    blur = serializers.FloatField(required=False, allow_null=False)
     scale_data_max = serializers.IntegerField(required=False, allow_null=False)
     weighted = serializers.BooleanField(required=False, allow_null=False)
 
@@ -1018,8 +1018,8 @@ class AnalysisReportMapConfigurationSerializer(serializers.Serializer):
     map_height = serializers.IntegerField(required=False, allow_null=True)
     scale_bar = serializers.BooleanField(required=False, allow_null=True)
     enable_zoom_controls = serializers.BooleanField(required=False, allow_null=True)
-    center_longitude = serializers.IntegerField(required=False, allow_null=True)
-    center_latitude = serializers.IntegerField(required=False, allow_null=True)
+    center_longitude = serializers.FloatField(required=False, allow_null=True)
+    center_latitude = serializers.FloatField(required=False, allow_null=True)
     layers = AnalysisReportMapLayerConfigurationSerializer(many=True)
     style = AnalysisReportMapStyleConfigSerializer(required=False, allow_null=True)
 
