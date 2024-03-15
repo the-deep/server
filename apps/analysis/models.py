@@ -388,6 +388,7 @@ class DiscardedEntry(models.Model):
 
 class AnalyticalStatement(UserResource):
     statement = models.TextField()
+    title = models.CharField(max_length=150, blank=True)
     entries = models.ManyToManyField(
         Entry,
         through='AnalyticalStatementEntry',
@@ -473,6 +474,7 @@ class TopicModel(UserResource, DeeplTrackBaseModel):
 
 class TopicModelCluster(models.Model):
     id: int
+    title = models.CharField(max_length=150, blank=True)
     topic_model = models.ForeignKey(TopicModel, on_delete=models.CASCADE)
     entries = models.ManyToManyField(Entry)
 

@@ -921,18 +921,18 @@ class AnalysisTopicModelHandler(NewNlpServerBaseHandler):
             TopicModelCluster.objects.filter(topic_model=topic_model).delete()
             # Create new cluster in bulk
             new_clusters = TopicModelCluster.objects.bulk_create([
-                TopicModelCluster(topic_model=topic_model)
-                for _ in entries_data.keys()
+                TopicModelCluster(topic_model=topic_model, title=_['label'])
+                for _ in entries_data.values()
             ])
             # Create new cluster-entry relation in bulk
             new_cluster_entries = []
             for cluster, entries_id in zip(new_clusters, entries_data.values()):
-                for entry_id in entries_id:
+                for entry_id in entries_id['entry_id']:
                     new_cluster_entries.append(
                         TopicModelCluster.entries.through(
                             topicmodelcluster=cluster,
                             entry_id=entry_id,
-                        )
+                        ),
                     )
             TopicModelCluster.entries.through.objects.bulk_create(new_cluster_entries, ignore_conflicts=True)
         topic_model.status = TopicModel.Status.SUCCESS

@@ -129,6 +129,7 @@ class AnalyticalStatementType(UserResourceMixin, ClientIdMixin, DjangoObjectType
     class Meta:
         model = AnalyticalStatement
         only_fields = (
+            'title',
             'id',
             'statement',
             'report_text',
@@ -409,6 +410,7 @@ class AnalyticalStatementListType(CustomDjangoListObjectType):
 
 # NLP Trigger queries
 class AnalysisTopicModelClusterType(DjangoObjectType):
+    title = graphene.String(required=False)
     entries = graphene.List(EntryType, required=True)
 
     class Meta:
