@@ -2727,10 +2727,6 @@ type ConnectorSourceLeadCountType {
   alreadyAdded: Int!
 }
 
-input ConnectorSourceLeadInputType {
-  blocked: Boolean
-}
-
 type ConnectorSourceLeadListType {
   results: [ConnectorSourceLeadType!]
   totalCount: Int
@@ -5438,7 +5434,7 @@ type UnifiedConnectorMutationType {
   unifiedConnectorWithSourceUpdate(data: UnifiedConnectorWithSourceInputType!, id: ID!): UpdateUnifiedConnectorWithSource
   unifiedConnectorDelete(id: ID!): DeleteUnifiedConnector
   unifiedConnectorTrigger(id: ID!): TriggerUnifiedConnector
-  connectorSourceLeadUpdate(data: ConnectorSourceLeadInputType!, id: ID!): UpdateConnectorSourceLead
+  connectorSourceLeadUpdate(blocked: Boolean!, ids: [ID!]): UpdateConnectorSourceLead
 }
 
 enum UnifiedConnectorOrderingEnum {
@@ -5514,7 +5510,7 @@ type UpdateAssessmentRegistry {
 type UpdateConnectorSourceLead {
   errors: [GenericScalar!]
   ok: Boolean
-  result: ConnectorSourceLeadType
+  result: [ConnectorSourceLeadType!]
 }
 
 type UpdateDraftEntry {

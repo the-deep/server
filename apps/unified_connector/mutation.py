@@ -1,4 +1,5 @@
 import graphene
+from rest_framework.serializers import ValidationError
 
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
@@ -101,18 +102,25 @@ class TriggerUnifiedConnector(UnifiedConnectorMixin, PsGrapheneMutation):
 
 class UpdateConnectorSourceLead(PsGrapheneMutation):
     class Arguments:
-        id = graphene.ID(required=True)
-        data = ConnectorSourceLeadInputType(required=True)
+        ids = graphene.List(graphene.NonNull(graphene.ID), required=False)
+        blocked = graphene.Boolean(required=True)
     model = ConnectorSourceLead
-    serializer_class = ConnectorSourceLeadGqSerializer
     permissions = [PP.Permission.VIEW_UNIFIED_CONNECTOR]
-    result = graphene.Field(ConnectorSourceLeadType)
+    result = graphene.List(graphene.NonNull(ConnectorSourceLeadType))
 
     @classmethod
     def filter_queryset(cls, qs, info):
         return qs.filter(
             source__unified_connector__project=info.context.active_project
         )
+
+    @classmethod
+    def perform_mutate(cls, root, info, **kwargs):
+        if len(kwargs['ids']) > 10:
+            raise ValidationError('Only 10 connector lead can be ignored at a time')
+        instances = ConnectorSourceLead.objects.filter(id__in=kwargs['ids'])
+        instances.update(blocked=kwargs['blocked'])
+        return cls(result=instances, ok=True)
 
 
 class UnifiedConnectorMutationType(graphene.ObjectType):
