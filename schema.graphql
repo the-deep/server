@@ -5183,12 +5183,12 @@ input ScoreAnalyticalDensityInputType {
   sector: AssessmentRegistrySectorTypeEnum!
   analysisLevelCovered: [AssessmentRegistryAnalysisLevelTypeEnum!]
   figureProvided: [AssessmentRegistryAnalysisFigureTypeEnum!]
-  score: Int
+  score: Float
 }
 
 type ScoreAnalyticalDensityType {
   id: ID!
-  score: Int
+  score: Float
   clientId: ID!
   createdAt: DateTime!
   modifiedAt: DateTime!

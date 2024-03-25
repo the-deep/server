@@ -471,7 +471,7 @@ class ScoreAnalyticalDensity(UserResource):
     sector = models.IntegerField(choices=AssessmentRegistry.SectorType.choices)
     analysis_level_covered = ArrayField(models.IntegerField(choices=AnalysisLevelCovered.choices), default=list, blank=True)
     figure_provided = ArrayField(models.IntegerField(choices=FigureProvidedByAssessment.choices), default=list, blank=True)
-    score = models.IntegerField(blank=True, null=True)
+    score = models.FloatField(blank=True, null=True)
 
 
 class Question(UserResource):
