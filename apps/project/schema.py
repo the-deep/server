@@ -53,6 +53,7 @@ from .models import (
     ProjectOrganization,
     ProjectStats,
     RecentActivityType as ActivityTypes,
+    ProjectPinned
 )
 from .enums import (
     ProjectPermissionEnum,
@@ -250,6 +251,8 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
     status_display = EnumDescription(source='get_status_display', required=True)
     organizations = graphene.List(graphene.NonNull(ProjectOrganizationType))
     has_analysis_framework = graphene.Boolean(required=True)
+    has_assessment_template = graphene.Boolean(required=True)
+    is_project_pinned = graphene.Boolean(required=True)
 
     # NOTE: This is a custom feature
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
@@ -296,6 +299,12 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
         if PP.check_permission(info, PP.Permission.BASE_ACCESS):
             return info.context.dl.project.geo_region.load(root.pk)
         return info.context.dl.project.public_geo_region.load(root.pk)
+
+    def resolve_is_project_pinned(root, info, **kwargs):
+        return ProjectPinned.objects.filter(
+            project=root,
+            user=info.context.request.user
+        ).exists()
 
 
 class RecentActivityType(graphene.ObjectType):
@@ -446,6 +455,10 @@ class ProjectDetailType(
     # Other scoped queries
     unified_connector = graphene.Field(UnifiedConnectorQueryType)
     assisted_tagging = graphene.Field(AssistedTaggingQueryType)
+    is_project_pinned = graphene.Boolean(
+        required=True,
+        description='Check if user have pinned the project'
+    )
 
     @staticmethod
     def resolve_user_members(root, info, **kwargs):
@@ -494,6 +507,26 @@ class ProjectDetailType(
     def resolve_assisted_tagging(root, info, **kwargs):
         if root.get_current_user_role(info.context.request.user) is not None:
             return {}
+
+    @staticmethod
+    def resolve_is_project_pinned(root, info, **kwargs):
+        return ProjectPinned.objects.filter(
+            project=root,
+            user=info.context.request.user
+        ).exists()
+
+
+class UserPinnedProjectType(ClientIdMixin, DjangoObjectType):
+    class Meta:
+        model = ProjectPinned
+        only_fields = (
+            'id',
+            "project",
+            "user",
+            "order",
+            "client_id",
+        )
+    project = graphene.Field(graphene.NonNull(ProjectDetailType))
 
 
 class ProjectByRegion(graphene.ObjectType):
@@ -576,6 +609,7 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
+    user_pinned_projects = DjangoListField(UserPinnedProjectType, required=True)
 
     # NOTE: This is a custom feature, see https://github.com/the-deep/graphene-django-extras
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
@@ -612,3 +646,7 @@ class Query:
     @staticmethod
     def resolve_public_projects_by_region(*args, **kwargs):
         return Query.resolve_projects_by_region(*args, **kwargs)
+
+    @staticmethod
+    def resolve_user_pinned_project(root, info, **kwargs):
+        return ProjectPinned.objects.filter(user=info.context.user)
