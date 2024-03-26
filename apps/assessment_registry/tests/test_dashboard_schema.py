@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date
 
 from utils.graphene.tests import GraphQLTestCase
 
@@ -185,7 +185,7 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
             limitations="test",
             objectives="test",
             noOfPages=10,
-            publicationDate=str(date.today()),
+            publicationDate='2023-01-01',
             sampling="test",
             language=[self.genum(AssessmentRegistry.Language.ENGLISH), self.genum(AssessmentRegistry.Language.SPANISH)],
             bgCountries=[self.region.id],
@@ -333,11 +333,10 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         def _query_check(filter=None, **kwargs):
             return self.query_check(query, variables={"filter": filter, "id": self.project1.id}, **kwargs)
 
-        filter = {"dateFrom": "2019-01-01", "dateTo": str(date.today() + timedelta(1))}
+        filter = {"dateFrom": "2019-01-01", "dateTo": "2023-01-01"}
 
         self.force_login(self.member_user)
         content = _query_check(filter)["data"]["project"]["assessmentDashboardStatistics"]
-        print(content)
         # assessment dashboard tab 1
         self.assertEqual(content["totalAssessment"], 1)
         self.assertEqual(content["totalCollectionTechnique"], 2)
@@ -352,8 +351,7 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         self.assertEqual(content["assessmentGeographicAreas"][0]["geoArea"], str(self.geo_area1.id))
         self.assertEqual(content["assessmentGeographicAreas"][1]["geoArea"], str(self.geo_area2.id))
         self.assertEqual(content["assessmentByOverTime"][0]["count"], 1)
-        self.assertEqual(content["assessmentByOverTime"][0]["date"], str(date.today()))
-        self.assertEqual(content["assessmentPerFrameworkPillar"][0]["date"], str(date.today()))
+        self.assertEqual(content["assessmentPerFrameworkPillar"][0]["date"], "2023-01-01")
         # assessment dashboard tab 2
         self.assertEqual(
             content['assessmentByDataCollectionTechniqueAndGeolocation'][0]['dataCollectionTechnique'],
