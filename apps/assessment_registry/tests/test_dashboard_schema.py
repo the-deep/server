@@ -185,7 +185,7 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
             limitations="test",
             objectives="test",
             noOfPages=10,
-            publicationDate="2023-01-01",
+            publicationDate=str(date.today()),
             sampling="test",
             language=[self.genum(AssessmentRegistry.Language.ENGLISH), self.genum(AssessmentRegistry.Language.SPANISH)],
             bgCountries=[self.region.id],
@@ -337,6 +337,7 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
 
         self.force_login(self.member_user)
         content = _query_check(filter)["data"]["project"]["assessmentDashboardStatistics"]
+        print(content)
         # assessment dashboard tab 1
         self.assertEqual(content["totalAssessment"], 1)
         self.assertEqual(content["totalCollectionTechnique"], 2)
