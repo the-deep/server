@@ -2,12 +2,12 @@ from django.utils.translation import gettext
 
 import graphene
 
-from utils.graphene.mutation import generate_input_type_for_serializer
+from utils.graphene.mutation import PsGrapheneMutation, generate_input_type_for_serializer
 from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
 
 from .serializers import NotificationGqSerializer
-from .schema import NotificationType
-from .models import Notification
+from .schema import AssignmentType, NotificationType
+from .models import Assignment, Notification
 
 NotificationStatusInputType = generate_input_type_for_serializer(
     'NotificationStatusInputType',
@@ -44,5 +44,21 @@ class NotificationStatusUpdate(graphene.Mutation):
         return NotificationStatusUpdate(result=instance, ok=True, errors=None)
 
 
+class AssignmentIsDoneUpdate(PsGrapheneMutation):
+    class Arguments:
+        ids = graphene.List(graphene.NonNull(graphene.ID), required=True)
+        is_done = graphene.Boolean(required=True)
+    model = Assignment
+    result = graphene.List(graphene.NonNull(AssignmentType))
+    permissions = []
+
+    @classmethod
+    def perform_mutate(cls, root, info, **kwargs):
+        instance = Assignment.objects.filter(id__in=kwargs['ids'])
+        instance.update(is_done=kwargs['is_done'])
+        return cls(result=instance, ok=True)
+
+
 class Mutation(object):
     notification_status_update = NotificationStatusUpdate.Field()
+    assignment_is_done_status_update = AssignmentIsDoneUpdate.Field()

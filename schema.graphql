@@ -3081,6 +3081,32 @@ type AssessmentType {
   modifiedBy: UserType
 }
 
+type AssignmentIsDoneUpdate {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: [AssignmentType!]
+}
+
+type AssignmentListType {
+  results: [AssignmentType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AssignmentType {
+  id: ID!
+  createdAt: DateTime!
+  createdBy: UserType
+  createdFor: UserType!
+  project: ProjectDetailType
+  isDone: Boolean!
+  contentType: String
+  objectId: ID!
+  leadType: LeadDetailType
+  entryType: EntryType
+}
+
 type AssistedTaggingModelPredictionTagType {
   id: ID!
   name: String!
@@ -4914,6 +4940,7 @@ type Mutation {
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
   genericExportCancel(id: ID!): CancelUserGenericExport
   notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
+  assignmentIsDoneStatusUpdate(ids: [ID!]!, isDone: Boolean!): AssignmentIsDoneUpdate
   projectCreate(data: ProjectCreateInputType!): CreateProject
   joinProject(data: ProjectJoinRequestInputType!): CreateProjectJoin
   projectJoinRequestDelete(projectId: ID!): ProjectJoinRequestDelete
@@ -5678,6 +5705,7 @@ type Query {
   publicLead(uuid: UUID!): PublicLeadMetaType
   notification(id: ID!): NotificationType
   notifications(timestamp: DateTime, timestampLte: DateTime, timestampGte: DateTime, isPending: Boolean, notificationType: NotificationTypeEnum, status: NotificationStatusEnum, page: Int = 1, ordering: String, pageSize: Int): NotificationListType
+  assignment(project: ID, isDone: Boolean, page: Int = 1, ordering: String, pageSize: Int): AssignmentListType
   region(id: ID!): RegionDetailType
   regions(id: Float, code: String, title: String, public: Boolean, project: [ID], createdAt: DateTime, createdBy: [ID], modifiedAt: DateTime, modifiedBy: [ID], createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, excludeProject: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): RegionListType
   organization(id: ID!): OrganizationType
