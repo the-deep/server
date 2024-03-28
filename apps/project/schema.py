@@ -580,6 +580,26 @@ class PublicProjectByRegionListType(CustomDjangoListObjectType):
         base_type = RegionWithProject
         filterset_class = PublicProjectByRegionGqlFileterSet
 
+class ProjectActivityList(graphene.ObjectType):
+    count = graphene.Int()
+    project = graphene.Field(ProjectType)
+    
+class EntryActivityList(graphene.ObjectType):
+    project = graphene.Field(ProjectType)
+    count = graphene.Int()
+    date = graphene.Date()
+
+class ProjectSummaryStatType(graphene.ObjectType):
+    projectsCount = graphene.Int()
+    totalLeadsCount = graphene.Int()
+    totalLeadsTaggedCount = graphene.Int()
+    totalLeadsTaggedAndControlledCount = graphene.Int()
+    recentEntriesActivity = graphene.NonNull(
+        type('RecentEntriesActivityType', (graphene.ObjectType,), {
+            "projects": graphene.List(graphene.NonNull(ProjectActivityList)),
+            "activities": graphene.List(graphene.NonNull(EntryActivityList)),
+        })
+    )
 
 class Query:
     project = DjangoObjectField(ProjectDetailType)
@@ -611,6 +631,7 @@ class Query:
         )
     )
     user_pinned_projects = DjangoListField(UserPinnedProjectType, required=True)
+    project_stat_summary = graphene.Field(ProjectSummaryStatType)
 
     # NOTE: This is a custom feature, see https://github.com/the-deep/graphene-django-extras
     # see: https://github.com/eamigo86/graphene-django-extras/compare/graphene-v2...the-deep:graphene-v2
@@ -655,3 +676,5 @@ class Query:
     @staticmethod
     def resolve_project_roles(root, info) -> QuerySet:
         return ProjectRole.objects.all()
+    def resolve_project_stat_summary(root, info, **kwargs):
+        return info.context.dl.project.resolve_project_stat_summary()

@@ -1,4 +1,5 @@
 from collections import defaultdict
+from dateutil.relativedelta import relativedelta
 
 from promise import Promise
 from django.core.cache import cache
@@ -215,7 +216,55 @@ class ProjectExploreStatsLoader(WithContextMixin):
             60 * 60,  # 1hr
         )
 
-
+class ProjectSummaryStatLoader(WithContextMixin):
+    def get_stat(self):
+        projects = Project.get_for_member(self.context.request.user)
+        # Lead stats
+        leads = Lead.objects.filter(project__in=projects)
+        total_leads_tagged_count = leads.annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
+        total_leads_tagged_and_controlled_count = leads.annotate(
+            entries_count=models.Count('entry'),
+            controlled_entries_count=models.Count(
+                'entry', filter=models.Q(entry__controlled=True)
+            ),
+        ).filter(entries_count__gt=0, entries_count=models.F('controlled_entries_count')).count()
+        # Entries activity
+        recent_projects_id = list(
+            projects.annotate(
+                entries_count=Cast(KeyTextTransform('entries_activity', 'stats_cache'), models.IntegerField())
+            ).filter(entries_count__gt=0).order_by('-entries_count').values_list('id', flat=True)[:3])
+        recent_entries = Entry.objects.filter(
+            project__in=recent_projects_id,
+            created_at__gte=(timezone.now() + relativedelta(months=-3))
+        )
+        recent_entries_activity = {
+            'projects': (
+                recent_entries.order_by().values('project')
+                .annotate(count=models.Count('*'))
+                .filter(count__gt=0)
+                .values('count', id=models.F('project'), title=models.F('project__title'))
+            ),
+            'activities': (
+                recent_entries.order_by('project', 'created_at__date').values('project', 'created_at__date')
+                .annotate(count=models.Count('*'))
+                .values('project', 'count', date=models.Func(models.F('created_at__date'), function='DATE'))
+            ),
+        }
+        return dict (
+            projectsCount=projects.count(),
+            totalLeadsCount=leads.count(),
+            totalLeadsTaggedCount=total_leads_tagged_count,
+            totalLeadsTaggedAndControlledCount=total_leads_tagged_and_controlled_count,
+            recentEntriesActivity=recent_entries_activity,
+        )
+    
+    def resolve(self):
+        return cache.get_or_set(
+            CacheKey.PROJECT_SUMMARY_STAT_LOADER_KEY,
+            self.get_stat,
+            60 * 60,  # 1hr
+        )
+        
 class GeoRegionLoader(DataLoaderWithContext):
     @staticmethod
     def get_region_queryset():
@@ -254,6 +303,9 @@ class DataLoaders(WithContextMixin):
 
     def resolve_explore_stats(self):
         return ProjectExploreStatsLoader(context=self.context).resolve()
+    
+    def resolve_project_stat_summary(self):
+        return ProjectSummaryStatLoader(context=self.context).resolve()
 
     @cached_property
     def geo_region(self):
