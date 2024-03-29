@@ -2498,7 +2498,7 @@ type AssistedTaggingPredictionType {
 
 type AssistedTaggingQueryType {
   draftEntry(id: ID!): DraftEntryType
-  draftEntries(lead: ID, draftEntryTypes: [DraftEntryTypeEnum!], isDiscarded: Boolean, page: Int = 1, pageSize: Int): DraftEntryListType
+  draftEntries(lead: ID, draftEntryTypes: [DraftEntryTypeEnum!], ignoreIds: [ID!], isDiscarded: Boolean, page: Int = 1, pageSize: Int): DraftEntryListType
 }
 
 type AssistedTaggingRootQueryType {
