@@ -75,4 +75,4 @@ class OrganizationGqSerializer(UserResourceSerializer):
     class Meta:
         model = Organization
         # fields = ('url','organization_type','title','short_name')
-        fields = ('title', 'long_name','url','short_name', 'logo', 'organization_type')
+        fields = ('title', 'long_name', 'url', 'short_name', 'logo', 'organization_type')
