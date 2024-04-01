@@ -24,7 +24,7 @@ class OrganizationCreate(GrapheneMutation):
 
     @classmethod
     def check_permissions(cls, info, **kwargs):
-        return True
+        return True  # global permission is always True
 
 
 class Mutation():
