@@ -242,7 +242,7 @@ class ProjectSummaryStatLoader(WithContextMixin):
                 recent_entries.order_by().values('project')
                 .annotate(count=models.Count('*'))
                 .filter(count__gt=0)
-                .values('count', id=models.F('project'), title=models.F('project__title'))
+                .values('count', 'project')
             ),
             'activities': (
                 recent_entries.order_by('project', 'created_at__date').values('project', 'created_at__date')
