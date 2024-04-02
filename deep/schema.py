@@ -19,6 +19,8 @@ from user import mutation as user_mutation, schema as user_schema
 from user_group import mutation as user_group_mutation, schema as user_group_schema
 from organization import schema as organization_schema, mutation as organization_mutation
 from geo import schema as geo_schema
+from organization import schema as organization_schema
+from geo import schema as geo_schema, mutations as geo_mutation
 from notification import schema as notification_schema, mutation as notification_mutation
 from assisted_tagging import schema as assisted_tagging_schema
 from unified_connector import schema as unified_connector_schema
@@ -73,6 +75,7 @@ class Mutation(
     gallery_mutation.Mutation,
     assessment_registry_mutation.Mutation,
     organization_mutation.Mutation,
+    geo_mutation.Mutation,
     # --
     graphene.ObjectType
 ):

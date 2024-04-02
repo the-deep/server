@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
 
-from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
+from deep.serializers import ProjectPropertySerializerMixin, RemoveNullFieldsMixin, URLCachedFileField
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
 from geo.models import (
@@ -148,3 +148,38 @@ class GeoAreaSerializer(serializers.ModelSerializer):
             'region_title', 'admin_level_level', 'admin_level_title',
             'parent'
         )
+
+
+class RegionGqSerializer(ProjectPropertySerializerMixin, UserResourceSerializer):
+    project = serializers.IntegerField()
+
+    class Meta:
+        model = Region
+        fields = '__all__'
+
+    def validate_project(self, project):
+        try:
+            project = Project.objects.get(id=project)
+        except Project.DoesNotExist:
+            raise serializers.ValidationError(
+                'Project matching query does not exist'
+            )
+
+        if not project.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid project')
+        return project.id
+
+    def validate(self, data):
+        if self.instance and self.instance.is_published:
+            raise serializers.ValidationError('Published region can\'t be changed. Please contact Admin')
+        return data
+
+    def create(self, validated_data):
+        project = validated_data.pop('project', None)
+        region = super().create(validated_data)
+
+        if project:
+            project = Project.objects.get(id=project)
+            project.regions.add(region)
+
+        return region
