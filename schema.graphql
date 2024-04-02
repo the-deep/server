@@ -4940,7 +4940,7 @@ type Mutation {
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
   genericExportCancel(id: ID!): CancelUserGenericExport
   notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
-  assignmentIsDoneStatusUpdate(ids: [ID!]!, isDone: Boolean!): AssignmentIsDoneUpdate
+  assignmentStatusUpdate(id: ID!, isDone: Boolean!): AssignmentIsDoneUpdate
   projectCreate(data: ProjectCreateInputType!): CreateProject
   joinProject(data: ProjectJoinRequestInputType!): CreateProjectJoin
   projectJoinRequestDelete(projectId: ID!): ProjectJoinRequestDelete

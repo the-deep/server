@@ -46,7 +46,7 @@ class NotificationStatusUpdate(graphene.Mutation):
 
 class AssignmentIsDoneUpdate(PsGrapheneMutation):
     class Arguments:
-        ids = graphene.List(graphene.NonNull(graphene.ID), required=True)
+        id = graphene.ID(required=True)
         is_done = graphene.Boolean(required=True)
     model = Assignment
     result = graphene.List(graphene.NonNull(AssignmentType))
@@ -54,11 +54,15 @@ class AssignmentIsDoneUpdate(PsGrapheneMutation):
 
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
-        instance = Assignment.objects.filter(id__in=kwargs['ids'])
+        if kwargs['id'] == '':  # empty string update all assignment of the user in bulk
+            instance = cls.model.objects.filter(is_done=False, created_for=info.context.user)
+            instance.update(is_done=kwargs['is_done'])
+            return cls(result=instance, ok=True)
+        instance = cls.model.objects.filter(id=kwargs['id'])
         instance.update(is_done=kwargs['is_done'])
         return cls(result=instance, ok=True)
 
 
 class Mutation(object):
     notification_status_update = NotificationStatusUpdate.Field()
-    assignment_is_done_status_update = AssignmentIsDoneUpdate.Field()
+    assignment_status_update = AssignmentIsDoneUpdate.Field()
