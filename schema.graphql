@@ -3614,12 +3614,22 @@ type CreateProjectJoin {
   result: ProjectJoinRequestType
 }
 
+<<<<<<< HEAD
 type CreateRegion {
   errors: [GenericScalar!]
   ok: Boolean
   result: RegionDetailType
 }
 
+||||||| parent of fd4de667e (implemented region in graphql)
+=======
+type CreateRegion {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: RegionType
+}
+
+>>>>>>> fd4de667e (implemented region in graphql)
 type CreateUnifiedConnector {
   errors: [GenericScalar!]
   ok: Boolean
@@ -4997,10 +5007,15 @@ type MissingPredictionReviewType {
 }
 
 type Mutation {
+<<<<<<< HEAD
   createRegion(data: RegionInputType!): CreateRegion
   createAdminLevel(data: AdminLevelInputType!): CreateAdminLevel
   updateAdminLevel(data: AdminLevelInputType!, id: ID!): UpdateAdminLevel
   organizationCreate(data: OrganizationInputType!): OrganizationCreate
+||||||| parent of fd4de667e (implemented region in graphql)
+=======
+  createRegion(data: RegionInputType!): CreateRegion
+>>>>>>> fd4de667e (implemented region in graphql)
   createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType!): AssessmentRegistryCreateIssue
   fileUpload(data: FileUploadInputType!): UploadFile
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
@@ -5871,6 +5886,7 @@ type RegionDetailType {
   adminLevels: [AdminLevelType!]
 }
 
+<<<<<<< HEAD
 input RegionInputType {
   title: String!
   code: String!
@@ -5878,6 +5894,26 @@ input RegionInputType {
   clientId: String
 }
 
+||||||| parent of fd4de667e (implemented region in graphql)
+=======
+input RegionInputType {
+  clientId: String
+  project: Int!
+  code: String!
+  title: String!
+  public: Boolean
+  isPublished: Boolean
+  regionalGroups: GenericScalar
+  keyFigures: GenericScalar
+  populationData: GenericScalar
+  mediaSources: GenericScalar
+  cacheIndex: Int
+  centroid: String
+  geoOptions: GenericScalar
+  createdBy: ID
+}
+
+>>>>>>> fd4de667e (implemented region in graphql)
 type RegionListType {
   results: [RegionType!]
   totalCount: Int
