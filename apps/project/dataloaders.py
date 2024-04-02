@@ -216,6 +216,7 @@ class ProjectExploreStatsLoader(WithContextMixin):
             60 * 60,  # 1hr
         )
 
+
 class ProjectSummaryStatLoader(WithContextMixin):
     def get_stat(self):
         projects = Project.get_for_member(self.context.request.user)
@@ -223,11 +224,10 @@ class ProjectSummaryStatLoader(WithContextMixin):
         leads = Lead.objects.filter(project__in=projects)
         total_leads_tagged_count = leads.annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
         total_leads_tagged_and_controlled_count = leads.annotate(
-            entries_count=models.Count('entry'),
             controlled_entries_count=models.Count(
                 'entry', filter=models.Q(entry__controlled=True)
-            ),
-        ).filter(entries_count__gt=0, entries_count=models.F('controlled_entries_count')).count()
+            )
+        ).filter(controlled_entries_count__gt=0).count()
         # Entries activity
         recent_projects_id = list(
             projects.annotate(
@@ -250,21 +250,22 @@ class ProjectSummaryStatLoader(WithContextMixin):
                 .values('project', 'count', date=models.Func(models.F('created_at__date'), function='DATE'))
             ),
         }
-        return dict (
+        return dict(
             projectsCount=projects.count(),
             totalLeadsCount=leads.count(),
             totalLeadsTaggedCount=total_leads_tagged_count,
             totalLeadsTaggedAndControlledCount=total_leads_tagged_and_controlled_count,
             recentEntriesActivity=recent_entries_activity,
         )
-    
+
     def resolve(self):
         return cache.get_or_set(
             CacheKey.PROJECT_SUMMARY_STAT_LOADER_KEY,
             self.get_stat,
             60 * 60,  # 1hr
         )
-        
+
+
 class GeoRegionLoader(DataLoaderWithContext):
     @staticmethod
     def get_region_queryset():
@@ -303,7 +304,7 @@ class DataLoaders(WithContextMixin):
 
     def resolve_explore_stats(self):
         return ProjectExploreStatsLoader(context=self.context).resolve()
-    
+
     def resolve_project_stat_summary(self):
         return ProjectSummaryStatLoader(context=self.context).resolve()
 

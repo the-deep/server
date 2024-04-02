@@ -580,14 +580,17 @@ class PublicProjectByRegionListType(CustomDjangoListObjectType):
         base_type = RegionWithProject
         filterset_class = PublicProjectByRegionGqlFileterSet
 
+
 class ProjectActivityList(graphene.ObjectType):
     count = graphene.Int()
     project = graphene.Field(ProjectType)
-    
+
+
 class EntryActivityList(graphene.ObjectType):
     project = graphene.Field(ProjectType)
     count = graphene.Int()
     date = graphene.Date()
+
 
 class ProjectSummaryStatType(graphene.ObjectType):
     projectsCount = graphene.Int()
@@ -600,6 +603,7 @@ class ProjectSummaryStatType(graphene.ObjectType):
             "activities": graphene.List(graphene.NonNull(EntryActivityList)),
         })
     )
+
 
 class Query:
     project = DjangoObjectField(ProjectDetailType)
