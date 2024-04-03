@@ -1,10 +1,11 @@
 import graphene
+
 from geo.models import Region
 from geo.schema import RegionType
 from geo.serializers import RegionGqSerializer
 
 from deep.permissions import ProjectPermissions as PP
-from utils.graphene.mutation import PsGrapheneMutation, generate_input_type_for_serializer
+from utils.graphene.mutation import GrapheneMutation, generate_input_type_for_serializer
 
 RegionInputType = generate_input_type_for_serializer(
     'RegionInputType',
@@ -12,13 +13,17 @@ RegionInputType = generate_input_type_for_serializer(
 )
 
 
-class CreateRegion(PsGrapheneMutation):
+class CreateRegion(GrapheneMutation):
     class Arguments:
         data = RegionInputType(required=True)
     model = Region
     serializer_class = RegionGqSerializer
     result = graphene.Field(RegionType)
-    permissions = [PP.Permission.UPDATE_PROJECT]
+
+    @classmethod
+    def check_permissions(cls, *args, **_):
+        if PP.Permission.UPDATE_PROJECT:
+            return True
 
 
 class Mutation():
