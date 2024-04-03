@@ -18,6 +18,7 @@ from .models import (
 )
 from .serializers import (
     AnalysisFrameworkGqlSerializer as AnalysisFrameworkSerializer,
+    AnalysisFrameworkMembershipGqSerializer,
     AnalysisFrameworkMembershipGqlSerializer as AnalysisFrameworkMembershipSerializer,
 )
 from .schema import (
@@ -34,6 +35,10 @@ AnalysisFrameworkInputType = generate_input_type_for_serializer(
 AnalysisFrameworkMembershipInputType = generate_input_type_for_serializer(
     'AnalysisFrameworkMembershipInputType',
     serializer_class=AnalysisFrameworkMembershipSerializer,
+)
+AnalysisFrameworkMembershipCreateInputType = generate_input_type_for_serializer(
+    'AnalysisFrameworkMembershipCreateInputType',
+    serializer_class=AnalysisFrameworkMembershipGqSerializer,
 )
 
 
@@ -118,6 +123,17 @@ class AnalysisFrameworkMutationType(DjangoObjectType):
             raise PermissionDenied()
 
 
+class CreateAnalysisFrameworkMembership(AfGrapheneMutation):
+    class Arguments:
+        data = AnalysisFrameworkMembershipCreateInputType(required=True)
+
+    result = graphene.Field(AnalysisFrameworkMembershipType)
+    serializer_class = AnalysisFrameworkMembershipGqSerializer
+    model = AnalysisFrameworkMembership
+    permissions = []
+
+
 class Mutation(object):
     analysis_framework_create = CreateAnalysisFramework.Field()
     analysis_framework = DjangoObjectField(AnalysisFrameworkMutationType)
+    analysis_framework_membership_create = CreateAnalysisFrameworkMembership.Field()

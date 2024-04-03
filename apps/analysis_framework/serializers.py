@@ -706,3 +706,16 @@ class AnalysisFrameworkMembershipGqlSerializer(TempClientIdMixin, serializers.Mo
         validated_data['framework'] = self.framework
         validated_data['added_by'] = self.context['request'].user
         return super().create(validated_data)
+
+
+class AnalysisFrameworkMembershipGqSerializer(serializers.ModelSerializer):
+    role = serializers.PrimaryKeyRelatedField(required=False, queryset=AnalysisFrameworkRole.objects.all())
+    framework = serializers.PrimaryKeyRelatedField(queryset=AnalysisFramework.objects.all())
+
+    class Meta:
+        model = AnalysisFrameworkMembership
+        fields = ('__all__')
+
+    def create(self, validated_data):
+        validated_data['added_by'] = self.context['request'].user
+        return super().create(validated_data)

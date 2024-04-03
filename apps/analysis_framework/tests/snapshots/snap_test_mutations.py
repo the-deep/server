@@ -494,6 +494,33 @@ snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framewor
     ]
 }
 
+snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framework_membership_create success'] = {
+    'data': {
+        '__typename': 'Mutation',
+        'analysisFrameworkMembershipCreate': {
+            'errors': None,
+            'ok': True,
+            'result': {
+                'addedBy': {
+                    'displayName': 'Judith Sanchez',
+                    'id': '1'
+                },
+                'clientId': '1',
+                'id': '1',
+                'joinedAt': '2021-01-01T00:00:00.123456+00:00',
+                'member': {
+                    'displayName': 'Adam Shaffer',
+                    'id': '2'
+                },
+                'role': {
+                    'id': '2',
+                    'title': 'Owner'
+                }
+            }
+        }
+    }
+}
+
 snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framework_update created'] = {
     'currentUserRole': 'OWNER',
     'description': 'Af description',
