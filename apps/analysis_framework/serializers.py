@@ -538,6 +538,8 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
         framework = self.instance
         if framework is None:
             raise serializers.ValidationError("Can't create prediction tag mapping for new framework. Save first!")
+        if not prediction_tags_mapping:
+            return prediction_tags_mapping
         widget_qs = Widget.objects.filter(
             id__in=[
                 _map['widget'].pk
