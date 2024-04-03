@@ -388,7 +388,7 @@ class DiscardedEntry(models.Model):
 
 class AnalyticalStatement(UserResource):
     statement = models.TextField()
-    title = models.CharField(max_length=150, blank=True)
+    title = models.CharField(max_length=150, blank=True, null=True)
     entries = models.ManyToManyField(
         Entry,
         through='AnalyticalStatementEntry',
