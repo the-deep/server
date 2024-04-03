@@ -2,10 +2,10 @@ from django.utils.translation import gettext
 
 import graphene
 
-from utils.graphene.mutation import PsGrapheneMutation, generate_input_type_for_serializer
+from utils.graphene.mutation import GrapheneMutation, PsGrapheneMutation, generate_input_type_for_serializer
 from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
 
-from .serializers import NotificationGqSerializer
+from .serializers import AssignmentSerializer, NotificationGqSerializer
 from .schema import AssignmentType, NotificationType
 from .models import Assignment, Notification
 
@@ -13,6 +13,11 @@ NotificationStatusInputType = generate_input_type_for_serializer(
     'NotificationStatusInputType',
     serializer_class=NotificationGqSerializer
 
+)
+
+AssignmentInputType = generate_input_type_for_serializer(
+    'AssignmentInputType',
+    serializer_class=AssignmentSerializer
 )
 
 
@@ -44,9 +49,22 @@ class NotificationStatusUpdate(graphene.Mutation):
         return NotificationStatusUpdate(result=instance, ok=True, errors=None)
 
 
-class AssignmentIsDoneUpdate(PsGrapheneMutation):
+class AssignmentStatusUpdate(GrapheneMutation):
     class Arguments:
         id = graphene.ID(required=True)
+        data = AssignmentInputType(required=True)
+    model = Assignment
+    result = graphene.Field(AssignmentType)
+    serializer_class = AssignmentSerializer
+    permissions = []
+
+    @classmethod
+    def check_permissions(cls, info, **kwargs):
+        return True  # global permissions is always True
+
+
+class AsssignmentBulkStatusUpdate(PsGrapheneMutation):
+    class Arguments:
         is_done = graphene.Boolean(required=True)
     model = Assignment
     result = graphene.List(graphene.NonNull(AssignmentType))
@@ -54,15 +72,12 @@ class AssignmentIsDoneUpdate(PsGrapheneMutation):
 
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
-        if kwargs['id'] == '':  # empty string update all assignment of the user in bulk
-            instance = cls.model.objects.filter(is_done=False, created_for=info.context.user)
-            instance.update(is_done=kwargs['is_done'])
-            return cls(result=instance, ok=True)
-        instance = cls.model.objects.filter(id=kwargs['id'])
+        instance = cls.model.objects.filter(created_for=info.context.user, is_done=False)
         instance.update(is_done=kwargs['is_done'])
         return cls(result=instance, ok=True)
 
 
 class Mutation(object):
     notification_status_update = NotificationStatusUpdate.Field()
-    assignment_status_update = AssignmentIsDoneUpdate.Field()
+    assignment_status_update = AssignmentStatusUpdate.Field()
+    assignment_bulk_status_update = AsssignmentBulkStatusUpdate.Field()

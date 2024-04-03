@@ -31,9 +31,7 @@ def get_user_notification_qs(info):
 
 def get_user_assignment_qs(info):
     track_user(info.context.request.user.profile)
-    return Assignment.objects.filter(
-        created_by=info.context.request.user
-    )
+    return Assignment.get_for(track_user)
 
 
 class NotificationType(DjangoObjectType):
@@ -100,7 +98,7 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
-    assignment = DjangoPaginatedListObjectField(
+    assignments = DjangoPaginatedListObjectField(
         AssignmentListType,
         pagination=PageGraphqlPagination(
             page_size_query_param='pageSize'

@@ -3081,17 +3081,17 @@ type AssessmentType {
   modifiedBy: UserType
 }
 
-type AssignmentIsDoneUpdate {
-  errors: [GenericScalar!]
-  ok: Boolean
-  result: [AssignmentType!]
-}
-
 type AssignmentListType {
   results: [AssignmentType!]
   totalCount: Int
   page: Int
   pageSize: Int
+}
+
+type AssignmentStatusUpdate {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssignmentType
 }
 
 type AssignmentType {
@@ -3169,6 +3169,12 @@ type AssistedTaggingRootQueryType {
   taggingModels: [AssistedTaggingModelType!]
   predictionTag(id: ID!): AssistedTaggingModelPredictionTagType
   predictionTags: [AssistedTaggingModelPredictionTagType!]
+}
+
+type AsssignmentBulkStatusUpdate {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: [AssignmentType!]
 }
 
 type AtomFeedFieldType {
@@ -4940,7 +4946,8 @@ type Mutation {
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
   genericExportCancel(id: ID!): CancelUserGenericExport
   notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
-  assignmentStatusUpdate(id: ID!, isDone: Boolean!): AssignmentIsDoneUpdate
+  assignmentStatusUpdate(id: ID!, isDone: Boolean!): AssignmentStatusUpdate
+  assignmentBulkStatusUpdate(isDone: Boolean!): AsssignmentBulkStatusUpdate
   projectCreate(data: ProjectCreateInputType!): CreateProject
   joinProject(data: ProjectJoinRequestInputType!): CreateProjectJoin
   projectJoinRequestDelete(projectId: ID!): ProjectJoinRequestDelete
