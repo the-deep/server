@@ -55,8 +55,8 @@
             </div>
         </aside>
         <h2>
-            <span class="text">403 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">378<span class="text"> run</span></button>
+            <span class="text">409 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">384<span class="text"> run</span></button>
             <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">25<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
             <button type="button" class="par run show_par button_toggle_par" value="par" data-shortcut="p" title="Toggle lines partially run">7<span class="text"> partial</span></button>
@@ -67,7 +67,7 @@
             <a id="nextFileLink" class="nav" href="d_9db89df6a82c861c_mutation_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.4.4">coverage.py v7.4.4</a>,
-            created at 2024-04-04 05:14 +0000
+            created at 2024-04-04 06:45 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"/>
@@ -919,6 +919,14 @@
     <p class="run"><span class="n"><a id="t835" href="#t835">835</a></span><span class="t">    <span class="nam">user</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">ForeignKey</span><span class="op">(</span><span class="nam">User</span><span class="op">,</span> <span class="nam">on_delete</span><span class="op">=</span><span class="nam">models</span><span class="op">.</span><span class="nam">PROTECT</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t836" href="#t836">836</a></span><span class="t">    <span class="nam">action</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">SmallIntegerField</span><span class="op">(</span><span class="nam">choices</span><span class="op">=</span><span class="nam">Action</span><span class="op">.</span><span class="nam">choices</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t837" href="#t837">837</a></span><span class="t">    <span class="nam">diff</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">JSONField</span><span class="op">(</span><span class="nam">null</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">blank</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t838" href="#t838">838</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t839" href="#t839">839</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t840" href="#t840">840</a></span><span class="t"><span class="key">class</span> <span class="nam">ProjectPinned</span><span class="op">(</span><span class="nam">models</span><span class="op">.</span><span class="nam">Model</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t841" href="#t841">841</a></span><span class="t">    <span class="nam">project</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">ForeignKey</span><span class="op">(</span><span class="nam">Project</span><span class="op">,</span> <span class="nam">on_delete</span><span class="op">=</span><span class="nam">models</span><span class="op">.</span><span class="nam">CASCADE</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t842" href="#t842">842</a></span><span class="t">    <span class="nam">user</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">ForeignKey</span><span class="op">(</span><span class="nam">User</span><span class="op">,</span> <span class="nam">on_delete</span><span class="op">=</span><span class="nam">models</span><span class="op">.</span><span class="nam">CASCADE</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t843" href="#t843">843</a></span><span class="t">    <span class="nam">order</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">PositiveIntegerField</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t844" href="#t844">844</a></span><span class="t">    <span class="nam">created_at</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">DateTimeField</span><span class="op">(</span><span class="nam">auto_now_add</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t845" href="#t845">845</a></span><span class="t">    <span class="nam">modified_at</span> <span class="op">=</span> <span class="nam">models</span><span class="op">.</span><span class="nam">DateTimeField</span><span class="op">(</span><span class="nam">auto_now</span><span class="op">=</span><span class="key">True</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -928,7 +936,7 @@
             <a id="nextFileLink" class="nav" href="d_9db89df6a82c861c_mutation_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.4.4">coverage.py v7.4.4</a>,
-            created at 2024-04-04 05:14 +0000
+            created at 2024-04-04 06:45 +0000
         </p>
     </div>
 </footer>
