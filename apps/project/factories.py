@@ -5,6 +5,7 @@ from .models import (
     Project,
     ProjectJoinRequest,
     ProjectOrganization,
+    ProjectPinned,
 )
 
 
@@ -31,3 +32,8 @@ class ProjectJoinRequestFactory(DjangoModelFactory):
 class ProjectOrganizationFactory(DjangoModelFactory):
     class Meta:
         model = ProjectOrganization
+
+
+class ProjectPinnedFactory(DjangoModelFactory):
+    class Meta:
+        model = ProjectPinned
