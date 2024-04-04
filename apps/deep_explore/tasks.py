@@ -197,7 +197,7 @@ def generate_public_deep_explore_snapshot():
         snapshot,
         generate_download_file=True,
     ):
-        file_content, errors = generate_query_snapshot(gql_query, {'fitler': filters})
+        file_content, errors = generate_query_snapshot(gql_query, {'filter': filters})
         if file_content is None:
             logger.error(f'Failed to generate: {errors}', exc_info=True)
             return

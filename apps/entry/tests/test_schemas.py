@@ -13,6 +13,7 @@ from lead.factories import LeadFactory
 from entry.factories import EntryFactory, EntryAttributeFactory
 from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
 from organization.factories import OrganizationFactory, OrganizationTypeFactory
+from assessment_registry.factories import AssessmentRegistryFactory
 from quality_assurance.factories import EntryReviewCommentFactory
 
 from lead.tests.test_schemas import TestLeadQuerySchema
@@ -248,6 +249,8 @@ class TestEntryQuery(GraphQLTestCase):
                 $leadPublishedOn: Date
                 $leadPublishedOnGte: Date
                 $leadPublishedOnLte: Date
+                $leadHasAssessment: Boolean
+                $leadIsAssessment: Boolean
                 $leads: [ID!]
                 $leadStatuses: [LeadStatusEnum!]
                 $leadTitle: String
@@ -282,6 +285,8 @@ class TestEntryQuery(GraphQLTestCase):
                     leadPublishedOn: $leadPublishedOn
                     leadPublishedOnGte: $leadPublishedOnGte
                     leadPublishedOnLte: $leadPublishedOnLte
+                    leadHasAssessment: $leadHasAssessment
+                    leadIsAssessment: $leadIsAssessment
                     leads: $leads
                     leadStatuses: $leadStatuses
                     leadTitle: $leadTitle
@@ -319,6 +324,7 @@ class TestEntryQuery(GraphQLTestCase):
             assignee=[member1],
             priority=Lead.Priority.HIGH,
             status=Lead.Status.IN_PROGRESS,
+            is_assessment_lead=True,
         )
         lead2 = LeadFactory.create(
             project=project,
@@ -327,6 +333,7 @@ class TestEntryQuery(GraphQLTestCase):
             assignee=[member2],
             authors=[org2, org3],
             priority=Lead.Priority.HIGH,
+            is_assessment_lead=True,
         )
         lead3 = LeadFactory.create(
             project=project,
@@ -360,6 +367,9 @@ class TestEntryQuery(GraphQLTestCase):
 
         entry4_1 = EntryFactory.create(
             project=project, analysis_framework=af, lead=lead4, entry_type=Entry.TagType.EXCERPT, controlled=False)
+
+        # For assessment filters
+        AssessmentRegistryFactory.create(project=project, lead=lead1)
 
         # create entry review comment for entry
         EntryReviewCommentFactory(entry=entry1_1, created_by=user, comment_type=EntryReviewComment.CommentType.COMMENT)
@@ -408,6 +418,10 @@ class TestEntryQuery(GraphQLTestCase):
                 {'leadStatuses': [self.genum(Lead.Status.IN_PROGRESS), self.genum(Lead.Status.TAGGED)]},
                 [entry1_1, entry2_1, entry3_1, entry4_1]
             ),
+            ({'leadIsAssessment': True}, [entry1_1, entry2_1]),
+            ({'leadIsAssessment': False}, [entry3_1, entry4_1]),
+            ({'leadHasAssessment': True}, [entry1_1]),
+            ({'leadHasAssessment': False}, [entry2_1, entry3_1, entry4_1]),
             ({'hasComment': True}, [entry1_1, entry3_1]),
             ({'hasComment': False}, [entry2_1, entry4_1]),
             ({'isVerified': True}, [entry1_1, entry2_1]),
