@@ -3286,6 +3286,12 @@ input BulkAnalysisFrameworkMembershipInputType {
   clientId: String
 }
 
+type BulkDeleteLead {
+  errors: [[GenericScalar!]]
+  result: [LeadType]
+  deletedResult: [LeadType!]
+}
+
 type BulkEntry {
   errors: [[GenericScalar!]]
   result: [EntryType]
@@ -5492,6 +5498,7 @@ type ProjectMutationType {
   leadGroupDelete(id: ID!): DeleteLeadGroup
   leadCopy(data: LeadCopyInputType!): LeadCopy
   leadFilterSave(data: UserSavedLeadFilterInputType!): SaveUserSavedLeadFilter
+  leadBulkDelete(deleteIds: [ID]!): BulkDeleteLead
   projectUpdate(data: ProjectUpdateInputType!): UpdateProject
   projectDelete: ProjectDelete
   acceptRejectProject(data: ProjectAcceptRejectInputType!, id: ID!): ProjectAcceptReject
