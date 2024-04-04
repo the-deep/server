@@ -592,6 +592,7 @@ class Query:
     recent_projects = graphene.List(graphene.NonNull(ProjectDetailType))
     recent_activities = graphene.List(graphene.NonNull(RecentActivityType))
     project_explore_stats = graphene.Field(ProjectExploreStatType)
+    project_roles = graphene.List(graphene.NonNull(ProjectRoleType), required=True)
 
     # only the region for which project are public
     projects_by_region = DjangoPaginatedListObjectField(ProjectByRegionListType)
@@ -650,3 +651,7 @@ class Query:
     @staticmethod
     def resolve_user_pinned_project(root, info, **kwargs):
         return ProjectPinned.objects.filter(user=info.context.user)
+
+    @staticmethod
+    def resolve_project_roles(root, info) -> QuerySet:
+        return ProjectRole.objects.all()
