@@ -58,7 +58,7 @@ sentry-sdk = "*"
 tldextract = "==3.1.0"
 user-agents = "==2.2.0"
 Markdown = "==3.3.4"
-Pillow = "==9.4.0"
+Pillow = "==10.3.0"
 PyJWT = "==2.6.0"
 Pygments = "==2.9.0"
 Django = ">=3.2,<3.3"  # TODO Upgrade
