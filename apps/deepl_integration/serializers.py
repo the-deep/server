@@ -1,4 +1,5 @@
 from typing import Type
+import logging
 from rest_framework import serializers
 
 from django.db import transaction, models
@@ -31,6 +32,8 @@ from analysis.models import (
 
 from .models import DeeplTrackBaseModel
 
+logger = logging.getLogger(__name__)
+
 
 class BaseCallbackSerializer(serializers.Serializer):
     nlp_handler: Type[BaseHandler]
@@ -41,9 +44,10 @@ class BaseCallbackSerializer(serializers.Serializer):
         client_id = data['client_id']
         try:
             data['object'] = self.nlp_handler.get_object_using_client_id(client_id)
-        except Exception as e:
+        except Exception:
+            logger.error('Failed to parse client id', exc_info=True)
             raise serializers.ValidationError({
-                'client_id': str(e),
+                'client_id': 'Failed to parse client id',
             })
         return data
 

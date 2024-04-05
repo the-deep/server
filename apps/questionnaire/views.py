@@ -1,4 +1,5 @@
 import django_filters
+import logging
 from django.db import models
 from rest_framework.decorators import action
 from rest_framework import (
@@ -32,6 +33,8 @@ from .serializers import (
 )
 
 from .filter_set import QuestionnaireFilterSet
+
+logger = logging.getLogger(__name__)
 
 
 class QuestionnaireViewSet(viewsets.ModelViewSet):
@@ -277,8 +280,9 @@ class XFormView(views.APIView):
         xlsform_file = serializer.validated_data['file']
         try:
             return response.Response(xls_form.XLSForm.create_enketo_form(xlsform_file))
-        except Exception as e:
-            raise exceptions.ValidationError(str(e))
+        except Exception:
+            logger.error('Failed to create enketo form', exc_info=True)
+            raise exceptions.ValidationError('Failed to create enketo form')
 
 
 class KoboToolboxExport(views.APIView):
