@@ -249,6 +249,61 @@ class TestLeadMutationSchema(GraphQLTestCase):
         self.assertEqual(result['title'], lead.title, result)
         update_indices_func.assert_called_once()
 
+    @mock.patch('lead.receivers.update_index_and_duplicates')
+    def test_lead_bulk_delete_validation(self, update_indices_func):
+        query = '''
+            mutation MyMutation ($projectId: ID! $input: [ID]!) {
+              project(id: $projectId) {
+                leadBulkDelete(deleteIds: $input) {
+                    errors
+                    deletedResult {
+                        title
+                    }
+                }
+              }
+            }
+        '''
+
+        lead1 = LeadFactory.create(project=self.project)
+        lead2 = LeadFactory.create(project=self.project)
+
+        def _query_check(will_delete=False, **kwargs):
+            with self.captureOnCommitCallbacks(execute=True):
+                result = self.query_check(
+                    query,
+                    mnested=['project'],
+                    variables={
+                        'projectId': str(self.project.id),
+                        'input': [
+                            str(lead1.pk), str(lead2.pk)
+                        ]},
+                    **kwargs,
+                )
+
+            if will_delete:
+                with self.assertRaises(Lead.DoesNotExist):
+                    lead1.refresh_from_db()
+                    lead2.refresh_from_db()
+            else:
+                lead1.refresh_from_db()
+                lead2.refresh_from_db()
+            return result
+
+        # Error without login
+        _query_check(assert_for_error=True)
+
+        # --- login
+        self.force_login(self.member_user)
+        # Success with normal lead (with project membership)
+        result = _query_check(will_delete=True)['data']['project']['leadBulkDelete']
+        self.assertEqual(result, {
+            'errors': [],
+            'deletedResult': [
+                dict(title=lead2.title),
+                dict(title=lead1.title),
+            ]
+        })
+
     def test_lead_update_validation(self):
         query = '''
             mutation MyMutation ($projectId: ID! $leadId: ID! $input: LeadInputType!) {
