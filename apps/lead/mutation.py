@@ -1,7 +1,6 @@
 import graphene
 
 from utils.graphene.mutation import (
-    BulkGrapheneMutation,
     generate_input_type_for_serializer,
     PsGrapheneMutation,
     PsBulkGrapheneMutation,
@@ -78,19 +77,6 @@ class DeleteLead(LeadMutationMixin, PsDeleteMutation):
     permissions = [PP.Permission.DELETE_LEAD]
 
 
-class BulkDeleteLead(LeadMutationMixin, BulkGrapheneMutation):
-    class Arguments:
-        delete_ids = graphene.List(graphene.ID, required=True)
-    model = Lead
-    result = graphene.List(LeadType)
-    deleted_result = graphene.List(graphene.NonNull(LeadType))
-    permissions = [PP.Permission.DELETE_LEAD]
-
-    @classmethod
-    def check_permissions(cls, info, **kwargs):
-        return True
-
-
 class DeleteLeadGroup(LeadGroupMutationMixin, PsDeleteMutation):
     class Arguments:
         id = graphene.ID(required=True)
@@ -106,6 +92,7 @@ class BulkLeadInputType(LeadInputType):
 class BulkLead(LeadMutationMixin, PsBulkGrapheneMutation):
     class Arguments:
         items = graphene.List(graphene.NonNull(BulkLeadInputType))
+        delete_ids = graphene.List(graphene.NonNull(graphene.ID))
 
     result = graphene.List(LeadType)
     deleted_result = graphene.List(graphene.NonNull(LeadType))
@@ -161,4 +148,3 @@ class Mutation():
     lead_group_delete = DeleteLeadGroup.Field()
     lead_copy = LeadCopy.Field()
     lead_filter_save = SaveUserSavedLeadFilter.Field()
-    lead_bulk_delete = BulkDeleteLead.Field()

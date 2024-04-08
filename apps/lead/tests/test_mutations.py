@@ -249,61 +249,6 @@ class TestLeadMutationSchema(GraphQLTestCase):
         self.assertEqual(result['title'], lead.title, result)
         update_indices_func.assert_called_once()
 
-    @mock.patch('lead.receivers.update_index_and_duplicates')
-    def test_lead_bulk_delete_validation(self, update_indices_func):
-        query = '''
-            mutation MyMutation ($projectId: ID! $input: [ID]!) {
-              project(id: $projectId) {
-                leadBulkDelete(deleteIds: $input) {
-                    errors
-                    deletedResult {
-                        title
-                    }
-                }
-              }
-            }
-        '''
-
-        lead1 = LeadFactory.create(project=self.project)
-        lead2 = LeadFactory.create(project=self.project)
-
-        def _query_check(will_delete=False, **kwargs):
-            with self.captureOnCommitCallbacks(execute=True):
-                result = self.query_check(
-                    query,
-                    mnested=['project'],
-                    variables={
-                        'projectId': str(self.project.id),
-                        'input': [
-                            str(lead1.pk), str(lead2.pk)
-                        ]},
-                    **kwargs,
-                )
-
-            if will_delete:
-                with self.assertRaises(Lead.DoesNotExist):
-                    lead1.refresh_from_db()
-                    lead2.refresh_from_db()
-            else:
-                lead1.refresh_from_db()
-                lead2.refresh_from_db()
-            return result
-
-        # Error without login
-        _query_check(assert_for_error=True)
-
-        # --- login
-        self.force_login(self.member_user)
-        # Success with normal lead (with project membership)
-        result = _query_check(will_delete=True)['data']['project']['leadBulkDelete']
-        self.assertEqual(result, {
-            'errors': [],
-            'deletedResult': [
-                dict(title=lead2.title),
-                dict(title=lead1.title),
-            ]
-        })
-
     def test_lead_update_validation(self):
         query = '''
             mutation MyMutation ($projectId: ID! $leadId: ID! $input: LeadInputType!) {
@@ -443,6 +388,45 @@ class TestLeadBulkMutationSchema(GraphQLSnapShotTestCase):
         response = _query_check()['data']['project']['leadBulk']
         self.assertMatchSnapshot(response, 'success')
         self.assertEqual(lead_count + 2, Lead.objects.count())
+
+    def test_lead_bulk_delete_validation(self):
+        query = '''
+            mutation MyMutation ($projectId: ID! $input: [ID!]) {
+              project(id: $projectId) {
+                leadBulk(deleteIds: $input) {
+                    errors
+                    deletedResult {
+                        title
+                    }
+                }
+              }
+            }
+        '''
+
+        project = ProjectFactory.create()
+        user = UserFactory.create()
+        project.add_member(user, role=self.project_role_member)
+
+        lead1 = LeadFactory.create(project=project)
+        lead2 = LeadFactory.create(project=project)
+
+        lead_count = Lead.objects.count()
+
+        minput = [str(lead1.pk), str(lead2.pk)]
+
+        def _query_check(**kwargs):
+            return self.query_check(query, minput=minput, variables={'projectId': project.pk}, **kwargs)
+
+        # Error without login
+        _query_check(assert_for_error=True)
+
+        # --- login
+        self.force_login(user)
+        self.assertEqual(lead_count, Lead.objects.count())
+        # Success with normal lead (with project membership)
+        result = _query_check()['data']['project']['leadBulk']
+        self.assertMatchSnapshot(result, 'success')
+        self.assertEqual(lead_count - 2, Lead.objects.count())
 
 
 class TestLeadGroupMutation(GraphQLTestCase):
