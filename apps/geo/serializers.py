@@ -2,18 +2,12 @@ from django.conf import settings
 from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
 
-<<<<<<< HEAD
 from deep.serializers import (
     ProjectPropertySerializerMixin,
     RemoveNullFieldsMixin,
     TempClientIdMixin,
     URLCachedFileField,
 )
-||||||| parent of fd4de667e (implemented region in graphql)
-from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
-=======
-from deep.serializers import ProjectPropertySerializerMixin, RemoveNullFieldsMixin, URLCachedFileField
->>>>>>> fd4de667e (implemented region in graphql)
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
 from geo.models import (
@@ -252,5 +246,6 @@ class PublishRegionGqSerializer(ProjectPropertySerializerMixin, UserResourceSeri
         return data
 
     def update(self, instance, validated_data):
+        instance.is_published = True
         data = super().update(instance, validated_data)
         return data
