@@ -5009,6 +5009,7 @@ type MissingPredictionReviewType {
 type Mutation {
 <<<<<<< HEAD
   createRegion(data: RegionInputType!): CreateRegion
+<<<<<<< HEAD
   createAdminLevel(data: AdminLevelInputType!): CreateAdminLevel
   updateAdminLevel(data: AdminLevelInputType!, id: ID!): UpdateAdminLevel
   organizationCreate(data: OrganizationInputType!): OrganizationCreate
@@ -5016,6 +5017,10 @@ type Mutation {
 =======
   createRegion(data: RegionInputType!): CreateRegion
 >>>>>>> fd4de667e (implemented region in graphql)
+||||||| parent of b652dd00b (publish the geoarea in the project)
+=======
+  publishRegion(data: RegionPublishInputType!, id: ID!): PublishRegion
+>>>>>>> b652dd00b (publish the geoarea in the project)
   createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType!): AssessmentRegistryCreateIssue
   fileUpload(data: FileUploadInputType!): UploadFile
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
@@ -5789,6 +5794,12 @@ type PublicProjectWithMembershipData {
   isRejected: Boolean!
 }
 
+type PublishRegion {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: RegionType
+}
+
 type Query {
   assessmentRegSummaryIssue(id: ID!): AssessmentRegistrySummaryIssueType
   assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimension: AssessmentRegistrySummarySubDimensionTypeEnum, search: String, isParent: Boolean, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
@@ -5941,6 +5952,11 @@ input RegionProjectFilterData {
   hasPermissionAccess: ProjectPermission
   ordering: [ProjectOrderingEnum!]
   isTest: Boolean
+}
+
+input RegionPublishInputType {
+  isPublished: Boolean
+  project: Int!
 }
 
 type RegionType {

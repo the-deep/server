@@ -56,13 +56,13 @@ class UpdateAdminLevel(GrapheneMutation):
         return True  # global permission is always True
 
 
-class UpdateRegion(GrapheneMutation):
+class PublishRegion(GrapheneMutation):
     class Arguments:
-        data = RegionInputType(required=True)
+        data = RegionPublishInputType(required=True)
         id = graphene.ID(required=True)
     model = Region
-    serializer_class = RegionGqSerializer
-    result = graphene.Field(AdminLevelType)
+    serializer_class = PublishRegionGqSerializer
+    result = graphene.Field(RegionType)
 
     @classmethod
     def check_permissions(cls, *args, **_):
@@ -74,3 +74,4 @@ class Mutation():
     create_region = CreateRegion.Field()
     create_admin_level = CreateAdminLevel.Field()
     update_admin_level = UpdateAdminLevel.Field()
+    publish_region = PublishRegion.Field()
