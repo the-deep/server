@@ -709,8 +709,6 @@ class AnalysisFrameworkMembershipGqlSerializer(TempClientIdMixin, serializers.Mo
 
 
 class AnalysisFrameworkMembershipGqSerializer(serializers.ModelSerializer):
-    role = serializers.PrimaryKeyRelatedField(required=False, queryset=AnalysisFrameworkRole.objects.all())
-    framework = serializers.PrimaryKeyRelatedField(queryset=AnalysisFramework.objects.all())
 
     class Meta:
         model = AnalysisFrameworkMembership

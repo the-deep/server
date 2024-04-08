@@ -126,9 +126,9 @@ type AnalysisFrameworkListType {
 }
 
 input AnalysisFrameworkMembershipCreateInputType {
-  role: ID
-  framework: ID!
   member: ID!
+  framework: ID!
+  role: ID!
   addedBy: ID
 }
 
@@ -4292,6 +4292,7 @@ type Mutation {
   analysisFrameworkCreate(data: AnalysisFrameworkInputType!): CreateAnalysisFramework
   analysisFramework(id: ID!): AnalysisFrameworkMutationType
   analysisFrameworkMembershipCreate(data: AnalysisFrameworkMembershipCreateInputType!): CreateAnalysisFrameworkMembership
+  analysisFrameworkMembershipUpdate(data: AnalysisFrameworkMembershipCreateInputType!, id: ID!): UpdateAnalysisFrameworkMembership
 }
 
 type NotificationListType {
@@ -5502,6 +5503,12 @@ type UpdateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisFrameworkDetailType
+}
+
+type UpdateAnalysisFrameworkMembership {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisFrameworkMembershipType
 }
 
 type UpdateAnalysisPillar {

@@ -130,10 +130,22 @@ class CreateAnalysisFrameworkMembership(AfGrapheneMutation):
     result = graphene.Field(AnalysisFrameworkMembershipType)
     serializer_class = AnalysisFrameworkMembershipGqSerializer
     model = AnalysisFrameworkMembership
-    permissions = []
+    permissions = [AfP.Permission.CAN_ADD_USER]
+
+
+class UpdateAnalysisFrameworkMembership(AfGrapheneMutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+        data = AnalysisFrameworkMembershipCreateInputType(required=True)
+
+    result = graphene.Field(AnalysisFrameworkMembershipType)
+    serializer_class = AnalysisFrameworkMembershipGqSerializer
+    model = AnalysisFrameworkMembership
+    permissions = [AfP.Permission.CAN_ADD_USER]
 
 
 class Mutation(object):
     analysis_framework_create = CreateAnalysisFramework.Field()
     analysis_framework = DjangoObjectField(AnalysisFrameworkMutationType)
     analysis_framework_membership_create = CreateAnalysisFrameworkMembership.Field()
+    analysis_framework_membership_update = UpdateAnalysisFrameworkMembership.Field()
