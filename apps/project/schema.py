@@ -707,5 +707,7 @@ class Query:
     @staticmethod
     def resolve_project_roles(root, info) -> QuerySet:
         return ProjectRole.objects.all()
+
+    @staticmethod
     def resolve_project_stat_summary(root, info, **kwargs):
         return get_project_stats_summary(info)
