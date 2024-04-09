@@ -3,9 +3,14 @@ from typing import List
 import graphene
 from django.db import transaction, models
 from django.db.models import QuerySet
+from django.db.models.functions import Cast
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene.types import generic
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from dateutil.relativedelta import relativedelta
+from django.utils import timezone
+
 
 from utils.graphene.geo_scalars import PointScalar
 from utils.graphene.enums import EnumDescription
@@ -119,6 +124,38 @@ def get_top_entity_contributor(project, Entity):
             'count': contributor.entity_count,
         } for contributor in contributors
     ]
+
+
+def get_project_stats_summary(self):
+    projects = Project.get_for_member(self.context.request.user)
+    # Lead stats
+    leads = Lead.objects.filter(project__in=projects)
+    total_leads_tagged_count = leads.annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
+    total_leads_tagged_and_controlled_count = leads.annotate(
+        controlled_entries_count=models.Count(
+            'entry', filter=models.Q(entry__controlled=True)
+        )
+    ).filter(controlled_entries_count__gt=0).count()
+    # Entries activity
+    recent_projects_id = list(
+        projects.annotate(
+            entries_count=Cast(KeyTextTransform('entries_activity', 'stats_cache'), models.IntegerField())
+        ).filter(entries_count__gt=0).order_by('-entries_count').values_list('id', flat=True)[:3])
+    recent_entries = Entry.objects.filter(
+        project__in=recent_projects_id,
+        created_at__gte=(timezone.now() + relativedelta(months=-3))
+    )
+    recent_entries_activity = recent_entries.order_by('created_at__date').values('created_at__date').annotate(
+        count=models.Count('*')
+    ).values('project_id', 'count', date=models.Func(models.F('created_at__date'), function='DATE'))
+
+    return {
+        'projectsCount': projects.count(),
+        'totalLeadsCount': leads.count(),
+        'totalLeadsTaggedCount': total_leads_tagged_count,
+        'totalLeadsTaggedAndControlledCount': total_leads_tagged_and_controlled_count,
+        'recentEntriesActivity': recent_entries_activity
+    }
 
 
 class ProjectExploreStatType(graphene.ObjectType):
@@ -581,13 +618,8 @@ class PublicProjectByRegionListType(CustomDjangoListObjectType):
         filterset_class = PublicProjectByRegionGqlFileterSet
 
 
-class ProjectActivityList(graphene.ObjectType):
-    count = graphene.Int()
-    project = graphene.Field(ProjectType)
-
-
-class EntryActivityList(graphene.ObjectType):
-    project = graphene.Field(ProjectType)
+class ProjectSummaryStatEntryActivityList(graphene.ObjectType):
+    project_id = graphene.ID()
     count = graphene.Int()
     date = graphene.Date()
 
@@ -597,12 +629,7 @@ class ProjectSummaryStatType(graphene.ObjectType):
     totalLeadsCount = graphene.Int()
     totalLeadsTaggedCount = graphene.Int()
     totalLeadsTaggedAndControlledCount = graphene.Int()
-    recentEntriesActivity = graphene.NonNull(
-        type('RecentEntriesActivityType', (graphene.ObjectType,), {
-            "projects": graphene.List(graphene.NonNull(ProjectActivityList)),
-            "activities": graphene.List(graphene.NonNull(EntryActivityList)),
-        })
-    )
+    recentEntriesActivity = graphene.List(graphene.NonNull(ProjectSummaryStatEntryActivityList))
 
 
 class Query:
@@ -681,4 +708,4 @@ class Query:
     def resolve_project_roles(root, info) -> QuerySet:
         return ProjectRole.objects.all()
     def resolve_project_stat_summary(root, info, **kwargs):
-        return info.context.dl.project.resolve_project_stat_summary()
+        return get_project_stats_summary(info)

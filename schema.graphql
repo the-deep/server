@@ -3918,12 +3918,6 @@ type EntriesFilterDataType {
   filterableData: [EntryFilterDataType!]
 }
 
-type EntryActivityList {
-  project: ProjectType
-  count: Int
-  date: Date
-}
-
 input EntryFilterDataInputType {
   filterKey: ID!
   value: String
@@ -5149,11 +5143,6 @@ input ProjectAcceptRejectInputType {
   role: String
 }
 
-type ProjectActivityList {
-  count: Int
-  project: ProjectType
-}
-
 type ProjectByRegionListType {
   results: [RegionWithProject!]
   totalCount: Int
@@ -5538,12 +5527,18 @@ enum ProjectStatusEnum {
   INACTIVE
 }
 
+type ProjectSummaryStatEntryActivityList {
+  projectId: ID
+  count: Int
+  date: Date
+}
+
 type ProjectSummaryStatType {
   projectsCount: Int
   totalLeadsCount: Int
   totalLeadsTaggedCount: Int
   totalLeadsTaggedAndControlledCount: Int
-  recentEntriesActivity: RecentEntriesActivityType!
+  recentEntriesActivity: [ProjectSummaryStatEntryActivityList!]
 }
 
 type ProjectType {
@@ -5840,11 +5835,6 @@ enum RecentActivityTypeEnum {
   LEAD
   ENTRY
   ENTRY_COMMENT
-}
-
-type RecentEntriesActivityType {
-  projects: [ProjectActivityList!]
-  activities: [EntryActivityList!]
 }
 
 type RegionDetailType {
