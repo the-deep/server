@@ -18,8 +18,6 @@ from analysis import public_schema as analysis_public_schema
 from user import mutation as user_mutation, schema as user_schema
 from user_group import mutation as user_group_mutation, schema as user_group_schema
 from organization import schema as organization_schema, mutation as organization_mutation
-from geo import schema as geo_schema
-from organization import schema as organization_schema
 from geo import schema as geo_schema, mutations as geo_mutation
 from notification import schema as notification_schema, mutation as notification_mutation
 from assisted_tagging import schema as assisted_tagging_schema

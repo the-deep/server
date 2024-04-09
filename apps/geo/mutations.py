@@ -50,7 +50,7 @@ class CreateAdminLevel(GrapheneMutation):
 class RemoveProjectRegion(PsDeleteMutation):
     class Arguments:
         id = graphene.ID(required=True)
-        projectid = graphene.ID(required=True)
+        project_id = graphene.ID(required=True)
     errors = graphene.List(graphene.NonNull(CustomErrorType))
     result = graphene.Field(RegionDetailType)
     permissions = [PP.permission.UPDATE_PROJECT]
@@ -61,10 +61,9 @@ class RemoveProjectRegion(PsDeleteMutation):
 
     @staticmethod
     def mutate(root, info, **kwargs):
-        project = Project.objects.get(id=kwargs['projectid'])
-        region = Region.objects.get(id=kwargs['id'])
-        print(project.regions.all())
-        if region not in project.regions.all():
+        project = Project.objects.get(id=kwargs['project_id'])
+        region = int(kwargs['id'])
+        if region not in [region.id for region in project.regions.all()]:
             return RemoveProjectRegion(errors=[
                 dict(
                     field='nonFieldErrors',
@@ -88,10 +87,6 @@ class UpdateAdminLevel(GrapheneMutation):
     @classmethod
     def check_permissions(cls, info, **_):
         return True  # global permission is always True
-
-
-class DeleteAdminLevel():
-    pass
 
 
 class Mutation():

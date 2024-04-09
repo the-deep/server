@@ -3,7 +3,6 @@ from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
 
 from deep.serializers import (
-    ProjectPropertySerializerMixin,
     RemoveNullFieldsMixin,
     URLCachedFileField,
 )
@@ -154,7 +153,7 @@ class GeoAreaSerializer(serializers.ModelSerializer):
         )
 
 
-class RegionGqSerializer(ProjectPropertySerializerMixin, UserResourceSerializer):
+class RegionGqSerializer(UserResourceSerializer):
     project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())
     client_id = serializers.CharField(required=False)
 
@@ -197,7 +196,7 @@ class AdminLevelGqlSerializer(UserResourceSerializer):
         admin_level = super().create(validated_data)
 
         if not settings.TESTING:
-            transaction.on_commit(lambda: load_geo_areas.delay(region.id))
+            transaction.on_commit(lambda: load_geo_areas.delay(admin_level.region.id))
 
         return admin_level
 
