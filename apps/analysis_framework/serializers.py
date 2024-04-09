@@ -709,3 +709,36 @@ class AnalysisFrameworkMembershipGqlSerializer(TempClientIdMixin, serializers.Mo
         validated_data['framework'] = self.framework
         validated_data['added_by'] = self.context['request'].user
         return super().create(validated_data)
+
+
+class AnalysisFrameworkCloneGlSerializer(serializers.ModelSerializer):
+    title = serializers.CharField(required=True)
+    description = serializers.CharField(required=True)
+    project_id = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = AnalysisFramework
+        fields = ('__all__')
+
+    def create(self, validated_data):
+        af = self.context['request'].active_af
+        new_af = af.clone(self.context['request'].user, validated_data)
+        new_af.add_member(self.context['request'].user, new_af.get_or_create_owner_role())
+
+        project = validated_data.get('project_id')
+        if Project.objects.filter(id=project).exists():
+            project = Project.objects.get(id=project)
+            if not project.can_modify(self.context['request'].user):
+                raise exceptions.ValidationError({
+                    'project': 'Cannot modify the project',
+                })
+
+            project.analysis_framework = new_af
+            project.modified_by = self.context['request'].user
+            project.save()
+
+        else:
+            raise exceptions.ValidationError({
+                'project': 'Invalid Project ID',
+            })
+        return new_af

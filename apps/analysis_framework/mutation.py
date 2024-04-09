@@ -17,6 +17,7 @@ from .models import (
     AnalysisFrameworkMembership,
 )
 from .serializers import (
+    AnalysisFrameworkCloneGlSerializer,
     AnalysisFrameworkGqlSerializer as AnalysisFrameworkSerializer,
     AnalysisFrameworkMembershipGqlSerializer as AnalysisFrameworkMembershipSerializer,
 )
@@ -34,6 +35,11 @@ AnalysisFrameworkInputType = generate_input_type_for_serializer(
 AnalysisFrameworkMembershipInputType = generate_input_type_for_serializer(
     'AnalysisFrameworkMembershipInputType',
     serializer_class=AnalysisFrameworkMembershipSerializer,
+)
+
+AnalysisFrameworkCloneInputType = generate_input_type_for_serializer(
+    'AnalysisFrameworkCloneInputType',
+    serializer_class=AnalysisFrameworkCloneGlSerializer,
 )
 
 
@@ -96,12 +102,22 @@ class BulkUpdateAnalysisFrameworkMembership(AfBulkGrapheneMutation):
         )
 
 
+class CloneAnalysisFramework(AfGrapheneMutation):
+    class Arguments:
+        data = AnalysisFrameworkCloneInputType(required=True)
+
+    result = graphene.Field(AnalysisFrameworkDetailType)
+    serializer_class = AnalysisFrameworkCloneGlSerializer
+    permissions = [AfP.Permission.CAN_CLONE_FRAMEWORK]
+
+
 class AnalysisFrameworkMutationType(DjangoObjectType):
     """
     This mutation is for other scoped objects
     """
     analysis_framework_update = UpdateAnalysisFramework.Field()
     analysis_framework_membership_bulk = BulkUpdateAnalysisFrameworkMembership.Field()
+    analysis_framework_clone = CloneAnalysisFramework.Field()
 
     class Meta:
         model = AnalysisFramework
