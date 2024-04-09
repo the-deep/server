@@ -5527,7 +5527,7 @@ enum ProjectStatusEnum {
   INACTIVE
 }
 
-type ProjectSummaryStatEntryActivityList {
+type ProjectSummaryStatEntryActivityType {
   projectId: ID
   count: Int
   date: Date
@@ -5538,7 +5538,7 @@ type ProjectSummaryStatType {
   totalLeadsCount: Int
   totalLeadsTaggedCount: Int
   totalLeadsTaggedAndControlledCount: Int
-  recentEntriesActivity: [ProjectSummaryStatEntryActivityList!]
+  recentEntriesActivities: [ProjectSummaryStatEntryActivityType!]
 }
 
 type ProjectType {

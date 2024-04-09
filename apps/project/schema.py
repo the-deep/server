@@ -4,12 +4,12 @@ import graphene
 from django.db import transaction, models
 from django.db.models import QuerySet
 from django.db.models.functions import Cast
+from django.utils import timezone
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from dateutil.relativedelta import relativedelta
 from graphene_django import DjangoObjectType, DjangoListField
 from graphene.types import generic
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
-from dateutil.relativedelta import relativedelta
-from django.utils import timezone
 
 
 from utils.graphene.geo_scalars import PointScalar
@@ -150,11 +150,11 @@ def get_project_stats_summary(self):
     ).values('project_id', 'count', date=models.Func(models.F('created_at__date'), function='DATE'))
 
     return {
-        'projectsCount': projects.count(),
-        'totalLeadsCount': leads.count(),
-        'totalLeadsTaggedCount': total_leads_tagged_count,
-        'totalLeadsTaggedAndControlledCount': total_leads_tagged_and_controlled_count,
-        'recentEntriesActivity': recent_entries_activity
+        'projects_count': projects.count(),
+        'total_leads_count': leads.count(),
+        'total_leads_tagged_count': total_leads_tagged_count,
+        'total_leads_tagged_and_controlled_count': total_leads_tagged_and_controlled_count,
+        'recent_entries_activities': recent_entries_activity
     }
 
 
@@ -618,18 +618,18 @@ class PublicProjectByRegionListType(CustomDjangoListObjectType):
         filterset_class = PublicProjectByRegionGqlFileterSet
 
 
-class ProjectSummaryStatEntryActivityList(graphene.ObjectType):
+class ProjectSummaryStatEntryActivityType(graphene.ObjectType):
     project_id = graphene.ID()
     count = graphene.Int()
     date = graphene.Date()
 
 
 class ProjectSummaryStatType(graphene.ObjectType):
-    projectsCount = graphene.Int()
-    totalLeadsCount = graphene.Int()
-    totalLeadsTaggedCount = graphene.Int()
-    totalLeadsTaggedAndControlledCount = graphene.Int()
-    recentEntriesActivity = graphene.List(graphene.NonNull(ProjectSummaryStatEntryActivityList))
+    projects_count = graphene.Int()
+    total_leads_count = graphene.Int()
+    total_leads_tagged_count = graphene.Int()
+    total_leads_tagged_and_controlled_count = graphene.Int()
+    recent_entries_activities = graphene.List(graphene.NonNull(ProjectSummaryStatEntryActivityType))
 
 
 class Query:
