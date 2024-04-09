@@ -2,7 +2,12 @@ from django.conf import settings
 from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
 
-from deep.serializers import ProjectPropertySerializerMixin, RemoveNullFieldsMixin, URLCachedFileField
+from deep.serializers import (
+    ProjectPropertySerializerMixin,
+    RemoveNullFieldsMixin,
+    URLCachedFileField,
+    IntegerIDField,
+)
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
 from geo.models import (
@@ -151,11 +156,11 @@ class GeoAreaSerializer(serializers.ModelSerializer):
 
 
 class RegionGqSerializer(ProjectPropertySerializerMixin, UserResourceSerializer):
-    project = serializers.IntegerField()
+    project = IntegerIDField()
 
     class Meta:
         model = Region
-        fields = '__all__'
+        exclude = ('geo_options', 'is_published')
 
     def validate_project(self, project):
         try:
@@ -166,7 +171,7 @@ class RegionGqSerializer(ProjectPropertySerializerMixin, UserResourceSerializer)
             )
 
         if not project.can_modify(self.context['request'].user):
-            raise serializers.ValidationError('Invalid project')
+            raise serializers.ValidationError('Permission Denied')
         return project.id
 
     def validate(self, data):
