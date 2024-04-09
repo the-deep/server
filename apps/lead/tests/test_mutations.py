@@ -404,15 +404,19 @@ class TestLeadBulkMutationSchema(GraphQLSnapShotTestCase):
         '''
 
         project = ProjectFactory.create()
-        user = UserFactory.create()
-        project.add_member(user, role=self.project_role_member)
+        non_member_user = UserFactory.create()
+        member_user = UserFactory.create()
+        project.add_member(member_user, role=self.project_role_member)
 
         lead1 = LeadFactory.create(project=project)
         lead2 = LeadFactory.create(project=project)
 
         lead_count = Lead.objects.count()
 
-        minput = [str(lead1.pk), str(lead2.pk)]
+        minput = [
+            str(lead1.pk),
+            str(lead2.pk),
+        ]
 
         def _query_check(**kwargs):
             return self.query_check(query, minput=minput, variables={'projectId': project.pk}, **kwargs)
@@ -420,13 +424,26 @@ class TestLeadBulkMutationSchema(GraphQLSnapShotTestCase):
         # Error without login
         _query_check(assert_for_error=True)
 
-        # --- login
-        self.force_login(user)
+        # -- With login (non-member)
+        self.force_login(non_member_user)
+        _query_check(assert_for_error=True)
+
+        # --- login (member)
+        self.force_login(member_user)
         self.assertEqual(lead_count, Lead.objects.count())
         # Success with normal lead (with project membership)
         result = _query_check()['data']['project']['leadBulk']
         self.assertMatchSnapshot(result, 'success')
-        self.assertEqual(lead_count - 2, Lead.objects.count())
+        self.assertEqual(
+            result,
+            {
+                'errors': [],
+                'deletedResult': [
+                    dict(title=lead1.title),
+                    dict(title=lead2.title),
+                ],
+            },
+        )
 
 
 class TestLeadGroupMutation(GraphQLTestCase):
