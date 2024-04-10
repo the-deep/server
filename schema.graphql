@@ -59,6 +59,7 @@ type AnalysisAutomaticSummaryType {
 
 input AnalysisFrameworkCloneInputType {
   title: String!
+  description: String
   project: Int
 }
 
