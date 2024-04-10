@@ -57,6 +57,11 @@ type AnalysisAutomaticSummaryType {
   status: AutomaticSummaryStatusEnum!
 }
 
+input AnalysisFrameworkCloneInputType {
+  title: String!
+  project: Int
+}
+
 type AnalysisFrameworkDetailType {
   id: ID!
   title: String!
@@ -142,6 +147,7 @@ type AnalysisFrameworkMutationType {
   title: String!
   analysisFrameworkUpdate(data: AnalysisFrameworkInputType!): UpdateAnalysisFramework
   analysisFrameworkMembershipBulk(deleteIds: [ID!], items: [BulkAnalysisFrameworkMembershipInputType!]): BulkUpdateAnalysisFrameworkMembership
+  analysisFrameworkClone(data: AnalysisFrameworkCloneInputType!): CloneAnalysisFramework
 }
 
 enum AnalysisFrameworkPermission {
@@ -3404,6 +3410,12 @@ type CancelUserGenericExport {
 type ChangeUserPassword {
   errors: [GenericScalar!]
   ok: Boolean
+}
+
+type CloneAnalysisFramework {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisFrameworkDetailType
 }
 
 type CollectionTechniqueCountType {

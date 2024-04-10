@@ -711,34 +711,34 @@ class AnalysisFrameworkMembershipGqlSerializer(TempClientIdMixin, serializers.Mo
         return super().create(validated_data)
 
 
-class AnalysisFrameworkCloneGlSerializer(serializers.ModelSerializer):
+class AnalysisFrameworkCloneGlSerializer(serializers.Serializer):
     title = serializers.CharField(required=True)
-    description = serializers.CharField(required=True)
-    project_id = serializers.IntegerField(required=False)
+    description = serializers.CharField(required=False)
+    project = serializers.IntegerField(required=False)
 
     class Meta:
         model = AnalysisFramework
-        fields = ('__all__')
+        fields = ('title', 'description', 'project')
+
+    def validate(self, validated_data):
+        project_id = validated_data.get('project')
+        # Check if project exists and user has access to it
+        if project_id is not None:
+            project = Project.objects.filter(id=project_id).first()
+            if project is None:
+                raise serializers.ValidationError('Invalid project ID')
+            if not project.can_modify(self.context['request'].user):
+                raise serializers.ValidationError('User does not have permission to modify the project')
+            validated_data['project'] = project
+        return validated_data
 
     def create(self, validated_data):
         af = self.context['request'].active_af
         new_af = af.clone(self.context['request'].user, validated_data)
         new_af.add_member(self.context['request'].user, new_af.get_or_create_owner_role())
 
-        project = validated_data.get('project_id')
-        if Project.objects.filter(id=project).exists():
-            project = Project.objects.get(id=project)
-            if not project.can_modify(self.context['request'].user):
-                raise exceptions.ValidationError({
-                    'project': 'Cannot modify the project',
-                })
-
+        if project := validated_data.get('project'):
             project.analysis_framework = new_af
             project.modified_by = self.context['request'].user
-            project.save()
-
-        else:
-            raise exceptions.ValidationError({
-                'project': 'Invalid Project ID',
-            })
+            project.save(update_fields=['analysis_framework', 'modified_by'])
         return new_af
