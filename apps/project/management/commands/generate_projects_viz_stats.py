@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand
 
 from project.models import Project
-
 from project.tasks import generate_viz_stats
 
 
