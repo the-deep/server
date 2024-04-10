@@ -12,8 +12,6 @@ from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.trackers import track_user
 
-from lead.models import Lead
-from entry.models import Entry
 from .models import Assignment, Notification
 from .filter_set import NotificationGqlFilterSet, AssignmentFilterSet
 from .enums import (
@@ -51,31 +49,21 @@ class NotificationType(DjangoObjectType):
         return get_user_notification_qs(info)
 
 
+class AssignmentContentDataType(graphene.ObjectType):
+    content_type = graphene.String(required=False)
+    lead = graphene.Field(LeadDetailType)
+    entry = graphene.Field(EntryType)
+
+
 class AssignmentType(DjangoObjectType):
     class Meta:
         model = Assignment
-
+    id = graphene.ID(required=True)
     project = graphene.Field(ProjectDetailType)
-    content_type = graphene.String(required=False)
-    object_id = graphene.ID(required=True)
-    lead_type = graphene.Field(LeadDetailType)
-    entry_type = graphene.Field(EntryType)
+    content_data = graphene.Field(AssignmentContentDataType)
 
-    @staticmethod
-    def get_custom_queryset(queryset, info, **kwargs):
-        return get_user_assignment_qs(info)
-
-    @staticmethod
-    def resolve_content_type(root, info):
-        return root.content_type.model
-
-    @staticmethod
-    def resolve_lead_type(root, info):
-        return Lead(root.object_id) if root.content_type.model == 'lead' else None
-
-    @staticmethod
-    def resolve_entry_type(root, info):
-        return Entry(root.object_id) if root.content_type.model == 'entry' else None
+    def resolve_content_data(root, info):
+        return info.context.dl.notification.assignment.load(root.pk)
 
 
 class NotificationListType(CustomDjangoListObjectType):

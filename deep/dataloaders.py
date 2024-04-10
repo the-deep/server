@@ -16,6 +16,7 @@ from analysis.dataloaders import DataLoaders as AnalysisDataLoaders
 from gallery.dataloaders import DataLoaders as DeepGalleryDataLoaders
 from assessment_registry.dataloaders import DataLoaders as AssessmentRegistryDataLoaders
 from assisted_tagging.dataloaders import DataLoaders as AssistedTaggingLoaders
+from notification.dataloaders import DataLoaders as AssignmentLoaders
 
 
 class GlobalDataLoaders(WithContextMixin):
@@ -74,3 +75,6 @@ class GlobalDataLoaders(WithContextMixin):
     @cached_property
     def assisted_tagging(self):
         return AssistedTaggingLoaders(context=self.context)
+
+    def notification(self):
+        return AssignmentLoaders(context=self.context)

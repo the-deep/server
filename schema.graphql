@@ -3081,6 +3081,16 @@ type AssessmentType {
   modifiedBy: UserType
 }
 
+type AssignmentContentDataType {
+  contentType: String
+  lead: LeadDetailType
+  entry: EntryType
+}
+
+input AssignmentInputType {
+  isDone: Boolean
+}
+
 type AssignmentListType {
   results: [AssignmentType!]
   totalCount: Int
@@ -3101,10 +3111,8 @@ type AssignmentType {
   createdFor: UserType!
   project: ProjectDetailType
   isDone: Boolean!
-  contentType: String
-  objectId: ID!
-  leadType: LeadDetailType
-  entryType: EntryType
+  objectId: Int!
+  contentData: AssignmentContentDataType
 }
 
 type AssistedTaggingModelPredictionTagType {
@@ -4946,7 +4954,7 @@ type Mutation {
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
   genericExportCancel(id: ID!): CancelUserGenericExport
   notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
-  assignmentStatusUpdate(id: ID!, isDone: Boolean!): AssignmentStatusUpdate
+  assignmentStatusUpdate(data: AssignmentInputType!, id: ID!): AssignmentStatusUpdate
   assignmentBulkStatusUpdate(isDone: Boolean!): AsssignmentBulkStatusUpdate
   projectCreate(data: ProjectCreateInputType!): CreateProject
   joinProject(data: ProjectJoinRequestInputType!): CreateProjectJoin
@@ -5712,7 +5720,7 @@ type Query {
   publicLead(uuid: UUID!): PublicLeadMetaType
   notification(id: ID!): NotificationType
   notifications(timestamp: DateTime, timestampLte: DateTime, timestampGte: DateTime, isPending: Boolean, notificationType: NotificationTypeEnum, status: NotificationStatusEnum, page: Int = 1, ordering: String, pageSize: Int): NotificationListType
-  assignment(project: ID, isDone: Boolean, page: Int = 1, ordering: String, pageSize: Int): AssignmentListType
+  assignments(project: ID, isDone: Boolean, page: Int = 1, ordering: String, pageSize: Int): AssignmentListType
   region(id: ID!): RegionDetailType
   regions(id: Float, code: String, title: String, public: Boolean, project: [ID], createdAt: DateTime, createdBy: [ID], modifiedAt: DateTime, modifiedBy: [ID], createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, excludeProject: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): RegionListType
   organization(id: ID!): OrganizationType
