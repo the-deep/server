@@ -3083,12 +3083,21 @@ type AssessmentType {
 
 type AssignmentContentDataType {
   contentType: String
-  lead: LeadDetailType
-  entry: EntryType
+  lead: AssignmentLeadDetailType
+  entry: AssignmentEntryDetailType
+}
+
+type AssignmentEntryDetailType {
+  id: ID!
 }
 
 input AssignmentInputType {
   isDone: Boolean
+}
+
+type AssignmentLeadDetailType {
+  id: ID!
+  title: String!
 }
 
 type AssignmentListType {
@@ -3098,10 +3107,9 @@ type AssignmentListType {
   pageSize: Int
 }
 
-type AssignmentStatusUpdate {
-  errors: [GenericScalar!]
-  ok: Boolean
-  result: AssignmentType
+type AssignmentProjectDetailType {
+  id: ID!
+  title: String!
 }
 
 type AssignmentType {
@@ -3109,10 +3117,16 @@ type AssignmentType {
   createdAt: DateTime!
   createdBy: UserType
   createdFor: UserType!
-  project: ProjectDetailType
+  project: AssignmentProjectDetailType
   isDone: Boolean!
   objectId: Int!
   contentData: AssignmentContentDataType
+}
+
+type AssignmentUpdate {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssignmentType
 }
 
 type AssistedTaggingModelPredictionTagType {
@@ -3179,10 +3193,9 @@ type AssistedTaggingRootQueryType {
   predictionTags: [AssistedTaggingModelPredictionTagType!]
 }
 
-type AsssignmentBulkStatusUpdate {
+type AsssignmentBulkStatusMarkAsDone {
   errors: [GenericScalar!]
   ok: Boolean
-  result: [AssignmentType!]
 }
 
 type AtomFeedFieldType {
@@ -4954,8 +4967,8 @@ type Mutation {
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
   genericExportCancel(id: ID!): CancelUserGenericExport
   notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
-  assignmentStatusUpdate(data: AssignmentInputType!, id: ID!): AssignmentStatusUpdate
-  assignmentBulkStatusUpdate(isDone: Boolean!): AsssignmentBulkStatusUpdate
+  assignmentUpdate(data: AssignmentInputType!, id: ID!): AssignmentUpdate
+  assignmentBulkStatusMarkAsDone: AsssignmentBulkStatusMarkAsDone
   projectCreate(data: ProjectCreateInputType!): CreateProject
   joinProject(data: ProjectJoinRequestInputType!): CreateProjectJoin
   projectJoinRequestDelete(projectId: ID!): ProjectJoinRequestDelete

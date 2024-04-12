@@ -2,7 +2,7 @@ from django.utils.translation import gettext
 
 import graphene
 
-from utils.graphene.mutation import GrapheneMutation, PsGrapheneMutation, generate_input_type_for_serializer
+from utils.graphene.mutation import GrapheneMutation, generate_input_type_for_serializer
 from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
 
 from .serializers import AssignmentSerializer, NotificationGqSerializer
@@ -49,35 +49,39 @@ class NotificationStatusUpdate(graphene.Mutation):
         return NotificationStatusUpdate(result=instance, ok=True, errors=None)
 
 
-class AssignmentStatusUpdate(GrapheneMutation):
+class AssignmentUpdate(GrapheneMutation):
     class Arguments:
         id = graphene.ID(required=True)
         data = AssignmentInputType(required=True)
     model = Assignment
     result = graphene.Field(AssignmentType)
     serializer_class = AssignmentSerializer
-    permissions = []
 
     @classmethod
     def check_permissions(cls, info, **kwargs):
         return True  # global permissions is always True
 
+    @classmethod
+    def filter_queryset(cls, qs, info):
+        return Assignment.get_for(info.context.user)
 
-class AsssignmentBulkStatusUpdate(PsGrapheneMutation):
-    class Arguments:
-        is_done = graphene.Boolean(required=True)
+
+class AsssignmentBulkStatusMarkAsDone(GrapheneMutation):
     model = Assignment
-    result = graphene.List(graphene.NonNull(AssignmentType))
-    permissions = []
+    serializer_class = AssignmentSerializer
+
+    @classmethod
+    def check_permissions(cls, info, **kwargs):
+        return True
 
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
-        instance = cls.model.objects.filter(created_for=info.context.user, is_done=False)
-        instance.update(is_done=kwargs['is_done'])
-        return cls(result=instance, ok=True)
+        instance = Assignment.get_for(info.context.user).filter(is_done=False)
+        instance.update(is_done=True)
+        return cls(ok=True)
 
 
 class Mutation(object):
     notification_status_update = NotificationStatusUpdate.Field()
-    assignment_status_update = AssignmentStatusUpdate.Field()
-    assignment_bulk_status_update = AsssignmentBulkStatusUpdate.Field()
+    assignment_update = AssignmentUpdate.Field()
+    assignment_bulk_status_mark_as_done = AsssignmentBulkStatusMarkAsDone.Field()

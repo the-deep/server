@@ -3,9 +3,7 @@ import graphene
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
-from entry.schema import EntryType
-from lead.schema import LeadDetailType
-from project.schema import ProjectDetailType
+from lead.models import Lead
 
 from utils.graphene.enums import EnumDescription
 from utils.graphene.types import CustomDjangoListObjectType
@@ -49,17 +47,35 @@ class NotificationType(DjangoObjectType):
         return get_user_notification_qs(info)
 
 
+class AssignmentLeadDetailType(graphene.ObjectType):
+    id = graphene.ID(required=True)
+    title = graphene.String(required=True)
+
+    class Meta:
+        model = Lead
+        fields = ['id', 'title']
+
+
+class AssignmentEntryDetailType(graphene.ObjectType):
+    id = graphene.ID(required=True)
+
+
+class AssignmentProjectDetailType(graphene.ObjectType):
+    id = graphene.ID(required=True)
+    title = graphene.String(required=True)
+
+
 class AssignmentContentDataType(graphene.ObjectType):
     content_type = graphene.String(required=False)
-    lead = graphene.Field(LeadDetailType)
-    entry = graphene.Field(EntryType)
+    lead = graphene.Field(AssignmentLeadDetailType)
+    entry = graphene.Field(AssignmentEntryDetailType)
 
 
 class AssignmentType(DjangoObjectType):
     class Meta:
         model = Assignment
     id = graphene.ID(required=True)
-    project = graphene.Field(ProjectDetailType)
+    project = graphene.Field(AssignmentProjectDetailType)
     content_data = graphene.Field(AssignmentContentDataType)
 
     def resolve_content_data(root, info):
