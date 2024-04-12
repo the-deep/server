@@ -6,7 +6,8 @@ from user.factories import UserFactory
 from project.factories import ProjectFactory
 
 from notification.models import Notification
-from notification.factories import NotificationFactory
+from notification.factories import AssignmentFactory, NotificationFactory
+from lead.factories import LeadFactory
 
 
 class TestNotificationQuerySchema(GraphQLTestCase):
@@ -186,3 +187,40 @@ class TestNotificationQuerySchema(GraphQLTestCase):
             content = _query_check(filters)
             self.assertEqual(content['data']['notifications']['totalCount'], count, f'\n{filters=} \n{content=}')
             self.assertEqual(len(content['data']['notifications']['results']), count, f'\n{filters=} \n{content=}')
+
+
+class TestAssignmentQuerySchema(GraphQLTestCase):
+    def test_assignments_query(self):
+        query = '''
+        query MyQuery {
+            assignments(isDone: false) {
+            results {
+              contentData {
+                contentType
+                entry {
+                  id
+                }
+                lead {
+                  id
+                  title
+                }
+              }
+              createdAt
+              id
+              isDone
+              objectId
+              project {
+                id
+                title
+              }
+            }
+          }
+        }
+        '''
+        project = ProjectFactory.create()
+        user = UserFactory.create()
+        lead = LeadFactory.create()
+        assignment = AssignmentFactory.create(
+            project=project.id,
+            object_id=lead.id
+        )
