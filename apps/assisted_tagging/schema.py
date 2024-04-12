@@ -10,7 +10,6 @@ from deep.permissions import ProjectPermissions as PP
 
 from geo.schema import (
     ProjectGeoAreaType,
-    get_geo_area_queryset_for_project_geo_area_type,
 )
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
@@ -103,15 +102,7 @@ class AssistedTaggingRootQueryType(graphene.ObjectType):
 def get_draft_entry_qs(info):  # TODO use dataloader
     qs = DraftEntry.objects.filter(project=info.context.active_project).order_by('page', 'text_order')
     if PP.check_permission(info, PP.Permission.VIEW_ENTRY):
-        return qs.prefetch_related(
-            Prefetch(
-                'predictions',
-                queryset=AssistedTaggingPrediction.objects.filter(is_selected=True).order_by('id'),
-            ),
-            'predictions__model_version',
-            'predictions__wrong_prediction_reviews',
-            'missing_prediction_reviews',
-        )
+        return qs
     return qs.none()
 
 
@@ -134,15 +125,11 @@ class WrongPredictionReviewType(UserResourceMixin, DjangoObjectType):
 
 class AssistedTaggingPredictionType(DjangoObjectType):
     model_version = graphene.ID(source='model_version_id', required=True)
-    model_version_deepl_model_id = graphene.String(required=True)
     draft_entry = graphene.ID(source='draft_entry_id', required=True)
     data_type = graphene.Field(AssistedTaggingPredictionDataTypeEnum, required=True)
     data_type_display = EnumDescription(source='get_data_type_display', required=True)
     category = graphene.ID(source='category_id')
     tag = graphene.ID(source='tag_id')
-    wrong_prediction_reviews = graphene.List(
-        graphene.NonNull(WrongPredictionReviewType),
-    )
 
     class Meta:
         model = AssistedTaggingPrediction
@@ -153,14 +140,9 @@ class AssistedTaggingPredictionType(DjangoObjectType):
             'threshold',
             'is_selected',
         )
-
-    @staticmethod
-    def resolve_wrong_prediction_reviews(root, info, **kwargs):
-        return root.wrong_prediction_reviews.all()   # NOTE: Prefetched by DraftEntry
-
-    @staticmethod
-    def resolve_model_version_deepl_model_id(root, info, **kwargs):
-        return root.model_version.model.model_id   # NOTE: Prefetched by DraftEntry
+    '''
+    NOTE: model_version_deepl_model_id and wrong_prediction_review are not included here because they are not used in client
+    '''
 
 
 class MissingPredictionReviewType(UserResourceMixin, DjangoObjectType):
@@ -178,13 +160,10 @@ class MissingPredictionReviewType(UserResourceMixin, DjangoObjectType):
 class DraftEntryType(DjangoObjectType):
     prediction_status = graphene.Field(DraftEntryPredictionStatusEnum, required=True)
     prediction_status_display = EnumDescription(source='get_prediction_status_display', required=True)
-    predictions = graphene.List(
+    prediction_tags = graphene.List(
         graphene.NonNull(AssistedTaggingPredictionType)
     )
-    missing_prediction_reviews = graphene.List(
-        graphene.NonNull(MissingPredictionReviewType),
-    )
-    geoareas = graphene.List(
+    geo_areas = graphene.List(
         graphene.NonNull(ProjectGeoAreaType)
     )
 
@@ -201,15 +180,11 @@ class DraftEntryType(DjangoObjectType):
         return get_draft_entry_qs(info)
 
     @staticmethod
-    def resolve_predictions(root, info, **kwargs):
-        return root.predictions.all()   # NOTE: Prefetched by DraftEntry
+    def resolve_prediction_tags(root, info, **kwargs):
+        return info.context.dl.assisted_tagging.draft_entry_predications.load(root.pk)
 
     @staticmethod
-    def resolve_missing_prediction_reviews(root, info, **kwargs):
-        return root.missing_prediction_reviews.all()   # NOTE: Prefetched by DraftEntry
-
-    @staticmethod
-    def resolve_geoareas(root, info, **_):
+    def resolve_geo_areas(root, info, **_):
         return info.context.dl.geo.draft_entry_geo_area.load(root.pk)
 
 

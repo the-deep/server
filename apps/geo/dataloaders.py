@@ -1,5 +1,4 @@
 from collections import defaultdict
-from graphene.types import context
 
 from promise import Promise
 from django.utils.functional import cached_property

@@ -15,6 +15,7 @@ from unified_connector.dataloaders import DataLoaders as UnifiedConnectorDataLoa
 from analysis.dataloaders import DataLoaders as AnalysisDataLoaders
 from gallery.dataloaders import DataLoaders as DeepGalleryDataLoaders
 from assessment_registry.dataloaders import DataLoaders as AssessmentRegistryDataLoaders
+from assisted_tagging.dataloaders import DataLoaders as AssistedTaggingLoaders
 
 
 class GlobalDataLoaders(WithContextMixin):
@@ -69,3 +70,7 @@ class GlobalDataLoaders(WithContextMixin):
     @cached_property
     def deep_gallery(self):
         return DeepGalleryDataLoaders(context=self.context)
+
+    @cached_property
+    def assisted_tagging(self):
+        return AssistedTaggingLoaders(context=self.context)

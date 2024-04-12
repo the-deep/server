@@ -69,20 +69,3 @@ class ArySourceOrganizationSerializer(DynamicFieldsMixin, UserResourceSerializer
         model = Organization
         fields = ('key', 'title', 'long_name',
                   'short_name', 'logo', 'organization_type', 'merged_as')
-<<<<<<< Updated upstream
-||||||| Stash base
-
-
-class OrganizationGqSerializer(UserResourceSerializer):
-    class Meta:
-        model = Organization
-        fields = ('title', 'long_name', 'url', 'short_name', 'logo', 'organization_type')
-=======
-
-
-class OrganizationGqSerializer(UserResourceSerializer):
-    class Meta:
-        model = Organization
-        # fields = ('url','organization_type','title','short_name')
-        fields = ('title', 'long_name', 'url', 'short_name', 'logo', 'organization_type')
->>>>>>> Stashed changes

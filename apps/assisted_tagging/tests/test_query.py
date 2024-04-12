@@ -29,7 +29,6 @@ from assisted_tagging.factories import (
     DraftEntryFactory,
     AssistedTaggingPredictionFactory,
     MissingPredictionReviewFactory,
-    WrongPredictionReviewFactory,
 )
 
 
@@ -89,26 +88,17 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
                 predictionStatus
                 predictionStatusDisplay
                 predictionReceivedAt
-                predictions {
+                predictionTags {
                   id
                   modelVersion
-                  modelVersionDeeplModelId
                   dataType
                   dataTypeDisplay
                   value
                   category
                   tag
-                  wrongPredictionReviews {
-                    id
-                  }
                 }
-                relatedGeoareas {
+                geoAreas {
                     title
-                }
-                missingPredictionReviews {
-                  id
-                  category
-                  tag
                 }
               }
             }
@@ -238,15 +228,6 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
             value='Kathmandu',
             is_selected=True,
         )
-        missing_prediction1 = MissingPredictionReviewFactory.create(
-            draft_entry=draft_entry1,
-            category=category1,
-            tag=other_tags[0],
-        )
-        wrong_prediction1 = WrongPredictionReviewFactory.create(
-            prediction=prediction1,
-            created_by=user,
-        )
         draft_entry1.save_geo_data()
 
         def _query_check(**kwargs):
@@ -276,49 +257,36 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
             predictionReceivedAt=None,
             predictionStatus=self.genum(draft_entry1.prediction_status),
             predictionStatusDisplay=draft_entry1.get_prediction_status_display(),
-            predictions=[
+            predictionTags=[
                 dict(
                     id=str(prediction1.pk),
                     modelVersion=str(prediction1.model_version_id),
-                    modelVersionDeeplModelId=str(prediction1.model_version.model.model_id),
                     dataType=self.genum(prediction1.data_type),
                     dataTypeDisplay=prediction1.get_data_type_display(),
                     value='',
                     category=str(prediction1.category_id),
                     tag=str(prediction1.tag_id),
-                    wrongPredictionReviews=[dict(id=str(wrong_prediction1.id))],
                 ),
                 dict(
                     id=str(prediction2.id),
                     modelVersion=str(prediction2.model_version.id),
-                    modelVersionDeeplModelId=str(prediction2.model_version.model.model_id),
                     dataType=self.genum(prediction2.data_type),
                     dataTypeDisplay=prediction2.get_data_type_display(),
                     value=prediction2.value,
                     category=None,
                     tag=None,
-                    wrongPredictionReviews=[],
                 ),
                 dict(
                     id=str(prediction3.id),
                     modelVersion=str(prediction3.model_version.id),
-                    modelVersionDeeplModelId=str(prediction3.model_version.model.model_id),
                     dataType=self.genum(prediction3.data_type),
                     dataTypeDisplay=prediction3.get_data_type_display(),
                     value=prediction3.value,
                     category=None,
                     tag=None,
-                    wrongPredictionReviews=[],
                 )
             ],
-            missingPredictionReviews=[
-                dict(
-                    id=str(missing_prediction1.pk),
-                    category=str(missing_prediction1.category_id),
-                    tag=str(missing_prediction1.tag_id),
-                )
-            ],
-            relatedGeoareas=[
+            geoAreas=[
                 dict(
                     title='Nepal',
                 ),
@@ -341,7 +309,6 @@ class AssistedTaggingCallbackApiTest(TestCase, SnapShotTextCase):
         DraftEntryFactory,
         AssistedTaggingPredictionFactory,
         MissingPredictionReviewFactory,
-        WrongPredictionReviewFactory,
     ]
 
     DEEPL_CALLBACK_MOCK_DATA = {
