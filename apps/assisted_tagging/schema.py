@@ -108,15 +108,9 @@ def get_draft_entry_qs(info):  # TODO use dataloader
                 'predictions',
                 queryset=AssistedTaggingPrediction.objects.filter(is_selected=True).order_by('id'),
             ),
-            Prefetch(
-                'related_geoareas',
-                queryset=get_geo_area_queryset_for_project_geo_area_type().order_by('id'),
-            ),
             'predictions__model_version',
-            'predictions__model_version__model',
             'predictions__wrong_prediction_reviews',
             'missing_prediction_reviews',
-            'related_geoareas',
         )
     return qs.none()
 
@@ -190,7 +184,7 @@ class DraftEntryType(DjangoObjectType):
     missing_prediction_reviews = graphene.List(
         graphene.NonNull(MissingPredictionReviewType),
     )
-    related_geoareas = graphene.List(
+    geoareas = graphene.List(
         graphene.NonNull(ProjectGeoAreaType)
     )
 
@@ -215,8 +209,8 @@ class DraftEntryType(DjangoObjectType):
         return root.missing_prediction_reviews.all()   # NOTE: Prefetched by DraftEntry
 
     @staticmethod
-    def resolve_related_geoareas(root, info, **kwargs):
-        return root.related_geoareas.all()  # NOTE: Prefetched by DraftEntry
+    def resolve_geoareas(root, info, **_):
+        return info.context.dl.geo.draft_entry_geo_area.load(root.pk)
 
 
 class DraftEntryListType(CustomDjangoListObjectType):

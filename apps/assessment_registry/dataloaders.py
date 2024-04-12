@@ -95,6 +95,8 @@ class GeoAreaLoader(DataLoaderWithContext):
         _map = {}
         for geo_area in geo_area_qs:
             _map[geo_area.id] = geo_area
+        print(_map)
+        print([_map.get(key) for key in keys])
         return Promise.resolve([_map.get(key) for key in keys])
 
 
