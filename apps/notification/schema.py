@@ -15,6 +15,7 @@ from .filter_set import NotificationGqlFilterSet, AssignmentFilterSet
 from .enums import (
     NotificationTypeEnum,
     NotificationStatusEnum,
+    AssignmentContentTypeEnum
 )
 
 
@@ -51,24 +52,22 @@ class AssignmentLeadDetailType(graphene.ObjectType):
     id = graphene.ID(required=True)
     title = graphene.String(required=True)
 
-    class Meta:
-        model = Lead
-        fields = ['id', 'title']
-
-
-class AssignmentEntryDetailType(graphene.ObjectType):
-    id = graphene.ID(required=True)
-
 
 class AssignmentProjectDetailType(graphene.ObjectType):
     id = graphene.ID(required=True)
     title = graphene.String(required=True)
 
 
+class AssignmentEntryReviewCommentDetailType(graphene.ObjectType):
+    id = graphene.ID(required=True)
+    entry_id = graphene.ID(required=True)
+    lead_id = graphene.ID(required=True)
+
+
 class AssignmentContentDataType(graphene.ObjectType):
-    content_type = graphene.String(required=False)
+    content_type = graphene.Field(AssignmentContentTypeEnum)
     lead = graphene.Field(AssignmentLeadDetailType)
-    entry = graphene.Field(AssignmentEntryDetailType)
+    entry_review_comment = graphene.Field(AssignmentEntryReviewCommentDetailType)
 
 
 class AssignmentType(DjangoObjectType):
