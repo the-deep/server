@@ -2487,13 +2487,11 @@ type AssistedTaggingPredictionType {
   threshold: Decimal
   isSelected: Boolean!
   modelVersion: ID!
-  modelVersionDeeplModelId: String!
   draftEntry: ID!
   dataType: AssistedTaggingPredictionDataTypeEnum!
   dataTypeDisplay: EnumDescription!
   category: ID
   tag: ID
-  wrongPredictionReviews: [WrongPredictionReviewType!]
 }
 
 type AssistedTaggingQueryType {
@@ -3104,9 +3102,8 @@ type DraftEntryType {
   predictionReceivedAt: DateTime
   predictionStatus: DraftEntryPredictionStatusEnum!
   predictionStatusDisplay: EnumDescription!
-  predictions: [AssistedTaggingPredictionType!]
-  missingPredictionReviews: [MissingPredictionReviewType!]
-  relatedGeoareas: [ProjectGeoAreaType!]
+  predictionTags: [AssistedTaggingPredictionType!]
+  geoAreas: [ProjectGeoAreaType!]
 }
 
 enum DraftEntryTypeEnum {
