@@ -546,11 +546,12 @@ class AutoAssistedTaggingDraftEntryHandler(BaseHandler):
                 prediction_status=DraftEntry.PredictionStatus.DONE,
                 type=DraftEntry.Type.AUTO
             )
-            geo_areas_qs = GeoAreaGqlFilterSet(
-                data={'titles': [geo['entity'] for geo in model_preds['geolocations']]},
-                queryset=GeoArea.get_for_project(lead.project)
-            ).qs
-            draft.related_geoareas.set(geo_areas_qs)
+            if model_preds['geolocations']:
+                geo_areas_qs = GeoAreaGqlFilterSet(
+                    data={'titles': [geo['entity'] for geo in model_preds['geolocations']]},
+                    queryset=GeoArea.get_for_project(lead.project)
+                ).qs.distinct('title')
+                draft.related_geoareas.set(geo_areas_qs)
             model_version = models_version_map[
                 (data['classification_model_info']['name'], data['classification_model_info']['version'])
             ]

@@ -115,13 +115,13 @@ class GeoAreaGqlFilterSet(OrderEnumMixin, django_filters.rest_framework.FilterSe
 
     def filter_titles(self, queryset, _, values):
         if values:
-            # Let's only use 20 max.
-            _values = values[:20]
+            # Let's only use 10 max.
+            _values = set(values[:10])
             return queryset.filter(
                 reduce(
                     lambda acc, item: acc | item,
                     [
-                        models.Q(title__icontains=value)
+                        models.Q(title__iexact=value)
                         for value in _values
                     ]
                 )

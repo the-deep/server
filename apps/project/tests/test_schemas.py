@@ -541,10 +541,15 @@ class TestProjectSchema(GraphQLTestCase):
         self.assertEqual(len(content), 1, content)
         self.assertEqual(content, [geo1_data], content)
 
-        filters = {'titles': ['kathm', 'lalit'], 'ordering': self.genum(GeoAreaOrderingEnum.ASC_ID)}
+        filters = {'titles': ['Kathmandu', 'lalitpur'], 'ordering': self.genum(GeoAreaOrderingEnum.ASC_ID)}
         content = _query_check(variables=filters)['data']['project']['geoAreas']['results']
         self.assertEqual(len(content), 2, content)
         self.assertEqual(content, [geo1_data, geo2_data], content)
+
+        filters = {'titles': ['Kath', 'lal'], 'ordering': self.genum(GeoAreaOrderingEnum.ASC_ID)}
+        content = _query_check(variables=filters)['data']['project']['geoAreas']['results']
+        self.assertEqual(len(content), 0, content)
+        self.assertEqual(content, [], content)
 
     def test_project_stat_recent(self):
         query = '''
