@@ -1,4 +1,5 @@
 import json
+import typing
 import logging
 
 from django.http import JsonResponse
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 sns_message_validator = SNSMessageValidator()
 
 
-def verify_sns_payload(request) -> tuple[str, int]:
+def verify_sns_payload(request) -> typing.Tuple[str, int]:
     # Validate message type from header without having to parse the request body.
     message_type = request.headers.get('x-amz-sns-message-type')
     try:
