@@ -158,6 +158,7 @@ from deepl_integration.views import (
     AnalyticalStatementGeoCallbackView,
 )
 
+from deep.ses import ses_bounce_handler_view
 from deep.views import (
     AccountActivate,
     Api_404View,
@@ -610,6 +611,8 @@ urlpatterns = [
     re_path(r'^favicon.ico$',
             RedirectView.as_view(url=get_frontend_url('favicon.ico')),
             name="favicon"),
+
+    re_path('ses-bounce/?$', ses_bounce_handler_view, name='ses_bounce'),
 ] + [
     # graphql patterns
     re_path('^graphql/?$', csrf_exempt(CustomGraphQLView.as_view())),
