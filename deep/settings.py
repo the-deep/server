@@ -289,8 +289,6 @@ if IN_AWS_COPILOT_ECS:
             'PORT': DBCLUSTER_SECRET['port'],
             'OPTIONS': {
                 'sslmode': 'require',
-                # https://lightsail.aws.amazon.com/ls/docs/en_us/articles/amazon-lightsail-download-ssl-certificate-for-managed-database
-                'sslrootcert': os.path.join(BASE_DIR, 'deploy/rds-ca-2019-root.pem'),
             },
         }
     }
