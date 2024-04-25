@@ -15,6 +15,7 @@ from project.models import (
     ProjectUserGroupMembership,
     ProjectStats,
     Project,
+    ProjectRole,
 )
 from deep.permissions import ProjectPermissions as PP
 from deep.caches import CacheKey
@@ -1007,6 +1008,28 @@ class TestProjectSchema(GraphQLTestCase):
                 project.refresh_from_db()
                 # It's inactive as ahead by Project.PROJECT_INACTIVE_AFTER_MONTHS
                 assert project.status == Project.Status.INACTIVE
+
+    def test_project_role(self):
+        query = '''
+            query MyQuery {
+              projectRoles{
+                id
+                level
+                title
+                type
+
+            }
+        }
+        '''
+        user = UserFactory.create()
+
+        # without login
+        self.query_check(query, assert_for_error=True)
+        # with login
+        self.force_login(user)
+        project_role_count = ProjectRole.objects.count()
+        content = self.query_check(query)
+        self.assertEqual(len(content['data']['projectRoles']), project_role_count)
 
 
 class TestProjectViz(GraphQLTestCase):
