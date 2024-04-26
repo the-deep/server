@@ -332,6 +332,14 @@ class SnapshotQuery:
                                         }
                                     }
                                 }
+                                geojson {
+                                    variables {
+                                        clientId
+                                        completeness
+                                        name
+                                        type
+                                    }
+                                }
                             }
                         }
                     }
@@ -479,6 +487,75 @@ class SnapshotQuery:
                                 }
                             }
                         }
+                        lineChart {
+                            horizontalAxis {
+                                field
+                            }
+                            horizontalAxisLineVisible
+                            horizontalAxisTitle
+                            horizontalGridLineVisible
+                            horizontalTickVisible
+                            legendHeading
+                            sheet
+                            subTitle
+                            title
+                            verticalAxis {
+                                label
+                                aggregationType
+                                clientId
+                                color
+                                field
+                            }
+                            verticalAxisExtendMinimumValue
+                            verticalAxisExtendMaximumValue
+                            verticalAxisLineVisible
+                            verticalAxisTitle
+                            verticalGridLineVisible
+                            verticalTickVisible
+                            horizontalTickLabelRotation
+                            style {
+                                horizontalAxisTickLabel {
+                                    ...TextStyle
+                                }
+                                horizontalAxisTitle {
+                                    ...TextStyle
+                                }
+                                horizontalGridLine {
+                                    ...GridLineStyle
+                                }
+                                horizontalTick {
+                                    ...TickStyle
+                                }
+                                legend {
+                                    heading {
+                                        ...TextStyle
+                                    }
+                                    label {
+                                        ...TextStyle
+                                    }
+                                    position
+                                    shape
+                                }
+                                subTitle {
+                                    ...TextStyle
+                                }
+                                title {
+                                    ...TextStyle
+                                }
+                                verticalAxisTickLabel {
+                                    ...TextStyle
+                                }
+                                verticalAxisTitle {
+                                    ...TextStyle
+                                }
+                                verticalGridLine {
+                                    ...GridLineStyle
+                                }
+                                verticalTick {
+                                    ...TickStyle
+                                }
+                            }
+                        }
                         timelineChart {
                             category
                             date
@@ -490,6 +567,80 @@ class SnapshotQuery:
                         }
                         url {
                             url
+                        }
+                        map {
+                            title
+                            subTitle
+                            mapHeight
+                            maxZoom
+                            minZoom
+                            scaleBar
+                            showScale
+                            zoom
+                            enableZoomControls
+                            centerLatitude
+                            centerLongitude
+                            style {
+                                title {
+                                    ...TextStyle
+                                }
+                                subTitle {
+                                    ...TextStyle
+                                }
+                            }
+                            layers {
+                                clientId
+                                name
+                                visible
+                                opacity
+                                order
+                                type
+                                layerConfig {
+                                    mapboxLayer {
+                                        mapboxStyle
+                                        accessToken
+                                    }
+                                    lineLayer {
+                                        contentReferenceId
+                                        style {
+                                            line {
+                                                strokeType
+                                                dashSpacing
+                                                stroke
+                                                strokeWidth
+                                            }
+                                        }
+                                    }
+                                    polygonLayer {
+                                        contentReferenceId
+                                        labelColumn
+                                    }
+                                    symbolLayer {
+                                        contentReferenceId
+                                        labelPropertyKey
+                                        scaleType
+                                        showLabels
+                                        symbol
+                                        style {
+                                            symbol {
+                                                ...TextStyle
+                                            }
+                                            label {
+                                                ...TextStyle
+                                            }
+                                        }
+                                    }
+                                    heatmapLayer {
+                                        blur
+                                        contentReferenceId
+                                        fillPalette
+                                        radius
+                                        weighted
+                                        weightPropertyKey
+                                        scaleDataMax
+                                    }
+                                }
+                            }
                         }
                     }
                 }
