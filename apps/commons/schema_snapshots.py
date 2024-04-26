@@ -200,6 +200,16 @@ class SnapshotQuery:
                     }
                 }
             }
+            fragment GridLineStyle on AnalysisReportGridLineStyleType {
+                lineColor
+                lineOpacity
+                lineWidth
+            }
+            fragment TickStyle on AnalysisReportTickStyleType {
+                lineColor
+                lineOpacity
+                lineWidth
+            }
             fragment TextStyle on AnalysisReportTextStyleType {
                 align
                 color
@@ -298,6 +308,39 @@ class SnapshotQuery:
                             file {
                                 id
                             }
+                            type
+                            metadata {
+                                csv {
+                                    headerRow
+                                    variables {
+                                        clientId
+                                        completeness
+                                        name
+                                        type
+                                    }
+                                }
+                                xlsx {
+                                    sheets {
+                                        clientId
+                                        headerRow
+                                        name
+                                        variables {
+                                            clientId
+                                            completeness
+                                            name
+                                            type
+                                        }
+                                    }
+                                }
+                                geojson {
+                                    variables {
+                                        clientId
+                                        completeness
+                                        name
+                                        type
+                                    }
+                                }
+                            }
                         }
                     }
                     contentConfiguration {
@@ -328,8 +371,276 @@ class SnapshotQuery:
                                 }
                             }
                         }
+                        kpi {
+                            items {
+                                abbreviateValue
+                                clientId
+                                color
+                                date
+                                source
+                                sourceUrl
+                                subtitle
+                                title
+                                value
+                                style {
+                                    sourceContentStyle {
+                                        ...TextStyle
+                                    }
+                                    subtitleContentStyle {
+                                        ...TextStyle
+                                    }
+                                    titleContentStyle {
+                                        ...TextStyle
+                                    }
+                                    valueContentStyle {
+                                        ...TextStyle
+                                    }
+                                }
+                            }
+                            sourceContentStyle {
+                                ...TextStyle
+                            }
+                            subtitleContentStyle {
+                                ...TextStyle
+                            }
+                            titleContentStyle {
+                                ...TextStyle
+                            }
+                            valueContentStyle {
+                                ...TextStyle
+                            }
+                        }
+                        barChart {
+                            direction
+                            horizontalAxis {
+                                field
+                                type
+                            }
+                            horizontalAxisLineVisible
+                            horizontalAxisTitle
+                            horizontalGridLineVisible
+                            horizontalTickVisible
+                            legendHeading
+                            sheet
+                            subTitle
+                            title
+                            type
+                            verticalAxis {
+                                label
+                                aggregationType
+                                clientId
+                                color
+                                field
+                            }
+                            verticalAxisExtendMinimumValue
+                            verticalAxisExtendMaximumValue
+                            verticalAxisLineVisible
+                            verticalAxisTitle
+                            verticalGridLineVisible
+                            verticalTickVisible
+                            horizontalTickLabelRotation
+                            style {
+                                bar {
+                                    border {
+                                        ...BorderStyle
+                                    }
+                                }
+                                horizontalAxisTickLabel {
+                                    ...TextStyle
+                                }
+                                horizontalAxisTitle {
+                                    ...TextStyle
+                                }
+                                horizontalGridLine {
+                                    ...GridLineStyle
+                                }
+                                horizontalTick {
+                                    ...TickStyle
+                                }
+                                legend {
+                                    heading {
+                                        ...TextStyle
+                                    }
+                                    label {
+                                        ...TextStyle
+                                    }
+                                    position
+                                    shape
+                                }
+                                subTitle {
+                                    ...TextStyle
+                                }
+                                title {
+                                    ...TextStyle
+                                }
+                                verticalAxisTickLabel {
+                                    ...TextStyle
+                                }
+                                verticalAxisTitle {
+                                    ...TextStyle
+                                }
+                                verticalGridLine {
+                                    ...GridLineStyle
+                                }
+                                verticalTick {
+                                    ...TickStyle
+                                }
+                            }
+                        }
+                        lineChart {
+                            horizontalAxis {
+                                field
+                            }
+                            horizontalAxisLineVisible
+                            horizontalAxisTitle
+                            horizontalGridLineVisible
+                            horizontalTickVisible
+                            legendHeading
+                            sheet
+                            subTitle
+                            title
+                            verticalAxis {
+                                label
+                                aggregationType
+                                clientId
+                                color
+                                field
+                            }
+                            verticalAxisExtendMinimumValue
+                            verticalAxisExtendMaximumValue
+                            verticalAxisLineVisible
+                            verticalAxisTitle
+                            verticalGridLineVisible
+                            verticalTickVisible
+                            horizontalTickLabelRotation
+                            style {
+                                horizontalAxisTickLabel {
+                                    ...TextStyle
+                                }
+                                horizontalAxisTitle {
+                                    ...TextStyle
+                                }
+                                horizontalGridLine {
+                                    ...GridLineStyle
+                                }
+                                horizontalTick {
+                                    ...TickStyle
+                                }
+                                legend {
+                                    heading {
+                                        ...TextStyle
+                                    }
+                                    label {
+                                        ...TextStyle
+                                    }
+                                    position
+                                    shape
+                                }
+                                subTitle {
+                                    ...TextStyle
+                                }
+                                title {
+                                    ...TextStyle
+                                }
+                                verticalAxisTickLabel {
+                                    ...TextStyle
+                                }
+                                verticalAxisTitle {
+                                    ...TextStyle
+                                }
+                                verticalGridLine {
+                                    ...GridLineStyle
+                                }
+                                verticalTick {
+                                    ...TickStyle
+                                }
+                            }
+                        }
+                        timelineChart {
+                            category
+                            date
+                            detail
+                            sheet
+                            source
+                            sourceUrl
+                            title
+                        }
                         url {
                             url
+                        }
+                        map {
+                            title
+                            subTitle
+                            mapHeight
+                            maxZoom
+                            minZoom
+                            scaleBar
+                            showScale
+                            zoom
+                            enableZoomControls
+                            centerLatitude
+                            centerLongitude
+                            style {
+                                title {
+                                    ...TextStyle
+                                }
+                                subTitle {
+                                    ...TextStyle
+                                }
+                            }
+                            layers {
+                                clientId
+                                name
+                                visible
+                                opacity
+                                order
+                                type
+                                layerConfig {
+                                    mapboxLayer {
+                                        mapboxStyle
+                                        accessToken
+                                    }
+                                    lineLayer {
+                                        contentReferenceId
+                                        style {
+                                            line {
+                                                strokeType
+                                                dashSpacing
+                                                stroke
+                                                strokeWidth
+                                            }
+                                        }
+                                    }
+                                    polygonLayer {
+                                        contentReferenceId
+                                        labelColumn
+                                    }
+                                    symbolLayer {
+                                        contentReferenceId
+                                        labelPropertyKey
+                                        scaleType
+                                        showLabels
+                                        symbol
+                                        style {
+                                            symbol {
+                                                ...TextStyle
+                                            }
+                                            label {
+                                                ...TextStyle
+                                            }
+                                        }
+                                    }
+                                    heatmapLayer {
+                                        blur
+                                        contentReferenceId
+                                        fillPalette
+                                        radius
+                                        weighted
+                                        weightPropertyKey
+                                        scaleDataMax
+                                    }
+                                }
+                            }
                         }
                     }
                 }

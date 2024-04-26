@@ -342,6 +342,15 @@ type AnalysisPublicationDateType {
   endDate: Date!
 }
 
+enum AnalysisReportAggregationTypeEnum {
+  COUNT
+  SUM
+  MEAN
+  MEDIAN
+  MIN
+  MAX
+}
+
 input AnalysisReportBackgroundStyleInputType {
   color: String
   opacity: Int
@@ -350,6 +359,100 @@ input AnalysisReportBackgroundStyleInputType {
 type AnalysisReportBackgroundStyleType {
   color: String
   opacity: Int
+}
+
+input AnalysisReportBarChartConfigurationInputType {
+  sheet: String
+  type: AnalysisReportBarChartTypeEnum!
+  direction: AnalysisReportBarChartDirectionEnum!
+  horizontalAxis: AnalysisReportHorizontalAxisInputType!
+  verticalAxis: [AnalysisReportVerticalAxisInputType!]!
+  horizontalAxisTitle: String
+  verticalAxisTitle: String
+  title: String
+  subTitle: String
+  legendHeading: String
+  horizontalTickLabelRotation: Int
+  horizontalAxisLineVisible: Boolean
+  verticalAxisLineVisible: Boolean
+  verticalAxisExtendMinimumValue: Int
+  verticalAxisExtendMaximumValue: Int
+  verticalGridLineVisible: Boolean
+  horizontalGridLineVisible: Boolean
+  verticalTickVisible: Boolean
+  horizontalTickVisible: Boolean
+  style: AnalysisReportBarChartStyleInputType
+}
+
+type AnalysisReportBarChartConfigurationType {
+  sheet: String
+  type: AnalysisReportBarChartTypeEnum!
+  direction: AnalysisReportBarChartDirectionEnum!
+  horizontalAxis: AnalysisReportHorizontalAxisType!
+  verticalAxis: [AnalysisReportVerticalAxisType!]!
+  horizontalAxisTitle: String
+  verticalAxisTitle: String
+  title: String
+  subTitle: String
+  legendHeading: String
+  horizontalTickLabelRotation: Int
+  horizontalAxisLineVisible: Boolean
+  verticalAxisLineVisible: Boolean
+  verticalAxisExtendMinimumValue: Int
+  verticalAxisExtendMaximumValue: Int
+  verticalGridLineVisible: Boolean
+  horizontalGridLineVisible: Boolean
+  verticalTickVisible: Boolean
+  horizontalTickVisible: Boolean
+  style: AnalysisReportBarChartStyleType
+}
+
+enum AnalysisReportBarChartDirectionEnum {
+  VERTICAL
+  HORIZONTAL
+}
+
+input AnalysisReportBarChartStyleInputType {
+  title: AnalysisReportTextStyleInputType
+  subTitle: AnalysisReportTextStyleInputType
+  legend: AnalysisReportCategoricalLegendStyleInputType
+  bar: AnalysisReportBarStyleInputType
+  horizontalAxisTitle: AnalysisReportTextStyleInputType
+  verticalAxisTitle: AnalysisReportTextStyleInputType
+  horizontalAxisTickLabel: AnalysisReportTextStyleInputType
+  verticalAxisTickLabel: AnalysisReportTextStyleInputType
+  verticalGridLine: AnalysisReportGridLineStyleInputType
+  horizontalGridLine: AnalysisReportGridLineStyleInputType
+  verticalTick: AnalysisReportTickStyleInputType
+  horizontalTick: AnalysisReportTickStyleInputType
+}
+
+type AnalysisReportBarChartStyleType {
+  title: AnalysisReportTextStyleType
+  subTitle: AnalysisReportTextStyleType
+  legend: AnalysisReportCategoricalLegendStyleType
+  bar: AnalysisReportBarStyleType
+  horizontalAxisTitle: AnalysisReportTextStyleType
+  verticalAxisTitle: AnalysisReportTextStyleType
+  horizontalAxisTickLabel: AnalysisReportTextStyleType
+  verticalAxisTickLabel: AnalysisReportTextStyleType
+  verticalGridLine: AnalysisReportGridLineStyleType
+  horizontalGridLine: AnalysisReportGridLineStyleType
+  verticalTick: AnalysisReportTickStyleType
+  horizontalTick: AnalysisReportTickStyleType
+}
+
+enum AnalysisReportBarChartTypeEnum {
+  SIDE_BY_SIDE
+  STACKED
+}
+
+input AnalysisReportBarStyleInputType {
+  border: AnalysisReportBorderStyleInputType
+}
+
+type AnalysisReportBarStyleType {
+  border: AnalysisReportBorderStyleType
 }
 
 input AnalysisReportBodyStyleInputType {
@@ -382,6 +485,20 @@ type AnalysisReportBorderStyleType {
   style: AnalysisReportBorderStyleStyleEnum
 }
 
+input AnalysisReportCategoricalLegendStyleInputType {
+  position: AnalysisReportLegendPositionEnum
+  shape: AnalysisReportLegendDotShapeEnum
+  heading: AnalysisReportTextStyleInputType
+  label: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportCategoricalLegendStyleType {
+  position: AnalysisReportLegendPositionEnum
+  shape: AnalysisReportLegendDotShapeEnum
+  heading: AnalysisReportTextStyleType
+  label: AnalysisReportTextStyleType
+}
+
 input AnalysisReportConfigurationInputType {
   pageStyle: AnalysisReportPageStyleInputType
   headerStyle: AnalysisReportHeaderStyleInputType
@@ -409,6 +526,11 @@ input AnalysisReportContainerContentConfigurationInputType {
   heading: AnalysisReportHeadingConfigurationInputType
   image: AnalysisReportImageConfigurationInputType
   url: AnalysisReportUrlConfigurationInputType
+  kpi: AnalysisReportKpiConfigurationInputType
+  barChart: AnalysisReportBarChartConfigurationInputType
+  lineChart: AnalysisReportLineChartConfigurationInputType
+  map: AnalysisReportMapConfigurationInputType
+  timelineChart: AnalysisReportTimelineChartConfigurationInputType
 }
 
 type AnalysisReportContainerContentConfigurationType {
@@ -416,6 +538,11 @@ type AnalysisReportContainerContentConfigurationType {
   heading: AnalysisReportHeadingConfigurationType
   image: AnalysisReportImageConfigurationType
   url: AnalysisReportUrlConfigurationType
+  kpi: AnalysisReportKpiConfigurationType
+  barChart: AnalysisReportBarChartConfigurationType
+  lineChart: AnalysisReportLineChartConfigurationType
+  map: AnalysisReportMapConfigurationType
+  timelineChart: AnalysisReportTimelineChartConfigurationType
 }
 
 enum AnalysisReportContainerContentTypeEnum {
@@ -423,11 +550,17 @@ enum AnalysisReportContainerContentTypeEnum {
   HEADING
   IMAGE
   URL
+  TIMELINE_CHART
+  KPI
+  BAR_CHART
+  MAP
+  LINE_CHART
 }
 
 input AnalysisReportContainerDataInputType {
   id: ID
   clientId: String
+  clientReferenceId: String!
   upload: ID!
   data: GenericScalar
 }
@@ -435,6 +568,7 @@ input AnalysisReportContainerDataInputType {
 type AnalysisReportContainerDataType {
   id: ID!
   upload: AnalysisReportUploadType!
+  clientReferenceId: String!
   data: GenericScalar!
   clientId: ID!
 }
@@ -476,6 +610,18 @@ type AnalysisReportContainerType {
   style: AnalysisReportContainerStyleType
   contentConfiguration: AnalysisReportContainerContentConfigurationType
   contentData: [AnalysisReportContainerDataType!]!
+}
+
+input AnalysisReportGridLineStyleInputType {
+  lineColor: String
+  lineWidth: Int
+  lineOpacity: Int
+}
+
+type AnalysisReportGridLineStyleType {
+  lineColor: String
+  lineWidth: Int
+  lineOpacity: Int
 }
 
 input AnalysisReportHeaderStyleInputType {
@@ -535,6 +681,42 @@ type AnalysisReportHeadingContentStyleType {
   h4: AnalysisReportTextStyleType
 }
 
+input AnalysisReportHeatmapLayerConfigurationInputType {
+  contentReferenceId: String!
+  weightPropertyKey: String!
+  fillPalette: String
+  radius: Float
+  blur: Float
+  scaleDataMax: Int
+  weighted: Boolean
+}
+
+type AnalysisReportHeatmapLayerConfigurationType {
+  contentReferenceId: String!
+  weightPropertyKey: String!
+  fillPalette: String
+  radius: Float
+  blur: Float
+  scaleDataMax: Int
+  weighted: Boolean
+}
+
+input AnalysisReportHorizontalAxisInputType {
+  field: String
+  type: AnalysisReportHorizontalAxisTypeEnum
+}
+
+type AnalysisReportHorizontalAxisType {
+  field: String
+  type: AnalysisReportHorizontalAxisTypeEnum
+}
+
+enum AnalysisReportHorizontalAxisTypeEnum {
+  CATEGORICAL
+  NUMERIC
+  DATE
+}
+
 input AnalysisReportImageConfigurationInputType {
   caption: String
   altText: String
@@ -587,11 +769,293 @@ input AnalysisReportInputUpdateType {
   containers: [AnalysisReportContainerInputType!]
 }
 
+input AnalysisReportKpiConfigurationInputType {
+  items: [AnalysisReportKpiItemConfigurationInputType!]!
+  titleContentStyle: AnalysisReportTextStyleInputType
+  subtitleContentStyle: AnalysisReportTextStyleInputType
+  sourceContentStyle: AnalysisReportTextStyleInputType
+  valueContentStyle: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportKpiConfigurationType {
+  items: [AnalysisReportKpiItemConfigurationType!]!
+  titleContentStyle: AnalysisReportTextStyleType
+  subtitleContentStyle: AnalysisReportTextStyleType
+  sourceContentStyle: AnalysisReportTextStyleType
+  valueContentStyle: AnalysisReportTextStyleType
+}
+
+input AnalysisReportKpiItemConfigurationInputType {
+  title: String
+  subtitle: String
+  source: String
+  sourceUrl: String
+  color: String
+  date: Date
+  value: Int
+  clientId: String
+  abbreviateValue: Boolean
+  style: AnalysisReportKpiItemStyleConfigurationInputType
+}
+
+type AnalysisReportKpiItemConfigurationType {
+  title: String
+  subtitle: String
+  source: String
+  sourceUrl: String
+  color: String
+  date: Date
+  value: Int
+  clientId: String
+  abbreviateValue: Boolean
+  style: AnalysisReportKpiItemStyleConfigurationType
+}
+
+input AnalysisReportKpiItemStyleConfigurationInputType {
+  titleContentStyle: AnalysisReportTextStyleInputType
+  subtitleContentStyle: AnalysisReportTextStyleInputType
+  sourceContentStyle: AnalysisReportTextStyleInputType
+  valueContentStyle: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportKpiItemStyleConfigurationType {
+  titleContentStyle: AnalysisReportTextStyleType
+  subtitleContentStyle: AnalysisReportTextStyleType
+  sourceContentStyle: AnalysisReportTextStyleType
+  valueContentStyle: AnalysisReportTextStyleType
+}
+
+input AnalysisReportLayerConfigInputType {
+  mapboxLayer: AnalysisReportMapboxLayerConfigurationInputType
+  lineLayer: AnalysisReportLineLayerConfigurationInputType
+  symbolLayer: AnalysisReportSymbolLayerConfigurationInputType
+  polygonLayer: AnalysisReportPolygonLayerConfigurationInputType
+  heatmapLayer: AnalysisReportHeatmapLayerConfigurationInputType
+}
+
+type AnalysisReportLayerConfigType {
+  mapboxLayer: AnalysisReportMapboxLayerConfigurationType
+  lineLayer: AnalysisReportLineLayerConfigurationType
+  symbolLayer: AnalysisReportSymbolLayerConfigurationType
+  polygonLayer: AnalysisReportPolygonLayerConfigurationType
+  heatmapLayer: AnalysisReportHeatmapLayerConfigurationType
+}
+
+enum AnalysisReportLegendDotShapeEnum {
+  CIRCLE
+  TRIANGLE
+  SQUARE
+  DIAMOND
+}
+
+enum AnalysisReportLegendPositionEnum {
+  TOP
+  LEFT
+  BOTTOM
+  RIGHT
+}
+
+input AnalysisReportLineChartConfigurationInputType {
+  sheet: String
+  horizontalAxis: AnalysisReportLineHorizontalAxisInputType!
+  verticalAxis: [AnalysisReportVerticalAxisInputType!]!
+  horizontalAxisTitle: String
+  verticalAxisTitle: String
+  title: String
+  subTitle: String
+  legendHeading: String
+  horizontalTickLabelRotation: Int
+  horizontalAxisLineVisible: Boolean
+  verticalAxisLineVisible: Boolean
+  verticalAxisExtendMinimumValue: Int
+  verticalAxisExtendMaximumValue: Int
+  verticalGridLineVisible: Boolean
+  horizontalGridLineVisible: Boolean
+  verticalTickVisible: Boolean
+  horizontalTickVisible: Boolean
+  style: AnalysisReportLineChartStyleInputType
+}
+
+type AnalysisReportLineChartConfigurationType {
+  sheet: String
+  horizontalAxis: AnalysisReportLineHorizontalAxisType!
+  verticalAxis: [AnalysisReportVerticalAxisType!]!
+  horizontalAxisTitle: String
+  verticalAxisTitle: String
+  title: String
+  subTitle: String
+  legendHeading: String
+  horizontalTickLabelRotation: Int
+  horizontalAxisLineVisible: Boolean
+  verticalAxisLineVisible: Boolean
+  verticalAxisExtendMinimumValue: Int
+  verticalAxisExtendMaximumValue: Int
+  verticalGridLineVisible: Boolean
+  horizontalGridLineVisible: Boolean
+  verticalTickVisible: Boolean
+  horizontalTickVisible: Boolean
+  style: AnalysisReportLineChartStyleType
+}
+
+input AnalysisReportLineChartStyleInputType {
+  title: AnalysisReportTextStyleInputType
+  subTitle: AnalysisReportTextStyleInputType
+  legend: AnalysisReportCategoricalLegendStyleInputType
+  horizontalAxisTitle: AnalysisReportTextStyleInputType
+  verticalAxisTitle: AnalysisReportTextStyleInputType
+  horizontalAxisTickLabel: AnalysisReportTextStyleInputType
+  verticalAxisTickLabel: AnalysisReportTextStyleInputType
+  verticalGridLine: AnalysisReportGridLineStyleInputType
+  horizontalGridLine: AnalysisReportGridLineStyleInputType
+  verticalTick: AnalysisReportTickStyleInputType
+  horizontalTick: AnalysisReportTickStyleInputType
+}
+
+type AnalysisReportLineChartStyleType {
+  title: AnalysisReportTextStyleType
+  subTitle: AnalysisReportTextStyleType
+  legend: AnalysisReportCategoricalLegendStyleType
+  horizontalAxisTitle: AnalysisReportTextStyleType
+  verticalAxisTitle: AnalysisReportTextStyleType
+  horizontalAxisTickLabel: AnalysisReportTextStyleType
+  verticalAxisTickLabel: AnalysisReportTextStyleType
+  verticalGridLine: AnalysisReportGridLineStyleType
+  horizontalGridLine: AnalysisReportGridLineStyleType
+  verticalTick: AnalysisReportTickStyleType
+  horizontalTick: AnalysisReportTickStyleType
+}
+
+input AnalysisReportLineHorizontalAxisInputType {
+  field: String
+}
+
+type AnalysisReportLineHorizontalAxisType {
+  field: String
+}
+
+input AnalysisReportLineLayerConfigurationInputType {
+  contentReferenceId: String!
+  style: AnalysisReportLineLayerStyleConfigurationInputType
+}
+
+type AnalysisReportLineLayerConfigurationType {
+  contentReferenceId: String!
+  style: AnalysisReportLineLayerStyleConfigurationType
+}
+
+enum AnalysisReportLineLayerStrokeTypeEnum {
+  DASH
+  SOLID
+}
+
+input AnalysisReportLineLayerStyleConfigurationInputType {
+  line: AnalysisReportLineLayerStyleInputType
+}
+
+type AnalysisReportLineLayerStyleConfigurationType {
+  line: AnalysisReportLineLayerStyleType
+}
+
+input AnalysisReportLineLayerStyleInputType {
+  dashSpacing: Int
+  stroke: String
+  strokeType: AnalysisReportLineLayerStrokeTypeEnum
+  strokeWidth: Int
+}
+
+type AnalysisReportLineLayerStyleType {
+  dashSpacing: Int
+  stroke: String
+  strokeType: AnalysisReportLineLayerStrokeTypeEnum
+  strokeWidth: Int
+}
+
 type AnalysisReportListType {
   results: [AnalysisReportType!]
   totalCount: Int
   page: Int
   pageSize: Int
+}
+
+input AnalysisReportMapConfigurationInputType {
+  title: String
+  subTitle: String
+  minZoom: Int
+  maxZoom: Int
+  zoom: Int
+  showScale: Boolean
+  mapHeight: Int
+  scaleBar: Boolean
+  enableZoomControls: Boolean
+  centerLongitude: Float
+  centerLatitude: Float
+  layers: [AnalysisReportMapLayerConfigurationInputType!]!
+  style: AnalysisReportMapStyleConfigInputType
+}
+
+type AnalysisReportMapConfigurationType {
+  title: String
+  subTitle: String
+  minZoom: Int
+  maxZoom: Int
+  zoom: Int
+  showScale: Boolean
+  mapHeight: Int
+  scaleBar: Boolean
+  enableZoomControls: Boolean
+  centerLongitude: Float
+  centerLatitude: Float
+  layers: [AnalysisReportMapLayerConfigurationType!]!
+  style: AnalysisReportMapStyleConfigType
+}
+
+input AnalysisReportMapLayerConfigurationInputType {
+  clientId: String!
+  name: String!
+  visible: Boolean!
+  order: Int!
+  opacity: Int
+  type: AnalysisReportMapLayerTypeEnum
+  layerConfig: AnalysisReportLayerConfigInputType
+}
+
+type AnalysisReportMapLayerConfigurationType {
+  clientId: String!
+  name: String!
+  visible: Boolean!
+  order: Int!
+  opacity: Int
+  type: AnalysisReportMapLayerTypeEnum
+  layerConfig: AnalysisReportLayerConfigType
+}
+
+enum AnalysisReportMapLayerTypeEnum {
+  OSM_LAYER
+  MAPBOX_LAYER
+  SYMBOL_LAYER
+  POLYGON_LAYER
+  LINE_LAYER
+  HEAT_MAP_LAYER
+}
+
+input AnalysisReportMapStyleConfigInputType {
+  title: AnalysisReportTextStyleInputType
+  subTitle: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportMapStyleConfigType {
+  title: AnalysisReportTextStyleType
+  subTitle: AnalysisReportTextStyleType
+}
+
+input AnalysisReportMapboxLayerConfigurationInputType {
+  mapboxStyle: String
+  accessToken: String
+}
+
+type AnalysisReportMapboxLayerConfigurationType {
+  mapboxStyle: String
+  accessToken: String
 }
 
 input AnalysisReportMarginStyleInputType {
@@ -632,6 +1096,26 @@ type AnalysisReportPageStyleType {
   background: AnalysisReportBackgroundStyleType
 }
 
+input AnalysisReportPolygonLayerConfigurationInputType {
+  contentReferenceId: String!
+  labelColumn: String!
+}
+
+type AnalysisReportPolygonLayerConfigurationType {
+  contentReferenceId: String!
+  labelColumn: String!
+}
+
+enum AnalysisReportScaleTypeEnum {
+  FIXED
+  PROPORTIONAL
+}
+
+enum AnalysisReportScalingTechniqueEnum {
+  ABSOLUTE
+  FLANNERY
+}
+
 input AnalysisReportSnapshotInputType {
   report: ID!
 }
@@ -650,6 +1134,38 @@ type AnalysisReportSnapshotType {
   publishedBy: UserType!
   reportDataFile: FileFieldType
   files: [GalleryFileType!]!
+}
+
+input AnalysisReportSymbolLayerConfigurationInputType {
+  contentReferenceId: String!
+  labelPropertyKey: String!
+  scale: Int
+  scaleType: AnalysisReportScaleTypeEnum
+  scalingTechnique: AnalysisReportScalingTechniqueEnum
+  showLabels: Boolean
+  symbol: String!
+  style: AnalysisReportSymbolLayerStyleConfigurationInputType
+}
+
+type AnalysisReportSymbolLayerConfigurationType {
+  contentReferenceId: String!
+  labelPropertyKey: String!
+  scale: Int
+  scaleType: AnalysisReportScaleTypeEnum
+  scalingTechnique: AnalysisReportScalingTechniqueEnum
+  showLabels: Boolean
+  symbol: String!
+  style: AnalysisReportSymbolLayerStyleConfigurationType
+}
+
+input AnalysisReportSymbolLayerStyleConfigurationInputType {
+  symbol: AnalysisReportTextStyleInputType
+  label: AnalysisReportTextStyleInputType
+}
+
+type AnalysisReportSymbolLayerStyleConfigurationType {
+  symbol: AnalysisReportTextStyleType
+  label: AnalysisReportTextStyleType
 }
 
 input AnalysisReportTextConfigurationInputType {
@@ -691,6 +1207,38 @@ type AnalysisReportTextStyleType {
   size: Int
   weight: Int
   align: AnalysisReportTextStyleAlignEnum
+}
+
+input AnalysisReportTickStyleInputType {
+  lineColor: String
+  lineWidth: Int
+  lineOpacity: Int
+}
+
+type AnalysisReportTickStyleType {
+  lineColor: String
+  lineWidth: Int
+  lineOpacity: Int
+}
+
+input AnalysisReportTimelineChartConfigurationInputType {
+  sheet: String
+  date: String!
+  title: String!
+  detail: String
+  category: String
+  source: String
+  sourceUrl: String
+}
+
+type AnalysisReportTimelineChartConfigurationType {
+  sheet: String
+  date: String!
+  title: String!
+  detail: String
+  category: String
+  source: String
+  sourceUrl: String
 }
 
 type AnalysisReportType {
@@ -762,12 +1310,14 @@ input AnalysisReportUploadMetadataXlsxInputType {
 input AnalysisReportUploadMetadataXlsxSheetInputType {
   name: String
   headerRow: Int
+  clientId: String
   variables: [AnalysisReportVariableInputType!]!
 }
 
 type AnalysisReportUploadMetadataXlsxSheetType {
   name: String
   headerRow: Int
+  clientId: String
   variables: [AnalysisReportVariableType!]!
 }
 
@@ -800,12 +1350,14 @@ type AnalysisReportUrlConfigurationType {
 
 input AnalysisReportVariableInputType {
   name: String
+  clientId: String
   type: AnalysisReportVariableTypeEnum
   completeness: Int
 }
 
 type AnalysisReportVariableType {
   name: String
+  clientId: String
   type: AnalysisReportVariableTypeEnum
   completeness: Int
 }
@@ -814,6 +1366,23 @@ enum AnalysisReportVariableTypeEnum {
   TEXT
   NUMBER
   DATE
+  BOOLEAN
+}
+
+input AnalysisReportVerticalAxisInputType {
+  clientId: String
+  label: String
+  field: String
+  aggregationType: AnalysisReportAggregationTypeEnum
+  color: String
+}
+
+type AnalysisReportVerticalAxisType {
+  clientId: String
+  label: String
+  field: String
+  aggregationType: AnalysisReportAggregationTypeEnum
+  color: String
 }
 
 type AnalysisTopicModelClusterType {
@@ -1026,6 +1595,16 @@ type AppEnumCollection {
   AnalysisReportBorderStyleSerializerStyle: [AppEnumCollectionAnalysisReportBorderStyleSerializerStyle!]
   AnalysisReportImageContentStyleSerializerFit: [AppEnumCollectionAnalysisReportImageContentStyleSerializerFit!]
   AnalysisReportHeadingConfigurationSerializerVariant: [AppEnumCollectionAnalysisReportHeadingConfigurationSerializerVariant!]
+  AnalysisReportHorizontalAxisSerializerType: [AppEnumCollectionAnalysisReportHorizontalAxisSerializerType!]
+  AnalysisReportBarChartConfigurationSerializerType: [AppEnumCollectionAnalysisReportBarChartConfigurationSerializerType!]
+  AnalysisReportBarChartConfigurationSerializerDirection: [AppEnumCollectionAnalysisReportBarChartConfigurationSerializerDirection!]
+  AnalysisReportCategoricalLegendStyleSerializerPosition: [AppEnumCollectionAnalysisReportCategoricalLegendStyleSerializerPosition!]
+  AnalysisReportCategoricalLegendStyleSerializerShape: [AppEnumCollectionAnalysisReportCategoricalLegendStyleSerializerShape!]
+  AnalysisReportVerticalAxisSerializerAggregationType: [AppEnumCollectionAnalysisReportVerticalAxisSerializerAggregationType!]
+  AnalysisReportMapLayerConfigurationSerializerType: [AppEnumCollectionAnalysisReportMapLayerConfigurationSerializerType!]
+  AnalysisReportSymbolLayerConfigurationSerializerScaleType: [AppEnumCollectionAnalysisReportSymbolLayerConfigurationSerializerScaleType!]
+  AnalysisReportSymbolLayerConfigurationSerializerScalingTechnique: [AppEnumCollectionAnalysisReportSymbolLayerConfigurationSerializerScalingTechnique!]
+  AnalysisReportLineLayerStyleSerializerStrokeType: [AppEnumCollectionAnalysisReportLineLayerStyleSerializerStrokeType!]
   NotificationNotificationType: [AppEnumCollectionNotificationNotificationType!]
   NotificationStatus: [AppEnumCollectionNotificationStatus!]
   ConnectorSourceSource: [AppEnumCollectionConnectorSourceSource!]
@@ -1080,8 +1659,32 @@ type AppEnumCollectionAnalysisFrameworkRoleType {
   description: String
 }
 
+type AppEnumCollectionAnalysisReportBarChartConfigurationSerializerDirection {
+  enum: AnalysisReportBarChartDirectionEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportBarChartConfigurationSerializerType {
+  enum: AnalysisReportBarChartTypeEnum!
+  label: String!
+  description: String
+}
+
 type AppEnumCollectionAnalysisReportBorderStyleSerializerStyle {
   enum: AnalysisReportBorderStyleStyleEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportCategoricalLegendStyleSerializerPosition {
+  enum: AnalysisReportLegendPositionEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportCategoricalLegendStyleSerializerShape {
+  enum: AnalysisReportLegendDotShapeEnum!
   label: String!
   description: String
 }
@@ -1098,8 +1701,38 @@ type AppEnumCollectionAnalysisReportHeadingConfigurationSerializerVariant {
   description: String
 }
 
+type AppEnumCollectionAnalysisReportHorizontalAxisSerializerType {
+  enum: AnalysisReportHorizontalAxisTypeEnum!
+  label: String!
+  description: String
+}
+
 type AppEnumCollectionAnalysisReportImageContentStyleSerializerFit {
   enum: AnalysisReportImageContentStyleFitEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportLineLayerStyleSerializerStrokeType {
+  enum: AnalysisReportLineLayerStrokeTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportMapLayerConfigurationSerializerType {
+  enum: AnalysisReportMapLayerTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportSymbolLayerConfigurationSerializerScaleType {
+  enum: AnalysisReportScaleTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportSymbolLayerConfigurationSerializerScalingTechnique {
+  enum: AnalysisReportScalingTechniqueEnum!
   label: String!
   description: String
 }
@@ -1118,6 +1751,12 @@ type AppEnumCollectionAnalysisReportUploadType {
 
 type AppEnumCollectionAnalysisReportVariableSerializerType {
   enum: AnalysisReportVariableTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionAnalysisReportVerticalAxisSerializerAggregationType {
+  enum: AnalysisReportAggregationTypeEnum!
   label: String!
   description: String
 }
@@ -4506,7 +5145,7 @@ type ProjectDetailType {
   analysisReport(id: ID!): AnalysisReportType
   analysisReports(search: String, analyses: [ID!], isPublic: Boolean, organizations: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportListType
   analysisReportUpload(id: ID!): AnalysisReportUploadType
-  analysisReportUploads(report: [ID!], types: [AnalysisReportUploadTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportUploadListType
+  analysisReportUploads(search: String, report: [ID!], types: [AnalysisReportUploadTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportUploadListType
   analysisReportSnapshot(id: ID!): AnalysisReportSnapshotType
   analysisReportSnapshots(report: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisReportSnapshotListType
   assessment(id: ID!): AssessmentType

@@ -601,6 +601,11 @@ class AnalysisReportContainer(models.Model):
         HEADING = 2, 'Heading'
         IMAGE = 3, 'Image'
         URL = 4, 'URL'
+        TIMELINE_CHART = 5, 'Timeline Chart'
+        KPI = 6, 'KPIs'
+        BAR_CHART = 7, 'Bar Chart'
+        MAP = 8, 'Map'
+        LINE_CHART = 9, 'Line Chart'
 
     report = models.ForeignKey(AnalysisReport, on_delete=models.CASCADE)
     row = models.SmallIntegerField()
@@ -616,6 +621,8 @@ class AnalysisReportContainer(models.Model):
 class AnalysisReportContainerData(models.Model):
     container = models.ForeignKey(AnalysisReportContainer, on_delete=models.CASCADE)
     upload = models.ForeignKey(AnalysisReportUpload, on_delete=models.PROTECT)
+    # NOTE: This is used by client for internal references in JSON data
+    client_reference_id = models.CharField(max_length=20)
     # Generic for now. Client will define this later
     data = models.JSONField(default=dict)
 
