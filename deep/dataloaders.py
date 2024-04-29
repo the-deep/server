@@ -76,5 +76,6 @@ class GlobalDataLoaders(WithContextMixin):
     def assisted_tagging(self):
         return AssistedTaggingLoaders(context=self.context)
 
+    @cached_property
     def notification(self):
         return AssignmentLoaders(context=self.context)

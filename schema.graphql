@@ -3082,13 +3082,20 @@ type AssessmentType {
 }
 
 type AssignmentContentDataType {
-  contentType: String
+  contentType: AssignmentContentTypeEnum
   lead: AssignmentLeadDetailType
-  entry: AssignmentEntryDetailType
+  entryReviewComment: AssignmentEntryReviewCommentDetailType
 }
 
-type AssignmentEntryDetailType {
+enum AssignmentContentTypeEnum {
+  LEAD
+  ENTRY_REVIEW_COMMENT
+}
+
+type AssignmentEntryReviewCommentDetailType {
   id: ID!
+  entryId: ID!
+  leadId: ID!
 }
 
 input AssignmentInputType {

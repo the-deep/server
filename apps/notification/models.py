@@ -2,7 +2,6 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils import timezone
-from quality_assurance.models import EntryReviewComment
 
 from user.models import User
 from project.models import Project

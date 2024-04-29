@@ -3,7 +3,6 @@ import graphene
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
-from lead.models import Lead
 
 from utils.graphene.enums import EnumDescription
 from utils.graphene.types import CustomDjangoListObjectType
@@ -111,3 +110,7 @@ class Query:
     @staticmethod
     def resolve_notifications(root, info, **kwargs) -> QuerySet:
         return get_user_notification_qs(info)
+
+    @staticmethod
+    def resolve_assignments(root, info, **kwargs) -> QuerySet:
+        return Assignment.get_for(info.context.user)

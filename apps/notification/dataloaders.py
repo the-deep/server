@@ -2,7 +2,6 @@ from django.utils.functional import cached_property
 
 from promise import Promise
 
-from entry.models import EntryComment
 from notification.models import Assignment
 from lead.models import Lead
 from quality_assurance.models import EntryReviewComment
@@ -57,8 +56,9 @@ class AssignmentLoader(DataLoaderWithContext):
         _result = {
             _id: {
                 'content_type': content_type,
-                'lead': _lead_id_map.get(object_id) if content_type == 'lead' else None,
-                'entry_review_comment': _entry_review_comment_id_map.get(object_id) if content_type == 'entryreviewcomment' else None,
+                'lead': _lead_id_map.get(object_id) if content_type == Lead._meta.model else None,
+                'entry_review_comment':
+                _entry_review_comment_id_map.get(object_id) if content_type == EntryReviewComment._meta.model else None,
             }
             for _id, content_type, object_id in assignment_qs
         }

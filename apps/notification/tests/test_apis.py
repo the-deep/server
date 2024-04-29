@@ -1,5 +1,6 @@
 import pytest
 from datetime import timedelta
+from django.contrib.contenttypes.models import ContentType
 
 from deep.tests import TestCase
 from django.utils import timezone
@@ -508,9 +509,17 @@ class TestAssignmentApi(TestCase):
         project = self.create(Project)
         user1 = self.create(User)
         user2 = self.create(User)
-        assignment = self.create(Assignment, created_for=user1, project=project, created_by=user2)
-        self.create(Assignment, created_for=user1, project=project, created_by=user2)
-        self.create(Assignment, created_for=user1, project=project, created_by=user2)
+        lead = self.create(Lead, project=project)
+        kwargs = {
+            'object_id': lead.id,
+            'content_type': ContentType.objects.get_for_model(Lead),
+            'project': project,
+            'created_for': user1,
+            'created_by': user2,
+        }
+        assignment = self.create(Assignment, **kwargs)
+        self.create(Assignment, **kwargs)
+        self.create(Assignment, **kwargs)
 
         url = '/api/v1/assignments/'
         self.authenticate(user1)
