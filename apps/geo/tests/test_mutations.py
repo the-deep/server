@@ -22,7 +22,6 @@ class CreateTestMutation(GraphQLTestCase):
         user = UserFactory.create()
         user2 = UserFactory.create()
         project = ProjectFactory.create(
-            title="dummy project 1",
             created_by=user
         )
         project.add_member(user)
@@ -34,11 +33,11 @@ class CreateTestMutation(GraphQLTestCase):
                 **kwargs
             )
 
-        minput = dict(
-            project=project.id,
-            code="NPL",
-            title="Test",
-        )
+        minput = {
+            'project': project.id,
+            'code': 'NPL',
+            'title': 'Test'
+        }
         # without login
         _query_check(minput, assert_for_error=True)
 

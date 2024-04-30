@@ -6,7 +6,6 @@ from deep.serializers import (
     ProjectPropertySerializerMixin,
     RemoveNullFieldsMixin,
     URLCachedFileField,
-    IntegerIDField,
 )
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
@@ -156,23 +155,17 @@ class GeoAreaSerializer(serializers.ModelSerializer):
 
 
 class RegionGqSerializer(ProjectPropertySerializerMixin, UserResourceSerializer):
-    project = IntegerIDField()
+    project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())
+    client_id = serializers.CharField(required=False)
 
     class Meta:
         model = Region
-        exclude = ('geo_options', 'is_published')
+        fields = ['title', 'code', 'project', 'client_id']
 
     def validate_project(self, project):
-        try:
-            project = Project.objects.get(id=project)
-        except Project.DoesNotExist:
-            raise serializers.ValidationError(
-                'Project matching query does not exist'
-            )
-
         if not project.can_modify(self.context['request'].user):
             raise serializers.ValidationError('Permission Denied')
-        return project.id
+        return project
 
     def validate(self, data):
         if self.instance and self.instance.is_published:
@@ -182,9 +175,5 @@ class RegionGqSerializer(ProjectPropertySerializerMixin, UserResourceSerializer)
     def create(self, validated_data):
         project = validated_data.pop('project', None)
         region = super().create(validated_data)
-
-        if project:
-            project = Project.objects.get(id=project)
-            project.regions.add(region)
-
+        project.regions.add(region)
         return region
