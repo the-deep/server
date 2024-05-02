@@ -506,13 +506,15 @@ class TestAssignmentApi(TestCase):
         assert data['count'] == 1  # assignment for user2
 
     def test_assignment_is_done(self):
+        # XXX: To avoid using content type cache from pre-tests
+        ContentType.objects.clear_cache()
+
         project = self.create(Project)
         user1 = self.create(User)
         user2 = self.create(User)
         lead = self.create(Lead, project=project)
         kwargs = {
-            'object_id': lead.id,
-            'content_type': ContentType.objects.get_for_model(Lead),
+            'content_object': lead,
             'project': project,
             'created_for': user1,
             'created_by': user2,

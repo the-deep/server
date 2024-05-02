@@ -2,16 +2,16 @@ import datetime
 import pytz
 
 from django.contrib.contenttypes.models import ContentType
+
 from utils.graphene.tests import GraphQLTestCase
-from lead.models import Lead
-from notification.models import Assignment, Notification
-from quality_assurance.models import EntryReviewComment
+from notification.models import Notification
 
 from user.factories import UserFactory
 from project.factories import ProjectFactory
 from notification.factories import AssignmentFactory, NotificationFactory
 from lead.factories import LeadFactory
-from entry.factories import EntryCommentFactory, EntryFactory
+from entry.factories import EntryFactory
+from quality_assurance.factories import EntryReviewCommentFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
 
 
@@ -230,7 +230,11 @@ class TestAssignmentQuerySchema(GraphQLTestCase):
               totalCount
             }
           }
-'''
+        '''
+
+        # XXX: To avoid using content type cache from pre-tests
+        ContentType.objects.clear_cache()
+
         project = ProjectFactory.create()
         user = UserFactory.create()
         another = UserFactory.create()
@@ -240,17 +244,16 @@ class TestAssignmentQuerySchema(GraphQLTestCase):
             analysis_framework=af,
             lead=lead
         )
-        entry_comment = EntryCommentFactory.create(
+        entry_comment = EntryReviewCommentFactory.create(
             entry=entry,
             created_by=user
         )
-        Assignment.objects.all().delete()
+
         AssignmentFactory.create_batch(
             3,
             project=project,
-            object_id=lead.id,
-            content_type=ContentType.objects.get_for_model(Lead),
-            created_for=user
+            content_object=lead,
+            created_for=user,
         )
 
         def _query_check(**kwargs):
@@ -271,8 +274,7 @@ class TestAssignmentQuerySchema(GraphQLTestCase):
         AssignmentFactory.create_batch(
             3,
             project=project,
-            object_id=entry_comment.id,
-            content_type=ContentType.objects.get_for_model(EntryReviewComment),
+            content_object=entry_comment,
             created_for=user
         )
         content = _query_check()
@@ -280,19 +282,19 @@ class TestAssignmentQuerySchema(GraphQLTestCase):
 
     def test_assignments_with_filter_query(self):
         query = '''
-            query MyQuery (
-            $isDone : Boolean,
-        ){
-         assignments(
-            isDone: $isDone,
-        ){
-          totalCount
-          results{
-            id
-        }
-        }
+        query MyQuery($isDone: Boolean) {
+          assignments(isDone: $isDone) {
+            totalCount
+            results {
+              id
+            }
+          }
         }
         '''
+
+        # XXX: To avoid using content type cache from pre-tests
+        ContentType.objects.clear_cache()
+
         project = ProjectFactory.create()
         user = UserFactory.create()
         lead = LeadFactory.create()
@@ -301,24 +303,22 @@ class TestAssignmentQuerySchema(GraphQLTestCase):
             analysis_framework=af,
             lead=lead
         )
-        entry_comment = EntryCommentFactory.create(
+        entry_comment = EntryReviewCommentFactory.create(
             entry=entry,
             created_by=user
         )
-        Assignment.objects.all().delete()
+
         AssignmentFactory.create_batch(
             3,
             project=project,
-            object_id=lead.id,
-            content_type=ContentType.objects.get_for_model(Lead),
+            content_object=lead,
             created_for=user,
             is_done=False
         )
         AssignmentFactory.create_batch(
             5,
             project=project,
-            object_id=entry_comment.id,
-            content_type=ContentType.objects.get_for_model(EntryReviewComment),
+            content_object=entry_comment,
             created_for=user,
             is_done=True
         )

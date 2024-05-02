@@ -76,6 +76,7 @@ class AssignmentType(DjangoObjectType):
     project = graphene.Field(AssignmentProjectDetailType)
     content_data = graphene.Field(AssignmentContentDataType)
 
+    @staticmethod
     def resolve_content_data(root, info):
         return info.context.dl.notification.assignment.load(root.pk)
 

@@ -94,7 +94,7 @@ class TestAssignmentMutation(GraphQLTestCase):
                     ok
                     errors
                     result{
-                        id,
+                        id
                         isDone
                     }
                 }
