@@ -7,16 +7,14 @@ def analysis_framework_widgets_mapping(apps, schema_editor):
     AnalysisFramework = apps.get_model('analysis_framework', 'AnalysisFramework')
     af_qs = AnalysisFramework.objects.filter(properties__isnull=False)
     for af in af_qs:
-        if af.prop == {}:
+        if af.properties == {}:
             continue
         af_prop = af.properties
         # Remove super legacy config
         af_prop.pop('old_stats_config', None)
 
         # For reassurance
-        af_prop = {
-            'old_stats_config': copy.deepcopy(af_prop),
-        }
+        old_stats_config = copy.deepcopy(af_prop)
 
         # Migrate legacy config to latest
         # -- Widget1D
@@ -35,7 +33,7 @@ def analysis_framework_widgets_mapping(apps, schema_editor):
 
         # -- Organigram
         af_prop['stats_config']['organigram_widgets'] = (
-            af_prop['stats_config'].get('affected_groups_widgets') or
+            af_prop['stats_config'].get('affected_groups_widget') or
             af_prop['stats_config'].get('organigram_widgets') or
             af_prop['stats_config'].get('organigram_widget') or
             []
@@ -43,10 +41,10 @@ def analysis_framework_widgets_mapping(apps, schema_editor):
 
         # -- Multiselect
         af_prop['stats_config']['multiselect_widgets'] = (
-            af_prop['stats_config'].get('specific_needs_groups_widgets') or
+            af_prop['stats_config'].get('specific_needs_groups_widget') or
             af_prop['stats_config'].get('multiselect_widgets') or
             af_prop['stats_config'].get('multiselect_widget') or
-            af_prop['stats_config'].get('demographic_group_widget') or
+            af_prop['stats_config'].get('demographic_groups_widget') or
             []
         )
 
@@ -57,12 +55,14 @@ def analysis_framework_widgets_mapping(apps, schema_editor):
             'specific_needs_groups_widgets',
             'affected_groups_widget',
             'specific_needs_groups_widget',
-            'demographic_group_widget',
+            'demographic_group_widgets',
+            'specificNeedsGroupsWidget',
         ]
         for widget_key in legacy_widget_keys:
             af_prop['stats_config'].pop(widget_key, None)
 
         af.properties = af_prop
+        af.properties['old_stats_config'] = old_stats_config
         af.save(update_fields=('properties',))
 
 
