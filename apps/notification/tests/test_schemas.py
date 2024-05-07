@@ -1,12 +1,18 @@
 import datetime
 import pytz
 
+from django.contrib.contenttypes.models import ContentType
+
 from utils.graphene.tests import GraphQLTestCase
+from notification.models import Notification
+
 from user.factories import UserFactory
 from project.factories import ProjectFactory
-
-from notification.models import Notification
-from notification.factories import NotificationFactory
+from notification.factories import AssignmentFactory, NotificationFactory
+from lead.factories import LeadFactory
+from entry.factories import EntryFactory
+from quality_assurance.factories import EntryReviewCommentFactory
+from analysis_framework.factories import AnalysisFrameworkFactory
 
 
 class TestNotificationQuerySchema(GraphQLTestCase):
@@ -186,3 +192,145 @@ class TestNotificationQuerySchema(GraphQLTestCase):
             content = _query_check(filters)
             self.assertEqual(content['data']['notifications']['totalCount'], count, f'\n{filters=} \n{content=}')
             self.assertEqual(len(content['data']['notifications']['results']), count, f'\n{filters=} \n{content=}')
+
+
+class TestAssignmentQuerySchema(GraphQLTestCase):
+    def test_assignments_query(self):
+        query = '''
+          query MyQuery {
+            assignments {
+              results {
+                contentData {
+                  contentType
+                  entryReviewComment {
+                    entryId
+                    id
+                    leadId
+                  }
+                  lead {
+                    id
+                    title
+                  }
+                }
+                createdAt
+                id
+                isDone
+                objectId
+                project {
+                  id
+                  title
+                }
+                createdFor {
+                  id
+                }
+                createdBy {
+                  id
+                }
+              }
+              totalCount
+            }
+          }
+        '''
+
+        # XXX: To avoid using content type cache from pre-tests
+        ContentType.objects.clear_cache()
+
+        project = ProjectFactory.create()
+        user = UserFactory.create()
+        another = UserFactory.create()
+        lead = LeadFactory.create()
+        af = AnalysisFrameworkFactory.create()
+        entry = EntryFactory.create(
+            analysis_framework=af,
+            lead=lead
+        )
+        entry_comment = EntryReviewCommentFactory.create(
+            entry=entry,
+            created_by=user
+        )
+
+        AssignmentFactory.create_batch(
+            3,
+            project=project,
+            content_object=lead,
+            created_for=user,
+        )
+
+        def _query_check(**kwargs):
+            return self.query_check(query, **kwargs)
+
+        # -- without login
+        _query_check(assert_for_error=True)
+
+        # -- with login with different user
+        self.force_login(another)
+        content = _query_check()
+        self.assertEqual(content['data']['assignments']['results'], [], content)
+        # -- with login normal user
+        self.force_login(user)
+        content = _query_check()
+        self.assertEqual(content['data']['assignments']['totalCount'], 3)
+        self.assertEqual(content['data']['assignments']['results'][0]['contentData']['contentType'], 'LEAD')
+        AssignmentFactory.create_batch(
+            3,
+            project=project,
+            content_object=entry_comment,
+            created_for=user
+        )
+        content = _query_check()
+        self.assertEqual(content['data']['assignments']['totalCount'], 6)
+
+    def test_assignments_with_filter_query(self):
+        query = '''
+        query MyQuery($isDone: Boolean) {
+          assignments(isDone: $isDone) {
+            totalCount
+            results {
+              id
+            }
+          }
+        }
+        '''
+
+        # XXX: To avoid using content type cache from pre-tests
+        ContentType.objects.clear_cache()
+
+        project = ProjectFactory.create()
+        user = UserFactory.create()
+        lead = LeadFactory.create()
+        af = AnalysisFrameworkFactory.create()
+        entry = EntryFactory.create(
+            analysis_framework=af,
+            lead=lead
+        )
+        entry_comment = EntryReviewCommentFactory.create(
+            entry=entry,
+            created_by=user
+        )
+
+        AssignmentFactory.create_batch(
+            3,
+            project=project,
+            content_object=lead,
+            created_for=user,
+            is_done=False
+        )
+        AssignmentFactory.create_batch(
+            5,
+            project=project,
+            content_object=entry_comment,
+            created_for=user,
+            is_done=True
+        )
+
+        def _query_check(filters, **kwargs):
+            return self.query_check(query, variables=filters, **kwargs)
+
+        self.force_login(user)
+        for filters, count in [
+                ({'isDone': True}, 5),
+                ({'isDone': False}, 3),
+        ]:
+            content = _query_check(filters)
+            self.assertEqual(content['data']['assignments']['totalCount'], count, f'\n{filters=} \n{content=}')
+            self.assertEqual(len(content['data']['assignments']['results']), count, f'\n{filters=} \n{content=}')

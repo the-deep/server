@@ -3081,6 +3081,61 @@ type AssessmentType {
   modifiedBy: UserType
 }
 
+type AssignmentContentDataType {
+  contentType: AssignmentContentTypeEnum
+  lead: AssignmentLeadDetailType
+  entryReviewComment: AssignmentEntryReviewCommentDetailType
+}
+
+enum AssignmentContentTypeEnum {
+  LEAD
+  ENTRY_REVIEW_COMMENT
+}
+
+type AssignmentEntryReviewCommentDetailType {
+  id: ID!
+  entryId: ID!
+  leadId: ID!
+}
+
+input AssignmentInputType {
+  isDone: Boolean
+}
+
+type AssignmentLeadDetailType {
+  id: ID!
+  title: String!
+}
+
+type AssignmentListType {
+  results: [AssignmentType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type AssignmentProjectDetailType {
+  id: ID!
+  title: String!
+}
+
+type AssignmentType {
+  id: ID!
+  createdAt: DateTime!
+  createdBy: UserType
+  createdFor: UserType!
+  project: AssignmentProjectDetailType
+  isDone: Boolean!
+  objectId: Int!
+  contentData: AssignmentContentDataType
+}
+
+type AssignmentUpdate {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AssignmentType
+}
+
 type AssistedTaggingModelPredictionTagType {
   id: ID!
   name: String!
@@ -3143,6 +3198,11 @@ type AssistedTaggingRootQueryType {
   taggingModels: [AssistedTaggingModelType!]
   predictionTag(id: ID!): AssistedTaggingModelPredictionTagType
   predictionTags: [AssistedTaggingModelPredictionTagType!]
+}
+
+type AsssignmentBulkStatusMarkAsDone {
+  errors: [GenericScalar!]
+  ok: Boolean
 }
 
 type AtomFeedFieldType {
@@ -4914,6 +4974,8 @@ type Mutation {
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
   genericExportCancel(id: ID!): CancelUserGenericExport
   notificationStatusUpdate(data: NotificationStatusInputType!): NotificationStatusUpdate
+  assignmentUpdate(data: AssignmentInputType!, id: ID!): AssignmentUpdate
+  assignmentBulkStatusMarkAsDone: AsssignmentBulkStatusMarkAsDone
   projectCreate(data: ProjectCreateInputType!): CreateProject
   joinProject(data: ProjectJoinRequestInputType!): CreateProjectJoin
   projectJoinRequestDelete(projectId: ID!): ProjectJoinRequestDelete
@@ -5678,6 +5740,7 @@ type Query {
   publicLead(uuid: UUID!): PublicLeadMetaType
   notification(id: ID!): NotificationType
   notifications(timestamp: DateTime, timestampLte: DateTime, timestampGte: DateTime, isPending: Boolean, notificationType: NotificationTypeEnum, status: NotificationStatusEnum, page: Int = 1, ordering: String, pageSize: Int): NotificationListType
+  assignments(project: ID, isDone: Boolean, page: Int = 1, ordering: String, pageSize: Int): AssignmentListType
   region(id: ID!): RegionDetailType
   regions(id: Float, code: String, title: String, public: Boolean, project: [ID], createdAt: DateTime, createdBy: [ID], modifiedAt: DateTime, modifiedBy: [ID], createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, excludeProject: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): RegionListType
   organization(id: ID!): OrganizationType

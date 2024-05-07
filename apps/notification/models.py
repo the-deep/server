@@ -88,4 +88,9 @@ class Assignment(models.Model):
 
     @staticmethod
     def get_for(user):
-        return Assignment.objects.filter(created_for=user).distinct()
+        from entry.models import EntryComment
+        return Assignment.objects.filter(
+            created_for=user,
+        ).exclude(
+            content_type__model=EntryComment._meta.model_name
+        )  # The EntryComment assignment are excluded need to remove later

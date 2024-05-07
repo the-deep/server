@@ -9,11 +9,12 @@ from utils.graphene.types import CustomDjangoListObjectType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.trackers import track_user
 
-from .models import Notification
-from .filter_set import NotificationGqlFilterSet
+from .models import Assignment, Notification
+from .filter_set import NotificationGqlFilterSet, AssignmentFilterSet
 from .enums import (
     NotificationTypeEnum,
     NotificationStatusEnum,
+    AssignmentContentTypeEnum
 )
 
 
@@ -22,6 +23,11 @@ def get_user_notification_qs(info):
     return Notification.objects.filter(
         receiver=info.context.request.user,
     )
+
+
+def get_user_assignment_qs(info):
+    track_user(info.context.request.user.profile)
+    return Assignment.get_for(track_user)
 
 
 class NotificationType(DjangoObjectType):
@@ -41,10 +47,50 @@ class NotificationType(DjangoObjectType):
         return get_user_notification_qs(info)
 
 
+class AssignmentLeadDetailType(graphene.ObjectType):
+    id = graphene.ID(required=True)
+    title = graphene.String(required=True)
+
+
+class AssignmentProjectDetailType(graphene.ObjectType):
+    id = graphene.ID(required=True)
+    title = graphene.String(required=True)
+
+
+class AssignmentEntryReviewCommentDetailType(graphene.ObjectType):
+    id = graphene.ID(required=True)
+    entry_id = graphene.ID(required=True)
+    lead_id = graphene.ID(required=True)
+
+
+class AssignmentContentDataType(graphene.ObjectType):
+    content_type = graphene.Field(AssignmentContentTypeEnum)
+    lead = graphene.Field(AssignmentLeadDetailType)
+    entry_review_comment = graphene.Field(AssignmentEntryReviewCommentDetailType)
+
+
+class AssignmentType(DjangoObjectType):
+    class Meta:
+        model = Assignment
+    id = graphene.ID(required=True)
+    project = graphene.Field(AssignmentProjectDetailType)
+    content_data = graphene.Field(AssignmentContentDataType)
+
+    @staticmethod
+    def resolve_content_data(root, info):
+        return info.context.dl.notification.assignment.load(root.pk)
+
+
 class NotificationListType(CustomDjangoListObjectType):
     class Meta:
         model = Notification
         filterset_class = NotificationGqlFilterSet
+
+
+class AssignmentListType(CustomDjangoListObjectType):
+    class Meta:
+        model = Assignment
+        filterset_class = AssignmentFilterSet
 
 
 class Query:
@@ -55,7 +101,17 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
+    assignments = DjangoPaginatedListObjectField(
+        AssignmentListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize'
+        )
+    )
 
     @staticmethod
     def resolve_notifications(root, info, **kwargs) -> QuerySet:
         return get_user_notification_qs(info)
+
+    @staticmethod
+    def resolve_assignments(root, info, **kwargs) -> QuerySet:
+        return Assignment.get_for(info.context.user)

@@ -4,7 +4,11 @@ from factory.django import DjangoModelFactory
 
 from gallery.factories import FileFactory
 
-from .models import Entry, Attribute
+from .models import (
+    Entry,
+    Attribute,
+    EntryComment,
+)
 
 
 class EntryFactory(DjangoModelFactory):
@@ -39,3 +43,8 @@ class EntryAttributeFactory(DjangoModelFactory):
 
     class Meta:
         model = Attribute
+
+
+class EntryCommentFactory(DjangoModelFactory):
+    class Meta:
+        model = EntryComment
