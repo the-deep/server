@@ -154,7 +154,7 @@ class Export(ExportBaseModel):
 
         __description__ = {
             DEFAULT: 'Entry excerpt. (Author[link], Publisher, Published Date)',
-            STYLE_1: 'Entry excerpt (Publisher[link] Published Date).',
+            STYLE_1: 'Entry excerpt (Author[link] Published Date).',
         }
 
     # Used by extra options
