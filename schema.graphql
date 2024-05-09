@@ -202,6 +202,9 @@ type AnalysisFrameworkPropertiesType {
 type AnalysisFrameworkRoleType {
   id: ID!
   title: String!
+  isPrivateRole: Boolean!
+  isDefaultRole: Boolean!
+  type: AnalysisFrameworkRoleTypeEnum
 }
 
 enum AnalysisFrameworkRoleTypeEnum {
@@ -5757,6 +5760,7 @@ type Query {
   analysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, isCurrentUserMember: Boolean, recentlyUsed: Boolean, tags: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkListType
   publicAnalysisFrameworks(id: Float, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, isCurrentUserMember: Boolean, recentlyUsed: Boolean, tags: [ID!], page: Int = 1, ordering: String, pageSize: Int): PublicAnalysisFrameworkListType
   analysisFrameworkTags(id: Float, search: String, page: Int = 1, ordering: String, pageSize: Int): AnalysisFrameworkTagListType
+  analysisFrameworkRoles: [AnalysisFrameworkRoleType!]!
   project(id: ID!): ProjectDetailType
   projects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, ordering: [ProjectOrderingEnum!], isTest: Boolean, page: Int = 1, pageSize: Int): ProjectListType
   recentProjects: [ProjectDetailType!]

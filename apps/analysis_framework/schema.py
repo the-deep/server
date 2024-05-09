@@ -161,7 +161,14 @@ class AnalysisFrameworkType(DjangoObjectType):
 class AnalysisFrameworkRoleType(DjangoObjectType):
     class Meta:
         model = AnalysisFrameworkRole
-        only_fields = ('id', 'title',)
+        only_fields = (
+            'id',
+            'title',
+            'is_private_role',
+            'is_default_role',
+        )
+
+    type = graphene.Field(AnalysisFrameworkRoleTypeEnum)
 
 
 class AnalysisFrameworkFilterType(DjangoObjectType):
@@ -311,6 +318,7 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
+    analysis_framework_roles = graphene.List(graphene.NonNull(AnalysisFrameworkRoleType), required=True)
 
     @staticmethod
     def resolve_analysis_frameworks(root, info, **kwargs) -> QuerySet:
@@ -319,3 +327,7 @@ class Query:
     @staticmethod
     def resolve_public_analysis_frameworks(root, info, **kwargs) -> QuerySet:
         return AnalysisFramework.objects.filter(is_private=False).distinct()
+
+    @staticmethod
+    def resolve_analysis_framework_roles(root, info, **kwargs) -> QuerySet:
+        return AnalysisFrameworkRole.objects.all()

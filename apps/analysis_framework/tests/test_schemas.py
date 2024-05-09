@@ -2,6 +2,8 @@ import factory
 
 from utils.graphene.tests import GraphQLSnapShotTestCase
 
+from analysis_framework.models import AnalysisFrameworkRole
+
 from user.factories import UserFactory
 from project.factories import ProjectFactory
 from lead.factories import LeadFactory
@@ -323,3 +325,25 @@ class TestAnalysisFrameworkQuery(GraphQLSnapShotTestCase):
             content['data']['projectExploreStats']['topActiveFrameworks'][4]['analysisFrameworkId'],
             str(analysis_framework4.id)
         )
+
+    def test_analysis_framework_roles(self):
+        query = '''
+            query MyQuery {
+              analysisFrameworkRoles {
+                title
+                type
+                isPrivateRole
+                id
+                isDefaultRole
+              }
+            }
+        '''
+        user = UserFactory.create()
+        # without login
+        self.query_check(query, assert_for_error=True)
+
+        # with normal login
+        self.force_login(user)
+        content = self.query_check(query)
+        af_roles_count = AnalysisFrameworkRole.objects.all().count()
+        self.assertEqual(len(content['data']['analysisFrameworkRoles']), af_roles_count)
