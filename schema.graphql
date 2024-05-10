@@ -5527,20 +5527,6 @@ enum ProjectStatusEnum {
   INACTIVE
 }
 
-type ProjectSummaryStatEntryActivityType {
-  projectId: ID
-  count: Int
-  date: Date
-}
-
-type ProjectSummaryStatType {
-  projectsCount: Int
-  totalLeadsCount: Int
-  totalLeadsTaggedCount: Int
-  totalLeadsTaggedAndControlledCount: Int
-  recentEntriesActivities: [ProjectSummaryStatEntryActivityType!]
-}
-
 type ProjectType {
   id: ID!
   createdAt: DateTime!
@@ -5801,7 +5787,7 @@ type Query {
   publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, ordering: [PublicProjectOrderingEnum!], isTest: Boolean, page: Int = 1, pageSize: Int): PublicProjectListType
   publicProjectsByRegion(projectFilter: RegionProjectFilterData, page: Int = 1, ordering: String, pageSize: Int): PublicProjectByRegionListType
   userPinnedProjects: [UserPinnedProjectType!]!
-  projectStatSummary: ProjectSummaryStatType
+  userProjectStatSummary: UserProjectSummaryStatType!
   assistedTagging: AssistedTaggingRootQueryType
   enums: AppEnumCollection
   _debug: DjangoDebug
@@ -6552,6 +6538,20 @@ type UserProfileType {
   id: ID!
   displayPictureUrl: String
   organization: String
+}
+
+type UserProjectSummaryStatEntryActivityType {
+  projectId: ID!
+  count: Int!
+  date: Date!
+}
+
+type UserProjectSummaryStatType {
+  projectsCount: Int!
+  totalLeadsCount: Int!
+  totalLeadsTaggedCount: Int!
+  totalLeadsTaggedAndControlledCount: Int!
+  recentEntriesActivities: [UserProjectSummaryStatEntryActivityType!]!
 }
 
 input UserSavedLeadFilterInputType {

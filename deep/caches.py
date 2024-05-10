@@ -26,7 +26,6 @@ class CacheKey:
     EXPORT_TASK_CACHE_KEY_FORMAT = 'EXPORT-{}-TASK-ID'
     GENERIC_EXPORT_TASK_CACHE_KEY_FORMAT = 'GENERIC-EXPORT-{}-TASK-ID'
     PROJECT_EXPLORE_STATS_LOADER_KEY = 'project-explore-stats-loader'
-    PROJECT_SUMMARY_STAT_LOADER_KEY = 'project-summary-stat-loader'
     RECENT_ACTIVITIES_KEY_FORMAT = 'user-recent-activities-{}'
 
     # Local (RAM) Cache
