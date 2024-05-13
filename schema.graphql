@@ -5823,6 +5823,12 @@ enum RecentActivityTypeEnum {
   ENTRY_COMMENT
 }
 
+type RecentEntriesProjectDetailType {
+  id: ID!
+  title: String!
+  count: Int!
+}
+
 type RegionDetailType {
   id: ID!
   title: String!
@@ -6551,6 +6557,7 @@ type UserProjectSummaryStatType {
   totalLeadsCount: Int!
   totalLeadsTaggedCount: Int!
   totalLeadsTaggedAndControlledCount: Int!
+  recentEntriesProjectDetails: [RecentEntriesProjectDetailType!]
   recentEntriesActivities: [UserProjectSummaryStatEntryActivityType!]!
 }
 

@@ -179,12 +179,24 @@ def get_project_stats_summary(self):
             date=models.Func(models.F('created_at__date'), function='DATE')
         )
     )
-
+    recent_entries_project_details = (
+        recent_entries
+        .order_by()
+        .values('project')
+        .annotate(count=models.Count('*'))
+        .filter(count__gt=0)
+        .values(
+            'count',
+            id=models.F('project'),
+            title=models.F('project__title')
+        )
+    )
     return {
         'projects_count': projects.count(),
         'total_leads_count': leads.count(),
         'total_leads_tagged_count': total_leads_tagged_count,
         'total_leads_tagged_and_controlled_count': total_leads_tagged_and_controlled_count,
+        'recent_entries_project_details': recent_entries_project_details,
         'recent_entries_activities': recent_entries_activity
     }
 
@@ -655,11 +667,18 @@ class UserProjectSummaryStatEntryActivityType(graphene.ObjectType):
     date = graphene.Date(required=True)
 
 
+class RecentEntriesProjectDetailType(graphene.ObjectType):
+    id = graphene.ID(required=True)
+    title = graphene.String(required=True)
+    count = graphene.Int(required=True)
+
+
 class UserProjectSummaryStatType(graphene.ObjectType):
     projects_count = graphene.Int(required=True)
     total_leads_count = graphene.Int(required=True)
     total_leads_tagged_count = graphene.Int(required=True)
     total_leads_tagged_and_controlled_count = graphene.Int(required=True)
+    recent_entries_project_details = graphene.List(graphene.NonNull(RecentEntriesProjectDetailType))
     recent_entries_activities = graphene.List(graphene.NonNull(UserProjectSummaryStatEntryActivityType), required=True)
 
 
