@@ -180,9 +180,9 @@ def get_project_entries_stats(project, skip_geo_data=False):
         'reliability_widget': {
             'pk': 2683,
         },
-        'organigram_widgets': {
-            'pk': 2682,
-        },
+        'organigram_widgets': [
+            {'pk': 2682},
+        ]
         'multiselect_widgets': [
             {'pk': 2681},
             {'pk': 8703},

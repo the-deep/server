@@ -9,60 +9,64 @@ def analysis_framework_widgets_mapping(apps, schema_editor):
     for af in af_qs:
         if af.properties == {}:
             continue
-        af_prop = af.properties
+        new_widget_config = af.properties
         # Remove super legacy config
-        af_prop.pop('old_stats_config', None)
+        new_widget_config.pop('old_stats_config', None)
 
         # For reassurance
-        old_stats_config = copy.deepcopy(af_prop)
+        new_widget_config = copy.deepcopy(new_widget_config)
 
         # Migrate legacy config to latest
         # -- Widget1D
-        af_prop['stats_config']['widget_1d'] = (
-            af_prop['stats_config'].get('widget_1d') or
-            af_prop['stats_config'].get('widget1d') or
-            []
-        )
+        if 'widget_1d' not in new_widget_config['stats_config']:
+            new_widget_config['widget_1d'] = [
+                {'pk': new_widget_config['stats_config'][key]['pk']}
+                for key in [
+                    'widget1d'
+                ]
+                if key in new_widget_config
+            ]
 
         # -- Widget2D
-        af_prop['stats_config']['widget_2d'] = (
-            af_prop['stats_config'].get('widget_2d') or
-            af_prop['stats_config'].get('widget2d') or
-            []
-        )
-
-        # -- Organigram
-        af_prop['stats_config']['organigram_widgets'] = (
-            af_prop['stats_config'].get('affected_groups_widget') or
-            af_prop['stats_config'].get('organigram_widgets') or
-            af_prop['stats_config'].get('organigram_widget') or
-            []
-        )
+        if 'widget_2d' not in new_widget_config['stats_config']:
+            new_widget_config['widget_2d'] = [
+                {'pk': new_widget_config['stats_config'][key]['pk']}
+                for key in [
+                    'widget2d'
+                ]
+                if key in new_widget_config
+            ]
 
         # -- Multiselect
-        af_prop['stats_config']['multiselect_widgets'] = (
-            af_prop['stats_config'].get('specific_needs_groups_widget') or
-            af_prop['stats_config'].get('multiselect_widgets') or
-            af_prop['stats_config'].get('multiselect_widget') or
-            af_prop['stats_config'].get('demographic_groups_widget') or
-            []
-        )
+        if 'multiselect_widgets' not in new_widget_config['stats_config']:
+            new_widget_config['multiselect_widgets'] = [
+                {'pk': new_widget_config['stats_config'][key]['pk']}
+                for key in [
+                    'specific_needs_groups_widget',
+                    'demographic_groups_widget'
+                ]
+                if key in new_widget_config
+            ]
+
+        # -- Organigram
+        if 'organigram_widget' not in new_widget_config['stats_config']:
+            new_widget_config['organigram_widget'] = [
+                {'pk': new_widget_config['stats_config'][key]['pk']}
+                for key in [
+                    'affected_groups_widget'
+                ]
+                if key in new_widget_config
+            ]
 
         legacy_widget_keys = [
-            'widget1d',
-            'widget2d',
-            'affected_groups_widgets',
-            'specific_needs_groups_widgets',
             'affected_groups_widget',
+            'demographic_groups_widget',
             'specific_needs_groups_widget',
-            'demographic_group_widgets',
-            'specificNeedsGroupsWidget',
         ]
         for widget_key in legacy_widget_keys:
-            af_prop['stats_config'].pop(widget_key, None)
+            new_widget_config['stats_config'].pop(widget_key, None)
 
-        af.properties = af_prop
-        af.properties['old_stats_config'] = old_stats_config
+        af.properties = new_widget_config
         af.save(update_fields=('properties',))
 
 
