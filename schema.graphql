@@ -4972,6 +4972,7 @@ type MissingPredictionReviewType {
 }
 
 type Mutation {
+  organizationCreate(data: OrganizationInputType!): OrganizationCreate
   createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType!): AssessmentRegistryCreateIssue
   fileUpload(data: FileUploadInputType!): UploadFile
   genericExportCreate(data: GenericExportCreateInputType!): CreateUserGenericExport
@@ -5046,6 +5047,21 @@ enum NotificationTypeEnum {
   ENTRY_COMMENT_RESOLVED
   ENTRY_REVIEW_COMMENT_ADD
   ENTRY_REVIEW_COMMENT_MODIFY
+}
+
+type OrganizationCreate {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: OrganizationType
+}
+
+input OrganizationInputType {
+  title: String!
+  longName: String
+  url: String
+  shortName: String
+  logo: ID
+  organizationType: ID
 }
 
 type OrganizationListType {

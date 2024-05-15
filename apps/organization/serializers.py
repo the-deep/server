@@ -69,3 +69,9 @@ class ArySourceOrganizationSerializer(DynamicFieldsMixin, UserResourceSerializer
         model = Organization
         fields = ('key', 'title', 'long_name',
                   'short_name', 'logo', 'organization_type', 'merged_as')
+
+
+class OrganizationGqSerializer(UserResourceSerializer):
+    class Meta:
+        model = Organization
+        fields = ('title', 'long_name', 'url', 'short_name', 'logo', 'organization_type')
