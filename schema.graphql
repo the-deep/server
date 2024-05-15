@@ -5787,6 +5787,7 @@ type Query {
   publicProjects(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], ids: [ID!], excludeIds: [ID!], status: ProjectStatusEnum, organizations: [ID!], analysisFrameworks: [ID!], regions: [ID!], search: String, isCurrentUserMember: Boolean, hasPermissionAccess: ProjectPermission, ordering: [PublicProjectOrderingEnum!], isTest: Boolean, page: Int = 1, pageSize: Int): PublicProjectListType
   publicProjectsByRegion(projectFilter: RegionProjectFilterData, page: Int = 1, ordering: String, pageSize: Int): PublicProjectByRegionListType
   userPinnedProjects: [UserPinnedProjectType!]!
+  userProjectStatSummary: UserProjectSummaryStatType!
   assistedTagging: AssistedTaggingRootQueryType
   enums: AppEnumCollection
   _debug: DjangoDebug
@@ -5820,6 +5821,12 @@ enum RecentActivityTypeEnum {
   LEAD
   ENTRY
   ENTRY_COMMENT
+}
+
+type RecentEntriesProjectDetailType {
+  id: ID!
+  title: String!
+  count: Int!
 }
 
 type RegionDetailType {
@@ -6537,6 +6544,21 @@ type UserProfileType {
   id: ID!
   displayPictureUrl: String
   organization: String
+}
+
+type UserProjectSummaryStatEntryActivityType {
+  projectId: ID!
+  count: Int!
+  date: Date!
+}
+
+type UserProjectSummaryStatType {
+  projectsCount: Int!
+  totalLeadsCount: Int!
+  totalLeadsTaggedCount: Int!
+  totalLeadsTaggedAndControlledCount: Int!
+  recentEntriesProjectDetails: [RecentEntriesProjectDetailType!]
+  recentEntriesActivities: [UserProjectSummaryStatEntryActivityType!]!
 }
 
 input UserSavedLeadFilterInputType {
