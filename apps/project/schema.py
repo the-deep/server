@@ -751,7 +751,7 @@ class Query:
         return Query.resolve_projects_by_region(*args, **kwargs)
 
     @staticmethod
-    def resolve_user_pinned_project(root, info, **kwargs):
+    def resolve_user_pinned_projects(root, info, **kwargs):
         return ProjectPinned.objects.filter(user=info.context.user)
 
     @staticmethod
