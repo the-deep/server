@@ -843,3 +843,6 @@ class ProjectPinned(models.Model):
     order = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('project', 'user')

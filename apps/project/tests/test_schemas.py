@@ -1038,32 +1038,41 @@ class TestProjectSchema(GraphQLTestCase):
                 clientId
                 id
                 order
+                project{
+                    id
+                    title
+                }
+                user{
+                    id
+                    displayName
+                    emailDisplay
+                }
             }
         }
         '''
 
-        user = UserFactory.create()
-        non_member_user = UserFactory.create()
+        user1 = UserFactory.create()
+        user2 = UserFactory.create()
         project = ProjectFactory.create_batch(4)
         project_with_access = [project[0], project[2]]
         for idx, project in enumerate(project_with_access):
-            project.add_member(user)
+            project.add_member(user1)
             ProjectPinnedFactory.create(
                 project=project,
-                user=user,
+                user=user1,
                 order=idx
             )
         # -- Without login
         self.query_check(query, assert_for_error=True)
 
         # -- With login
-        self.force_login(user)
+        self.force_login(user1)
 
         content = self.query_check(query)
         self.assertEqual(len(content['data']['userPinnedProjects']), 2)
 
         # -- With non member user
-        self.force_login(non_member_user)
+        self.force_login(user2)
         content = self.query_check(query)
         self.assertEqual(len(content['data']['userPinnedProjects']), 0)
 
