@@ -25,7 +25,7 @@ from user.factories import UserFactory
 from user_group.factories import UserGroupFactory
 from lead.factories import LeadFactory
 from entry.factories import EntryFactory
-from project.factories import ProjectFactory, ProjectJoinRequestFactory
+from project.factories import ProjectFactory, ProjectJoinRequestFactory, ProjectPinnedFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
 from geo.factories import RegionFactory, AdminLevelFactory, GeoAreaFactory
 from ary.factories import AssessmentTemplateFactory
@@ -1030,6 +1030,51 @@ class TestProjectSchema(GraphQLTestCase):
         project_role_count = ProjectRole.objects.count()
         content = self.query_check(query)
         self.assertEqual(len(content['data']['projectRoles']), project_role_count)
+
+    def test_user_pinned_projects_query(self):
+        query = '''
+            query MyQuery {
+            userPinnedProjects {
+                clientId
+                id
+                order
+                project{
+                    id
+                    title
+                }
+                user{
+                    id
+                    displayName
+                    emailDisplay
+                }
+            }
+        }
+        '''
+
+        user1 = UserFactory.create()
+        user2 = UserFactory.create()
+        project = ProjectFactory.create_batch(4)
+        project_with_access = [project[0], project[2]]
+        for idx, project in enumerate(project_with_access):
+            project.add_member(user1)
+            ProjectPinnedFactory.create(
+                project=project,
+                user=user1,
+                order=idx
+            )
+        # -- Without login
+        self.query_check(query, assert_for_error=True)
+
+        # -- With login
+        self.force_login(user1)
+
+        content = self.query_check(query)
+        self.assertEqual(len(content['data']['userPinnedProjects']), 2)
+
+        # -- With non member user
+        self.force_login(user2)
+        content = self.query_check(query)
+        self.assertEqual(len(content['data']['userPinnedProjects']), 0)
 
 
 class TestProjectViz(GraphQLTestCase):
