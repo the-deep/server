@@ -17,7 +17,7 @@ from .models import (
     AnalysisFrameworkMembership,
 )
 from .serializers import (
-    AnalysisFrameworkCloneGlSerializer,
+    AnalysisFrameworkCloneSerializer,
     AnalysisFrameworkGqlSerializer as AnalysisFrameworkSerializer,
     AnalysisFrameworkMembershipGqlSerializer as AnalysisFrameworkMembershipSerializer,
 )
@@ -39,7 +39,7 @@ AnalysisFrameworkMembershipInputType = generate_input_type_for_serializer(
 
 AnalysisFrameworkCloneInputType = generate_input_type_for_serializer(
     'AnalysisFrameworkCloneInputType',
-    serializer_class=AnalysisFrameworkCloneGlSerializer,
+    serializer_class=AnalysisFrameworkCloneSerializer,
 )
 
 
@@ -107,7 +107,7 @@ class CloneAnalysisFramework(AfGrapheneMutation):
         data = AnalysisFrameworkCloneInputType(required=True)
 
     result = graphene.Field(AnalysisFrameworkDetailType)
-    serializer_class = AnalysisFrameworkCloneGlSerializer
+    serializer_class = AnalysisFrameworkCloneSerializer
     permissions = [AfP.Permission.CAN_CLONE_FRAMEWORK]
 
 

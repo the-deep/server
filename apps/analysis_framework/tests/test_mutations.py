@@ -805,18 +805,22 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
 
         member_user = UserFactory.create()
         non_member_user = UserFactory.create()
+        low_permission_user = UserFactory.create()
 
         project = ProjectFactory.create()
         project.add_member(member_user)
+        project.add_member(low_permission_user)
         af = AnalysisFrameworkFactory.create(created_by=member_user, title='AF Orginal')
-        af.add_member(member_user)
+        af.add_member(member_user, role=self.af_owner)
+        private_af = AnalysisFrameworkFactory.create(created_by=member_user, title='AF Private Orginal', is_private=True)
+        private_af.add_member(low_permission_user)
 
         minput = dict(
             title='AF (TEST)',
             description='Af description',
         )
 
-        def _query_check(**kwargs):
+        def _public_af_query_check(**kwargs):
             return self.query_check(
                 query,
                 minput=minput,
@@ -825,17 +829,25 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                 **kwargs,
             )
 
+        def _private_af_query_check(**kwargs):
+            return self.query_check(
+                query,
+                minput=minput,
+                mnested=['analysisFramework'],
+                variables={'id': private_af.id},
+                **kwargs,
+            )
+
         # ---------- Without login
-        _query_check(assert_for_error=True)
+        _public_af_query_check(assert_for_error=True)
         # ---------- With login
         self.force_login(non_member_user)
         # ---------- Let's Clone a new AF (Using create test data)
-        _query_check(assert_for_error=True)
+        _public_af_query_check(assert_for_error=True)
 
         # ---------- With login (with access member)
         self.force_login(member_user)
-        response = _query_check()
-        self.assertMatchSnapshot(response, 'success')
+        response = _public_af_query_check()
         self.assertEqual(response['data']['analysisFramework']['analysisFrameworkClone']['result']['clonedFrom'], str(af.id))
 
         # adding project to the input
@@ -843,11 +855,25 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
 
         # with Login (non project member)
         self.force_login(non_member_user)
-        _query_check(assert_for_error=True)
+        _public_af_query_check(assert_for_error=True)
 
-        # With Login (project member)
+        # with Login (project member with no permission on AF)
+        self.force_login(low_permission_user)
+        _public_af_query_check(assert_for_error=True)
+
+        # with Login (project member with no permission on Private AF)
         self.force_login(member_user)
-        response = _query_check()['data']['analysisFramework']
+        _private_af_query_check(assert_for_error=True)
+
+        # With Login (project member with permission on Public AF)
+        self.force_login(member_user)
+        response = _public_af_query_check()['data']['analysisFramework']
+        project.refresh_from_db()
+        self.assertEqual(str(project.analysis_framework_id), response['analysisFrameworkClone']['result']['id'])
+
+        # with Login (project member with permission on Private AF)
+        private_af.add_member(member_user, role=self.af_owner)
+        response = _private_af_query_check()['data']['analysisFramework']
         project.refresh_from_db()
         self.assertEqual(str(project.analysis_framework_id), response['analysisFrameworkClone']['result']['id'])
 

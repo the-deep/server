@@ -711,26 +711,15 @@ class AnalysisFrameworkMembershipGqlSerializer(TempClientIdMixin, serializers.Mo
         return super().create(validated_data)
 
 
-class AnalysisFrameworkCloneGlSerializer(serializers.Serializer):
+class AnalysisFrameworkCloneSerializer(serializers.Serializer):
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False)
-    project = serializers.IntegerField(required=False)
+    project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all(), required=False)
 
-    class Meta:
-        model = AnalysisFramework
-        fields = ('title', 'description', 'project')
-
-    def validate(self, validated_data):
-        project_id = validated_data.get('project')
-        # Check if project exists and user has access to it
-        if project_id is not None:
-            project = Project.objects.filter(id=project_id).first()
-            if project is None:
-                raise serializers.ValidationError('Invalid project ID')
-            if not project.can_modify(self.context['request'].user):
-                raise serializers.ValidationError('User does not have permission to modify the project')
-            validated_data['project'] = project
-        return validated_data
+    def validate_project(self, project):
+        if not project.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('User does not have permission to modify the project')
+        return project
 
     def create(self, validated_data):
         af = self.context['request'].active_af
@@ -740,5 +729,5 @@ class AnalysisFrameworkCloneGlSerializer(serializers.Serializer):
         if project := validated_data.get('project'):
             project.analysis_framework = new_af
             project.modified_by = self.context['request'].user
-            project.save(update_fields=['analysis_framework', 'modified_by'])
+            project.save(update_fields=['analysis_framework', 'modified_by', 'modified_at'])
         return new_af

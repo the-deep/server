@@ -7,24 +7,6 @@ from snapshottest import Snapshot
 
 snapshots = Snapshot()
 
-snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framework_clone success'] = {
-    'data': {
-        '__typename': 'Mutation',
-        'analysisFramework': {
-            'analysisFrameworkClone': {
-                'errors': None,
-                'ok': True,
-                'result': {
-                    'clonedFrom': '1',
-                    'description': 'Af description',
-                    'id': '2',
-                    'title': 'AF (TEST)'
-                }
-            }
-        }
-    }
-}
-
 snapshots['TestAnalysisFrameworkMutationSnapShotTestCase::test_analysis_framework_create errors'] = {
     'data': {
         '__typename': 'Mutation',
