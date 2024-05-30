@@ -396,6 +396,7 @@ class TestLeadBulkMutationSchema(GraphQLSnapShotTestCase):
                 leadBulk(deleteIds: $input) {
                     errors
                     deletedResult {
+                        id
                         title
                     }
                 }
@@ -405,11 +406,12 @@ class TestLeadBulkMutationSchema(GraphQLSnapShotTestCase):
 
         project = ProjectFactory.create()
         non_member_user = UserFactory.create()
+        read_only_member_user = UserFactory.create()
         member_user = UserFactory.create()
         project.add_member(member_user, role=self.project_role_member)
+        project.add_member(read_only_member_user, role=self.project_role_reader_non_confidential)
 
-        lead1 = LeadFactory.create(project=project)
-        lead2 = LeadFactory.create(project=project)
+        lead1, lead2, _ = LeadFactory.create_batch(3, project=project)
 
         lead_count = Lead.objects.count()
 
@@ -427,23 +429,28 @@ class TestLeadBulkMutationSchema(GraphQLSnapShotTestCase):
         # -- With login (non-member)
         self.force_login(non_member_user)
         _query_check(assert_for_error=True)
+        self.assertEqual(lead_count, Lead.objects.count())
+
+        # --- login as read-only member
+        self.force_login(read_only_member_user)
+        _query_check(assert_for_error=True)
+        self.assertEqual(lead_count, Lead.objects.count())
 
         # --- login (member)
         self.force_login(member_user)
-        self.assertEqual(lead_count, Lead.objects.count())
         # Success with normal lead (with project membership)
         result = _query_check()['data']['project']['leadBulk']
-        self.assertMatchSnapshot(result, 'success')
         self.assertEqual(
             result,
             {
                 'errors': [],
                 'deletedResult': [
-                    dict(title=lead1.title),
-                    dict(title=lead2.title),
+                    dict(id=str(lead1.pk), title=lead1.title),
+                    dict(id=str(lead2.pk), title=lead2.title),
                 ],
             },
         )
+        self.assertEqual(1, Lead.objects.count())
 
 
 class TestLeadGroupMutation(GraphQLTestCase):

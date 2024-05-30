@@ -47,16 +47,3 @@ snapshots['TestLeadBulkMutationSchema::test_lead_bulk success'] = {
         }
     ]
 }
-
-snapshots['TestLeadBulkMutationSchema::test_lead_bulk_delete_validation success'] = {
-    'deletedResult': [
-        {
-            'title': 'Lead-0'
-        },
-        {
-            'title': 'Lead-1'
-        }
-    ],
-    'errors': [
-    ]
-}
