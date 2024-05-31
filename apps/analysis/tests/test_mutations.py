@@ -281,6 +281,10 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
                     )
                 ],
             ),
+            widgetTags=[
+                'tag1',
+                'tag2',
+            ],
         )
 
         # -- Without login
@@ -307,6 +311,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
             a_summary_id = response['data']['project']['triggerAnalysisTopicModel']['result']['id']
         assert _query_check(a_summary_id)['data']['project']['analysisTopicModel']['status'] ==\
             self.genum(TopicModel.Status.STARTED)
+        self.assertEqual(TopicModel.objects.get(pk=a_summary_id).widget_tags, minput['widgetTags'])
 
         # -- Bad status code from NLP on trigger request
         trigger_results_mock.post.return_value.status_code = 500
@@ -440,6 +445,10 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
             ]
             for entry in entries
         ]
+        minput['widgetTags'] = [
+            'tag1',
+            'tag2',
+        ]
 
         # --- member user (All good)
         with self.captureOnCommitCallbacks(execute=True):
@@ -447,6 +456,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
             a_summary_id = response['data']['project']['triggerAnalysisAutomaticSummary']['result']['id']
         assert _query_check(a_summary_id)['data']['project']['analysisAutomaticSummary']['status'] ==\
             self.genum(AutomaticSummary.Status.STARTED)
+        self.assertEqual(AutomaticSummary.objects.get(pk=a_summary_id).widget_tags, minput['widgetTags'])
 
         # Clear out
         AutomaticSummary.objects.get(pk=a_summary_id).delete()
