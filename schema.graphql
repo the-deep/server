@@ -42,6 +42,7 @@ type AdminLevelType {
 
 input AnalysisAutomaticSummaryCreateInputType {
   entriesId: [ID!]
+  widgetTags: [String!]
 }
 
 type AnalysisAutomaticSummaryType {
@@ -1397,6 +1398,7 @@ type AnalysisTopicModelClusterType {
 input AnalysisTopicModelCreateInputType {
   analysisPillar: ID!
   additionalFilters: EntriesFilterDataInputType
+  widgetTags: [String!]
 }
 
 type AnalysisTopicModelType {

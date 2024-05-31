@@ -14,6 +14,7 @@ from commons.schema_snapshots import generate_query_snapshot, SnapshotQuery
 from deep.writable_nested_serializers import NestedUpdateMixin as CustomNestedUpdateMixin
 from deep.serializers import (
     RemoveNullFieldsMixin,
+    StringListField,
     TempClientIdMixin,
     IntegerIDField,
     IdListField,
@@ -448,12 +449,14 @@ class AnalysisTopicModelSerializer(UserResourceSerializer, serializers.ModelSeri
         EntriesFilterDataInputType,
         GraphqlSupportDrfSerializerJSONField,
     )(required=False)
+    widget_tags = StringListField()
 
     class Meta:
         model = TopicModel
         fields = (
             'analysis_pillar',
             'additional_filters',
+            'widget_tags',
         )
 
     def validate_analysis_pillar(self, analysis_pillar):
@@ -516,11 +519,13 @@ class EntriesCollectionNlpTriggerBaseSerializer(UserResourceSerializer, serializ
 
 class AnalysisAutomaticSummarySerializer(EntriesCollectionNlpTriggerBaseSerializer):
     trigger_task_func = trigger_automatic_summary
+    widget_tags = StringListField()
 
     class Meta:
         model = AutomaticSummary
         fields = (
             'entries_id',
+            'widget_tags',
         )
 
 
