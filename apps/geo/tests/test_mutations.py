@@ -19,12 +19,12 @@ class CreateTestMutation(GraphQLTestCase):
               }
             }
         '''
-        user = UserFactory.create()
-        user2 = UserFactory.create()
+        project_member_user = UserFactory.create()
+        non_project_member_user = UserFactory.create()
         project = ProjectFactory.create(
-            created_by=user
+            created_by=project_member_user
         )
-        project.add_member(user)
+        project.add_member(project_member_user)
 
         def _query_check(minput, **kwargs):
             return self.query_check(
@@ -41,19 +41,26 @@ class CreateTestMutation(GraphQLTestCase):
         # without login
         _query_check(minput, assert_for_error=True)
 
-        # with login
-        self.force_login(user)
+        # with login with project_member_user
+        self.force_login(project_member_user)
 
         content = _query_check(minput)
-        self.assertIn(user, project.members.all())
+        self.assertIn(project_member_user, project.members.all())
         self.assertEqual(content['data']['createRegion']['errors'], None)
         self.assertEqual(content['data']['createRegion']['result']['title'], "Test")
+
+        # make sure region is attached with project
         self.assertIn(
             Region.objects.get(id=content['data']['createRegion']['result']['id']), project.regions.all()
         )
 
-        # login normal user
-        self.force_login(user2)
+        #  make sure region is not pubhished
+        self.assertEqual(
+            Region.objects.get(id=content['data']['createRegion']['result']['id']).is_published, False
+        )
+
+        # login with non_project_member_user
+        self.force_login(non_project_member_user)
         content = _query_check(minput)
-        self.assertNotIn(user2, project.members.all())
+        self.assertNotIn(non_project_member_user, project.members.all())
         self.assertEqual(content['data']['createRegion']['errors'][0]['messages'], "Permission Denied")
