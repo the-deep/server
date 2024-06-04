@@ -904,6 +904,7 @@ class AnalysisTopicModelHandler(NewNlpServerBaseHandler):
 
     @classmethod
     def get_trigger_payload(cls, obj: TopicModel):
+        print(generate_file_url_for_new_deepl_server(obj.entries_file))
         return {
             'entries_url': generate_file_url_for_new_deepl_server(obj.entries_file),
             'cluster_size': settings.ANALYTICAL_ENTRIES_COUNT,

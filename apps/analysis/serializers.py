@@ -25,6 +25,7 @@ from user.serializers import NanoUserSerializer
 from entry.serializers import SimpleEntrySerializer
 from entry.filter_set import EntryGQFilterSet, EntriesFilterDataInputType
 
+from lead.models import Lead
 from .models import (
     Analysis,
     AnalysisPillar,
@@ -49,7 +50,6 @@ from .tasks import (
     trigger_automatic_ngram,
     trigger_geo_location,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -459,9 +459,12 @@ class AnalysisTopicModelSerializer(UserResourceSerializer, serializers.ModelSeri
     def validate_analysis_pillar(self, analysis_pillar):
         if analysis_pillar.analysis.project != self.context['request'].active_project:
             raise serializers.ValidationError('Invalid analysis pillar')
+        if self.context['request'].active_project.is_private:
+            raise serializers.ValidationError('Topic Model is not available in private project')
         return analysis_pillar
 
     def validate_additional_filters(self, additional_filters):
+        additional_filters['lead_confidentialities'] = [Lead.Confidentiality.UNPROTECTED]
         filter_set = EntryGQFilterSet(data=additional_filters, request=self.context['request'])
         if not filter_set.is_valid():
             raise serializers.ValidationError(filter_set.errors)
@@ -516,6 +519,12 @@ class EntriesCollectionNlpTriggerBaseSerializer(UserResourceSerializer, serializ
 
 class AnalysisAutomaticSummarySerializer(EntriesCollectionNlpTriggerBaseSerializer):
     trigger_task_func = trigger_automatic_summary
+
+    def validate(self, data):
+        project = self.context['request'].active_project
+        if project.is_private:
+            raise serializers.ValidationError("Analysis Summary is not available is private project")
+        return data
 
     class Meta:
         model = AutomaticSummary

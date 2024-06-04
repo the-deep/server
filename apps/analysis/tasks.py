@@ -11,6 +11,7 @@ from deepl_integration.handlers import (
     AnalyticalStatementGeoHandler,
 )
 
+from lead.models import Lead
 from entry.models import Entry
 from .models import (
     TopicModel,
@@ -29,7 +30,7 @@ def trigger_topic_model(_id):
     entries_id_qs = list(
         topic_model
         .get_entries_qs()
-        .exclude(excerpt='')
+        .exclude(excerpt='', lead__confidentiality=Lead.Confidentiality.CONFIDENTIAL)
         # TODO: Use original? dropped_excerpt
         # This is the format which deepl expects
         # https://docs.google.com/document/d/1NmjOO5sOrhJU6b4QXJBrGAVk57_NW87mLJ9wzeY_NZI/edit#heading=h.cif9hh69nfvz

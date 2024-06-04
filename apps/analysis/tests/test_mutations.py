@@ -212,6 +212,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         super().setUp()
         self.af = AnalysisFrameworkFactory.create()
         self.project = ProjectFactory.create(analysis_framework=self.af)
+        self.private_project = ProjectFactory.create(analysis_framework=self.af, is_private=True)
         self.another_project = ProjectFactory.create()
         # User with role
         self.non_member_user = UserFactory.create()
