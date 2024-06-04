@@ -271,6 +271,15 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
                 variables={'projectId': self.project.id, 'topicModelID': _id},
             )
 
+        def dynamic_mock(url, data=None, json=None):
+            # TODO: Need to check the Child fields of data and File payload as well
+            if not json:
+                return mock.MagicMock(status_code=500)
+            expected_keys = ['data', 'tags']
+            if set(json.keys()) != set(expected_keys):
+                return mock.MagicMock(status_code=400)
+            return False
+
         minput = dict(
             analysisPillar='0',  # Non existing ID
             additionalFilters=dict(
@@ -305,7 +314,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         # Valid data
         minput['analysisPillar'] = str(analysis_pillar.id)
 
-        # --- member user (All good)
+        # --- member user (All good)12
         with self.captureOnCommitCallbacks(execute=True):
             response = _mutation_check(minput, okay=True)
             a_summary_id = response['data']['project']['triggerAnalysisTopicModel']['result']['id']
@@ -313,6 +322,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
             self.genum(TopicModel.Status.STARTED)
         self.assertEqual(TopicModel.objects.get(pk=a_summary_id).widget_tags, minput['widgetTags'])
 
+        trigger_results_mock.side_effect = dynamic_mock
         # -- Bad status code from NLP on trigger request
         trigger_results_mock.post.return_value.status_code = 500
 
