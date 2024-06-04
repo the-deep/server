@@ -253,7 +253,24 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         lead2_entries = EntryFactory.create_batch(4, analysis_framework=self.af, lead=lead2)
         EntryFactory.create_batch(4, analysis_framework=self.af, lead=another_lead)
 
-        trigger_results_mock.post.return_value.status_code = 202
+        def nlp_validator_mock(url, data=None, json=None, **kwargs):
+            if not json:
+                return mock.MagicMock(status_code=500)
+
+            # Get payload from file
+            payload = self.get_json_media_file(
+                json['entries_url'].split('http://testserver/media/')[1],
+            )
+            # TODO: Need to check the Child fields of data and File payload as well
+            expected_keys = ['data', 'tags']
+            if set(payload.keys()) != set(expected_keys):
+                return mock.MagicMock(status_code=400)
+            return mock.MagicMock(status_code=202)
+
+        def nlp_fail_mock(*args, **kwargs):
+            return mock.MagicMock(status_code=500)
+
+        trigger_results_mock.post.side_effect = nlp_validator_mock
 
         def _mutation_check(minput, **kwargs):
             return self.query_check(
@@ -270,15 +287,6 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
                 minput=minput,
                 variables={'projectId': self.project.id, 'topicModelID': _id},
             )
-
-        def dynamic_mock(url, data=None, json=None):
-            # TODO: Need to check the Child fields of data and File payload as well
-            if not json:
-                return mock.MagicMock(status_code=500)
-            expected_keys = ['data', 'tags']
-            if set(json.keys()) != set(expected_keys):
-                return mock.MagicMock(status_code=400)
-            return False
 
         minput = dict(
             analysisPillar='0',  # Non existing ID
@@ -314,17 +322,15 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         # Valid data
         minput['analysisPillar'] = str(analysis_pillar.id)
 
-        # --- member user (All good)12
+        # --- member user (All good)
         with self.captureOnCommitCallbacks(execute=True):
             response = _mutation_check(minput, okay=True)
             a_summary_id = response['data']['project']['triggerAnalysisTopicModel']['result']['id']
         assert _query_check(a_summary_id)['data']['project']['analysisTopicModel']['status'] ==\
             self.genum(TopicModel.Status.STARTED)
-        self.assertEqual(TopicModel.objects.get(pk=a_summary_id).widget_tags, minput['widgetTags'])
 
-        trigger_results_mock.side_effect = dynamic_mock
         # -- Bad status code from NLP on trigger request
-        trigger_results_mock.post.return_value.status_code = 500
+        trigger_results_mock.post.side_effect = nlp_fail_mock
 
         with self.captureOnCommitCallbacks(execute=True):
             response = _mutation_check(minput, okay=True)
@@ -411,7 +417,24 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         lead2_entries = EntryFactory.create_batch(4, analysis_framework=self.af, lead=lead2)
         another_lead_entries = EntryFactory.create_batch(4, analysis_framework=self.af, lead=another_lead)
 
-        trigger_results_mock.post.return_value.status_code = 202
+        def nlp_validator_mock(url, data=None, json=None, **kwargs):
+            if not json:
+                return mock.MagicMock(status_code=500)
+
+            # Get payload from file
+            payload = self.get_json_media_file(
+                json['entries_url'].split('http://testserver/media/')[1],
+            )
+            # TODO: Need to check the Child fields of data and File payload as well
+            expected_keys = ['data', 'tags']
+            if set(payload.keys()) != set(expected_keys):
+                return mock.MagicMock(status_code=400)
+            return mock.MagicMock(status_code=202)
+
+        def nlp_fail_mock(*args, **kwargs):
+            return mock.MagicMock(status_code=500)
+
+        trigger_results_mock.post.side_effect = nlp_validator_mock
 
         def _mutation_check(minput, **kwargs):
             return self.query_check(
@@ -466,13 +489,12 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
             a_summary_id = response['data']['project']['triggerAnalysisAutomaticSummary']['result']['id']
         assert _query_check(a_summary_id)['data']['project']['analysisAutomaticSummary']['status'] ==\
             self.genum(AutomaticSummary.Status.STARTED)
-        self.assertEqual(AutomaticSummary.objects.get(pk=a_summary_id).widget_tags, minput['widgetTags'])
 
         # Clear out
         AutomaticSummary.objects.get(pk=a_summary_id).delete()
 
         # -- Bad status code from NLP on trigger request
-        trigger_results_mock.post.return_value.status_code = 500
+        trigger_results_mock.post.side_effect = nlp_fail_mock
 
         with self.captureOnCommitCallbacks(execute=True):
             response = _mutation_check(minput, okay=True)

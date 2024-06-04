@@ -66,6 +66,7 @@ def clean_up_test_media_files(path):
     DEFAULT_FILE_STORAGE=TEST_FILE_STORAGE,
     CACHES=TEST_CACHES,
     CELERY_TASK_ALWAYS_EAGER=True,
+    DEEPL_SERVER_CALLBACK_DOMAIN='http://testserver',
 )
 class TestCase(test.APITestCase):
     def setUp(self):
