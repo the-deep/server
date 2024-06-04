@@ -25,20 +25,16 @@ type AdditionalDocumentType {
 }
 
 input AdminLevelInputType {
-  clientId: String
   region: ID!
+  parent: ID
   title: String!
   level: Int
   nameProp: String
   codeProp: String
-  parentNameProp: String
   parentCodeProp: String
-  tolerance: Float
-  staleGeoAreas: Boolean
-  geojsonFile: Upload
-  boundsFile: Upload
-  parent: ID
+  parentNameProp: String
   geoShapeFile: ID
+  boundsFile: Upload
 }
 
 type AdminLevelType {
@@ -5002,7 +4998,6 @@ type MissingPredictionReviewType {
 
 type Mutation {
   createRegion(data: RegionInputType!): CreateRegion
-  removeProjectRegion(id: ID!, projectId: ID!): RemoveProjectRegion
   createAdminLevel(data: AdminLevelInputType!): CreateAdminLevel
   updateAdminLevel(data: AdminLevelInputType!, id: ID!): UpdateAdminLevel
   organizationCreate(data: OrganizationInputType!): OrganizationCreate
@@ -5872,6 +5867,7 @@ type RegionDetailType {
   populationData: GenericScalar
   mediaSources: GenericScalar
   centroid: PointScalar
+  clientId: ID!
   adminLevels: [AdminLevelType!]
 }
 
@@ -5921,6 +5917,7 @@ type RegionType {
   populationData: GenericScalar
   mediaSources: GenericScalar
   centroid: PointScalar
+  clientId: ID!
 }
 
 type RegionWithProject {
@@ -5941,12 +5938,6 @@ input RegisterInputType {
   lastName: String
   organization: String!
   captcha: String!
-}
-
-type RemoveProjectRegion {
-  errors: [GenericScalar!]
-  ok: Boolean
-  result: RegionDetailType
 }
 
 type ReorderPinnedProjects {

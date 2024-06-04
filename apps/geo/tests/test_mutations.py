@@ -1,4 +1,3 @@
-from geo.factories import RegionFactory
 from user.factories import UserFactory
 from project.factories import ProjectFactory
 from utils.graphene.tests import GraphQLTestCase
@@ -20,12 +19,12 @@ class CreateTestMutation(GraphQLTestCase):
               }
             }
         '''
-        user = UserFactory.create()
-        user2 = UserFactory.create()
+        project_member_user = UserFactory.create()
+        non_project_member_user = UserFactory.create()
         project = ProjectFactory.create(
-            created_by=user
+            created_by=project_member_user
         )
-        project.add_member(user)
+        project.add_member(project_member_user)
 
         def _query_check(minput, **kwargs):
             return self.query_check(
@@ -43,10 +42,10 @@ class CreateTestMutation(GraphQLTestCase):
         _query_check(minput, assert_for_error=True)
 
         # with login
-        self.force_login(user)
+        self.force_login(project_member_user)
 
         content = _query_check(minput)
-        self.assertIn(user, project.members.all())
+        self.assertIn(project_member_user, project.members.all())
         self.assertEqual(content['data']['createRegion']['errors'], None)
         self.assertEqual(content['data']['createRegion']['result']['title'], "Test")
         self.assertIn(
@@ -54,61 +53,7 @@ class CreateTestMutation(GraphQLTestCase):
         )
 
         # login normal user
-        self.force_login(user2)
+        self.force_login(non_project_member_user)
         content = _query_check(minput)
-        self.assertNotIn(user2, project.members.all())
+        self.assertNotIn(non_project_member_user, project.members.all())
         self.assertEqual(content['data']['createRegion']['errors'][0]['messages'], "Permission Denied")
-
-
-class RemoveRegionFromProjectTestMutation(GraphQLTestCase):
-    def test_remove_region_from_project(self):
-        self.remove_region_query = '''
-            mutation MyMutation($projectId: ID!, $regionId: ID!) {
-                removeProjectRegion(id: $regionId, projectId: $projectId) {
-                    ok
-                    errors
-                }
-            }
-        '''
-
-        user = UserFactory.create()
-        region = RegionFactory()
-        region2 = RegionFactory()
-        project = ProjectFactory(created_by=user)
-        project.add_member(user)
-        project.regions.add(region)
-
-        def _query_check(**kwargs):
-            return self.query_check(
-                self.remove_region_query,
-                variables={
-                    'projectId': project.id, 'regionId': region.id
-                },
-                **kwargs
-            )
-
-        # Without login
-        _query_check(assert_for_error=True)
-
-        # With login
-        self.force_login(user)
-        content = _query_check()
-        self.assertTrue(content['data']['removeProjectRegion']['ok'])
-        self.assertIsNone(content['data']['removeProjectRegion']['errors'])
-
-        # Ensure region is removed from the project
-        project.refresh_from_db()
-        self.assertNotIn(region, project.regions.all())
-
-        self.query_check(
-            self.remove_region_query, variables={
-                'projectId': project.id, 'regionId': region2.id
-            }
-        )
-
-        content = _query_check()
-        self.assertIsNotNone(content['data']['removeProjectRegion']['errors'])
-        self.assertEquals(
-            content['data']['removeProjectRegion']['errors'][0]['messages'],
-            'Region is not associated with Project'
-        )

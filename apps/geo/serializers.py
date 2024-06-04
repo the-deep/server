@@ -4,6 +4,7 @@ from drf_dynamic_fields import DynamicFieldsMixin
 
 from deep.serializers import (
     RemoveNullFieldsMixin,
+    TempClientIdMixin,
     URLCachedFileField,
 )
 from rest_framework import serializers
@@ -153,8 +154,12 @@ class GeoAreaSerializer(serializers.ModelSerializer):
         )
 
 
-class RegionGqSerializer(UserResourceSerializer):
-    project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())
+class RegionGqSerializer(UserResourceSerializer, TempClientIdMixin):
+    project = serializers.PrimaryKeyRelatedField(
+        queryset=Project.objects.all(),
+        help_text="Project is only used while creating region"
+    )
+
     client_id = serializers.CharField(required=False)
 
     class Meta:
@@ -183,7 +188,19 @@ class AdminLevelGqlSerializer(UserResourceSerializer):
 
     class Meta:
         model = AdminLevel
-        exclude = ('geo_area_titles',)
+        fields = [
+            'region',
+            'parent',
+            'title',
+            'level',
+            'name_prop',
+            'code_prop',
+            'parent_code_prop',
+            'parent_name_prop',
+            'geo_shape_file',
+            'geo_shape_file',
+            'bounds_file'
+        ]
 
     def validate_region(self, region):
         if not region.can_modify(self.context['request'].user):
@@ -195,8 +212,7 @@ class AdminLevelGqlSerializer(UserResourceSerializer):
     def create(self, validated_data):
         admin_level = super().create(validated_data)
 
-        if not settings.TESTING:
-            transaction.on_commit(lambda: load_geo_areas.delay(admin_level.region.id))
+        transaction.on_commit(lambda: load_geo_areas.delay(admin_level.region.id))
 
         return admin_level
 
@@ -207,13 +223,10 @@ class AdminLevelGqlSerializer(UserResourceSerializer):
             instance,
             validated_data,
         )
-        admin_level.save()
-
         region = admin_level.region
         region.modified_by = self.context['request'].user
-        region.save()
+        region.save(update_fields=('modified_by', 'modified_at',))
 
-        if not settings.TESTING:
-            transaction.on_commit(lambda: load_geo_areas.delay(region.id))
+        transaction.on_commit(lambda: load_geo_areas.delay(region.id))
 
         return admin_level

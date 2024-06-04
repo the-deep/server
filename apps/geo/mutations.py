@@ -1,16 +1,10 @@
 import graphene
 
-from django.utils.translation import gettext
-
 from geo.models import AdminLevel, Region
 from geo.schema import AdminLevelType, RegionDetailType
 from geo.serializers import AdminLevelGqlSerializer, RegionGqSerializer
 
-from project.models import Project
-from utils.graphene.error_types import CustomErrorType
-from utils.graphene.mutation import GrapheneMutation, PsDeleteMutation, generate_input_type_for_serializer
-
-from deep.permissions import ProjectPermissions as PP
+from utils.graphene.mutation import GrapheneMutation, generate_input_type_for_serializer
 
 RegionInputType = generate_input_type_for_serializer(
     'RegionInputType',
@@ -45,35 +39,7 @@ class CreateAdminLevel(GrapheneMutation):
     @classmethod
     def check_permissions(cls, info, **_):
         return True  # global permission is always true
-
-
-class RemoveProjectRegion(PsDeleteMutation):
-    class Arguments:
-        id = graphene.ID(required=True)
-        project_id = graphene.ID(required=True)
-    errors = graphene.List(graphene.NonNull(CustomErrorType))
-    result = graphene.Field(RegionDetailType)
-    permissions = [PP.permission.UPDATE_PROJECT]
-
-    @classmethod
-    def check_permissions(cls, info, **_):
-        return True
-
-    @staticmethod
-    def mutate(root, info, **kwargs):
-        project = Project.objects.get(id=kwargs['project_id'])
-        region = int(kwargs['id'])
-        if region not in [region.id for region in project.regions.all()]:
-            return RemoveProjectRegion(errors=[
-                dict(
-                    field='nonFieldErrors',
-                    messages=gettext(
-                        'Region is not associated with Project'
-                    ),
-                )
-            ], ok=False)
-        project.regions.remove(region)
-        return RemoveProjectRegion(ok=True)
+    #  NOTE: Region permission is checked using serializers
 
 
 class UpdateAdminLevel(GrapheneMutation):
@@ -91,6 +57,5 @@ class UpdateAdminLevel(GrapheneMutation):
 
 class Mutation():
     create_region = CreateRegion.Field()
-    remove_project_region = RemoveProjectRegion.Field()
     create_admin_level = CreateAdminLevel.Field()
     update_admin_level = UpdateAdminLevel.Field()
