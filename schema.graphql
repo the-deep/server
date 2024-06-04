@@ -24,6 +24,19 @@ type AdditionalDocumentType {
   externalLink: String
 }
 
+input AdminLevelInputType {
+  region: ID!
+  parent: ID
+  title: String!
+  level: Int
+  nameProp: String
+  codeProp: String
+  parentCodeProp: String
+  parentNameProp: String
+  geoShapeFile: ID
+  boundsFile: Upload
+}
+
 type AdminLevelType {
   id: ID!
   title: String!
@@ -42,7 +55,6 @@ type AdminLevelType {
 
 input AnalysisAutomaticSummaryCreateInputType {
   entriesId: [ID!]
-  widgetTags: [String!]
 }
 
 type AnalysisAutomaticSummaryType {
@@ -1407,7 +1419,6 @@ type AnalysisTopicModelClusterType {
 input AnalysisTopicModelCreateInputType {
   analysisPillar: ID!
   additionalFilters: EntriesFilterDataInputType
-  widgetTags: [String!]
 }
 
 type AnalysisTopicModelType {
@@ -1585,9 +1596,7 @@ type AppEnumCollection {
   LeadSourceType: [AppEnumCollectionLeadSourceType!]
   LeadExtractionStatus: [AppEnumCollectionLeadExtractionStatus!]
   LeadAutoEntryExtractionStatus: [AppEnumCollectionLeadAutoEntryExtractionStatus!]
-  LeadPreviewAttachmentType: [AppEnumCollectionLeadPreviewAttachmentType!]
   EntryEntryType: [AppEnumCollectionEntryEntryType!]
-  EntryAttachmentEntryFileType: [AppEnumCollectionEntryAttachmentEntryFileType!]
   ExportFormat: [AppEnumCollectionExportFormat!]
   ExportStatus: [AppEnumCollectionExportStatus!]
   ExportType: [AppEnumCollectionExportType!]
@@ -1933,12 +1942,6 @@ type AppEnumCollectionDraftEntryType {
   description: String
 }
 
-type AppEnumCollectionEntryAttachmentEntryFileType {
-  enum: EntryFileType!
-  label: String!
-  description: String
-}
-
 type AppEnumCollectionEntryEntryType {
   enum: EntryTagTypeEnum!
   label: String!
@@ -2037,12 +2040,6 @@ type AppEnumCollectionLeadConfidentiality {
 
 type AppEnumCollectionLeadExtractionStatus {
   enum: LeadExtractionStatusEnum!
-  label: String!
-  description: String
-}
-
-type AppEnumCollectionLeadPreviewAttachmentType {
-  enum: LeadPreviewAttachmentTypeEnum!
   label: String!
   description: String
 }
@@ -3286,7 +3283,7 @@ input BulkEntryInputType {
   entryType: EntryTagTypeEnum
   image: ID
   imageRaw: String
-  leadAttachment: ID
+  leadImage: ID
   tabularField: ID
   excerpt: String
   droppedExcerpt: String
@@ -3548,6 +3545,12 @@ type ConnectorSourceType {
   statusDisplay: EnumDescription!
 }
 
+type CreateAdminLevel {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AdminLevelType
+}
+
 type CreateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
@@ -3624,6 +3627,12 @@ type CreateProjectJoin {
   errors: [GenericScalar!]
   ok: Boolean
   result: ProjectJoinRequestType
+}
+
+type CreateRegion {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: RegionDetailType
 }
 
 type CreateUnifiedConnector {
@@ -3949,19 +3958,6 @@ type EntriesFilterDataType {
   filterableData: [EntryFilterDataType!]
 }
 
-type EntryAttachmentType {
-  id: ID!
-  leadAttachmentId: ID
-  file: FileFieldType!
-  filePreview: FileFieldType!
-  entryFileType: EntryFileType!
-}
-
-enum EntryFileType {
-  XLSX
-  IMAGE
-}
-
 input EntryFilterDataInputType {
   filterKey: ID!
   value: String
@@ -4005,7 +4001,7 @@ input EntryInputType {
   entryType: EntryTagTypeEnum
   image: ID
   imageRaw: String
-  leadAttachment: ID
+  leadImage: ID
   tabularField: ID
   excerpt: String
   droppedExcerpt: String
@@ -4087,7 +4083,6 @@ enum EntryReviewCommentTypeEnum {
 enum EntryTagTypeEnum {
   EXCERPT
   IMAGE
-  ATTACHMENT
   DATA_SERIES
 }
 
@@ -4117,7 +4112,6 @@ type EntryType {
   verifiedByCount: Int!
   reviewCommentsCount: Int!
   draftEntry: ID
-  entryAttachment: EntryAttachmentType
 }
 
 scalar EnumDescription
@@ -4278,7 +4272,6 @@ enum ExportExcelSelectedStaticColumnEnum {
   ENTRY_ID
   LEAD_ENTRY_ID
   ENTRY_EXCERPT
-  LEAD_ENTRY_ENTRY_ATTACHMENT_FILE_PREVIEW
 }
 
 enum ExportExportTypeEnum {
@@ -4732,27 +4725,6 @@ enum LeadOrderingEnum {
   DESC_ENTRIES_COUNT
 }
 
-type LeadPreviewAttachmentListType {
-  results: [LeadPreviewAttachmentType!]
-  totalCount: Int
-  page: Int
-  pageSize: Int
-}
-
-type LeadPreviewAttachmentType {
-  id: ID!
-  order: Int!
-  pageNumber: Int!
-  file: FileFieldType!
-  filePreview: FileFieldType!
-  type: LeadPreviewAttachmentTypeEnum!
-}
-
-enum LeadPreviewAttachmentTypeEnum {
-  XLSX
-  IMAGE
-}
-
 type LeadPreviewType {
   textExtract: String!
   thumbnail: String
@@ -5040,6 +5012,10 @@ type MissingPredictionReviewType {
 }
 
 type Mutation {
+  createRegion(data: RegionInputType!): CreateRegion
+  createAdminLevel(data: AdminLevelInputType!): CreateAdminLevel
+  updateAdminLevel(data: AdminLevelInputType!, id: ID!): UpdateAdminLevel
+  publishRegion(id: ID!): PublishRegion
   organizationCreate(data: OrganizationInputType!): OrganizationCreate
   createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType!): AssessmentRegistryCreateIssue
   fileUpload(data: FileUploadInputType!): UploadFile
@@ -5313,7 +5289,6 @@ type ProjectDetailType {
   leadGroups(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): LeadGroupListType
   emmEntities(name: String, page: Int = 1, ordering: String, pageSize: Int): EmmEntityListType
   leadEmmTriggers(lead: ID, emmKeyword: String, emmRiskFactor: String, count: Int, page: Int = 1, ordering: String, pageSize: Int): LeadEmmTriggerListType
-  leadPreviewAttachments(lead: ID, pageNumber: Int, excludeAttachmentIds: [ID!], createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], type: [LeadPreviewAttachmentTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): LeadPreviewAttachmentListType
   emmKeywords: [EmmKeyWordType!]
   emmRiskFactors: [EmmKeyRiskFactorType!]
   userSavedLeadFilter: UserSavedLeadFilterType
@@ -5816,6 +5791,12 @@ type PublicProjectWithMembershipData {
   isRejected: Boolean!
 }
 
+type PublishRegion {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: RegionType
+}
+
 type Query {
   assessmentRegSummaryIssue(id: ID!): AssessmentRegistrySummaryIssueType
   assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimension: AssessmentRegistrySummarySubDimensionTypeEnum, search: String, isParent: Boolean, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
@@ -5909,7 +5890,15 @@ type RegionDetailType {
   populationData: GenericScalar
   mediaSources: GenericScalar
   centroid: PointScalar
+  clientId: ID!
   adminLevels: [AdminLevelType!]
+}
+
+input RegionInputType {
+  title: String!
+  code: String!
+  project: ID!
+  clientId: String
 }
 
 type RegionListType {
@@ -5951,6 +5940,7 @@ type RegionType {
   populationData: GenericScalar
   mediaSources: GenericScalar
   centroid: PointScalar
+  clientId: ID!
 }
 
 type RegionWithProject {
@@ -6313,6 +6303,12 @@ input UnifiedConnectorWithSourceInputType {
   isActive: Boolean
   clientId: String
   sources: [ConnectorSourceGqInputType!]
+}
+
+type UpdateAdminLevel {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AdminLevelType
 }
 
 type UpdateAnalysisFramework {

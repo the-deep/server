@@ -5,6 +5,7 @@ from drf_dynamic_fields import DynamicFieldsMixin
 from deep.serializers import (
     ProjectPropertySerializerMixin,
     RemoveNullFieldsMixin,
+    TempClientIdMixin,
     URLCachedFileField,
 )
 from rest_framework import serializers
@@ -154,8 +155,12 @@ class GeoAreaSerializer(serializers.ModelSerializer):
         )
 
 
-class RegionGqSerializer(ProjectPropertySerializerMixin, UserResourceSerializer):
-    project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())
+class RegionGqSerializer(UserResourceSerializer, TempClientIdMixin):
+    project = serializers.PrimaryKeyRelatedField(
+        queryset=Project.objects.all(),
+        help_text="Project is only used while creating region"
+    )
+
     client_id = serializers.CharField(required=False)
 
     class Meta:
@@ -177,3 +182,69 @@ class RegionGqSerializer(ProjectPropertySerializerMixin, UserResourceSerializer)
         region = super().create(validated_data)
         project.regions.add(region)
         return region
+
+
+class AdminLevelGqlSerializer(UserResourceSerializer):
+    region = serializers.PrimaryKeyRelatedField(queryset=Region.objects.all())
+
+    class Meta:
+        model = AdminLevel
+        fields = [
+            'region',
+            'parent',
+            'title',
+            'level',
+            'name_prop',
+            'code_prop',
+            'parent_code_prop',
+            'parent_name_prop',
+            'geo_shape_file',
+            'geo_shape_file',
+            'bounds_file',
+        ]
+
+    def validate(self, data):
+        region = data.get('region', (self.instance and self.instance.region))
+        if not region.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('You don\'t have the access to the region')
+        if data['region'].is_published:
+            raise serializers.ValidationError('The region has been published. Changes are not allowed')
+        return data
+
+    def create(self, validated_data):
+        admin_level = super().create(validated_data)
+
+        transaction.on_commit(lambda: load_geo_areas.delay(admin_level.region.id))
+
+        return admin_level
+
+    def update(self, instance, validated_data):
+        if 'region' in validated_data and instance.region_id != validated_data['region'].id:
+            raise serializers.ValidationError("Admin Level is not associated with the region")
+        admin_level = super().update(
+            instance,
+            validated_data,
+        )
+        region = admin_level.region
+        region.modified_by = self.context['request'].user
+        region.save(update_fields=('modified_by', 'modified_at',))
+
+        transaction.on_commit(lambda: load_geo_areas.delay(region.id))
+
+        return admin_level
+
+
+class PublishRegionGqSerializer(ProjectPropertySerializerMixin, UserResourceSerializer):
+
+    class Meta:
+        model = Region
+        fields = ['is_published']
+
+    def validate(self, data):
+        if not self.instance.can_publish(self.context['request'].user):
+            raise serializers.ValidationError("Authorized User can only published the region")
+        return data
+
+    def update(self, instance, validated_data):
+        data = super().update(instance, validated_data)
+        return data
