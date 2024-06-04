@@ -177,3 +177,44 @@ class RegionGqSerializer(ProjectPropertySerializerMixin, UserResourceSerializer)
         region = super().create(validated_data)
         project.regions.add(region)
         return region
+
+
+class AdminLevelGqlSerializer(UserResourceSerializer):
+    region = serializers.PrimaryKeyRelatedField(queryset=Region.objects.all())
+
+    class Meta:
+        model = AdminLevel
+        exclude = ('geo_area_titles',)
+
+    def validate_region(self, region):
+        if not region.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('Invalid Region')
+        if region.is_published:
+            raise serializers.ValidationError('The AdminLevel cannot be altered once the region has been published.')
+        return region
+
+    def create(self, validated_data):
+        admin_level = super().create(validated_data)
+
+        if not settings.TESTING:
+            transaction.on_commit(lambda: load_geo_areas.delay(region.id))
+
+        return admin_level
+
+    def update(self, instance, validated_data):
+        if instance.region.id != validated_data['region'].id:
+            raise serializers.ValidationError("Admin Level is not associated with the region")
+        admin_level = super().update(
+            instance,
+            validated_data,
+        )
+        admin_level.save()
+
+        region = admin_level.region
+        region.modified_by = self.context['request'].user
+        region.save()
+
+        if not settings.TESTING:
+            transaction.on_commit(lambda: load_geo_areas.delay(region.id))
+
+        return admin_level
