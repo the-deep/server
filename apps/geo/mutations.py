@@ -27,6 +27,7 @@ class CreateRegion(GrapheneMutation):
     @classmethod
     def check_permissions(cls, info, **_):
         return True  # global permission is always true
+    #  NOTE: Region permission is checked using serializers
 
 
 class CreateAdminLevel(GrapheneMutation):
