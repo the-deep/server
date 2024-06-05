@@ -41,18 +41,25 @@ class CreateTestMutation(GraphQLTestCase):
         # without login
         _query_check(minput, assert_for_error=True)
 
-        # with login
+        # with login with project_member_user
         self.force_login(project_member_user)
 
         content = _query_check(minput)
         self.assertIn(project_member_user, project.members.all())
         self.assertEqual(content['data']['createRegion']['errors'], None)
         self.assertEqual(content['data']['createRegion']['result']['title'], "Test")
+
+        # make sure region is attached with project
         self.assertIn(
             Region.objects.get(id=content['data']['createRegion']['result']['id']), project.regions.all()
         )
 
-        # login normal user
+        #  make sure region is not pubhished
+        self.assertEqual(
+            Region.objects.get(id=content['data']['createRegion']['result']['id']).is_published, False
+        )
+
+        # login with non_project_member_user
         self.force_login(non_project_member_user)
         content = _query_check(minput)
         self.assertNotIn(non_project_member_user, project.members.all())

@@ -3,6 +3,7 @@ from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
 
 from deep.serializers import (
+    ProjectPropertySerializerMixin,
     RemoveNullFieldsMixin,
     TempClientIdMixin,
     URLCachedFileField,
@@ -199,15 +200,16 @@ class AdminLevelGqlSerializer(UserResourceSerializer):
             'parent_name_prop',
             'geo_shape_file',
             'geo_shape_file',
-            'bounds_file'
+            'bounds_file',
         ]
 
-    def validate_region(self, region):
-        if not region.can_modify(self.context['request'].user):
-            raise serializers.ValidationError('Invalid Region')
-        if region.is_published:
-            raise serializers.ValidationError('The AdminLevel cannot be altered once the region has been published.')
-        return region
+    def validate(self, data):
+        region = data.get('region', (self.instance and self.instance.region))
+        if region.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('You don\'t have the access to the region')
+        if data['region'].is_published:
+            raise serializers.ValidationError('The region has been published. Changes are not allowed')
+        return data
 
     def create(self, validated_data):
         admin_level = super().create(validated_data)
@@ -217,7 +219,7 @@ class AdminLevelGqlSerializer(UserResourceSerializer):
         return admin_level
 
     def update(self, instance, validated_data):
-        if instance.region.id != validated_data['region'].id:
+        if 'region' in validated_data and instance.region_id != validated_data['region'].id:
             raise serializers.ValidationError("Admin Level is not associated with the region")
         admin_level = super().update(
             instance,
@@ -230,3 +232,19 @@ class AdminLevelGqlSerializer(UserResourceSerializer):
         transaction.on_commit(lambda: load_geo_areas.delay(region.id))
 
         return admin_level
+
+
+class PublishRegionGqSerializer(ProjectPropertySerializerMixin, UserResourceSerializer):
+
+    class Meta:
+        model = Region
+        fields = ['is_published']
+
+    def validate(self, data):
+        if not self.instance.can_publish(self.context['request'].user):
+            raise serializers.ValidationError("Authorized User can only published the region")
+        return data
+
+    def update(self, instance, validated_data):
+        data = super().update(instance, validated_data)
+        return data
