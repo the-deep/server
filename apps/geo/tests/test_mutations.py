@@ -3,6 +3,7 @@ from project.factories import ProjectFactory
 from utils.graphene.tests import GraphQLTestCase
 
 from geo.models import Region
+from geo.factories import RegionFactory
 
 
 class CreateTestMutation(GraphQLTestCase):
@@ -64,3 +65,43 @@ class CreateTestMutation(GraphQLTestCase):
         content = _query_check(minput)
         self.assertNotIn(non_project_member_user, project.members.all())
         self.assertEqual(content['data']['createRegion']['errors'][0]['messages'], "Permission Denied")
+
+    def test_publish_region(self):
+        self.publish_region_query = '''
+            mutation MyMutation($id:ID!){
+                publishRegion(id: $id) {
+                    ok
+                    errors
+                }
+            }
+        '''
+        user = UserFactory.create()
+        other_user = UserFactory.create()
+        project = ProjectFactory.create()
+        region = RegionFactory.create(created_by=user)
+        project.add_member(user)
+
+        def _query_check(**kwargs):
+            return self.query_check(
+                self.publish_region_query,
+                variables={'id': region.id},
+                # minput=minput,
+                **kwargs
+            )
+        _query_check(assert_for_error=True)
+
+        # login with user
+
+        self.force_login(user)
+        content = _query_check()
+        region.refresh_from_db()
+        self.assertEqual(content['data']['publishRegion']['errors'], None)
+        self.assertEqual(region.is_published, True)
+
+        # login with other user
+        self.force_login(other_user)
+        content = _query_check()
+        self.assertEqual(
+            content['data']['publishRegion']['errors'][0]['messages'],
+            'Authorized User can only published the region'
+        )

@@ -246,5 +246,6 @@ class PublishRegionGqSerializer(ProjectPropertySerializerMixin, UserResourceSeri
         return data
 
     def update(self, instance, validated_data):
+        instance.is_published = True
         data = super().update(instance, validated_data)
         return data

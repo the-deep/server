@@ -1,9 +1,10 @@
 import graphene
 
-from geo.models import AdminLevel, Region
-from geo.schema import AdminLevelType, RegionDetailType
-from geo.serializers import AdminLevelGqlSerializer, RegionGqSerializer
+from geo.models import Region, AdminLevel
+from geo.schema import RegionType, RegionDetailType, AdminLevelType
+from geo.serializers import RegionGqSerializer, AdminLevelGqlSerializer
 
+from utils.graphene.error_types import CustomErrorType
 from utils.graphene.mutation import GrapheneMutation, generate_input_type_for_serializer
 
 RegionInputType = generate_input_type_for_serializer(
@@ -56,18 +57,32 @@ class UpdateAdminLevel(GrapheneMutation):
         return True  # global permission is always True
 
 
-class PublishRegion(GrapheneMutation):
+class PublishRegion(graphene.Mutation):
     class Arguments:
-        data = RegionPublishInputType(required=True)
         id = graphene.ID(required=True)
     model = Region
-    serializer_class = PublishRegionGqSerializer
+    errors = graphene.List(graphene.NonNull(CustomErrorType))
+    ok = graphene.Boolean()
     result = graphene.Field(RegionType)
 
-    @classmethod
-    def check_permissions(cls, *args, **_):
-        if PP.Permission.UPDATE_PROJECT:
-            return True
+    @staticmethod
+    def mutate(root, info, id):
+        try:
+            instance = Region.objects.get(
+                created_by=info.context.user,
+                id=id
+            )
+        except Region.DoesNotExist:
+            return PublishRegion(errors=[
+                dict(
+                    field='nonFieldErrors',
+                    messages="Authorized User can only published the region"
+                )
+            ], ok=False)
+        instance.is_published = True
+        instance.save(update_fields=['is_published'])
+        # instance.save(update_fields=('is_published'))
+        return PublishRegion(result=instance, errors=None, ok=True)
 
 
 class Mutation():
