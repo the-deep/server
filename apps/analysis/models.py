@@ -467,6 +467,7 @@ class TopicModel(UserResource, DeeplTrackBaseModel):
             queryset=analysis_pillar.get_entries_qs(),  # Queryset from AnalysisPillar
             data=entry_filters,  # User Defined filter
             request=dummy_request,
+            lead_confidentialities=[Lead.Confidentiality.UNPROTECTED]  # Only public leads are allowed
         ).qs
 
     def get_entries_qs(self):

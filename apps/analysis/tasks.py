@@ -2,6 +2,7 @@ import logging
 
 from celery import shared_task
 from django.db import models
+from lead.models import Lead
 
 from utils.files import generate_json_file_for_upload
 from deepl_integration.handlers import (
@@ -55,6 +56,7 @@ def trigger_automatic_summary(_id):
         Entry.objects.filter(
             project=a_summary.project,
             id__in=a_summary.entries_id,
+            lead__confidentiality=Lead.Confidentiality.UNPROTECTED,
         ).values('excerpt', entry_id=models.F('id'))
     )
     payload = {
