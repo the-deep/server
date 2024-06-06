@@ -25,15 +25,14 @@ class DraftEntryBaseSerializer(serializers.Serializer):
         af = lead.project.analysis_framework
         if af is None or not af.assisted_tagging_enabled:
             raise serializers.ValidationError('Assisted tagging is disabled for the Framework used by this project.')
-        if self.project.is_private:
-            raise serializers.ValidationError('Assisted tagging is not available for private projects.')
-        if lead.confidentiality in (Lead.Confidentiality.CONFIDENTIAL, Lead.Confidentiality.RESTRICTED):
-            raise serializers.ValidationError('Assisted tagging is not available for confidential or restricated leads')
         return lead
 
 
 class DraftEntryGqlSerializer(
-    ProjectPropertySerializerMixin, DraftEntryBaseSerializer, UserResourceCreatedMixin, serializers.ModelSerializer
+    ProjectPropertySerializerMixin,
+    DraftEntryBaseSerializer,
+    UserResourceCreatedMixin,
+    serializers.ModelSerializer,
 ):
     class Meta:
         model = DraftEntry
