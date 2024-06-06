@@ -16,6 +16,7 @@ LeadAutoEntryExtractionTypeEnum = convert_enum_to_graphene_enum(
     Lead.AutoExtractionStatus, name='LeadAutoEntryExtractionTypeEnum'
 )
 
+
 enum_map = {
     get_enum_name_from_django_field(field): enum
     for field, enum in (

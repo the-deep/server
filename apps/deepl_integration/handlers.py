@@ -37,7 +37,7 @@ from unified_connector.models import (
 from lead.models import (
     Lead,
     LeadPreview,
-    LeadPreviewImage,
+    LeadPreviewAttachment,
 )
 from lead.typings import NlpExtractorDocument
 from entry.models import Entry
@@ -636,13 +636,14 @@ class LeadExtractionHandler(BaseHandler):
     def save_data(
         lead: Lead,
         text_source_uri: str,
-        images_uri: List[str],
+        images_uri: List[dict],
+        table_uri: List[dict],
         word_count: int,
         page_count: int,
         text_extraction_id: str,
     ):
         LeadPreview.objects.filter(lead=lead).delete()
-        LeadPreviewImage.objects.filter(lead=lead).delete()
+        LeadPreviewAttachment.objects.filter(lead=lead).delete()
         # and create new one
         LeadPreview.objects.create(
             lead=lead,
@@ -651,18 +652,44 @@ class LeadExtractionHandler(BaseHandler):
             page_count=page_count,
             text_extraction_id=text_extraction_id,
         )
-        # Save extracted images as LeadPreviewImage instances
+        # Save extracted images as LeadPreviewAttachment instances
         # TODO: The logic is same for unified_connector leads as well. Maybe have a single func?
-        image_base_path = f'{lead.pk}'
-        for image_uri in images_uri:
-            lead_image = LeadPreviewImage(lead=lead)
-            image_obj = RequestHelper(url=image_uri, ignore_error=True).get_file()
-            if image_obj:
-                lead_image.file.save(
-                    os.path.join(image_base_path, os.path.basename(urlparse(image_uri).path)),
-                    image_obj
+
+        attachement_base_path = f'{lead.pk}'
+        images = [dict(item) for item in images_uri]
+        for image_uri in images:
+            for image in image_uri['images']:
+                lead_attachement = LeadPreviewAttachment(lead=lead)
+                image_obj = RequestHelper(url=image, ignore_error=True).get_file()
+                if image_obj:
+                    lead_attachement.file.save(
+                        os.path.join(attachement_base_path, os.path.basename(urlparse(image).path)),
+                        image_obj
+                    )
+                    lead_attachement.page_number = image_uri['page_number']
+                    lead_attachement.type = LeadPreviewAttachment.AttachementFileType.IMAGE
+                    lead_attachement.file_preview = lead_attachement.file
+
+                lead_attachement.save()
+
+        table_path = [dict(item) for item in table_uri]
+        for table in table_path:
+            lead_attachement = LeadPreviewAttachment(lead=lead)
+            table_img = RequestHelper(url=table['image_link'], ignore_error=True).get_file()
+            table_attahcment = RequestHelper(url=table['content_link'], ignore_error=True).get_file()
+            if table_img:
+                lead_attachement.file_preview.save(
+                    os.path.join(attachement_base_path, os.path.basename(urlparse(table['image_link']).path)),
+                    table_img
                 )
-                lead_image.save()
+                lead_attachement.page_number = table['page_number']
+                lead_attachement.type = LeadPreviewAttachment.AttachementFileType.XLSX
+                lead_attachement.file.save(
+                    os.path.join(attachement_base_path, os.path.basename(urlparse(table['content_link']).path)),
+                    table_attahcment
+                )
+                lead_attachement.save()
+
         lead.update_extraction_status(Lead.ExtractionStatus.SUCCESS)
         return lead
 
@@ -674,7 +701,7 @@ class LeadExtractionHandler(BaseHandler):
         if connector_lead.extraction_status != ConnectorLead.ExtractionStatus.SUCCESS:
             return False
         LeadPreview.objects.filter(lead=lead).delete()
-        LeadPreviewImage.objects.filter(lead=lead).delete()
+        LeadPreviewAttachment.objects.filter(lead=lead).delete()
         # and create new one
         LeadPreview.objects.create(
             lead=lead,
@@ -683,10 +710,10 @@ class LeadExtractionHandler(BaseHandler):
             page_count=connector_lead.page_count,
             text_extraction_id=connector_lead.text_extraction_id,
         )
-        # Save extracted images as LeadPreviewImage instances
+        # Save extracted images as LeadPreviewAttachment instances
         # TODO: The logic is same for unified_connector leads as well. Maybe have a single func?
         for connector_lead_preview_image in connector_lead.preview_images.all():
-            lead_image = LeadPreviewImage(lead=lead)
+            lead_image = LeadPreviewAttachment(lead=lead)
             lead_image.file.save(
                 connector_lead_preview_image.image.name,
                 connector_lead_preview_image.image,

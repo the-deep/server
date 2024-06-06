@@ -5,14 +5,14 @@ from django.dispatch import receiver
 
 from lead.models import (
     LeadPreview,
-    LeadPreviewImage,
+    LeadPreviewAttachment,
 )
 from unified_connector.models import ConnectorLeadPreviewImage
 
 
 # Lead
 @receiver(models.signals.post_delete, sender=LeadPreview)
-@receiver(models.signals.post_delete, sender=LeadPreviewImage)
+@receiver(models.signals.post_delete, sender=LeadPreviewAttachment)
 # Unified Connector
 @receiver(models.signals.post_delete, sender=ConnectorLeadPreviewImage)
 def cleanup_file_on_instance_delete(sender, instance, **kwargs):

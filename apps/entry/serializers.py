@@ -17,7 +17,7 @@ from gallery.models import File
 from gallery.serializers import FileSerializer, SimpleFileSerializer
 from project.models import Project
 from lead.serializers import LeadSerializer
-from lead.models import Lead, LeadPreviewImage
+from lead.models import Lead, LeadPreviewAttachment
 from analysis_framework.serializers import AnalysisFrameworkSerializer
 from geo.models import GeoArea, Region
 from geo.serializers import SimpleRegionSerializer
@@ -211,7 +211,7 @@ class EntrySerializer(RemoveNullFieldsMixin,
     lead_image = serializers.PrimaryKeyRelatedField(
         required=False,
         write_only=True,
-        queryset=LeadPreviewImage.objects.all()
+        queryset=LeadPreviewAttachment.objects.all()
     )
     # NOTE: Provided by annotate `annotate_comment_count`
     verified_by_count = serializers.IntegerField(read_only=True)
@@ -594,7 +594,7 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
     lead_image = serializers.PrimaryKeyRelatedField(
         required=False,
         write_only=True,
-        queryset=LeadPreviewImage.objects.all(),
+        queryset=LeadPreviewAttachment.objects.all(),
         help_text=(
             'This is used to add images from Lead Preview Images.'
             ' This will be changed into gallery image and supplied back in image field.'

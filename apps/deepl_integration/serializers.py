@@ -63,6 +63,21 @@ class DeeplServerBaseCallbackSerializer(BaseCallbackSerializer):
     status = serializers.ChoiceField(choices=Status.choices)
 
 
+class ImagePathSerializer(serializers.Serializer):
+    page_number = serializers.IntegerField(required=True)
+    images = serializers.ListField(
+        child=serializers.CharField(allow_blank=True),
+        default=[]
+    )
+
+
+class TablePathSerializer(serializers.Serializer):
+    page_number = serializers.IntegerField(required=True)
+    order = serializers.IntegerField(required=True)
+    image_link = serializers.URLField(required=True)
+    content_link = serializers.URLField(required=True)
+
+
 # -- Lead
 class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
     """
@@ -70,10 +85,8 @@ class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
     """
     url = serializers.CharField(required=False)
     # Data fields
-    images_path = serializers.ListField(
-        child=serializers.CharField(allow_blank=True),
-        required=False, default=[],
-    )
+    images_path = serializers.ListSerializer(child=ImagePathSerializer(required=False))
+    tables_path = serializers.ListSerializer(child=TablePathSerializer(required=False))
     text_path = serializers.CharField(required=False, allow_null=True)
     total_words_count = serializers.IntegerField(required=False, default=0, allow_null=True)
     total_pages = serializers.IntegerField(required=False, default=0, allow_null=True)
@@ -106,6 +119,7 @@ class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
                 lead,
                 data['text_path'],
                 data.get('images_path', [])[:10],   # TODO: Support for more images, too much image will error.
+                data.get('tables_path', []),
                 data.get('total_words_count'),
                 data.get('total_pages'),
                 data.get('text_extraction_id'),

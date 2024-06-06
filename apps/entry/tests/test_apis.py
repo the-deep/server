@@ -5,7 +5,7 @@ from reversion.models import Version
 from deep.tests import TestCase
 from project.models import Project
 from user.models import User
-from lead.models import Lead, LeadPreviewImage
+from lead.models import Lead, LeadPreviewAttachment
 from organization.models import Organization, OrganizationType
 from analysis_framework.models import (
     AnalysisFramework, Widget, Filter
@@ -724,7 +724,7 @@ class EntryTests(TestCase):
 
         self.authenticate()
         # Using lead image (same lead)
-        data['lead_image'] = self.create(LeadPreviewImage, lead=lead, file=image.file).pk
+        data['lead_image'] = self.create(LeadPreviewAttachment, lead=lead, file=image.file).pk
         response = self.client.post(url, data)
         self.assert_201(response)
         assert 'image' in response.data
@@ -732,7 +732,7 @@ class EntryTests(TestCase):
         data.pop('lead_image')
 
         # Using lead image (different lead)
-        data['lead_image'] = self.create(LeadPreviewImage, lead=self.create_lead(), file=image.file).pk
+        data['lead_image'] = self.create(LeadPreviewAttachment, lead=self.create_lead(), file=image.file).pk
         response = self.client.post(url, data)
         self.assert_400(response)
         data.pop('lead_image')

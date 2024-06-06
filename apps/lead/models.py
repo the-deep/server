@@ -372,14 +372,25 @@ class LeadPreview(models.Model):
         return 'Text extracted for {}'.format(self.lead)
 
 
-class LeadPreviewImage(models.Model):
+class LeadPreviewAttachment(models.Model):
     """
     NOTE: File can be only used by gallery (when attached to a entry)
     """
+    class AttachementFileType(models.TextChoices):
+        XLSX = 'XLSX', 'XLSX'
+        IMAGE = 'image', 'Image'
+
     lead = models.ForeignKey(
         Lead, related_name='images', on_delete=models.CASCADE,
     )
-    file = models.FileField(upload_to='lead-preview/')
+    order = models.IntegerField(default=0)
+    page_number = models.IntegerField(default=0)
+    type = models.CharField(
+        max_length=20,
+        choices=AttachementFileType.choices,
+    )
+    file = models.FileField(upload_to='lead-preview/attachments/')
+    file_preview = models.FileField(upload_to='lead-preview/attachments-preview/')
 
     def __str__(self):
         return 'Image extracted for {}'.format(self.lead)

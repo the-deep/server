@@ -4556,6 +4556,7 @@ type LeadDetailType {
   statusDisplay: EnumDescription!
   extractionStatus: LeadExtractionStatusEnum
   leadPreview: LeadPreviewType
+  leadPreviewAttachments: [LeadPreviewAttachmentsType!]
   source: OrganizationType
   authors: [OrganizationType!]
   emmEntities: [EmmEntityType!]
@@ -4687,6 +4688,19 @@ enum LeadOrderingEnum {
   DESC_ENTRIES_COUNT
 }
 
+enum LeadPreviewAttachmentType {
+  XLSX
+  IMAGE
+}
+
+type LeadPreviewAttachmentsType {
+  order: Int!
+  pageNumber: Int!
+  type: LeadPreviewAttachmentType!
+  file: FileFieldType
+  filePreview: FileFieldType
+}
+
 type LeadPreviewType {
   textExtract: String!
   thumbnail: String
@@ -4747,6 +4761,7 @@ type LeadType {
   statusDisplay: EnumDescription!
   extractionStatus: LeadExtractionStatusEnum
   leadPreview: LeadPreviewType
+  leadPreviewAttachments: [LeadPreviewAttachmentsType!]
   source: OrganizationType
   authors: [OrganizationType!]
   emmEntities: [EmmEntityType!]

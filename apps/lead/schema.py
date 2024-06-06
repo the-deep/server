@@ -8,7 +8,7 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.enums import EnumDescription
-from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
+from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin, FileFieldType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 
 from user.models import User
@@ -33,6 +33,7 @@ from .models import (
     LeadEMMTrigger,
     EMMEntity,
     UserSavedLeadFilter,
+    LeadPreviewAttachment,
 )
 from .enums import (
     LeadConfidentialityEnum,
@@ -216,6 +217,21 @@ class LeadPreviewType(DjangoObjectType):
         )
 
 
+class LeadPreviewAttachmentsType(DjangoObjectType):
+    file = graphene.Field(FileFieldType)
+    file_preview = graphene.Field(FileFieldType)
+
+    class Meta:
+        model = LeadPreviewAttachment
+        only_fields = (
+            'type',
+            'page_number',
+            'order',
+            'file',
+            'file_preview',
+        )
+
+
 class LeadEmmTriggerType(DjangoObjectType):
     class Meta:
         model = LeadEMMTrigger
@@ -347,6 +363,7 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
 
     extraction_status = graphene.Field(LeadExtractionStatusEnum)
     lead_preview = graphene.Field(LeadPreviewType)
+    lead_preview_attachments = graphene.List(graphene.NonNull(LeadPreviewAttachmentsType))
     source = graphene.Field(OrganizationType)
     authors = DjangoListField(OrganizationType)
     assignee = graphene.Field(UserType)
@@ -411,6 +428,9 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     def resolve_attachment(root, info, **kwargs):
         if root.attachment_id:
             return info.context.dl.deep_gallery.file.load(root.attachment_id)
+
+    def resolve_lead_preview_attachments(root, info, **kwargs):
+        return info.context.dl.lead.lead_preview_attachment.load(root.pk)
 
 
 class DraftEntryCountByLead(graphene.ObjectType):

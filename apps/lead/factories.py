@@ -11,7 +11,7 @@ from .models import (
     LeadGroup,
     LeadEMMTrigger,
     LeadPreview,
-    LeadPreviewImage,
+    LeadPreviewAttachment,
     UserSavedLeadFilter,
 )
 
@@ -84,9 +84,9 @@ class LeadPreviewFactory(DjangoModelFactory):
         model = LeadPreview
 
 
-class LeadPreviewImageFactory(DjangoModelFactory):
+class LeadPreviewAttachmentFactory(DjangoModelFactory):
     class Meta:
-        model = LeadPreviewImage
+        model = LeadPreviewAttachment
 
 
 class UserSavedLeadFilterFactory(DjangoModelFactory):

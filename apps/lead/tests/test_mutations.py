@@ -13,7 +13,7 @@ from lead.factories import (
     LeadGroupFactory,
     LeadEMMTriggerFactory,
     LeadPreviewFactory,
-    LeadPreviewImageFactory,
+    LeadPreviewAttachmentFactory,
 )
 
 
@@ -517,7 +517,7 @@ class TestLeadCopyMutation(GraphQLTestCase):
 
         # Generating Foreign elements for wa_lead1
         wa_lead1_preview = LeadPreviewFactory.create(lead=wa_lead1, text_extract='This is a random text extarct')
-        wa_lead1_image_preview = LeadPreviewImageFactory.create(lead=wa_lead1, file='test-file-123')
+        wa_lead1_image_preview = LeadPreviewAttachmentFactory.create(lead=wa_lead1, file='test-file-123')
         LeadEMMTriggerFactory.create(
             lead=wa_lead1,
             emm_keyword='emm1',

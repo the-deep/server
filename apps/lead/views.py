@@ -48,7 +48,7 @@ from .models import (
     Lead,
     EMMEntity,
     LeadEMMTrigger,
-    LeadPreviewImage,
+    LeadPreviewAttachment,
 )
 from .serializers import (
     raise_or_return_existing_lead,
@@ -812,7 +812,7 @@ class LeadCopyView(BaseCopyView):
         lead.authors.set(authors)
 
         # Clone Many to one Fields
-        LeadPreviewImage.objects.bulk_create([
+        LeadPreviewAttachment.objects.bulk_create([
             _get_clone_ready(image, lead) for image in preview_images
         ])
         LeadEMMTrigger.objects.bulk_create([
