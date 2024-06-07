@@ -1576,6 +1576,7 @@ type AppEnumCollection {
   LeadSourceType: [AppEnumCollectionLeadSourceType!]
   LeadExtractionStatus: [AppEnumCollectionLeadExtractionStatus!]
   LeadAutoEntryExtractionStatus: [AppEnumCollectionLeadAutoEntryExtractionStatus!]
+  LeadPreviewAttachmentType: [AppEnumCollectionLeadPreviewAttachmentType!]
   EntryEntryType: [AppEnumCollectionEntryEntryType!]
   ExportFormat: [AppEnumCollectionExportFormat!]
   ExportStatus: [AppEnumCollectionExportStatus!]
@@ -2020,6 +2021,12 @@ type AppEnumCollectionLeadConfidentiality {
 
 type AppEnumCollectionLeadExtractionStatus {
   enum: LeadExtractionStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionLeadPreviewAttachmentType {
+  enum: LeadPreviewAttachmentTypeEnum!
   label: String!
   description: String
 }
@@ -4556,7 +4563,7 @@ type LeadDetailType {
   statusDisplay: EnumDescription!
   extractionStatus: LeadExtractionStatusEnum
   leadPreview: LeadPreviewType
-  leadPreviewAttachments: [LeadPreviewAttachmentsType!]
+  leadPreviewAttachment: [LeadPreviewAttachmentType!]!
   source: OrganizationType
   authors: [OrganizationType!]
   emmEntities: [EmmEntityType!]
@@ -4688,17 +4695,17 @@ enum LeadOrderingEnum {
   DESC_ENTRIES_COUNT
 }
 
-enum LeadPreviewAttachmentType {
-  XLSX
-  IMAGE
-}
-
-type LeadPreviewAttachmentsType {
+type LeadPreviewAttachmentType {
   order: Int!
   pageNumber: Int!
-  type: LeadPreviewAttachmentType!
   file: FileFieldType
   filePreview: FileFieldType
+  type: LeadPreviewAttachmentTypeEnum
+}
+
+enum LeadPreviewAttachmentTypeEnum {
+  XLSX
+  IMAGE
 }
 
 type LeadPreviewType {
@@ -4761,7 +4768,7 @@ type LeadType {
   statusDisplay: EnumDescription!
   extractionStatus: LeadExtractionStatusEnum
   leadPreview: LeadPreviewType
-  leadPreviewAttachments: [LeadPreviewAttachmentsType!]
+  leadPreviewAttachment: [LeadPreviewAttachmentType!]!
   source: OrganizationType
   authors: [OrganizationType!]
   emmEntities: [EmmEntityType!]

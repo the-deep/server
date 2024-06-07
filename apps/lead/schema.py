@@ -37,6 +37,7 @@ from .models import (
 )
 from .enums import (
     LeadConfidentialityEnum,
+    LeadPreviewAttachmentTypeEnum,
     LeadStatusEnum,
     LeadPriorityEnum,
     LeadSourceTypeEnum,
@@ -217,18 +218,16 @@ class LeadPreviewType(DjangoObjectType):
         )
 
 
-class LeadPreviewAttachmentsType(DjangoObjectType):
+class LeadPreviewAttachmentType(DjangoObjectType):
     file = graphene.Field(FileFieldType)
     file_preview = graphene.Field(FileFieldType)
+    type = graphene.Field(LeadPreviewAttachmentTypeEnum)
 
     class Meta:
         model = LeadPreviewAttachment
         only_fields = (
-            'type',
             'page_number',
             'order',
-            'file',
-            'file_preview',
         )
 
 
@@ -363,7 +362,7 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
 
     extraction_status = graphene.Field(LeadExtractionStatusEnum)
     lead_preview = graphene.Field(LeadPreviewType)
-    lead_preview_attachments = graphene.List(graphene.NonNull(LeadPreviewAttachmentsType))
+    lead_preview_attachment = graphene.List(graphene.NonNull(LeadPreviewAttachmentType), required=True)
     source = graphene.Field(OrganizationType)
     authors = DjangoListField(OrganizationType)
     assignee = graphene.Field(UserType)
@@ -429,7 +428,7 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
         if root.attachment_id:
             return info.context.dl.deep_gallery.file.load(root.attachment_id)
 
-    def resolve_lead_preview_attachments(root, info, **kwargs):
+    def resolve_lead_preview_attachment(root, info, **kwargs):
         return info.context.dl.lead.lead_preview_attachment.load(root.pk)
 
 

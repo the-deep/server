@@ -5,7 +5,7 @@ from utils.graphene.enums import (
     get_enum_name_from_django_field,
 )
 
-from .models import Lead
+from .models import Lead, LeadPreviewAttachment
 
 LeadConfidentialityEnum = convert_enum_to_graphene_enum(Lead.Confidentiality, name='LeadConfidentialityEnum')
 LeadStatusEnum = convert_enum_to_graphene_enum(Lead.Status, name='LeadStatusEnum')
@@ -14,6 +14,9 @@ LeadSourceTypeEnum = convert_enum_to_graphene_enum(Lead.SourceType, name='LeadSo
 LeadExtractionStatusEnum = convert_enum_to_graphene_enum(Lead.ExtractionStatus, name='LeadExtractionStatusEnum')
 LeadAutoEntryExtractionTypeEnum = convert_enum_to_graphene_enum(
     Lead.AutoExtractionStatus, name='LeadAutoEntryExtractionTypeEnum'
+)
+LeadPreviewAttachmentTypeEnum = convert_enum_to_graphene_enum(
+    LeadPreviewAttachment.AttachementFileType, name='LeadPreviewAttachmentTypeEnum'
 )
 
 
@@ -26,6 +29,7 @@ enum_map = {
         (Lead.source_type, LeadSourceTypeEnum),
         (Lead.extraction_status, LeadExtractionStatusEnum),
         (Lead.auto_entry_extraction_status, LeadAutoEntryExtractionTypeEnum),
+        (LeadPreviewAttachment.type, LeadPreviewAttachmentTypeEnum),
     )
 }
 

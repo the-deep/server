@@ -656,8 +656,7 @@ class LeadExtractionHandler(BaseHandler):
         # TODO: The logic is same for unified_connector leads as well. Maybe have a single func?
 
         attachement_base_path = f'{lead.pk}'
-        images = [dict(item) for item in images_uri]
-        for image_uri in images:
+        for image_uri in images_uri:
             for image in image_uri['images']:
                 lead_attachement = LeadPreviewAttachment(lead=lead)
                 image_obj = RequestHelper(url=image, ignore_error=True).get_file()
@@ -672,8 +671,7 @@ class LeadExtractionHandler(BaseHandler):
 
                 lead_attachement.save()
 
-        table_path = [dict(item) for item in table_uri]
-        for table in table_path:
+        for table in table_uri:
             lead_attachement = LeadPreviewAttachment(lead=lead)
             table_img = RequestHelper(url=table['image_link'], ignore_error=True).get_file()
             table_attahcment = RequestHelper(url=table['content_link'], ignore_error=True).get_file()

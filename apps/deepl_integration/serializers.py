@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, List, Dict
 import logging
 from rest_framework import serializers
 
@@ -67,7 +67,7 @@ class ImagePathSerializer(serializers.Serializer):
     page_number = serializers.IntegerField(required=True)
     images = serializers.ListField(
         child=serializers.CharField(allow_blank=True),
-        default=[]
+        default=[],
     )
 
 
@@ -111,7 +111,7 @@ class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
                 raise serializers.ValidationError(errors)
         return data
 
-    def create(self, data):
+    def create(self, data: List[Dict]):
         success = data['status'] == self.Status.SUCCESS
         lead = data['object']   # Added from validate
         if success:

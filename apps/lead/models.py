@@ -377,17 +377,17 @@ class LeadPreviewAttachment(models.Model):
     NOTE: File can be only used by gallery (when attached to a entry)
     """
     class AttachementFileType(models.TextChoices):
-        XLSX = 'XLSX', 'XLSX'
-        IMAGE = 'image', 'Image'
+        XLSX = 1, 'XLSX'
+        IMAGE = 2, 'Image'
 
     lead = models.ForeignKey(
         Lead, related_name='images', on_delete=models.CASCADE,
     )
     order = models.IntegerField(default=0)
     page_number = models.IntegerField(default=0)
-    type = models.CharField(
-        max_length=20,
+    type = models.PositiveSmallIntegerField(
         choices=AttachementFileType.choices,
+        default=AttachementFileType.XLSX
     )
     file = models.FileField(upload_to='lead-preview/attachments/')
     file_preview = models.FileField(upload_to='lead-preview/attachments-preview/')
