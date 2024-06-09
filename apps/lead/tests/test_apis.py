@@ -1802,11 +1802,18 @@ class TestExtractorCallback(TestCase):
                     'page_number': 1,
                     'images': [
                         'http://random.com/image1.jpeg',
-                        'http://random.com/image1.jpeg'
+                        'http://random.com/image2.jpeg'
                     ],
                 }
             ],
-            'tables_path': [],
+            'tables_path': [
+                {
+                    "page_number": 1,
+                    "order": 0,
+                    "image_link": "http://random.com/timetable.png",
+                    "content_link": "http://random.com/table_timetable.xlsx"
+                }
+            ],
             'text_path': 'http://random.com/extracted_file.txt',
             'url': 'http://random.com/pdf_file.pdf',
             'total_words_count': 300,
@@ -1835,7 +1842,10 @@ class TestExtractorCallback(TestCase):
         self.assertEqual(lead_preview.text_extract, 'Extracted text')
         self.assertEqual(lead_preview.word_count, 300)
         self.assertEqual(lead_preview.page_count, 4)
-        self.assertEqual(LeadPreviewAttachment.objects.filter(lead=self.lead).count(), 2)
+        self.assertEqual(LeadPreviewAttachment.objects.filter(lead=self.lead).count(), 3)
+        self.assertEqual(LeadPreviewAttachment.objects.filter(
+            lead=self.lead, type=LeadPreviewAttachment.AttachementFileType.IMAGE).count(), 2
+        )
 
         index_lead_func.assert_called_once_with(self.lead.id)
 

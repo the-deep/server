@@ -376,7 +376,7 @@ class LeadPreviewAttachment(models.Model):
     """
     NOTE: File can be only used by gallery (when attached to a entry)
     """
-    class AttachementFileType(models.TextChoices):
+    class AttachementFileType(models.IntegerChoices):
         XLSX = 1, 'XLSX'
         IMAGE = 2, 'Image'
 

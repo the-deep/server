@@ -47,6 +47,7 @@ from .enums import (
 from .filter_set import (
     LeadGQFilterSet,
     LeadGroupGQFilterSet,
+    LeadPreviewAttachmentGQFilterSet,
 )
 
 
@@ -219,15 +220,16 @@ class LeadPreviewType(DjangoObjectType):
 
 
 class LeadPreviewAttachmentType(DjangoObjectType):
-    file = graphene.Field(FileFieldType)
-    file_preview = graphene.Field(FileFieldType)
-    type = graphene.Field(LeadPreviewAttachmentTypeEnum)
+    file = graphene.Field(FileFieldType, required=True)
+    file_preview = graphene.Field(FileFieldType, required=True)
+    type = graphene.Field(LeadPreviewAttachmentTypeEnum, required=True)
 
     class Meta:
         model = LeadPreviewAttachment
         only_fields = (
-            'page_number',
+            'id',
             'order',
+            'page_number',
         )
 
 
@@ -362,7 +364,6 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
 
     extraction_status = graphene.Field(LeadExtractionStatusEnum)
     lead_preview = graphene.Field(LeadPreviewType)
-    lead_preview_attachment = graphene.List(graphene.NonNull(LeadPreviewAttachmentType), required=True)
     source = graphene.Field(OrganizationType)
     authors = DjangoListField(OrganizationType)
     assignee = graphene.Field(UserType)
@@ -472,6 +473,12 @@ class LeadListType(CustomDjangoListObjectType):
         filterset_class = LeadGQFilterSet
 
 
+class LeadPreviewAttachmentListType(CustomDjangoListObjectType):
+    class Meta:
+        model = LeadPreviewAttachment
+        filterset_class = LeadPreviewAttachmentGQFilterSet
+
+
 class Query:
     lead = DjangoObjectField(LeadDetailType)
     leads = DjangoPaginatedListObjectField(
@@ -499,6 +506,13 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
+    lead_preview_attachments = DjangoPaginatedListObjectField(
+        LeadPreviewAttachmentListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize',
+        )
+    )
+
     # TODO: Add Pagination
     emm_keywords = graphene.List(graphene.NonNull(EmmKeyWordType))
     emm_risk_factors = graphene.List(graphene.NonNull(EmmKeyRiskFactorType))

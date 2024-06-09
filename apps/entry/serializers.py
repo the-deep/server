@@ -29,6 +29,7 @@ from .widgets.store import widget_store
 from .models import (
     Attribute,
     Entry,
+    EntryAttachment,
     EntryComment,
     EntryCommentText,
     ExportData,
@@ -591,12 +592,12 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
             ' This will be changed into gallery image and supplied back in image field.'
         )
     )
-    lead_image = serializers.PrimaryKeyRelatedField(
+    lead_attachment = serializers.PrimaryKeyRelatedField(
         required=False,
         write_only=True,
         queryset=LeadPreviewAttachment.objects.all(),
         help_text=(
-            'This is used to add images from Lead Preview Images.'
+            'This is used to add attachment from Lead Preview Attachment.'
             ' This will be changed into gallery image and supplied back in image field.'
         )
     )
@@ -611,7 +612,7 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
             'entry_type',
             'image',
             'image_raw',
-            'lead_image',
+            'lead_attachment',
             'tabular_field',
             'excerpt',
             'dropped_excerpt',
@@ -643,7 +644,7 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
         request = self.context['request']
         image = data.get('image')
         image_raw = data.pop('image_raw', None)
-        lead_image = data.pop('lead_image', None)
+        lead_attachment = data.pop('lead_attachment', None)
 
         # ---------------- Lead
         lead = data['lead']
@@ -685,12 +686,21 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
                     'image': f'You don\'t have permission to attach image: {image}',
                 })
         # If lead image is provided make sure lead are same
-        elif lead_image:
-            if lead_image.lead != lead:
+        elif lead_attachment:
+            if lead_attachment.lead != lead:
                 raise serializers.ValidationError({
-                    'lead_image': f'You don\'t have permission to attach lead image: {lead_image}',
+                    'lead_attachment': f'You don\'t have permission to attach lead attachment: {lead_attachment}',
                 })
-            data['image'] = lead_image.clone_as_deep_file(request.user)
+
+            if lead_attachment.type == LeadPreviewAttachment.AttachementFileType.XLSX:
+                data['entry_attachment'] = EntryAttachment.objects.create(
+                    file=lead_attachment.file,
+                    file_preview=lead_attachment.file_preview
+                )
+                data['entry_type'] = Entry.TagType.ATTACHMENT
+            else:
+                data['image'] = lead_attachment.clone_as_deep_file(request.user)
+                data['entry_type'] = Entry.TagType.IMAGE
         elif image_raw:
             generated_image = base64_to_deep_image(image_raw, lead, request.user)
             if isinstance(generated_image, File):

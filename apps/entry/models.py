@@ -21,6 +21,18 @@ from analysis_framework.models import (
 from assisted_tagging.models import DraftEntry
 
 
+class EntryAttachment(models.Model):
+    class EntryFileType(models.IntegerChoices):
+        XLSX = 1, 'XLSX'
+
+    entry_file_type = models.PositiveSmallIntegerField(
+        choices=EntryFileType.choices,
+        default=EntryFileType.XLSX
+    )
+    file = models.FileField(upload_to='entry/attachment/')
+    file_preview = models.FileField(upload_to='entry/attachment-preview')
+
+
 class Entry(UserResource, ProjectEntityMixin):
     """
     Entry belonging to a lead
@@ -32,6 +44,7 @@ class Entry(UserResource, ProjectEntityMixin):
     class TagType(models.TextChoices):
         EXCERPT = 'excerpt', 'Excerpt',
         IMAGE = 'image', 'Image',
+        ATTACHMENT = 'attachment', 'Attachment',
         DATA_SERIES = 'dataSeries', 'Data Series'  # NOTE: data saved as tabular_field id
 
     lead = models.ForeignKey(Lead, on_delete=models.CASCADE)
@@ -47,6 +60,7 @@ class Entry(UserResource, ProjectEntityMixin):
     image = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
     image_raw = models.TextField(blank=True)
     tabular_field = models.ForeignKey('tabular.Field', on_delete=models.CASCADE, null=True, blank=True)
+    entry_attachment = models.OneToOneField(EntryAttachment, on_delete=models.CASCADE, null=True, blank=True)
 
     dropped_excerpt = models.TextField(blank=True)  # NOTE: Original Exceprt. Modified version is stored in excerpt
     excerpt_modified = models.BooleanField(default=False)

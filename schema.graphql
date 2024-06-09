@@ -3270,7 +3270,7 @@ input BulkEntryInputType {
   entryType: EntryTagTypeEnum
   image: ID
   imageRaw: String
-  leadImage: ID
+  leadAttachment: ID
   tabularField: ID
   excerpt: String
   droppedExcerpt: String
@@ -3927,6 +3927,18 @@ type EntriesFilterDataType {
   filterableData: [EntryFilterDataType!]
 }
 
+enum EntryAttachmentEntryFileType {
+  A_1
+}
+
+type EntryAttachmentType {
+  id: ID!
+  entryFileType: EntryAttachmentEntryFileType!
+  file: FileFieldType
+  filePreview: FileFieldType
+  entry: EntryType
+}
+
 input EntryFilterDataInputType {
   filterKey: ID!
   value: String
@@ -3970,7 +3982,7 @@ input EntryInputType {
   entryType: EntryTagTypeEnum
   image: ID
   imageRaw: String
-  leadImage: ID
+  leadAttachment: ID
   tabularField: ID
   excerpt: String
   droppedExcerpt: String
@@ -4052,6 +4064,7 @@ enum EntryReviewCommentTypeEnum {
 enum EntryTagTypeEnum {
   EXCERPT
   IMAGE
+  ATTACHMENT
   DATA_SERIES
 }
 
@@ -4065,6 +4078,7 @@ type EntryType {
   informationDate: Date
   excerpt: String!
   image: GalleryFileType
+  entryAttachment: EntryAttachmentType
   droppedExcerpt: String!
   highlightHidden: Boolean!
   controlled: Boolean
@@ -4563,7 +4577,6 @@ type LeadDetailType {
   statusDisplay: EnumDescription!
   extractionStatus: LeadExtractionStatusEnum
   leadPreview: LeadPreviewType
-  leadPreviewAttachment: [LeadPreviewAttachmentType!]!
   source: OrganizationType
   authors: [OrganizationType!]
   emmEntities: [EmmEntityType!]
@@ -4695,12 +4708,20 @@ enum LeadOrderingEnum {
   DESC_ENTRIES_COUNT
 }
 
+type LeadPreviewAttachmentListType {
+  results: [LeadPreviewAttachmentType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
 type LeadPreviewAttachmentType {
+  id: ID!
   order: Int!
   pageNumber: Int!
-  file: FileFieldType
-  filePreview: FileFieldType
-  type: LeadPreviewAttachmentTypeEnum
+  file: FileFieldType!
+  filePreview: FileFieldType!
+  type: LeadPreviewAttachmentTypeEnum!
 }
 
 enum LeadPreviewAttachmentTypeEnum {
@@ -4768,7 +4789,6 @@ type LeadType {
   statusDisplay: EnumDescription!
   extractionStatus: LeadExtractionStatusEnum
   leadPreview: LeadPreviewType
-  leadPreviewAttachment: [LeadPreviewAttachmentType!]!
   source: OrganizationType
   authors: [OrganizationType!]
   emmEntities: [EmmEntityType!]
@@ -5268,6 +5288,7 @@ type ProjectDetailType {
   leadGroups(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): LeadGroupListType
   emmEntities(name: String, page: Int = 1, ordering: String, pageSize: Int): EmmEntityListType
   leadEmmTriggers(lead: ID, emmKeyword: String, emmRiskFactor: String, count: Int, page: Int = 1, ordering: String, pageSize: Int): LeadEmmTriggerListType
+  leadPreviewAttachments(lead: ID, pageNumber: Int, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], type: [LeadPreviewAttachmentTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): LeadPreviewAttachmentListType
   emmKeywords: [EmmKeyWordType!]
   emmRiskFactors: [EmmKeyRiskFactorType!]
   userSavedLeadFilter: UserSavedLeadFilterType

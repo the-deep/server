@@ -9,6 +9,7 @@ from deep.admin import query_buttons
 from entry.models import (
     Entry,
     Attribute,
+    EntryAttachment,
     FilterData,
     ExportData,
     EntryComment,
@@ -85,5 +86,7 @@ class ProjectEntryLabelAdmin(VersionAdmin):
     )
     list_display = ('__str__', 'color')
 
+
+admin.site.register(EntryAttachment)
 
 reversion.register(LeadEntryGroup)

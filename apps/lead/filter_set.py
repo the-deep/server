@@ -22,7 +22,7 @@ from entry.models import Entry
 from entry.filter_set import EntryGQFilterSet, EntriesFilterDataInputType, EntriesFilterDataType
 from user_resource.filters import UserResourceGqlFilterSet
 
-from .models import Lead, LeadGroup, LeadDuplicates
+from .models import Lead, LeadGroup, LeadDuplicates, LeadPreviewAttachment
 from .enums import (
     LeadConfidentialityEnum,
     LeadStatusEnum,
@@ -30,6 +30,7 @@ from .enums import (
     LeadSourceTypeEnum,
     LeadOrderingEnum,
     LeadExtractionStatusEnum,
+    LeadPreviewAttachmentTypeEnum,
 )
 
 
@@ -550,6 +551,14 @@ class LeadGroupGQFilterSet(UserResourceGqlFilterSet):
         if not value:
             return qs
         return qs.filter(title__icontains=value).distinct()
+
+
+class LeadPreviewAttachmentGQFilterSet(UserResourceGqlFilterSet):
+    type = MultipleInputFilter(LeadPreviewAttachmentTypeEnum, field_name='type')
+
+    class Meta:
+        model = LeadPreviewAttachment
+        fields = ['lead', 'page_number']
 
 
 LeadsFilterDataType, LeadsFilterDataInputType = generate_type_for_filter_set(
