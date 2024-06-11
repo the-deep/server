@@ -555,10 +555,21 @@ class LeadGroupGQFilterSet(UserResourceGqlFilterSet):
 
 class LeadPreviewAttachmentGQFilterSet(UserResourceGqlFilterSet):
     type = MultipleInputFilter(LeadPreviewAttachmentTypeEnum, field_name='type')
+    exclude_attachment_id = IDListFilter(method='filter_exclude_lead_attachment_id')
 
     class Meta:
         model = LeadPreviewAttachment
-        fields = ['lead', 'page_number']
+        fields = [
+            'lead',
+            'page_number',
+            'exclude_attachment_id',
+        ]
+
+    def filter_exclude_lead_attachment_id(self, qs, _, value):
+        if value:
+            qs = qs.exclude(id__in=value)
+            return qs
+        return qs
 
 
 LeadsFilterDataType, LeadsFilterDataInputType = generate_type_for_filter_set(

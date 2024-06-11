@@ -85,8 +85,14 @@ class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
     """
     url = serializers.CharField(required=False)
     # Data fields
-    images_path = serializers.ListSerializer(child=ImagePathSerializer(required=False))
-    tables_path = serializers.ListSerializer(child=TablePathSerializer(required=False))
+    images_path = serializers.ListSerializer(
+        child=ImagePathSerializer(required=True),
+        required=False
+    )
+    tables_path = serializers.ListSerializer(
+        child=TablePathSerializer(required=True),
+        required=False
+    )
     text_path = serializers.CharField(required=False, allow_null=True)
     total_words_count = serializers.IntegerField(required=False, default=0, allow_null=True)
     total_pages = serializers.IntegerField(required=False, default=0, allow_null=True)

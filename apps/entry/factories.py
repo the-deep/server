@@ -3,11 +3,14 @@ from factory import fuzzy
 from factory.django import DjangoModelFactory
 
 from gallery.factories import FileFactory
+from django.core.files.base import ContentFile
+
 
 from .models import (
     Entry,
     Attribute,
     EntryComment,
+    EntryAttachment
 )
 
 
@@ -48,3 +51,23 @@ class EntryAttributeFactory(DjangoModelFactory):
 class EntryCommentFactory(DjangoModelFactory):
     class Meta:
         model = EntryComment
+
+
+class EntryAttachmentFactory(DjangoModelFactory):
+    class Meta:
+        model = EntryAttachment
+
+    file = factory.LazyAttribute(
+        lambda _: ContentFile(
+            factory.django.ImageField()._make_data(
+                {'width': 1024, 'height': 768}
+            ), 'example.jpg'
+        )
+    )
+    file_preview = factory.LazyAttribute(
+        lambda _: ContentFile(
+            factory.django.ImageField()._make_data(
+                {'width': 1024, 'height': 768}
+            ), 'example.jpg'
+        )
+    )

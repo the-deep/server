@@ -62,7 +62,7 @@ class EntryAdmin(VersionAdmin):
     )
     autocomplete_fields = (
         'lead', 'project', 'created_by', 'modified_by', 'analysis_framework', 'tabular_field',
-        'image', 'controlled_changed_by', 'verified_by',
+        'image', 'controlled_changed_by', 'verified_by', 'entry_attachment',
     )
     ordering = ('project', 'created_by', 'created_at')
 
@@ -87,6 +87,9 @@ class ProjectEntryLabelAdmin(VersionAdmin):
     list_display = ('__str__', 'color')
 
 
-admin.site.register(EntryAttachment)
+@admin.register(EntryAttachment)
+class EntryAttachmentAdmin(VersionAdmin):
+    search_fields = ['entry_file_type',]
+
 
 reversion.register(LeadEntryGroup)

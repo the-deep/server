@@ -376,7 +376,7 @@ class LeadPreviewAttachment(models.Model):
     """
     NOTE: File can be only used by gallery (when attached to a entry)
     """
-    class AttachementFileType(models.IntegerChoices):
+    class AttachmentFileType(models.IntegerChoices):
         XLSX = 1, 'XLSX'
         IMAGE = 2, 'Image'
 
@@ -386,14 +386,14 @@ class LeadPreviewAttachment(models.Model):
     order = models.IntegerField(default=0)
     page_number = models.IntegerField(default=0)
     type = models.PositiveSmallIntegerField(
-        choices=AttachementFileType.choices,
-        default=AttachementFileType.XLSX
+        choices=AttachmentFileType.choices,
+        default=AttachmentFileType.XLSX
     )
     file = models.FileField(upload_to='lead-preview/attachments/')
     file_preview = models.FileField(upload_to='lead-preview/attachments-preview/')
 
     def __str__(self):
-        return 'Image extracted for {}'.format(self.lead)
+        return 'Image extracted for {}'.format(self.lead.pk)
 
     def clone_as_deep_file(self, user):
         """

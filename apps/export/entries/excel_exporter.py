@@ -492,7 +492,7 @@ class ExcelExporter:
             for group_label in entry.entrygrouplabel_set.all():
                 key = (group_label.group.lead_id, group_label.group_id)
                 entries_sheet_name = 'Grouped Entries' if self.decoupled else 'Entries'
-                link = f'#\'{entries_sheet_name}\'!A{i+2}'
+                link = f'#\'{entries_sheet_name}\'!A{i + 2}'
                 self.group_label_matrix[key][group_label.label_id] = get_hyperlink(link, entry.excerpt[:50])
 
             lead = entry.lead

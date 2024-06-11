@@ -1578,6 +1578,7 @@ type AppEnumCollection {
   LeadAutoEntryExtractionStatus: [AppEnumCollectionLeadAutoEntryExtractionStatus!]
   LeadPreviewAttachmentType: [AppEnumCollectionLeadPreviewAttachmentType!]
   EntryEntryType: [AppEnumCollectionEntryEntryType!]
+  EntryAttachmentEntryFileType: [AppEnumCollectionEntryAttachmentEntryFileType!]
   ExportFormat: [AppEnumCollectionExportFormat!]
   ExportStatus: [AppEnumCollectionExportStatus!]
   ExportType: [AppEnumCollectionExportType!]
@@ -1919,6 +1920,12 @@ type AppEnumCollectionDraftEntryPredictionStatus {
 
 type AppEnumCollectionDraftEntryType {
   enum: DraftEntryTypeEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionEntryAttachmentEntryFileType {
+  enum: EntryFileType!
   label: String!
   description: String
 }
@@ -3927,16 +3934,17 @@ type EntriesFilterDataType {
   filterableData: [EntryFilterDataType!]
 }
 
-enum EntryAttachmentEntryFileType {
-  A_1
-}
-
 type EntryAttachmentType {
   id: ID!
-  entryFileType: EntryAttachmentEntryFileType!
-  file: FileFieldType
-  filePreview: FileFieldType
-  entry: EntryType
+  leadAttachmentId: ID!
+  file: FileFieldType!
+  filePreview: FileFieldType!
+  entryFileType: EntryFileType!
+}
+
+enum EntryFileType {
+  XLSX
+  IMAGE
 }
 
 input EntryFilterDataInputType {
@@ -4078,7 +4086,6 @@ type EntryType {
   informationDate: Date
   excerpt: String!
   image: GalleryFileType
-  entryAttachment: EntryAttachmentType
   droppedExcerpt: String!
   highlightHidden: Boolean!
   controlled: Boolean
@@ -4095,6 +4102,7 @@ type EntryType {
   verifiedByCount: Int!
   reviewCommentsCount: Int!
   draftEntry: ID
+  entryAttachment: EntryAttachmentType
 }
 
 scalar EnumDescription
@@ -5288,7 +5296,7 @@ type ProjectDetailType {
   leadGroups(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): LeadGroupListType
   emmEntities(name: String, page: Int = 1, ordering: String, pageSize: Int): EmmEntityListType
   leadEmmTriggers(lead: ID, emmKeyword: String, emmRiskFactor: String, count: Int, page: Int = 1, ordering: String, pageSize: Int): LeadEmmTriggerListType
-  leadPreviewAttachments(lead: ID, pageNumber: Int, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], type: [LeadPreviewAttachmentTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): LeadPreviewAttachmentListType
+  leadPreviewAttachments(lead: ID, pageNumber: Int, excludeAttachmentId: [ID!], createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], type: [LeadPreviewAttachmentTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): LeadPreviewAttachmentListType
   emmKeywords: [EmmKeyWordType!]
   emmRiskFactors: [EmmKeyRiskFactorType!]
   userSavedLeadFilter: UserSavedLeadFilterType

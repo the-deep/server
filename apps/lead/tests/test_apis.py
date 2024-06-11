@@ -1844,7 +1844,7 @@ class TestExtractorCallback(TestCase):
         self.assertEqual(lead_preview.page_count, 4)
         self.assertEqual(LeadPreviewAttachment.objects.filter(lead=self.lead).count(), 3)
         self.assertEqual(LeadPreviewAttachment.objects.filter(
-            lead=self.lead, type=LeadPreviewAttachment.AttachementFileType.IMAGE).count(), 2
+            lead=self.lead, type=LeadPreviewAttachment.AttachmentFileType.IMAGE).count(), 2
         )
 
         index_lead_func.assert_called_once_with(self.lead.id)

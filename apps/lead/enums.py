@@ -16,7 +16,7 @@ LeadAutoEntryExtractionTypeEnum = convert_enum_to_graphene_enum(
     Lead.AutoExtractionStatus, name='LeadAutoEntryExtractionTypeEnum'
 )
 LeadPreviewAttachmentTypeEnum = convert_enum_to_graphene_enum(
-    LeadPreviewAttachment.AttachementFileType, name='LeadPreviewAttachmentTypeEnum'
+    LeadPreviewAttachment.AttachmentFileType, name='LeadPreviewAttachmentTypeEnum'
 )
 
 

@@ -655,38 +655,52 @@ class LeadExtractionHandler(BaseHandler):
         # Save extracted images as LeadPreviewAttachment instances
         # TODO: The logic is same for unified_connector leads as well. Maybe have a single func?
 
-        attachement_base_path = f'{lead.pk}'
+        attachment_base_path = f'{lead.pk}'
         for image_uri in images_uri:
             for image in image_uri['images']:
-                lead_attachement = LeadPreviewAttachment(lead=lead)
+                lead_attachment = LeadPreviewAttachment(lead=lead)
                 image_obj = RequestHelper(url=image, ignore_error=True).get_file()
                 if image_obj:
-                    lead_attachement.file.save(
-                        os.path.join(attachement_base_path, os.path.basename(urlparse(image).path)),
+                    lead_attachment.file.save(
+                        os.path.join(
+                            attachment_base_path,
+                            os.path.basename(
+                                urlparse(image).path
+                            )
+                        ),
                         image_obj
                     )
-                    lead_attachement.page_number = image_uri['page_number']
-                    lead_attachement.type = LeadPreviewAttachment.AttachementFileType.IMAGE
-                    lead_attachement.file_preview = lead_attachement.file
-
-                lead_attachement.save()
+                    lead_attachment.page_number = image_uri['page_number']
+                    lead_attachment.type = LeadPreviewAttachment.AttachmentFileType.IMAGE
+                    lead_attachment.file_preview = lead_attachment.file
+                    lead_attachment.save()
 
         for table in table_uri:
-            lead_attachement = LeadPreviewAttachment(lead=lead)
+            lead_attachment = LeadPreviewAttachment(lead=lead)
             table_img = RequestHelper(url=table['image_link'], ignore_error=True).get_file()
-            table_attahcment = RequestHelper(url=table['content_link'], ignore_error=True).get_file()
+            table_attachment = RequestHelper(url=table['content_link'], ignore_error=True).get_file()
             if table_img:
-                lead_attachement.file_preview.save(
-                    os.path.join(attachement_base_path, os.path.basename(urlparse(table['image_link']).path)),
+                lead_attachment.file_preview.save(
+                    os.path.join(
+                        attachment_base_path,
+                        os.path.basename(
+                            urlparse(table['image_link']).path
+                        )
+                    ),
                     table_img
                 )
-                lead_attachement.page_number = table['page_number']
-                lead_attachement.type = LeadPreviewAttachment.AttachementFileType.XLSX
-                lead_attachement.file.save(
-                    os.path.join(attachement_base_path, os.path.basename(urlparse(table['content_link']).path)),
-                    table_attahcment
+                lead_attachment.page_number = table['page_number']
+                lead_attachment.type = LeadPreviewAttachment.AttachmentFileType.XLSX
+                lead_attachment.file.save(
+                    os.path.join(
+                        attachment_base_path,
+                        os.path.basename(
+                            urlparse(table['content_link']).path
+                        )
+                    ),
+                    table_attachment
                 )
-                lead_attachement.save()
+                lead_attachment.save()
 
         lead.update_extraction_status(Lead.ExtractionStatus.SUCCESS)
         return lead

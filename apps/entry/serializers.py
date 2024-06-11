@@ -29,7 +29,6 @@ from .widgets.store import widget_store
 from .models import (
     Attribute,
     Entry,
-    EntryAttachment,
     EntryComment,
     EntryCommentText,
     ExportData,
@@ -39,7 +38,7 @@ from .models import (
     LeadEntryGroup,
     EntryGroupLabel,
 )
-from .utils import base64_to_deep_image
+from .utils import base64_to_deep_image, leadattachment_to_entryattachment
 
 logger = logging.getLogger(__name__)
 
@@ -598,7 +597,6 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
         queryset=LeadPreviewAttachment.objects.all(),
         help_text=(
             'This is used to add attachment from Lead Preview Attachment.'
-            ' This will be changed into gallery image and supplied back in image field.'
         )
     )
 
@@ -635,6 +633,11 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
         if self.instance and lead != self.instance.lead:
             raise serializers.ValidationError('Changing lead is not allowed')
         return lead
+
+    def validate_lead_attachment(self, lead_attachment):
+        if int(self.initial_data.get('lead')) != lead_attachment.lead.id:
+            raise serializers.ValidationError("Don't have access to this lead")
+        return lead_attachment
 
     def validate(self, data):
         """
@@ -687,20 +690,13 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
                 })
         # If lead image is provided make sure lead are same
         elif lead_attachment:
+            data.pop('excerpt', None)  # removing excerpt when lead attachment is send
             if lead_attachment.lead != lead:
                 raise serializers.ValidationError({
                     'lead_attachment': f'You don\'t have permission to attach lead attachment: {lead_attachment}',
                 })
 
-            if lead_attachment.type == LeadPreviewAttachment.AttachementFileType.XLSX:
-                data['entry_attachment'] = EntryAttachment.objects.create(
-                    file=lead_attachment.file,
-                    file_preview=lead_attachment.file_preview
-                )
-                data['entry_type'] = Entry.TagType.ATTACHMENT
-            else:
-                data['image'] = lead_attachment.clone_as_deep_file(request.user)
-                data['entry_type'] = Entry.TagType.IMAGE
+            data['entry_attachment'] = leadattachment_to_entryattachment(lead_attachment)
         elif image_raw:
             generated_image = base64_to_deep_image(image_raw, lead, request.user)
             if isinstance(generated_image, File):

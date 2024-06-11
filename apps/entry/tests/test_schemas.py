@@ -1,6 +1,6 @@
 from lead.models import Lead
 
-from entry.models import Entry
+from entry.models import Entry, EntryAttachment
 from quality_assurance.models import EntryReviewComment
 from analysis_framework.models import Widget
 
@@ -10,7 +10,7 @@ from user.factories import UserFactory
 from geo.factories import RegionFactory, AdminLevelFactory, GeoAreaFactory
 from project.factories import ProjectFactory
 from lead.factories import LeadFactory
-from entry.factories import EntryFactory, EntryAttributeFactory
+from entry.factories import EntryFactory, EntryAttributeFactory, EntryAttachmentFactory
 from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
 from organization.factories import OrganizationFactory, OrganizationTypeFactory
 from assessment_registry.factories import AssessmentRegistryFactory
@@ -61,6 +61,17 @@ class TestEntryQuery(GraphQLTestCase):
                       }
                     }
                     controlled
+                    entryAttachment {
+                          entryFileType
+                          file {
+                            name
+                            url
+                          }
+                          filePreview {
+                            name
+                            url
+                          }
+                        }
                   }
                 }
               }
@@ -69,6 +80,15 @@ class TestEntryQuery(GraphQLTestCase):
 
         lead = LeadFactory.create(project=self.project)
         entry = EntryFactory.create(project=self.project, analysis_framework=self.af, lead=lead)
+        entry_attachment = EntryAttachmentFactory.create(
+            entry_file_type=EntryAttachment.EntryFileType.XLSX,
+        )
+        EntryFactory.create(
+            project=self.project,
+            analysis_framework=self.af,
+            lead=lead,
+            entry_attachment=entry_attachment
+        )
 
         def _query_check(**kwargs):
             return self.query_check(query, variables={'projectId': self.project.pk, 'leadId': lead.id}, **kwargs)
@@ -79,8 +99,9 @@ class TestEntryQuery(GraphQLTestCase):
         self.force_login(self.user)
         content = _query_check()
         results = content['data']['project']['lead']['entries']
-        self.assertEqual(len(content['data']['project']['lead']['entries']), 1, content)
-        self.assertIdEqual(results[0]['id'], entry.pk, results)
+        self.assertEqual(len(content['data']['project']['lead']['entries']), 2, content)
+        self.assertTrue(results, entry.id)
+        self.assertTrue(results, entry_attachment.id)
 
     def test_entries_query(self):
         # Includes permissions checks

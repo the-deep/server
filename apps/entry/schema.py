@@ -22,7 +22,7 @@ from .models import (
     Attribute,
     EntryAttachment,
 )
-from .enums import EntryTagTypeEnum
+from .enums import EntryAttachmentTypeEnum, EntryTagTypeEnum
 from .filter_set import EntryGQFilterSet
 
 
@@ -86,11 +86,16 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
 
 
 class EntryAttachmentType(DjangoObjectType):
-    file = graphene.Field(FileFieldType)
-    file_preview = graphene.Field(FileFieldType)
+    lead_attachment_id = graphene.ID(required=True)
+    file = graphene.Field(FileFieldType, required=True)
+    file_preview = graphene.Field(FileFieldType, required=True)
+    entry_file_type = graphene.Field(EntryAttachmentTypeEnum, required=True)
 
     class Meta:
         model = EntryAttachment
+        only_fields = (
+            'id',
+        )
 
 
 class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
@@ -101,7 +106,7 @@ class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
             'lead', 'project', 'analysis_framework', 'information_date', 'order',
             'excerpt', 'dropped_excerpt', 'image', 'tabular_field', 'highlight_hidden',
             'controlled', 'controlled_changed_by',
-            'client_id', 'entry_attachment'
+            'client_id',
         )
 
     entry_type = graphene.Field(EntryTagTypeEnum, required=True)

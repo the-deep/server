@@ -10,7 +10,7 @@ from project.permissions import PROJECT_PERMISSIONS
 from gallery.models import File
 from user.models import User
 from user_resource.models import UserResource
-from lead.models import Lead
+from lead.models import Lead, LeadPreviewAttachment
 from notification.models import Assignment
 from analysis_framework.models import (
     AnalysisFramework,
@@ -21,16 +21,21 @@ from analysis_framework.models import (
 from assisted_tagging.models import DraftEntry
 
 
-class EntryAttachment(models.Model):
+class EntryAttachment(models.Model):  # The entry will make reference to it as entry_attachment.
     class EntryFileType(models.IntegerChoices):
-        XLSX = 1, 'XLSX'
+        XLSX = 1, 'XLSX',
+        IMAGE = 2, 'Image',
 
+    lead_attachment = models.ForeignKey(LeadPreviewAttachment, on_delete=models.SET_NULL, null=True)
     entry_file_type = models.PositiveSmallIntegerField(
         choices=EntryFileType.choices,
-        default=EntryFileType.XLSX
+        default=EntryFileType.XLSX,
     )
     file = models.FileField(upload_to='entry/attachment/')
     file_preview = models.FileField(upload_to='entry/attachment-preview')
+
+    def __str__(self):
+        return f'{self.file}'
 
 
 class Entry(UserResource, ProjectEntityMixin):

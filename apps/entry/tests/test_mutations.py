@@ -1,5 +1,6 @@
 from django.utils import timezone
 
+from lead.models import LeadPreviewAttachment
 from utils.graphene.tests import GraphQLSnapShotTestCase
 
 from entry.models import Entry
@@ -7,7 +8,7 @@ from entry.models import Entry
 from user.factories import UserFactory
 from entry.factories import EntryFactory, EntryAttributeFactory
 from project.factories import ProjectFactory
-from lead.factories import LeadFactory
+from lead.factories import LeadFactory, LeadPreviewAttachmentFactory
 from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
 from gallery.factories import FileFactory
 
@@ -161,6 +162,17 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
                   data
                   clientId
                 }
+                entryAttachment {
+                  entryFileType
+                  file {
+                    name
+                    url
+                }
+                  filePreview {
+                    name
+                    url
+                }
+            }
               }
             }
           }
@@ -184,6 +196,10 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
         # Files
         self.other_file = FileFactory.create()
         self.our_file = FileFactory.create(created_by=self.member_user)
+        self.leadattachment = LeadPreviewAttachmentFactory.create(
+            lead=self.lead,
+            type=LeadPreviewAttachment.AttachmentFileType.IMAGE
+        )
         self.dummy_data = dict({})
 
     def test_entry_create(self):
@@ -235,6 +251,11 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
 
         # Valid input
         minput['image'] = self.our_file.pk
+        response = _query_check()
+        self.assertMatchSnapshot(response, 'success')
+
+        # Valid input with LeadPreviewAttachment id
+        minput['leadAttachment'] = self.leadattachment.id
         response = _query_check()
         self.assertMatchSnapshot(response, 'success')
 
