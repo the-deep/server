@@ -2,7 +2,6 @@ import logging
 
 from celery import shared_task
 from django.db import models
-from lead.models import Lead
 
 from utils.files import generate_json_file_for_upload
 from deepl_integration.handlers import (
@@ -12,6 +11,7 @@ from deepl_integration.handlers import (
     AnalyticalStatementGeoHandler,
 )
 
+from lead.models import Lead
 from entry.models import Entry
 from .models import (
     TopicModel,
@@ -56,6 +56,7 @@ def trigger_automatic_summary(_id):
         Entry.objects.filter(
             project=a_summary.project,
             id__in=a_summary.entries_id,
+            # NOTE: NLP is using LLM, to avoid data leakage we only pass UNPROTECTED
             lead__confidentiality=Lead.Confidentiality.UNPROTECTED,
         ).values('excerpt', entry_id=models.F('id'))
     )

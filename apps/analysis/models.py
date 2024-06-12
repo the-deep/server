@@ -470,6 +470,9 @@ class TopicModel(UserResource, DeeplTrackBaseModel):
         ).qs
 
     def get_entries_qs(self):
+        additional_filters = copy.deepcopy(self.additional_filters)
+        # NOTE: NLP is using LLM, to avoid data leakage we only pass UNPROTECTED
+        additional_filters['lead_confidentialities'] = [Lead.Confidentiality.UNPROTECTED]
         return self._get_entries_qs(self.analysis_pillar, self.additional_filters)
 
 

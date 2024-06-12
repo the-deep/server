@@ -26,7 +26,6 @@ from user.serializers import NanoUserSerializer
 from entry.serializers import SimpleEntrySerializer
 from entry.filter_set import EntryGQFilterSet, EntriesFilterDataInputType
 
-from lead.models import Lead
 from .models import (
     Analysis,
     AnalysisPillar,
@@ -468,8 +467,6 @@ class AnalysisTopicModelSerializer(UserResourceSerializer, serializers.ModelSeri
         return analysis_pillar
 
     def validate_additional_filters(self, additional_filters):
-        # NOTE: overlapping the lead_confidentialities filter, only public leads are allowed
-        additional_filters['lead_confidentialities'] = [Lead.Confidentiality.UNPROTECTED]
         filter_set = EntryGQFilterSet(data=additional_filters, request=self.context['request'])
         if not filter_set.is_valid():
             raise serializers.ValidationError(filter_set.errors)
@@ -526,11 +523,11 @@ class AnalysisAutomaticSummarySerializer(EntriesCollectionNlpTriggerBaseSerializ
     trigger_task_func = trigger_automatic_summary
     widget_tags = StringListField()
 
-    def validate_project(self, project):
+    def validate(self, data):
         project = self.context['request'].active_project
         if project.is_private:
             raise serializers.ValidationError('Automatic summary is not allowed for private projects')
-        return project
+        return data
 
     class Meta:
         model = AutomaticSummary
