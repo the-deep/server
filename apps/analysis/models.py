@@ -454,6 +454,7 @@ class TopicModel(UserResource, DeeplTrackBaseModel):
 
     analysis_pillar = models.ForeignKey(AnalysisPillar, on_delete=models.CASCADE)
     additional_filters = models.JSONField(default=dict)
+    widget_tags = ArrayField(models.CharField(max_length=100), default=list)
 
     topicmodelcluster_set: models.QuerySet['TopicModelCluster']
 
@@ -525,6 +526,7 @@ class EntriesCollectionNlpTriggerBase(UserResource, DeeplTrackBaseModel):
 
 class AutomaticSummary(EntriesCollectionNlpTriggerBase):
     summary = models.TextField()
+    widget_tags = ArrayField(models.CharField(max_length=100), default=list)
 
 
 class AnalyticalStatementNGram(EntriesCollectionNlpTriggerBase):

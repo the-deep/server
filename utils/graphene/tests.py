@@ -46,6 +46,7 @@ if settings.PYTEST_XDIST_WORKER:
     CACHES=TEST_CACHES,
     AUTH_PASSWORD_VALIDATORS=TEST_AUTH_PASSWORD_VALIDATORS,
     CELERY_TASK_ALWAYS_EAGER=True,
+    DEEPL_SERVER_CALLBACK_DOMAIN='http://testserver',
 )
 class GraphQLTestCase(BaseGraphQLTestCase):
     """
@@ -299,6 +300,13 @@ class GraphQLTestCase(BaseGraphQLTestCase):
 
     def get_media_url(self, file):
         return f'http://testserver/media/{file}'
+
+    def get_media_file(self, file, mode='rb') -> bytes:
+        with open(os.path.join(TEST_MEDIA_ROOT, file), mode) as fp:
+            return fp.read()
+
+    def get_json_media_file(self, file, mode='rb') -> dict:
+        return json.loads(self.get_media_file(file, mode=mode))
 
     def update_obj(self, obj, **fields):
         for key, value in fields.items():

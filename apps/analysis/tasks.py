@@ -35,9 +35,13 @@ def trigger_topic_model(_id):
         # https://docs.google.com/document/d/1NmjOO5sOrhJU6b4QXJBrGAVk57_NW87mLJ9wzeY_NZI/edit#heading=h.cif9hh69nfvz
         .values('excerpt', entry_id=models.F('id'))
     )
+    payload = {
+        'data': entries_id_qs,
+        'tags': topic_model.widget_tags,
+    }
     topic_model.entries_file.save(
         f'{topic_model.id}.json',
-        generate_json_file_for_upload(entries_id_qs),
+        generate_json_file_for_upload(payload),
     )
     # Send trigger request
     AnalysisTopicModelHandler.send_trigger_request_to_extractor(topic_model)
@@ -53,9 +57,13 @@ def trigger_automatic_summary(_id):
             id__in=a_summary.entries_id,
         ).values('excerpt', entry_id=models.F('id'))
     )
+    payload = {
+        'data': entries_data,
+        'tags': a_summary.widget_tags,
+    }
     a_summary.entries_file.save(
         f'{a_summary.id}.json',
-        generate_json_file_for_upload(entries_data),
+        generate_json_file_for_upload(payload),
     )
     AnalysisAutomaticSummaryHandler.send_trigger_request_to_extractor(a_summary)
 
