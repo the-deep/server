@@ -72,15 +72,26 @@ def base64_to_deep_image(image, lead, user):
 
 
 def leadattachment_to_entryattachment(lead_attachment: LeadPreviewAttachment):
+    lead_attachment_file_name = str(lead_attachment.file).split('/')[-1]
+    lead_attachment_file_preview_name = str(lead_attachment.file_preview).split('/')[-1]
     entry_attachment = EntryAttachment.objects.create(
         lead_attachment_id=lead_attachment.id,
         entry_file_type=lead_attachment.type  # lead attachement type and entry attachment gave same enum
     )
     if lead_attachment.type == LeadPreviewAttachment.AttachmentFileType.IMAGE:
-        entry_attachment.file.save(lead_attachment.file.name, lead_attachment.file)
+        entry_attachment.file.save(
+            lead_attachment_file_name,
+            lead_attachment.file,
+        )
         entry_attachment.file_preview = entry_attachment.file
     else:
-        entry_attachment.file_preview.save(lead_attachment.file_preview.name, lead_attachment.file)
-        entry_attachment.file_preview.save(lead_attachment.file_preview.name, lead_attachment.file_preview)
-
+        entry_attachment.file.save(
+            lead_attachment_file_name,
+            lead_attachment.file
+        )
+        entry_attachment.file_preview.save(
+            lead_attachment_file_preview_name,
+            lead_attachment.file_preview
+        )
+    entry_attachment.save()
     return entry_attachment

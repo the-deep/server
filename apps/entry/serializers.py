@@ -634,26 +634,31 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
             raise serializers.ValidationError('Changing lead is not allowed')
         return lead
 
-    def validate_lead_attachment(self, lead_attachment):
-        if int(self.initial_data.get('lead')) != lead_attachment.lead.id:
-            raise serializers.ValidationError("Don't have access to this lead")
-        return lead_attachment
-
     def validate(self, data):
         """
         - Lead image is copied to deep gallery files
         - Raw image (base64) are saved as deep gallery files
         """
         request = self.context['request']
-        image = data.get('image')
         image_raw = data.pop('image_raw', None)
         lead_attachment = data.pop('lead_attachment', None)
 
         # ---------------- Lead
-        lead = data['lead']
+        lead = data.get('lead')
         if self.instance and lead != self.instance.lead:
             raise serializers.ValidationError({
                 'lead': 'Changing lead is not allowed'
+            })
+        # validate entry tag type
+        entry_type = data.get('entry_type')
+        if entry_type and entry_type == Entry.TagType.ATTACHMENT and lead_attachment is None:
+            raise serializers.ValidationError({
+                'lead_attachment': f'LeadPreviewAttachment is required with entry_tag is {entry_type}'
+            })
+
+        elif entry_type and entry_type == Entry.TagType.EXCERPT and data.get('excerpt') is None:
+            raise serializers.ValidationError({
+                'excerpt': f'EXCERPT is required when entry_tag is {entry_type}'
             })
 
         # ----------------- Validate Draft entry if provided
@@ -677,19 +682,7 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
         else:  # For update, set entry's AF with active AF
             data['analysis_framework_id'] = active_af_id
 
-        # ---------------- Set/validate image properly
-        # If gallery file is provided make sure user owns the file
-        if image:
-            if (
-                (self.instance and self.instance.image) != image and
-                not image.is_public and
-                image.created_by != request.user
-            ):
-                raise serializers.ValidationError({
-                    'image': f'You don\'t have permission to attach image: {image}',
-                })
-        # If lead image is provided make sure lead are same
-        elif lead_attachment:
+        if lead_attachment:
             data.pop('excerpt', None)  # removing excerpt when lead attachment is send
             if lead_attachment.lead != lead:
                 raise serializers.ValidationError({
@@ -697,7 +690,10 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
                 })
 
             data['entry_attachment'] = leadattachment_to_entryattachment(lead_attachment)
+
+        # ---------------- Set/validate image properly
         elif image_raw:
+            data.pop('excerpt', None)
             generated_image = base64_to_deep_image(image_raw, lead, request.user)
             if isinstance(generated_image, File):
                 data['image'] = generated_image

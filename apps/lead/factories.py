@@ -3,6 +3,8 @@ import datetime
 from factory import fuzzy
 from factory.django import DjangoModelFactory
 
+from django.core.files.base import ContentFile
+
 from project.factories import ProjectFactory
 from gallery.factories import FileFactory
 from .models import (
@@ -87,6 +89,21 @@ class LeadPreviewFactory(DjangoModelFactory):
 class LeadPreviewAttachmentFactory(DjangoModelFactory):
     class Meta:
         model = LeadPreviewAttachment
+
+    file = factory.LazyAttribute(
+        lambda _: ContentFile(
+            factory.django.ImageField()._make_data(
+                {'width': 1024, 'height': 768}
+            ), 'example.jpg'
+        )
+    )
+    file_preview = factory.LazyAttribute(
+        lambda _: ContentFile(
+            factory.django.ImageField()._make_data(
+                {'width': 1024, 'height': 768}
+            ), 'example.jpg'
+        )
+    )
 
 
 class UserSavedLeadFilterFactory(DjangoModelFactory):

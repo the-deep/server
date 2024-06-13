@@ -46,6 +46,19 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
                   data
                   clientId
                 }
+                entryAttachment{
+                  id
+                  entryFileType
+                  leadAttachmentId
+                  file{
+                    name
+                    url
+                  }
+                  filePreview{
+                    name
+                    url
+                  }
+                }
               }
             }
           }
@@ -109,6 +122,19 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
                   widgetType
                   data
                   clientId
+                }
+                entryAttachment{
+                  id
+                  entryFileType
+                  leadAttachmentId
+                  file{
+                    name
+                    url
+                  }
+                  filePreview{
+                    name
+                    url
+                  }
                 }
               }
             }
@@ -255,9 +281,10 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
         self.assertMatchSnapshot(response, 'success')
 
         # Valid input with LeadPreviewAttachment id
+        minput['entryType'] = self.genum(Entry.TagType.ATTACHMENT)
         minput['leadAttachment'] = self.leadattachment.id
         response = _query_check()
-        self.assertMatchSnapshot(response, 'success')
+        self.assertMatchSnapshot(response, 'lead-preview-attachment-success')
 
     def test_entry_update(self):
         """

@@ -658,9 +658,9 @@ class LeadExtractionHandler(BaseHandler):
         attachment_base_path = f'{lead.pk}'
         for image_uri in images_uri:
             for image in image_uri['images']:
-                lead_attachment = LeadPreviewAttachment(lead=lead)
                 image_obj = RequestHelper(url=image, ignore_error=True).get_file()
                 if image_obj:
+                    lead_attachment = LeadPreviewAttachment(lead=lead)
                     lead_attachment.file.save(
                         os.path.join(
                             attachment_base_path,
@@ -668,7 +668,7 @@ class LeadExtractionHandler(BaseHandler):
                                 urlparse(image).path
                             )
                         ),
-                        image_obj
+                        image_obj,
                     )
                     lead_attachment.page_number = image_uri['page_number']
                     lead_attachment.type = LeadPreviewAttachment.AttachmentFileType.IMAGE
@@ -676,10 +676,10 @@ class LeadExtractionHandler(BaseHandler):
                     lead_attachment.save()
 
         for table in table_uri:
-            lead_attachment = LeadPreviewAttachment(lead=lead)
             table_img = RequestHelper(url=table['image_link'], ignore_error=True).get_file()
             table_attachment = RequestHelper(url=table['content_link'], ignore_error=True).get_file()
             if table_img:
+                lead_attachment = LeadPreviewAttachment(lead=lead)
                 lead_attachment.file_preview.save(
                     os.path.join(
                         attachment_base_path,
@@ -687,7 +687,7 @@ class LeadExtractionHandler(BaseHandler):
                             urlparse(table['image_link']).path
                         )
                     ),
-                    table_img
+                    table_img,
                 )
                 lead_attachment.page_number = table['page_number']
                 lead_attachment.type = LeadPreviewAttachment.AttachmentFileType.XLSX
@@ -698,7 +698,7 @@ class LeadExtractionHandler(BaseHandler):
                             urlparse(table['content_link']).path
                         )
                     ),
-                    table_attachment
+                    table_attachment,
                 )
                 lead_attachment.save()
 

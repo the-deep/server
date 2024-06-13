@@ -21,10 +21,11 @@ from analysis_framework.models import (
 from assisted_tagging.models import DraftEntry
 
 
-class EntryAttachment(models.Model):  # The entry will make reference to it as entry_attachment.
+class EntryAttachment(models.Model):
+    # The entry will make reference to it as entry_attachment.
     class EntryFileType(models.IntegerChoices):
-        XLSX = 1, 'XLSX',
-        IMAGE = 2, 'Image',
+        XLSX = 1, 'XLSX'
+        IMAGE = 2, 'Image'
 
     lead_attachment = models.ForeignKey(LeadPreviewAttachment, on_delete=models.SET_NULL, null=True)
     entry_file_type = models.PositiveSmallIntegerField(
@@ -47,9 +48,9 @@ class Entry(UserResource, ProjectEntityMixin):
     """
 
     class TagType(models.TextChoices):
-        EXCERPT = 'excerpt', 'Excerpt',
-        IMAGE = 'image', 'Image',
-        ATTACHMENT = 'attachment', 'Attachment',
+        EXCERPT = 'excerpt', 'Excerpt'
+        IMAGE = 'image', 'Image'
+        ATTACHMENT = 'attachment', 'Attachment'
         DATA_SERIES = 'dataSeries', 'Data Series'  # NOTE: data saved as tabular_field id
 
     lead = models.ForeignKey(Lead, on_delete=models.CASCADE)
