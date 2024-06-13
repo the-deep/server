@@ -97,7 +97,7 @@ def _get_widget_info(config, widgets, skip_data=False, default=None):
         return _return(w_filter.properties if w_filter else None)
 
     properties = widget.properties
-    if config.get('is_conditional_widget'):
+    if config.get('is_conditional_widget'):  # TODO: Remove this
         # TODO: Skipping conditional widget, in new this is not needed
         return default
     return _return(properties)
@@ -180,9 +180,9 @@ def get_project_entries_stats(project, skip_geo_data=False):
         'reliability_widget': {
             'pk': 2683,
         },
-        'organigram_widgets': {
-            'pk': 2682,
-        },
+        'organigram_widgets': [
+            {'pk': 2682},
+        ]
         'multiselect_widgets': [
             {'pk': 2681},
             {'pk': 8703},
@@ -192,21 +192,6 @@ def get_project_entries_stats(project, skip_geo_data=False):
 
     af = project.analysis_framework
     config = af.properties.get('stats_config')
-
-    # TODO: REMOVE THIS
-    if 'multiselect_widgets' not in config:
-        config['multiselect_widgets'] = [
-            {'pk': config[key]['pk']}
-            for key in [
-                'specific_needs_groups_widget',
-                'demographic_groups_widget',
-            ]
-            if key in config
-        ]
-    if 'organigram_widgets' not in config and 'affected_groups_widget' in config:
-        config['organigram_widgets'] = [
-            config['affected_groups_widget']
-        ]
 
     widgets_pk = [
         info['pk']
@@ -225,15 +210,6 @@ def get_project_entries_stats(project, skip_geo_data=False):
         for widget in Widget.objects.filter(pk__in=widgets_pk, analysis_framework=af)
     }
 
-    # TODO: Remove this later after all data are updated.
-    config['widget1d'] = config.get('widget1d') or config['widget_1d']
-    config['widget2d'] = config.get('widget2d') or config['widget_2d']
-
-    # Make sure this are array
-    for key in ['widget1d', 'widget2d']:
-        if not isinstance(config[key], list):
-            config[key] = [config[key]]
-
     w_reliability_default = w_severity_default = w_multiselect_widget_default = w_organigram_widget_default = {
         'pk': None,
         'properties': {
@@ -241,8 +217,8 @@ def get_project_entries_stats(project, skip_geo_data=False):
         },
     }
 
-    w1ds = [_get_widget_info(_config, widgets) for _config in config['widget1d']]
-    w2ds = [_get_widget_info(_config, widgets) for _config in config['widget2d']]
+    w1ds = [_get_widget_info(_config, widgets) for _config in config['widget_1d'] or []]
+    w2ds = [_get_widget_info(_config, widgets) for _config in config['widget_2d'] or []]
 
     w_multiselect_widgets = [
         _get_widget_info(
@@ -269,7 +245,7 @@ def get_project_entries_stats(project, skip_geo_data=False):
 
     matrix_widgets = [
         {'id': w['pk'], 'type': w_type, 'title': w['_widget'].title}
-        for widgets, w_type in [[w1ds, 'widget1d'], [w2ds, 'widget2d']]
+        for widgets, w_type in [[w1ds, 'widget_1d'], [w2ds, 'widget_2d']]
         for w in widgets
     ]
 

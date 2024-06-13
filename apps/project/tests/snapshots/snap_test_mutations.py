@@ -208,36 +208,6 @@ snapshots['ProjectMutationSnapshotTest::test_project_update_mutation private-pro
     }
 }
 
-snapshots['ProjectMutationSnapshotTest::test_project_update_mutation public-project-0:project-change:diff'] = {
-    'details': {
-        'description': {
-            'new': 'Added some description',
-            'old': ''
-        }
-    },
-    'organizations': {
-        'add': [
-            {
-                'organization': 1,
-                'organization_type': 'lead_organization'
-            }
-        ],
-        'remove': [
-            {
-                'organization': 2,
-                'organization_type': 'national_partner'
-            }
-        ]
-    }
-}
-
-snapshots['ProjectMutationSnapshotTest::test_project_update_mutation public-project-1:project-change:diff'] = {
-    'framework': {
-        'new': 4,
-        'old': 2
-    }
-}
-
 snapshots['ProjectMutationSnapshotTest::test_project_update_mutation public-project:is-private-change-error'] = {
     'data': {
         '__typename': 'Mutation',
