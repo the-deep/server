@@ -17,12 +17,12 @@ snapshots['TestEntryMutation::test_entry_bulk error'] = {
                         'clientId': '1',
                         'droppedExcerpt': '',
                         'entryType': 'DATA_SERIES',
-                        'excerpt': 'fWdhjOkYRBMeyyMDHqJaRUhRIWrXPvhsBkDaUUqGWlGgOtOGMmjxWkIXHaMuFbhxZtpdpKffUFeWIXiiQEJkqHMBnIWUSmTtzQPx',
+                        'excerpt': 'HChpoevbLJoLoaeTOdoecveGprQFnIiUKKEpYEZAmggQBwBADUdRPPgdzUvZgpmmICiBlrDpeCZJgdPIafWpkAFEnzdkyayqYYDs',
                         'highlightHidden': False,
                         'id': '1',
                         'image': {
-                            'id': '4',
-                            'title': 'file-3'
+                            'id': '5',
+                            'title': 'file-4'
                         },
                         'informationDate': None,
                         'order': 1
@@ -30,7 +30,24 @@ snapshots['TestEntryMutation::test_entry_bulk error'] = {
                 ],
                 'errors': [
                     None,
-                    None
+                    [
+                        {
+                            'arrayErrors': None,
+                            'clientId': 'entry-new-102',
+                            'field': 'leadAttachment',
+                            'messages': "You don't have permission to attach lead attachment: Image extracted for 2",
+                            'objectErrors': None
+                        }
+                    ],
+                    [
+                        {
+                            'arrayErrors': None,
+                            'clientId': 'entry-new-103',
+                            'field': 'leadAttachment',
+                            'messages': 'LeadPreviewAttachment is required with entry_tag is attachment',
+                            'objectErrors': None
+                        }
+                    ]
                 ],
                 'result': [
                     {
@@ -41,7 +58,7 @@ snapshots['TestEntryMutation::test_entry_bulk error'] = {
                                 },
                                 'id': '2',
                                 'widget': '1',
-                                'widgetType': 'TIME_RANGE'
+                                'widgetType': 'MATRIX1D'
                             },
                             {
                                 'clientId': 'client-id-old-attribute-1',
@@ -49,7 +66,7 @@ snapshots['TestEntryMutation::test_entry_bulk error'] = {
                                 },
                                 'id': '1',
                                 'widget': '1',
-                                'widgetType': 'TIME_RANGE'
+                                'widgetType': 'MATRIX1D'
                             }
                         ],
                         'clientId': 'entry-old-101 (UPDATED)',
@@ -60,37 +77,14 @@ snapshots['TestEntryMutation::test_entry_bulk error'] = {
                         'highlightHidden': False,
                         'id': '2',
                         'image': {
-                            'id': '2',
-                            'title': 'file-1'
+                            'id': '6',
+                            'title': 'file-5'
                         },
                         'informationDate': '2021-01-01',
                         'order': 1
                     },
-                    {
-                        'attributes': [
-                            {
-                                'clientId': 'client-id-new-attribute-1',
-                                'data': {
-                                },
-                                'id': '3',
-                                'widget': '1',
-                                'widgetType': 'TIME_RANGE'
-                            }
-                        ],
-                        'clientId': 'entry-new-102',
-                        'droppedExcerpt': 'This is a dropped text (NEW)',
-                        'entryAttachment': None,
-                        'entryType': 'EXCERPT',
-                        'excerpt': 'This is a text (NEW)',
-                        'highlightHidden': False,
-                        'id': '3',
-                        'image': {
-                            'id': '2',
-                            'title': 'file-1'
-                        },
-                        'informationDate': '2021-01-01',
-                        'order': 1
-                    }
+                    None,
+                    None
                 ]
             }
         }
@@ -105,7 +99,24 @@ snapshots['TestEntryMutation::test_entry_bulk success'] = {
                 ],
                 'errors': [
                     None,
-                    None
+                    [
+                        {
+                            'arrayErrors': None,
+                            'clientId': 'entry-new-102',
+                            'field': 'leadAttachment',
+                            'messages': "You don't have permission to attach lead attachment: Image extracted for 2",
+                            'objectErrors': None
+                        }
+                    ],
+                    [
+                        {
+                            'arrayErrors': None,
+                            'clientId': 'entry-new-103',
+                            'field': 'leadAttachment',
+                            'messages': 'LeadPreviewAttachment is required with entry_tag is attachment',
+                            'objectErrors': None
+                        }
+                    ]
                 ],
                 'result': [
                     {
@@ -114,9 +125,9 @@ snapshots['TestEntryMutation::test_entry_bulk success'] = {
                                 'clientId': 'client-id-old-new-attribute-1',
                                 'data': {
                                 },
-                                'id': '4',
+                                'id': '3',
                                 'widget': '1',
-                                'widgetType': 'TIME_RANGE'
+                                'widgetType': 'MATRIX1D'
                             },
                             {
                                 'clientId': 'client-id-old-attribute-1',
@@ -124,7 +135,7 @@ snapshots['TestEntryMutation::test_entry_bulk success'] = {
                                 },
                                 'id': '1',
                                 'widget': '1',
-                                'widgetType': 'TIME_RANGE'
+                                'widgetType': 'MATRIX1D'
                             }
                         ],
                         'clientId': 'entry-old-101 (UPDATED)',
@@ -135,37 +146,14 @@ snapshots['TestEntryMutation::test_entry_bulk success'] = {
                         'highlightHidden': False,
                         'id': '2',
                         'image': {
-                            'id': '3',
-                            'title': 'file-2'
+                            'id': '6',
+                            'title': 'file-5'
                         },
                         'informationDate': '2021-01-01',
                         'order': 1
                     },
-                    {
-                        'attributes': [
-                            {
-                                'clientId': 'client-id-new-attribute-1',
-                                'data': {
-                                },
-                                'id': '5',
-                                'widget': '1',
-                                'widgetType': 'TIME_RANGE'
-                            }
-                        ],
-                        'clientId': 'entry-new-102',
-                        'droppedExcerpt': 'This is a dropped text (NEW)',
-                        'entryAttachment': None,
-                        'entryType': 'EXCERPT',
-                        'excerpt': 'This is a text (NEW)',
-                        'highlightHidden': False,
-                        'id': '4',
-                        'image': {
-                            'id': '3',
-                            'title': 'file-2'
-                        },
-                        'informationDate': '2021-01-01',
-                        'order': 1
-                    }
+                    None,
+                    None
                 ]
             }
         }
@@ -186,7 +174,7 @@ snapshots['TestEntryMutation::test_entry_create error'] = {
                             },
                             'id': '1',
                             'widget': '1',
-                            'widgetType': 'TIME_RANGE'
+                            'widgetType': 'MATRIX1D'
                         },
                         {
                             'clientId': 'client-id-attribute-2',
@@ -194,7 +182,7 @@ snapshots['TestEntryMutation::test_entry_create error'] = {
                             },
                             'id': '2',
                             'widget': '2',
-                            'widgetType': 'TIME'
+                            'widgetType': 'MATRIX1D'
                         },
                         {
                             'clientId': 'client-id-attribute-3',
@@ -202,7 +190,7 @@ snapshots['TestEntryMutation::test_entry_create error'] = {
                             },
                             'id': '3',
                             'widget': '3',
-                            'widgetType': 'GEO'
+                            'widgetType': 'SCALE'
                         }
                     ],
                     'clientId': 'entry-101',
@@ -213,8 +201,8 @@ snapshots['TestEntryMutation::test_entry_create error'] = {
                     'highlightHidden': False,
                     'id': '1',
                     'image': {
-                        'id': '2',
-                        'title': 'file-1'
+                        'id': '3',
+                        'title': 'file-2'
                     },
                     'informationDate': '2021-01-01',
                     'order': 1
@@ -238,7 +226,7 @@ snapshots['TestEntryMutation::test_entry_create lead-preview-attachment-success'
                             },
                             'id': '7',
                             'widget': '1',
-                            'widgetType': 'TIME_RANGE'
+                            'widgetType': 'MATRIX1D'
                         },
                         {
                             'clientId': 'client-id-attribute-2',
@@ -246,7 +234,7 @@ snapshots['TestEntryMutation::test_entry_create lead-preview-attachment-success'
                             },
                             'id': '8',
                             'widget': '2',
-                            'widgetType': 'TIME'
+                            'widgetType': 'MATRIX1D'
                         },
                         {
                             'clientId': 'client-id-attribute-3',
@@ -254,7 +242,7 @@ snapshots['TestEntryMutation::test_entry_create lead-preview-attachment-success'
                             },
                             'id': '9',
                             'widget': '3',
-                            'widgetType': 'GEO'
+                            'widgetType': 'SCALE'
                         }
                     ],
                     'clientId': 'entry-101',
@@ -262,12 +250,12 @@ snapshots['TestEntryMutation::test_entry_create lead-preview-attachment-success'
                     'entryAttachment': {
                         'entryFileType': 'IMAGE',
                         'file': {
-                            'name': 'entry/attachment/example_1_1.png',
-                            'url': 'http://testserver/media/entry/attachment/example_1_1.png'
+                            'name': 'entry/attachment/example_1_2.png',
+                            'url': 'http://testserver/media/entry/attachment/example_1_2.png'
                         },
                         'filePreview': {
-                            'name': 'entry/attachment/example_1_1.png',
-                            'url': 'http://testserver/media/entry/attachment/example_1_1.png'
+                            'name': 'entry/attachment/example_1_2.png',
+                            'url': 'http://testserver/media/entry/attachment/example_1_2.png'
                         },
                         'id': '1',
                         'leadAttachmentId': '1'
@@ -276,10 +264,7 @@ snapshots['TestEntryMutation::test_entry_create lead-preview-attachment-success'
                     'excerpt': '',
                     'highlightHidden': False,
                     'id': '3',
-                    'image': {
-                        'id': '3',
-                        'title': 'file-2'
-                    },
+                    'image': None,
                     'informationDate': '2021-01-01',
                     'order': 1
                 }
@@ -302,7 +287,7 @@ snapshots['TestEntryMutation::test_entry_create success'] = {
                             },
                             'id': '4',
                             'widget': '1',
-                            'widgetType': 'TIME_RANGE'
+                            'widgetType': 'MATRIX1D'
                         },
                         {
                             'clientId': 'client-id-attribute-2',
@@ -310,7 +295,7 @@ snapshots['TestEntryMutation::test_entry_create success'] = {
                             },
                             'id': '5',
                             'widget': '2',
-                            'widgetType': 'TIME'
+                            'widgetType': 'MATRIX1D'
                         },
                         {
                             'clientId': 'client-id-attribute-3',
@@ -318,7 +303,7 @@ snapshots['TestEntryMutation::test_entry_create success'] = {
                             },
                             'id': '6',
                             'widget': '3',
-                            'widgetType': 'GEO'
+                            'widgetType': 'SCALE'
                         }
                     ],
                     'clientId': 'entry-101',
@@ -329,8 +314,8 @@ snapshots['TestEntryMutation::test_entry_create success'] = {
                     'highlightHidden': False,
                     'id': '2',
                     'image': {
-                        'id': '3',
-                        'title': 'file-2'
+                        'id': '4',
+                        'title': 'file-3'
                     },
                     'informationDate': '2021-01-01',
                     'order': 1
@@ -354,7 +339,7 @@ snapshots['TestEntryMutation::test_entry_update error'] = {
                             },
                             'id': '3',
                             'widget': '1',
-                            'widgetType': 'TIME_RANGE'
+                            'widgetType': 'MATRIX1D'
                         },
                         {
                             'clientId': 'client-id-attribute-1',
@@ -362,7 +347,7 @@ snapshots['TestEntryMutation::test_entry_update error'] = {
                             },
                             'id': '1',
                             'widget': '1',
-                            'widgetType': 'TIME_RANGE'
+                            'widgetType': 'MATRIX1D'
                         },
                         {
                             'clientId': 'client-id-attribute-2',
@@ -370,7 +355,7 @@ snapshots['TestEntryMutation::test_entry_update error'] = {
                             },
                             'id': '2',
                             'widget': '2',
-                            'widgetType': 'TIME'
+                            'widgetType': 'MATRIX1D'
                         }
                     ],
                     'clientId': 'entry-101',
@@ -380,8 +365,8 @@ snapshots['TestEntryMutation::test_entry_update error'] = {
                     'highlightHidden': False,
                     'id': '1',
                     'image': {
-                        'id': '2',
-                        'title': 'file-1'
+                        'id': '3',
+                        'title': 'file-2'
                     },
                     'informationDate': '2021-01-01',
                     'order': 1
@@ -405,7 +390,7 @@ snapshots['TestEntryMutation::test_entry_update success'] = {
                             },
                             'id': '6',
                             'widget': '1',
-                            'widgetType': 'TIME_RANGE'
+                            'widgetType': 'MATRIX1D'
                         },
                         {
                             'clientId': 'client-id-attribute-1',
@@ -413,7 +398,7 @@ snapshots['TestEntryMutation::test_entry_update success'] = {
                             },
                             'id': '4',
                             'widget': '1',
-                            'widgetType': 'TIME_RANGE'
+                            'widgetType': 'MATRIX1D'
                         },
                         {
                             'clientId': 'client-id-attribute-2',
@@ -421,7 +406,7 @@ snapshots['TestEntryMutation::test_entry_update success'] = {
                             },
                             'id': '5',
                             'widget': '2',
-                            'widgetType': 'TIME'
+                            'widgetType': 'MATRIX1D'
                         }
                     ],
                     'clientId': 'entry-101',
@@ -431,8 +416,8 @@ snapshots['TestEntryMutation::test_entry_update success'] = {
                     'highlightHidden': False,
                     'id': '1',
                     'image': {
-                        'id': '3',
-                        'title': 'file-2'
+                        'id': '4',
+                        'title': 'file-3'
                     },
                     'informationDate': '2021-01-01',
                     'order': 1

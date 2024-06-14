@@ -209,6 +209,7 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
         super().setUp()
         self.af = AnalysisFrameworkFactory.create()
         self.project = ProjectFactory.create(analysis_framework=self.af)
+        self.other_project = ProjectFactory.create(analysis_framework=self.af)
         # User with role
         self.non_member_user = UserFactory.create()
         self.readonly_member_user = UserFactory.create()
@@ -216,6 +217,7 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
         self.project.add_member(self.readonly_member_user, role=self.project_role_reader_non_confidential)
         self.project.add_member(self.member_user, role=self.project_role_member)
         self.lead = LeadFactory.create(project=self.project)
+        self.other_lead = LeadFactory.create(project=self.other_project)
         self.widget1 = WidgetFactory.create(analysis_framework=self.af)
         self.widget2 = WidgetFactory.create(analysis_framework=self.af)
         self.widget3 = WidgetFactory.create(analysis_framework=self.af)
@@ -224,6 +226,10 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
         self.our_file = FileFactory.create(created_by=self.member_user)
         self.leadattachment = LeadPreviewAttachmentFactory.create(
             lead=self.lead,
+            type=LeadPreviewAttachment.AttachmentFileType.IMAGE
+        )
+        self.other_leadattachment = LeadPreviewAttachmentFactory.create(
+            lead=self.other_lead,
             type=LeadPreviewAttachment.AttachmentFileType.IMAGE
         )
         self.dummy_data = dict({})
@@ -283,8 +289,13 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
         # Valid input with LeadPreviewAttachment id
         minput['entryType'] = self.genum(Entry.TagType.ATTACHMENT)
         minput['leadAttachment'] = self.leadattachment.id
+        minput.pop('image')
         response = _query_check()
         self.assertMatchSnapshot(response, 'lead-preview-attachment-success')
+        self.assertEqual(
+            response['data']['project']['entryCreate']['result']['entryAttachment']['leadAttachmentId'],
+            str(self.leadattachment.id)
+        )
 
     def test_entry_update(self):
         """
@@ -403,8 +414,6 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
                     order=1,
                     lead=self.lead.pk,
                     informationDate=self.get_date_str(timezone.now()),
-                    image=self.other_file.pk,
-                    # leadImage='',
                     highlightHidden=False,
                     excerpt='This is a text (UPDATED)',
                     entryType=self.genum(Entry.TagType.EXCERPT),
@@ -423,13 +432,30 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
                     order=1,
                     lead=self.lead.pk,
                     informationDate=self.get_date_str(timezone.now()),
-                    image=self.other_file.pk,
-                    # leadImage='',
                     highlightHidden=False,
                     excerpt='This is a text (NEW)',
-                    entryType=self.genum(Entry.TagType.EXCERPT),
+                    entryType=self.genum(Entry.TagType.ATTACHMENT),
                     droppedExcerpt='This is a dropped text (NEW)',
+                    leadAttachment=self.other_leadattachment.id,
                     clientId='entry-new-102',
+                ),
+                dict(
+                    attributes=[
+                        dict(
+                            widget=self.widget1.pk,
+                            data=self.dummy_data,
+                            clientId='client-id-new-attribute-1',
+                            widgetVersion=1,
+                        ),
+                    ],
+                    order=1,
+                    lead=self.lead.pk,
+                    informationDate=self.get_date_str(timezone.now()),
+                    highlightHidden=False,
+                    excerpt='This is a text (NEW)',
+                    entryType=self.genum(Entry.TagType.ATTACHMENT),
+                    droppedExcerpt='This is a dropped text (NEW)',
+                    clientId='entry-new-103',
                 )
             ],
         )
@@ -459,8 +485,6 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
         self.assertMatchSnapshot(response, 'error')
 
         # Valid input
-        minput['items'][0]['image'] = self.our_file.pk
-        minput['items'][1]['image'] = self.our_file.pk
         response = _query_check()
         self.assertMatchSnapshot(response, 'success')
 
