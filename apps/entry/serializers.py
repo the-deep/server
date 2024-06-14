@@ -33,12 +33,13 @@ from .models import (
     EntryCommentText,
     ExportData,
     FilterData,
+    EntryAttachment,
     # Entry Grouping
     ProjectEntryLabel,
     LeadEntryGroup,
     EntryGroupLabel,
 )
-from .utils import base64_to_deep_image, leadattachment_to_entryattachment
+from .utils import base64_to_deep_image
 
 logger = logging.getLogger(__name__)
 
@@ -689,7 +690,7 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
                     'lead_attachment': f'You don\'t have permission to attach lead attachment: {lead_attachment}',
                 })
 
-            data['entry_attachment'] = leadattachment_to_entryattachment(lead_attachment)
+            data['entry_attachment'] = EntryAttachment.clone_from_lead_attachment(lead_attachment)
 
         # ---------------- Set/validate image properly
         elif image_raw:

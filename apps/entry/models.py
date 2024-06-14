@@ -1,3 +1,4 @@
+import os
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
@@ -27,6 +28,13 @@ class EntryAttachment(models.Model):
         XLSX = 1, 'XLSX'
         IMAGE = 2, 'Image'
 
+    LEAD_TO_ENTRY_TYPE = {
+        LeadPreviewAttachment.AttachmentFileType.XLSX: EntryFileType.XLSX,
+        LeadPreviewAttachment.AttachmentFileType.IMAGE: EntryFileType.IMAGE,
+    }
+    assert len(list(LeadPreviewAttachment.AttachmentFileType)) == len(LEAD_TO_ENTRY_TYPE.keys()), \
+        'Make sure to sync LEAD_TO_ENTRY_TYPE with LeadPreviewAttachment.AttachmentFileType'
+
     lead_attachment = models.ForeignKey(LeadPreviewAttachment, on_delete=models.SET_NULL, null=True)
     entry_file_type = models.PositiveSmallIntegerField(
         choices=EntryFileType.choices,
@@ -37,6 +45,23 @@ class EntryAttachment(models.Model):
 
     def __str__(self):
         return f'{self.file}'
+
+    @classmethod
+    def clone_from_lead_attachment(cls, lead_attachment: LeadPreviewAttachment) -> 'EntryAttachment':
+        lead_attachment_file_name = os.path.basename(lead_attachment.file.name)
+        lead_attachment_file_preview_name = os.path.basename(lead_attachment.file_preview.name)
+        entry_attachment = EntryAttachment.objects.create(
+            lead_attachment_id=lead_attachment.pk,
+            entry_file_type=cls.LEAD_TO_ENTRY_TYPE[lead_attachment.type],
+        )
+        if lead_attachment.type == LeadPreviewAttachment.AttachmentFileType.IMAGE:
+            entry_attachment.file.save(lead_attachment_file_name, lead_attachment.file)
+            entry_attachment.file_preview = entry_attachment.file
+        else:
+            entry_attachment.file.save(lead_attachment_file_name, lead_attachment.file)
+            entry_attachment.file_preview.save(lead_attachment_file_preview_name, lead_attachment.file_preview)
+        entry_attachment.save()
+        return entry_attachment
 
 
 class Entry(UserResource, ProjectEntityMixin):

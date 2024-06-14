@@ -262,12 +262,12 @@ snapshots['TestEntryMutation::test_entry_create lead-preview-attachment-success'
                     'entryAttachment': {
                         'entryFileType': 'IMAGE',
                         'file': {
-                            'name': 'entry/attachment/example_47FH0Sj.jpg',
-                            'url': 'http://testserver/media/entry/attachment/example_47FH0Sj.jpg'
+                            'name': 'entry/attachment/example_1_1.png',
+                            'url': 'http://testserver/media/entry/attachment/example_1_1.png'
                         },
                         'filePreview': {
-                            'name': 'entry/attachment/example_47FH0Sj.jpg',
-                            'url': 'http://testserver/media/entry/attachment/example_47FH0Sj.jpg'
+                            'name': 'entry/attachment/example_1_1.png',
+                            'url': 'http://testserver/media/entry/attachment/example_1_1.png'
                         },
                         'id': '1',
                         'leadAttachmentId': '1'

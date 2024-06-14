@@ -87,23 +87,32 @@ class LeadPreviewFactory(DjangoModelFactory):
 
 
 class LeadPreviewAttachmentFactory(DjangoModelFactory):
+    sequence_number = factory.Sequence(lambda n: n)
+
     class Meta:
         model = LeadPreviewAttachment
 
-    file = factory.LazyAttribute(
-        lambda _: ContentFile(
-            factory.django.ImageField()._make_data(
-                {'width': 1024, 'height': 768}
-            ), 'example.jpg'
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        sequence_number = kwargs.pop('sequence_number')
+        instance = super()._create(model_class, *args, **kwargs)
+        instance.file.save(
+            f'example_{instance.id}_{sequence_number}.png',
+            ContentFile(
+                factory.django.ImageField()._make_data(
+                    {'width': 1024, 'height': 768}
+                ),
+            ),
         )
-    )
-    file_preview = factory.LazyAttribute(
-        lambda _: ContentFile(
-            factory.django.ImageField()._make_data(
-                {'width': 1024, 'height': 768}
-            ), 'example.jpg'
+        instance.file_preview.save(
+            f'example_{instance.id}_{sequence_number}_preview.png',
+            ContentFile(
+                factory.django.ImageField()._make_data(
+                    {'width': 1024, 'height': 768}
+                ),
+            ),
         )
-    )
+        return instance
 
 
 class UserSavedLeadFilterFactory(DjangoModelFactory):
