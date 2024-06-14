@@ -1,16 +1,14 @@
-from django.db.models import Count
 from collections import defaultdict
+
+from django.db import connection as django_db_connection
+from django.db.models import Count
+from django.utils.functional import cached_property
+from geo.schema import get_geo_area_queryset_for_project_geo_area_type
 from promise import Promise
 
-from django.utils.functional import cached_property
-from django.db import connection as django_db_connection
-from geo.schema import get_geo_area_queryset_for_project_geo_area_type
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
-from .models import (
-    AssessmentRegistryOrganization,
-    SummaryIssue,
-)
+from .models import AssessmentRegistryOrganization, SummaryIssue
 
 
 class AssessmentRegistryOrganizationsLoader(DataLoaderWithContext):
@@ -25,32 +23,20 @@ class AssessmentRegistryOrganizationsLoader(DataLoaderWithContext):
 class AssessmentRegistryIssueLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         qs = SummaryIssue.objects.filter(id__in=keys)
-        _map = {
-            issue.pk: issue
-            for issue in qs
-        }
+        _map = {issue.pk: issue for issue in qs}
         return Promise.resolve([_map.get(key) for key in keys])
 
 
 class AssessmentRegistryIssueChildLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        qs = SummaryIssue.objects.filter(
-            parent__in=keys
-        ).values(
-            'parent'
-        ).annotate(
-            child_count=Count(
-                'id'
-            )
-        ).values(
-            'parent',
-            'child_count'
+        qs = (
+            SummaryIssue.objects.filter(parent__in=keys)
+            .values("parent")
+            .annotate(child_count=Count("id"))
+            .values("parent", "child_count")
         )
 
-        counts_map = {
-            obj['parent']: obj['child_count']
-            for obj in qs
-        }
+        counts_map = {obj["parent"]: obj["child_count"] for obj in qs}
 
         return Promise.resolve([counts_map.get(key, 0) for key in keys])
 
@@ -58,7 +44,7 @@ class AssessmentRegistryIssueChildLoader(DataLoaderWithContext):
 class SummaryIssueLevelLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         with django_db_connection.cursor() as cursor:
-            select_sql = f'''
+            select_sql = f"""
                 WITH RECURSIVE parents AS (
                     SELECT
                         sub_g.id,
@@ -80,12 +66,9 @@ class SummaryIssueLevelLoader(DataLoaderWithContext):
                     count(*)
                 FROM parents
                 GROUP BY main_entity_id
-                '''
+                """
             cursor.execute(select_sql, (tuple(keys),))
-            _map = {
-                _id: level
-                for _id, level in cursor.fetchall()
-            }
+            _map = {_id: level for _id, level in cursor.fetchall()}
         return Promise.resolve([_map.get(key, 0) for key in keys])
 
 

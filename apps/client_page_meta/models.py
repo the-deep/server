@@ -7,4 +7,4 @@ class Page(models.Model):
     help_url = models.TextField()
 
     def __str__(self):
-        return '{} {}'.format(self.title, self.page_id)
+        return "{} {}".format(self.title, self.page_id)

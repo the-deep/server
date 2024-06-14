@@ -1,23 +1,24 @@
 from collections import OrderedDict
 
-from django.test.client import RequestFactory
-from django.db import models
 from django.core.exceptions import FieldDoesNotExist
+from django.db import models
+from django.test.client import RequestFactory
 from rest_framework import exceptions, serializers
 from rest_framework.compat import uritemplate
+from user.models import User
 
 from deep.serializers import RecursiveSerializer
-from user.models import User
 from utils.common import to_camelcase
-from .utils import is_list_view, is_custom_action
+
 from . import schema
+from .utils import is_custom_action, is_list_view
 
 
 def format_field_name(field_name, required, camelcase):
     if camelcase:
         field_name = to_camelcase(field_name)
     if required:
-        field_name += '*'
+        field_name += "*"
     return field_name
 
 
@@ -37,13 +38,12 @@ def field_to_schema(field, camelcase=True):
 
     elif isinstance(field, serializers.Serializer):
         return schema.Object(
-            properties=OrderedDict([
-                (
-                    format_field_name(value.field_name,
-                                      value.required, camelcase),
-                    field_to_schema(value)
-                ) for value in field.fields.values()
-            ]),
+            properties=OrderedDict(
+                [
+                    (format_field_name(value.field_name, value.required, camelcase), field_to_schema(value))
+                    for value in field.fields.values()
+                ]
+            ),
         )
 
     elif isinstance(field, serializers.ManyRelatedField):
@@ -86,40 +86,35 @@ def field_to_schema(field, camelcase=True):
     elif isinstance(field, (serializers.FileField, serializers.ImageField)):
         return schema.File()
 
-    if field.style.get('base_template') == 'textarea.html':
-        return schema.String(
-            format='textarea'
-        )
+    if field.style.get("base_template") == "textarea.html":
+        return schema.String(format="textarea")
 
     return schema.String()
 
 
 def get_pk_description(model, model_field):
     if isinstance(model_field, models.AutoField):
-        value_type = 'unique integer value'
+        value_type = "unique integer value"
     elif isinstance(model_field, models.UUIDField):
-        value_type = 'UUID string'
+        value_type = "UUID string"
     else:
-        value_type = 'unique value'
+        value_type = "unique value"
 
-    return 'A {value_type} identifying this {title}'.format(
+    return "A {value_type} identifying this {title}".format(
         value_type=value_type,
         title=model._meta.verbose_name,
     )
 
 
 class Field:
-    def __init__(self,
-                 title='',
-                 required=False,
-                 schema=None):
+    def __init__(self, title="", required=False, schema=None):
         self.title = title
         self.required = required
         self.schema = schema
 
     def __str__(self):
         if self.required:
-            return self.title + '*'
+            return self.title + "*"
         return self.title
 
     def __repr__(self):
@@ -146,7 +141,7 @@ class ViewSchema:
         view = self.view
         path = self.path
 
-        model = getattr(getattr(view, 'queryset', None), 'model', None)
+        model = getattr(getattr(view, "queryset", None), "model", None)
 
         for variable in uritemplate.variables(path):
             schema_cls = schema.String
@@ -167,41 +162,36 @@ class ViewSchema:
                 #     elif model_field.primary_key:
                 #         description = get_pk_description(model, model_field)
 
-                if hasattr(view, 'lookup_value_regex') and \
-                        view.lookup_field == variable:
-                    kwargs['pattern'] = view.lookup_value_regex
+                if hasattr(view, "lookup_value_regex") and view.lookup_field == variable:
+                    kwargs["pattern"] = view.lookup_value_regex
                 if isinstance(model_field, models.AutoField):
                     schema_cls = schema.Integer
 
                 # Check other field types ? It's mostly string though
 
-            field = Field(
-                title=variable,
-                required=True,
-                schema=schema_cls(**kwargs)
-            )
+            field = Field(title=variable, required=True, schema=schema_cls(**kwargs))
             self.path_fields.append(field)
 
     def get_serializer_fields(self):
         view = self.view
         method = self.method
 
-        if hasattr(view, 'action') and is_custom_action(view.action):
+        if hasattr(view, "action") and is_custom_action(view.action):
             action = getattr(view, view.action)
-            if getattr(action, 'delete_view', False):
+            if getattr(action, "delete_view", False):
                 return
 
-        if method in ('DELETE',):
+        if method in ("DELETE",):
             return
 
-        takes_request = method in ('PUT', 'PATCH', 'POST')
+        takes_request = method in ("PUT", "PATCH", "POST")
 
-        if not hasattr(view, 'get_serializer'):
+        if not hasattr(view, "get_serializer"):
             return
 
         try:
             view.request = RequestFactory()
-            view.request.user = User(username='test')
+            view.request.user = User(username="test")
             serializer = view.get_serializer()
         except exceptions.APIException:
             serializer = None
@@ -226,7 +216,7 @@ class ViewSchema:
             if isinstance(field, serializers.HiddenField):
                 continue
 
-            required = field.required and method != 'PATCH'
+            required = field.required and method != "PATCH"
             out_field = Field(
                 title=to_camelcase(field.field_name),
                 required=required,
@@ -246,35 +236,40 @@ class ViewSchema:
         if is_list_view(self.path, self.method, self.view):
             response_fields = []
 
-            response_fields.append(Field(
-                title='count',
-                required=True,
-                schema=schema.Integer(),
-            ))
+            response_fields.append(
+                Field(
+                    title="count",
+                    required=True,
+                    schema=schema.Integer(),
+                )
+            )
 
-            response_fields.append(Field(
-                title='next',
-                required=False,
-                schema=schema.URL(),
-            ))
+            response_fields.append(
+                Field(
+                    title="next",
+                    required=False,
+                    schema=schema.URL(),
+                )
+            )
 
-            response_fields.append(Field(
-                title='previous',
-                required=False,
-                schema=schema.URL(),
-            ))
+            response_fields.append(
+                Field(
+                    title="previous",
+                    required=False,
+                    schema=schema.URL(),
+                )
+            )
 
-            response_fields.append(Field(
-                title='results',
-                required=True,
-                schema=schema.Array(
-                    items=schema.Object(
-                        properties=OrderedDict([
-                            (str(field), field.schema) for field in
-                            self.response_fields
-                        ])
+            response_fields.append(
+                Field(
+                    title="results",
+                    required=True,
+                    schema=schema.Array(
+                        items=schema.Object(
+                            properties=OrderedDict([(str(field), field.schema) for field in self.response_fields])
+                        ),
                     ),
-                ),
-            ))
+                )
+            )
 
             self.response_fields = response_fields

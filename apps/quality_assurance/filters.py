@@ -1,16 +1,14 @@
 import django_filters
 
-from utils.graphene.filters import (
-    IDFilter,
-    MultipleInputFilter,
-)
-from .models import EntryReviewComment
+from utils.graphene.filters import IDFilter, MultipleInputFilter
+
 from .enums import EntryReviewCommentOrderingEnum
+from .models import EntryReviewComment
 
 
 class EntryReviewCommentGQFilterSet(django_filters.FilterSet):
     entry = IDFilter()
-    ordering = MultipleInputFilter(EntryReviewCommentOrderingEnum, method='ordering_filter')
+    ordering = MultipleInputFilter(EntryReviewCommentOrderingEnum, method="ordering_filter")
 
     class Meta:
         model = EntryReviewComment

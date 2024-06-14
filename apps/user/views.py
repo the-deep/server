@@ -1,10 +1,10 @@
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
 from django.db import models
 from django.template.response import TemplateResponse
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_text
+from django.utils.http import urlsafe_base64_decode
 from rest_framework import (
     exceptions,
     filters,
@@ -16,18 +16,18 @@ from rest_framework import (
 )
 from rest_framework.decorators import action
 
-from utils.db.functions import StrPos
 from deep.views import get_frontend_url
+from utils.db.functions import StrPos
 
-from .token import unsubscribe_email_token_generator
-from .serializers import (
-    UserSerializer,
-    UserPreferencesSerializer,
-    NotificationSerializer,
-    PasswordResetSerializer,
-    PasswordChangeSerializer
-)
 from .permissions import UserPermission
+from .serializers import (
+    NotificationSerializer,
+    PasswordChangeSerializer,
+    PasswordResetSerializer,
+    UserPreferencesSerializer,
+    UserSerializer,
+)
+from .token import unsubscribe_email_token_generator
 
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
@@ -51,15 +51,15 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     Modify an existing user partially
     """
 
-    queryset = User.objects.filter(is_active=True).order_by('-date_joined')
+    queryset = User.objects.filter(is_active=True).order_by("-date_joined")
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated, UserPermission]
 
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
 
     def get_object(self):
-        pk = self.kwargs['pk']
-        if pk == 'me':
+        pk = self.kwargs["pk"]
+        if pk == "me":
             return self.request.user
         else:
             return super().get_object()
@@ -68,42 +68,43 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         queryset = super().filter_queryset(queryset)
 
         # Check if project/framework exclusion query is present
-        exclude_project = self.request.query_params.get(
-            'members_exclude_project')
-        exclude_framework = self.request.query_params.get(
-            'members_exclude_framework')
+        exclude_project = self.request.query_params.get("members_exclude_project")
+        exclude_framework = self.request.query_params.get("members_exclude_framework")
 
         if exclude_project:
-            queryset = queryset.filter(
-                ~models.Q(projectmembership__project=exclude_project)
-            ).distinct()
+            queryset = queryset.filter(~models.Q(projectmembership__project=exclude_project)).distinct()
 
         if exclude_framework:
-            queryset = queryset.filter(
-                ~models.Q(framework_membership__framework_id=exclude_framework)
-            )
+            queryset = queryset.filter(~models.Q(framework_membership__framework_id=exclude_framework))
 
-        search_str = self.request.query_params.get('search')
+        search_str = self.request.query_params.get("search")
         if search_str is None or not search_str.strip():
             return queryset
 
-        return queryset.annotate(
-            strpos=StrPos(
-                models.functions.Lower(
-                    models.functions.Concat(
-                        'first_name', models.Value(' '), 'last_name',
-                        models.Value(' '), 'email',
-                        output_field=models.CharField()
-                    )
-                ),
-                models.Value(search_str.lower(), models.CharField())
+        return (
+            queryset.annotate(
+                strpos=StrPos(
+                    models.functions.Lower(
+                        models.functions.Concat(
+                            "first_name",
+                            models.Value(" "),
+                            "last_name",
+                            models.Value(" "),
+                            "email",
+                            output_field=models.CharField(),
+                        )
+                    ),
+                    models.Value(search_str.lower(), models.CharField()),
+                )
             )
-        ).filter(strpos__gte=1).order_by('strpos')
+            .filter(strpos__gte=1)
+            .order_by("strpos")
+        )
 
     @action(
         detail=True,
         permission_classes=[permissions.IsAuthenticated],
-        url_path='preferences',
+        url_path="preferences",
         serializer_class=UserPreferencesSerializer,
     )
     def get_preferences(self, request, pk=None, version=None):
@@ -117,11 +118,12 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     @action(
         detail=True,
         permission_classes=[permissions.IsAuthenticated],
-        url_path='notifications',
+        url_path="notifications",
         serializer_class=NotificationSerializer,
     )
     def get_notifications(self, request, pk=None, version=None):
         from user.notifications import generate_notifications
+
         user = self.get_object()
         if user != request.user:
             raise exceptions.PermissionDenied()
@@ -135,17 +137,12 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
         detail=False,
         permission_classes=[permissions.IsAuthenticated],
         url_name="change_password",
-        url_path='me/change-password',
+        url_path="me/change-password",
         serializer_class=PasswordChangeSerializer,
-        methods=['POST']
+        methods=["POST"],
     )
     def change_password(self, request, pk=None, version=None):
-        serializer = PasswordChangeSerializer(
-            data=request.data,
-            context={
-                'request': request
-            }
-        )
+        serializer = PasswordChangeSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         update_session_auth_hash(request, request.user)
@@ -157,13 +154,14 @@ class PasswordResetView(views.APIView):
         serializer = PasswordResetSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return response.Response(
-            serializer.data, status=status.HTTP_201_CREATED)
+        return response.Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 def user_activate_confirm(
-    request, uidb64, token,
-    template_name='registration/user_activation_confirm.html',
+    request,
+    uidb64,
+    token,
+    template_name="registration/user_activation_confirm.html",
     token_generator=default_token_generator,
 ):
     try:
@@ -178,9 +176,9 @@ def user_activate_confirm(
         user = None
 
     context = {
-        'success': True,
-        'login_url': get_frontend_url('login/'),
-        'title': 'Account Activation',
+        "success": True,
+        "login_url": get_frontend_url("login/"),
+        "title": "Account Activation",
     }
 
     if user is not None and token_generator.check_token(user, token):
@@ -188,14 +186,17 @@ def user_activate_confirm(
         user.profile.login_attempts = 0
         user.save()
     else:
-        context['success'] = False
+        context["success"] = False
 
     return TemplateResponse(request, template_name, context)
 
 
 def unsubscribe_email(
-    request, uidb64, token, email_type,
-    template_name='user/unsubscribe_email__confirm.html',
+    request,
+    uidb64,
+    token,
+    email_type,
+    template_name="user/unsubscribe_email__confirm.html",
     token_generator=unsubscribe_email_token_generator,
 ):
     try:
@@ -210,14 +211,14 @@ def unsubscribe_email(
         user = None
 
     context = {
-        'success': True,
-        'title': 'Unsubscribe Email',
+        "success": True,
+        "title": "Unsubscribe Email",
     }
 
     if user is not None and token_generator.check_token(user, token):
         user.profile.unsubscribe_email(email_type)
         user.save()
     else:
-        context['success'] = False
+        context["success"] = False
 
     return TemplateResponse(request, template_name, context)

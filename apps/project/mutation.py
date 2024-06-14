@@ -1,54 +1,40 @@
+import graphene
+from analysis.mutation import Mutation as AnalysisMutation
+from ary.mutation import Mutation as AryMutation
+from assessment_registry.mutation import ProjectMutation as AssessmentRegistryMutation
+from assisted_tagging.mutation import AssistedTaggingMutationType
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.utils.translation import gettext
-
-import graphene
+from entry.mutation import Mutation as EntryMutation
+from export.mutation import ProjectMutation as ExportMutation
+from geo.models import Region
+from geo.schema import RegionDetailType
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
-
-from django.core.exceptions import PermissionDenied
-
-from utils.graphene.mutation import (
-    generate_input_type_for_serializer,
-    GrapheneMutation,
-    PsGrapheneMutation,
-    PsBulkGrapheneMutation,
-    DeleteMutation,
-)
-from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
+from lead.mutation import Mutation as LeadMutation
+from quality_assurance.mutation import Mutation as QualityAssuranceMutation
+from unified_connector.mutation import UnifiedConnectorMutationType
 
 from deep.permissions import ProjectPermissions as PP
 from deep.trackers import TrackerAction, track_project
-
-from geo.models import Region
-from geo.schema import RegionDetailType
-from lead.mutation import Mutation as LeadMutation
-from entry.mutation import Mutation as EntryMutation
-from assessment_registry.mutation import ProjectMutation as AssessmentRegistryMutation
-from quality_assurance.mutation import Mutation as QualityAssuranceMutation
-from ary.mutation import Mutation as AryMutation
-from export.mutation import ProjectMutation as ExportMutation
-from analysis.mutation import Mutation as AnalysisMutation
-from unified_connector.mutation import UnifiedConnectorMutationType
-from assisted_tagging.mutation import AssistedTaggingMutationType
+from utils.graphene.error_types import CustomErrorType, mutation_is_not_valid
+from utils.graphene.mutation import (
+    DeleteMutation,
+    GrapheneMutation,
+    PsBulkGrapheneMutation,
+    PsGrapheneMutation,
+    generate_input_type_for_serializer,
+)
 
 from .models import (
     Project,
-    ProjectStats,
     ProjectJoinRequest,
     ProjectMembership,
-    ProjectUserGroupMembership,
+    ProjectPinned,
     ProjectRole,
-    ProjectPinned
-)
-from .serializers import (
-    ProjectGqSerializer,
-    ProjectJoinGqSerializer,
-    ProjectAcceptRejectSerializer,
-    ProjectMembershipGqlSerializer as ProjectMembershipSerializer,
-    ProjectUserGroupMembershipGqlSerializer as ProjectUserGroupMembershipSerializer,
-    ProjectVizConfigurationSerializer,
-    UserPinnedProjectSerializer,
-    BulkProjectPinnedSerializer
+    ProjectStats,
+    ProjectUserGroupMembership,
 )
 from .schema import (
     ProjectDetailType,
@@ -56,53 +42,62 @@ from .schema import (
     ProjectMembershipType,
     ProjectUserGroupMembershipType,
     ProjectVizDataType,
-    UserPinnedProjectType
+    UserPinnedProjectType,
 )
-
+from .serializers import (
+    BulkProjectPinnedSerializer,
+    ProjectAcceptRejectSerializer,
+    ProjectGqSerializer,
+    ProjectJoinGqSerializer,
+)
+from .serializers import ProjectMembershipGqlSerializer as ProjectMembershipSerializer
+from .serializers import (
+    ProjectUserGroupMembershipGqlSerializer as ProjectUserGroupMembershipSerializer,
+)
+from .serializers import ProjectVizConfigurationSerializer, UserPinnedProjectSerializer
 
 ProjectCreateInputType = generate_input_type_for_serializer(
-    'ProjectCreateInputType',
+    "ProjectCreateInputType",
     serializer_class=ProjectGqSerializer,
 )
 
 ProjectUpdateInputType = generate_input_type_for_serializer(
-    'ProjectUpdateInputType',
+    "ProjectUpdateInputType",
     serializer_class=ProjectGqSerializer,
     partial=True,
 )
 
 ProjectJoinRequestInputType = generate_input_type_for_serializer(
-    'ProjectJoinRequestInputType',
+    "ProjectJoinRequestInputType",
     serializer_class=ProjectJoinGqSerializer,
 )
 
 ProjectAcceptRejectInputType = generate_input_type_for_serializer(
-    'ProjectAcceptRejectInputType',
+    "ProjectAcceptRejectInputType",
     serializer_class=ProjectAcceptRejectSerializer,
 )
 
 ProjectMembershipInputType = generate_input_type_for_serializer(
-    'ProjectMembershipInputType',
+    "ProjectMembershipInputType",
     serializer_class=ProjectMembershipSerializer,
 )
 
 ProjectUserGroupMembershipInputType = generate_input_type_for_serializer(
-    'ProjectUserGroupMembershipInputType',
+    "ProjectUserGroupMembershipInputType",
     serializer_class=ProjectUserGroupMembershipSerializer,
 )
 
 ProjectVizConfigurationInputType = generate_input_type_for_serializer(
-    'ProjectVizConfigurationInputType',
+    "ProjectVizConfigurationInputType",
     serializer_class=ProjectVizConfigurationSerializer,
 )
 
 ProjectPinnedInputType = generate_input_type_for_serializer(
-    'ProjectPinnedInputType',
-    serializer_class=UserPinnedProjectSerializer
+    "ProjectPinnedInputType", serializer_class=UserPinnedProjectSerializer
 )
 
 UserPinnedProjectReOrderInputType = generate_input_type_for_serializer(
-    'UserPinnedProjectReOrderInputType',
+    "UserPinnedProjectReOrderInputType",
     serializer_class=BulkProjectPinnedSerializer,
 )
 
@@ -133,7 +128,7 @@ class UpdateProject(PsGrapheneMutation):
 
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
-        kwargs['id'] = info.context.active_project.id
+        kwargs["id"] = info.context.active_project.id
         return super().perform_mutate(root, info, **kwargs)
 
 
@@ -165,12 +160,15 @@ class ProjectJoinRequestDelete(graphene.Mutation):
                 project=project_id,
             )
         except ProjectJoinRequest.DoesNotExist:
-            return ProjectJoinRequestDelete(errors=[
-                dict(
-                    field='nonFieldErrors',
-                    messages=gettext('ProjectJoinRequest does not exist for project(id:%s)' % project_id)
-                )
-            ], ok=False)
+            return ProjectJoinRequestDelete(
+                errors=[
+                    dict(
+                        field="nonFieldErrors",
+                        messages=gettext("ProjectJoinRequest does not exist for project(id:%s)" % project_id),
+                    )
+                ],
+                ok=False,
+            )
         instance.delete()
         instance.id = id
         return ProjectJoinRequestDelete(result=instance, errors=None, ok=True)
@@ -188,15 +186,17 @@ class ProjectDelete(DeleteMutation):
             role__type=ProjectRole.Type.PROJECT_OWNER,
         )
         if not membership_qs.exists():
-            return ProjectDelete(errors=[
-                dict(
-                    field='nonFieldErrors',
-                    messages=gettext(
-                        'You should be Project Owner to delete this project(id:%s)'
-                        % info.context.active_project.id
-                    ),
-                )
-            ], ok=False)
+            return ProjectDelete(
+                errors=[
+                    dict(
+                        field="nonFieldErrors",
+                        messages=gettext(
+                            "You should be Project Owner to delete this project(id:%s)" % info.context.active_project.id
+                        ),
+                    )
+                ],
+                ok=False,
+            )
         root.soft_delete()
         return ProjectDelete(result=root, errors=None, ok=True)
 
@@ -211,7 +211,7 @@ class CreateProjectJoin(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, data):
-        serializer = ProjectJoinGqSerializer(data=data, context={'request': info.context.request})
+        serializer = ProjectJoinGqSerializer(data=data, context={"request": info.context.request})
         if errors := mutation_is_not_valid(serializer):
             return CreateProjectJoin(errors=errors, ok=False)
         instance = serializer.save()
@@ -301,17 +301,17 @@ class BulkUpdateProjectRegion(PsBulkGrapheneMutation):
     @classmethod
     def perform_mutate(cls, _, info, **kwargs):
         project = info.context.active_project
-        regions_to_add = kwargs.get('regions_to_add') or []
-        regions_to_remove = kwargs.get('regions_to_remove') or []
+        regions_to_add = kwargs.get("regions_to_add") or []
+        regions_to_remove = kwargs.get("regions_to_remove") or []
         existing_regions = project.regions.all()
         added_regions = [
             region
-            for region in Region.objects.filter(id__in=regions_to_add).exclude(
-                id__in=existing_regions.values('id')
-            ).order_by('id')
+            for region in Region.objects.filter(id__in=regions_to_add)
+            .exclude(id__in=existing_regions.values("id"))
+            .order_by("id")
             if region.public or region.can_modify(info.context.user)
         ]
-        deleted_regions = list(existing_regions.filter(id__in=regions_to_remove).order_by('id'))
+        deleted_regions = list(existing_regions.filter(id__in=regions_to_remove).order_by("id"))
         assert len(added_regions) <= len(regions_to_add)
         assert len(deleted_regions) <= len(regions_to_remove)
         # Remove regions
@@ -334,6 +334,7 @@ class UpdateProjectVizConfiguration(PsGrapheneMutation):
 class CreateUserPinnedProject(PsGrapheneMutation):
     class Arguments:
         data = ProjectPinnedInputType(required=True)
+
     model = ProjectPinned
     result = graphene.Field(UserPinnedProjectType)
     serializer_class = UserPinnedProjectSerializer
@@ -350,15 +351,16 @@ class ProjectMutationType(
     AnalysisMutation,
     AssessmentRegistryMutation,
     # --End Project Scoped Mutation
-    DjangoObjectType
+    DjangoObjectType,
 ):
     """
     This mutation is for other scoped objects
     """
+
     class Meta:
         model = Project
         skip_registry = True
-        fields = ('id', 'title')
+        fields = ("id", "title")
 
     project_update = UpdateProject.Field()
     project_delete = ProjectDelete.Field()
@@ -394,6 +396,7 @@ class ProjectMutationType(
 class ReorderPinnedProjects(PsGrapheneMutation):
     class Arguments:
         items = graphene.List(graphene.NonNull(UserPinnedProjectReOrderInputType))
+
     model = ProjectPinned
     result = graphene.List(UserPinnedProjectType)
     serializer_class = BulkProjectPinnedSerializer
@@ -405,11 +408,11 @@ class ReorderPinnedProjects(PsGrapheneMutation):
         errors_data = []
         serializers_data = []
         results = []
-        for data in kwargs['items']:
-            instance, errors = cls.get_object(info, id=data['id'])
+        for data in kwargs["items"]:
+            instance, errors = cls.get_object(info, id=data["id"])
             if errors:
                 errors_data.append(errors)
-            serializer = cls.serializer_class(data=data, instance=instance, context={'request': info.context.request})
+            serializer = cls.serializer_class(data=data, instance=instance, context={"request": info.context.request})
             errors_data.append(mutation_is_not_valid(serializer))  # errors_data also add empty list
             serializers_data.append(serializer)
         errors_data = [items for items in errors_data if items]  # list comprehension removing empty list
@@ -423,6 +426,7 @@ class ReorderPinnedProjects(PsGrapheneMutation):
 class DeleteUserPinnedProject(DeleteMutation):
     class Arguments:
         id = graphene.ID(required=True)
+
     model = ProjectPinned
     result = graphene.Field(UserPinnedProjectType)
     permissions = []
@@ -430,19 +434,17 @@ class DeleteUserPinnedProject(DeleteMutation):
     @staticmethod
     def mutate(root, info, id):
 
-        project_pinned_qs = ProjectPinned.objects.filter(
-            id=id,
-            user=info.context.user
-        )
+        project_pinned_qs = ProjectPinned.objects.filter(id=id, user=info.context.user)
         if not project_pinned_qs.exists():
-            return DeleteUserPinnedProject(errors=[
-                dict(
-                    field='nonFieldErrors',
-                    messages=gettext(
-                        'Not authorize the unpinned project '
-                    ),
-                )
-            ], ok=False)
+            return DeleteUserPinnedProject(
+                errors=[
+                    dict(
+                        field="nonFieldErrors",
+                        messages=gettext("Not authorize the unpinned project "),
+                    )
+                ],
+                ok=False,
+            )
         project_pinned_qs.delete()
         return DeleteUserPinnedProject(result=root, errors=None, ok=True)
 

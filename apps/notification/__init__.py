@@ -1,1 +1,1 @@
-default_app_config = 'notification.apps.NotificationConfig'
+default_app_config = "notification.apps.NotificationConfig"

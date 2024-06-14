@@ -1,11 +1,11 @@
-from utils.graphene.tests import GraphQLSnapShotTestCase
-
-from organization.factories import OrganizationFactory
-from user.factories import UserFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
-from project.factories import ProjectFactory
-from lead.factories import LeadFactory
 from entry.factories import EntryFactory
+from lead.factories import LeadFactory
+from organization.factories import OrganizationFactory
+from project.factories import ProjectFactory
+from user.factories import UserFactory
+
+from utils.graphene.tests import GraphQLSnapShotTestCase
 
 
 class TestDeepExploreStats(GraphQLSnapShotTestCase):
@@ -28,19 +28,21 @@ class TestDeepExploreStats(GraphQLSnapShotTestCase):
         project_8 = cls.update_obj(ProjectFactory.create(analysis_framework=analysis_framework2), created_at="2020-09-11")
 
         # Some leads
-        lead_1 = cls.update_obj(LeadFactory.create(
-            project=project_1, source=organization1,
-            created_by=user,
-        ), created_at="2020-10-11")
+        lead_1 = cls.update_obj(
+            LeadFactory.create(
+                project=project_1,
+                source=organization1,
+                created_by=user,
+            ),
+            created_at="2020-10-11",
+        )
         lead_1.authors.add(organization1)
         lead_2 = cls.update_obj(
             LeadFactory.create(project=project_2, source=organization2, created_by=user), created_at="2020-10-11"
         )
         lead_2.authors.add(organization2)
         cls.update_obj(LeadFactory.create(project=project_3), created_at="2021-10-11")
-        cls.update_obj(
-            LeadFactory.create(project=project_4, source=organization2, created_by=user2), created_at="2024-10-11"
-        )
+        cls.update_obj(LeadFactory.create(project=project_4, source=organization2, created_by=user2), created_at="2024-10-11")
         lead_5 = cls.update_obj(LeadFactory.create(project=project_5), created_at="2021-10-11")
         lead_5.authors.add(organization1)
         cls.update_obj(LeadFactory.create(project=project_6, created_by=user), created_at="2023-10-11")
@@ -48,9 +50,7 @@ class TestDeepExploreStats(GraphQLSnapShotTestCase):
             LeadFactory.create(project=project_7, source=organization1, created_by=user2), created_at="2020-11-11"
         )
         lead_7.authors.add(organization2)
-        cls.update_obj(
-            LeadFactory.create(project=project_8, source=organization1, created_by=user2), created_at="2020-09-11"
-        )
+        cls.update_obj(LeadFactory.create(project=project_8, source=organization1, created_by=user2), created_at="2020-09-11")
 
         # Some entry
         cls.update_obj(EntryFactory.create(project=project_1, created_by=user, lead=lead_1), created_at="2020-10-11")
@@ -119,19 +119,21 @@ class TestDeepExploreStats(GraphQLSnapShotTestCase):
         project_8 = self.update_obj(ProjectFactory.create(analysis_framework=analysis_framework2), created_at="2020-09-11")
 
         # Some leads
-        lead_1 = self.update_obj(LeadFactory.create(
-            project=project_1, source=organization1,
-            created_by=user,
-        ), created_at="2020-10-11")
+        lead_1 = self.update_obj(
+            LeadFactory.create(
+                project=project_1,
+                source=organization1,
+                created_by=user,
+            ),
+            created_at="2020-10-11",
+        )
         lead_1.authors.add(organization1)
         lead_2 = self.update_obj(
             LeadFactory.create(project=project_2, source=organization2, created_by=user), created_at="2020-10-11"
         )
         lead_2.authors.add(organization2)
         self.update_obj(LeadFactory.create(project=project_3), created_at="2021-10-11")
-        self.update_obj(
-            LeadFactory.create(project=project_4, source=organization2, created_by=user2), created_at="2024-10-11"
-        )
+        self.update_obj(LeadFactory.create(project=project_4, source=organization2, created_by=user2), created_at="2024-10-11")
         lead_5 = self.update_obj(LeadFactory.create(project=project_5), created_at="2021-10-11")
         lead_5.authors.add(organization1)
         self.update_obj(LeadFactory.create(project=project_6, created_by=user), created_at="2023-10-11")
@@ -139,9 +141,7 @@ class TestDeepExploreStats(GraphQLSnapShotTestCase):
             LeadFactory.create(project=project_7, source=organization1, created_by=user2), created_at="2020-11-11"
         )
         lead_7.authors.add(organization2)
-        self.update_obj(
-            LeadFactory.create(project=project_8, source=organization1, created_by=user2), created_at="2020-09-11"
-        )
+        self.update_obj(LeadFactory.create(project=project_8, source=organization1, created_by=user2), created_at="2020-09-11")
 
         # Some entry
         self.update_obj(EntryFactory.create(project=project_1, created_by=user, lead=lead_1), created_at="2020-10-11")
@@ -157,22 +157,19 @@ class TestDeepExploreStats(GraphQLSnapShotTestCase):
             return self.query_check(
                 query,
                 variables={
-                    'filter': filter,
+                    "filter": filter,
                 },
-                **kwargs
+                **kwargs,
             )
 
-        filter = {
-            "dateFrom": "2020-10-01",
-            "dateTo": "2021-11-11"
-        }
+        filter = {"dateFrom": "2020-10-01", "dateTo": "2021-11-11"}
         self.force_login(user)
-        content = _query_check(filter)['data']['deepExploreStats']
+        content = _query_check(filter)["data"]["deepExploreStats"]
         self.assertIsNotNone(content, content)
-        self.assertEqual(content['totalActiveUsers'], 3)
-        self.assertEqual(content['totalAuthors'], 3)
-        self.assertEqual(content['totalEntries'], 4)
-        self.assertEqual(content['totalLeads'], 4)
-        self.assertEqual(content['totalProjects'], 4)
-        self.assertEqual(content['totalPublishers'], 2)
-        self.assertEqual(content['totalRegisteredUsers'], 3)
+        self.assertEqual(content["totalActiveUsers"], 3)
+        self.assertEqual(content["totalAuthors"], 3)
+        self.assertEqual(content["totalEntries"], 4)
+        self.assertEqual(content["totalLeads"], 4)
+        self.assertEqual(content["totalProjects"], 4)
+        self.assertEqual(content["totalPublishers"], 2)
+        self.assertEqual(content["totalRegisteredUsers"], 3)

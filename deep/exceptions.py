@@ -3,21 +3,21 @@ from rest_framework import status
 
 
 class DeepBaseException(Exception):
-    default_message = _('Unexpected exception. Contact admin.')
+    default_message = _("Unexpected exception. Contact admin.")
 
     def __init__(self, msg=None, *args, **kwargs):
         super().__init__(msg or self.default_message, *args, **kwargs)
 
 
 class CustomException(Exception):
-    default_message = _('You do not have permission to perform this action.')
+    default_message = _("You do not have permission to perform this action.")
 
     def __init__(self, msg=None, *args, **kwargs):
         super().__init__(msg or self.default_message, *args, **kwargs)
 
 
 class UnauthorizedException(CustomException):
-    default_message = _('You are not authenticated')
+    default_message = _("You are not authenticated")
     code = status.HTTP_401_UNAUTHORIZED
 
 

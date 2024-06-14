@@ -1,7 +1,7 @@
 import typing
 
-from django.test import override_settings
 from django.core.files.base import ContentFile
+from django.test import override_settings
 
 from utils.files import generate_json_file_for_upload
 
@@ -182,7 +182,7 @@ class SnapshotQuery:
         """
 
     class AnalysisReport:
-        SnapshotFragment = '''
+        SnapshotFragment = """
             fragment OrganizationGeneralResponse on OrganizationType {
                 id
                 title
@@ -645,10 +645,10 @@ class SnapshotQuery:
                     }
                 }
             }
-        '''
+        """
         Snapshot = (
-            SnapshotFragment +
-            '''\n
+            SnapshotFragment
+            + """\n
             query MyQuery($projectID: ID!, $reportID: ID!) {
                 project(id: $projectID) {
                     analysisReport(id: $reportID) {
@@ -656,7 +656,7 @@ class SnapshotQuery:
                     }
                 }
             }
-            '''
+            """
         )
 
 
@@ -666,9 +666,9 @@ class DummyContext:
 
 @override_settings(
     CACHES={
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'unique-snowflake',
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unique-snowflake",
         }
     },
 )
@@ -677,17 +677,13 @@ def generate_query_snapshot(
     variables: dict,
     data_callback: typing.Callable = lambda x: x,
     context: typing.Optional[object] = None,
-) -> \
-        typing.Tuple[typing.Optional[ContentFile], typing.Optional[dict]]:
+) -> typing.Tuple[typing.Optional[ContentFile], typing.Optional[dict]]:
     # To avoid circular dependency
     from deep.schema import schema as gql_schema
+
     if context is None:
         context = DummyContext()
-    result = gql_schema.execute(
-        query,
-        context=context,
-        variables=variables
-    )
+    result = gql_schema.execute(query, context=context, variables=variables)
     if result.errors:
         return None, result.errors
     return generate_json_file_for_upload(data_callback(result.data)), None

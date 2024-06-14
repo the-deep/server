@@ -1,5 +1,5 @@
-from graphene.types.resolver import dict_or_attr_resolver, set_default_resolver
 from django.db.models.fields.files import FieldFile as DjangoFieldFile
+from graphene.types.resolver import dict_or_attr_resolver, set_default_resolver
 
 
 def custom_dict_or_attr_resolver(*args, **kwargs):

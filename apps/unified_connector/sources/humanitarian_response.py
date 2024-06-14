@@ -1,11 +1,12 @@
 import logging
-import requests
-from bs4 import BeautifulSoup as Soup
 from datetime import datetime
 
-from .base import Source
+import requests
+from bs4 import BeautifulSoup as Soup
 from connector.utils import ConnectorWrapper
 from lead.models import Lead
+
+from .base import Source
 
 logger = logging.getLogger(__name__)
 
@@ -157,24 +158,17 @@ COUNTRIES_OPTIONS = [
     {"key": "world", "label": "World"},
     {"key": "yemen", "label": "Yemen"},
     {"key": "zambia", "label": "Zambia"},
-    {"key": "zimbabwe", "label": "Zimbabwe"}
+    {"key": "zimbabwe", "label": "Zimbabwe"},
 ]
 
 
 @ConnectorWrapper
 class HumanitarianResponse(Source):
-    URL = 'https://www.humanitarianresponse.info/en/documents/table'
-    title = 'Humanitarian Response'
-    key = 'humanitarian-response'
+    URL = "https://www.humanitarianresponse.info/en/documents/table"
+    title = "Humanitarian Response"
+    key = "humanitarian-response"
 
-    options = [
-        {
-            'key': 'country',  # key is not used
-            'field_type': 'select',
-            'title': 'Country',
-            'options': COUNTRIES_OPTIONS
-        }
-    ]
+    options = [{"key": "country", "field_type": "select", "title": "Country", "options": COUNTRIES_OPTIONS}]  # key is not used
 
     def get_content(self, url, params):
         resp = requests.get(url, params={})
@@ -183,31 +177,28 @@ class HumanitarianResponse(Source):
     def fetch(self, params):
         results = []
         url = self.URL
-        if params.get('country'):
-            url = self.URL + '/locations/' + params['country']
+        if params.get("country"):
+            url = self.URL + "/locations/" + params["country"]
         content = self.get_content(url, {})
-        soup = Soup(content, 'html.parser')
-        contents = soup.find('div', {'id': 'content'}).find('tbody')
-        for row in contents.findAll('tr'):
+        soup = Soup(content, "html.parser")
+        contents = soup.find("div", {"id": "content"}).find("tbody")
+        for row in contents.findAll("tr"):
             try:
-                tds = row.findAll('td')
-                title = tds[0].find('a').get_text().strip()
+                tds = row.findAll("td")
+                title = tds[0].find("a").get_text().strip()
                 datestr = tds[3].get_text().strip()
-                date = datetime.strptime(datestr, '%m/%d/%Y')
-                url = tds[4].find('a')['href']
+                date = datetime.strptime(datestr, "%m/%d/%Y")
+                url = tds[4].find("a")["href"]
                 data = {
-                    'id': url,
-                    'title': title.replace('\u200b', ''),
-                    'published_on': date.date(),
-                    'url': url,
-                    'source': 'Humanitarian Response',
-                    'author': 'Humanitarian Response',
-                    'source_type': Lead.SourceType.WEBSITE
+                    "id": url,
+                    "title": title.replace("\u200b", ""),
+                    "published_on": date.date(),
+                    "url": url,
+                    "source": "Humanitarian Response",
+                    "author": "Humanitarian Response",
+                    "source_type": Lead.SourceType.WEBSITE,
                 }
                 results.append(data)
             except Exception as e:
-                logger.warning(
-                    "Exception parsing humanitarian response connector: " +
-                    str(e.args)
-                )
+                logger.warning("Exception parsing humanitarian response connector: " + str(e.args))
         return results, len(results)

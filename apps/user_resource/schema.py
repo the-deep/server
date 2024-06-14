@@ -1,10 +1,9 @@
 import graphene
-
-from graphql.execution.base import ResolveInfo
 from django.db import models
+from graphql.execution.base import ResolveInfo
+from user.schema import UserType
 
 from utils.common import has_select_related
-from user.schema import UserType
 
 
 class UserResourceMixin(graphene.ObjectType):
@@ -14,10 +13,10 @@ class UserResourceMixin(graphene.ObjectType):
     modified_by = graphene.Field(UserType)
 
     def resolve_created_by(root, info, **kwargs):
-        return resolve_user_field(root, info, 'created_by')
+        return resolve_user_field(root, info, "created_by")
 
     def resolve_modified_by(root, info, **kwargs):
-        return resolve_user_field(root, info, 'modified_by')
+        return resolve_user_field(root, info, "modified_by")
 
 
 def resolve_user_field(root: models.Model, info: ResolveInfo, field: str):

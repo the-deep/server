@@ -1,4 +1,4 @@
-WIDGET_ID = 'scaleWidget'
+WIDGET_ID = "scaleWidget"
 
 
 """
@@ -19,22 +19,22 @@ def get_filters(widget, properties):
 
     filter_options = [
         {
-            'key': option['key'],
-            'label': option['label'],
-        } for option in properties.get('options', [])
+            "key": option["key"],
+            "label": option["label"],
+        }
+        for option in properties.get("options", [])
     ]
-    return [{
-        'filter_type': Filter.FilterType.LIST,
-        'properties': {
-            'type': 'multiselect-range',
-            'options': filter_options
-        },
-    }]
+    return [
+        {
+            "filter_type": Filter.FilterType.LIST,
+            "properties": {"type": "multiselect-range", "options": filter_options},
+        }
+    ]
 
 
 def get_exportable(widget, data):
     return {
-        'excel': {
-            'title': widget.title,
+        "excel": {
+            "title": widget.title,
         },
     }

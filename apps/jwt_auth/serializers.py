@@ -4,16 +4,14 @@ from django.conf import settings
 from django.contrib.auth import authenticate, models
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
+from user.utils import send_account_activation
+from user.validators import CustomMaximumLengthValidator
 
 from utils.hid import hid
-from user.utils import send_account_activation
-from .token import AccessToken, RefreshToken, TokenError
+
 from .captcha import validate_hcaptcha
-from .errors import (
-    AuthenticationFailedError,
-    UserInactiveError,
-)
-from user.validators import CustomMaximumLengthValidator
+from .errors import AuthenticationFailedError, UserInactiveError
+from .token import AccessToken, RefreshToken, TokenError
 
 logger = logging.getLogger(__name__)
 
@@ -35,8 +33,7 @@ class TokenObtainPairSerializer(serializers.Serializer):
         #     user.is_active = False
         #     user.save()
         #     send_account_activation(user)
-        raise UserInactiveError(
-            message='Account is deactivated, check your email')
+        raise UserInactiveError(message="Account is deactivated, check your email")
 
     def check_login_attempts(self, user, captcha):
         login_attempts = user.profile.login_attempts
@@ -47,16 +44,12 @@ class TokenObtainPairSerializer(serializers.Serializer):
 
     def validate(self, data):
         # NOTE: authenticate only works for active users
-        user = authenticate(
-            username=data['username'],
-            password=data['password']
-        )
-        captcha = data.get('hcaptcha_response')
+        user = authenticate(username=data["username"], password=data["password"])
+        captcha = data.get("hcaptcha_response")
 
         # user not active or user credentials don't match
         if not user or not user.is_active:
-            user = models.User.objects.filter(username=data['username'])\
-                .first()
+            user = models.User.objects.filter(username=data["username"]).first()
             if user:
                 user.profile.login_attempts += 1
                 user.save()
@@ -74,8 +67,8 @@ class TokenObtainPairSerializer(serializers.Serializer):
         refresh_token = RefreshToken.for_access_token(access_token)
 
         return {
-            'access': access_token.encode(),
-            'refresh': refresh_token.encode(),
+            "access": access_token.encode(),
+            "refresh": refresh_token.encode(),
         }
 
 
@@ -83,30 +76,26 @@ class TokenRefreshSerializer(serializers.Serializer):
     refresh = serializers.CharField()
 
     def validate(self, data):
-        user = self.context['request'].user
+        user = self.context["request"].user
 
         try:
-            refresh_token = RefreshToken(data['refresh'])
-            user_id = refresh_token['userId']
+            refresh_token = RefreshToken(data["refresh"])
+            user_id = refresh_token["userId"]
         except KeyError:
-            raise serializers.ValidationError(
-                'Token contains no valid user identification'
-            )
+            raise serializers.ValidationError("Token contains no valid user identification")
         except TokenError as e:
             raise serializers.ValidationError(e.message)
 
         if user.id != user_id:
-            raise serializers.ValidationError(
-                'Invalid refresh token'
-            )
+            raise serializers.ValidationError("Invalid refresh token")
 
         if not user.is_active:
-            raise AuthenticationFailed('User not active')
+            raise AuthenticationFailed("User not active")
 
         access_token = AccessToken.for_user(user)
 
         return {
-            'access': access_token.encode(),
+            "access": access_token.encode(),
         }
 
 
@@ -117,20 +106,20 @@ class HIDTokenObtainPairSerializer(serializers.Serializer):
     state = serializers.IntegerField(required=False)
 
     def validate(self, data):
-        humanitarian_id = hid.HumanitarianId(data['access_token'])
+        humanitarian_id = hid.HumanitarianId(data["access_token"])
 
         try:
             user = humanitarian_id.get_user()
         except hid.HIDBaseException as e:
             raise serializers.ValidationError(e.message)
         except Exception:
-            logger.error('HID error', exc_info=True)
-            raise serializers.ValidationError('Unexpected Error')
+            logger.error("HID error", exc_info=True)
+            raise serializers.ValidationError("Unexpected Error")
 
         access_token = AccessToken.for_user(user)
         refresh_token = RefreshToken.for_access_token(access_token)
 
         return {
-            'access': access_token.encode(),
-            'refresh': refresh_token.encode(),
+            "access": access_token.encode(),
+            "refresh": refresh_token.encode(),
         }

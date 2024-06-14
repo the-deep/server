@@ -3,9 +3,8 @@ from urllib.parse import urlparse
 from .default import DefaultWebInfoExtractor
 from .redhum import RedhumWebInfoExtractor
 
-
 EXTRACTORS = {
-    'redhum.org': RedhumWebInfoExtractor,
+    "redhum.org": RedhumWebInfoExtractor,
 }
 
 

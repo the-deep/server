@@ -1,14 +1,14 @@
-
 class Dict(dict):
     """
     Dict class where items can be accessed/set using dot notation
     """
+
     __getattr__ = dict.get
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
     def __convert_nested(self, d):
-        """ convert dictionary(nested) to Dict """
+        """convert dictionary(nested) to Dict"""
         new_kw = {}
         for k, v in d.items():
             if isinstance(v, dict):

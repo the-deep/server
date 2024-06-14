@@ -3,9 +3,7 @@ def migrate_widget(widget_data):
 
 
 def migrate_attribute(data):
-    if data.get('value'):
+    if data.get("value"):
         return data
 
-    return {
-        'value': data
-    }
+    return {"value": data}

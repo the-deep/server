@@ -1,23 +1,14 @@
 from django.db import transaction
-from rest_framework.decorators import action
-from rest_framework import (
-    permissions,
-    response,
-    views,
-    viewsets,
-    status,
-)
-
-from deep.celery import app as celery_app
-from export.serializers import ExportSerializer
+from export.filter_set import ExportFilterSet
 from export.models import Export
+from export.serializers import ExportSerializer
+from export.tasks import export_task
 from project.models import Project
 from project.permissions import PROJECT_PERMISSIONS
-from export.filter_set import (
-    ExportFilterSet,
-)
+from rest_framework import permissions, response, status, views, viewsets
+from rest_framework.decorators import action
 
-from export.tasks import export_task
+from deep.celery import app as celery_app
 
 
 class MetaExtractionView(views.APIView):
@@ -34,14 +25,14 @@ class ExportViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = Export.get_for(self.request.user)
-        if self.action == 'list':
+        if self.action == "list":
             return qs.filter(is_preview=False)
         return qs
 
     @action(
         detail=True,
-        url_path='cancel',
-        methods=('post',),
+        url_path="cancel",
+        methods=("post",),
     )
     def cancel(self, request, pk=None, version=None):
         export = self.get_object()
@@ -62,31 +53,28 @@ class ExportTriggerView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, version=None):
-        filters = request.data.get('filters', [])
+        filters = request.data.get("filters", [])
         filters = {f[0]: f[1] for f in filters}
 
-        project_id = filters.get('project')
-        export_type = filters.get('export_type', 'excel')
-        export_item = filters.get('export_item', 'entry')
+        project_id = filters.get("project")
+        export_type = filters.get("export_type", "excel")
+        export_item = filters.get("export_item", "entry")
 
-        is_preview = filters.get('is_preview', False)
+        is_preview = filters.get("is_preview", False)
 
         if project_id:
             project = Project.objects.get(id=project_id)
         else:
             project = None
 
-        if export_item == 'entry':
+        if export_item == "entry":
             type = Export.DataType.ENTRIES
-        elif export_item == 'assessment':
+        elif export_item == "assessment":
             type = Export.DataType.ASSESSMENTS
-        elif export_item == 'planned_assessment':
+        elif export_item == "planned_assessment":
             type = Export.DataType.PLANNED_ASSESSMENTS
         else:
-            return response.Response(
-                {'export_item': 'Invalid export item name'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return response.Response({"export_item": "Invalid export item name"}, status=status.HTTP_400_BAD_REQUEST)
 
         if project:
             # Check permission
@@ -102,7 +90,7 @@ class ExportTriggerView(views.APIView):
                 return response.Response({}, status=status.HTTP_403_FORBIDDEN)
 
         export = Export.objects.create(
-            title='Generating Export.....',
+            title="Generating Export.....",
             exported_by=request.user,
             project=project,
             type=type,
@@ -111,10 +99,10 @@ class ExportTriggerView(views.APIView):
             filters=filters,
         )
 
-        transaction.on_commit(
-            lambda: export.set_task_id(export_task.delay(export.id).id)
-        )
+        transaction.on_commit(lambda: export.set_task_id(export_task.delay(export.id).id))
 
-        return response.Response({
-            'export_triggered': export.id,
-        })
+        return response.Response(
+            {
+                "export_triggered": export.id,
+            }
+        )

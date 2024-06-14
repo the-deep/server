@@ -1,71 +1,65 @@
-from rest_framework import serializers
-from lxml import etree
 import requests
+from connector.utils import ConnectorWrapper, get_rss_fields
+from lead.models import Lead
+from lxml import etree
+from rest_framework import serializers
 
 from utils.common import DEFAULT_HEADERS
-from lead.models import Lead
+
 from .base import Source
-from connector.utils import get_rss_fields, ConnectorWrapper
 
 
 def _get_field_value(item, field):
     if not field:
-        return ''
+        return ""
     element = item.find(field)
-    return '' if element is None else element.text or element.get('href')
+    return "" if element is None else element.text or element.get("href")
 
 
 @ConnectorWrapper
 class RssFeed(Source):
-    title = 'RSS Feed'
-    key = 'rss-feed'
+    title = "RSS Feed"
+    key = "rss-feed"
     options = [
+        {"key": "feed-url", "field_type": "url", "title": "Feed URL"},
         {
-            'key': 'feed-url',
-            'field_type': 'url',
-            'title': 'Feed URL'
+            "key": "title-field",
+            "field_type": "select",
+            "lead_field": "title",
+            "title": "Title field",
+            "options": [],
         },
         {
-            'key': 'title-field',
-            'field_type': 'select',
-            'lead_field': 'title',
-            'title': 'Title field',
-            'options': [],
+            "key": "date-field",
+            "field_type": "select",
+            "lead_field": "published_on",
+            "title": "Published on field",
+            "options": [],
         },
         {
-            'key': 'date-field',
-            'field_type': 'select',
-            'lead_field': 'published_on',
-            'title': 'Published on field',
-            'options': [],
+            "key": "source-field",
+            "field_type": "select",
+            "lead_field": "source",
+            "title": "Publisher field",
+            "options": [],
         },
         {
-            'key': 'source-field',
-            'field_type': 'select',
-            'lead_field': 'source',
-            'title': 'Publisher field',
-            'options': [],
+            "key": "author-field",
+            "field_type": "select",
+            "lead_field": "author",
+            "title": "Author field",
+            "options": [],
         },
         {
-            'key': 'author-field',
-            'field_type': 'select',
-            'lead_field': 'author',
-            'title': 'Author field',
-            'options': [],
-        },
-        {
-            'key': 'url-field',
-            'field_type': 'select',
-            'lead_field': 'url',
-            'title': 'URL field',
-            'options': [],
+            "key": "url-field",
+            "field_type": "select",
+            "lead_field": "url",
+            "title": "URL field",
+            "options": [],
         },
     ]
 
-    _option_lead_field_map = {
-        option['lead_field']: option['key']
-        for option in options if option.get('lead_field')
-    }
+    _option_lead_field_map = {option["lead_field"]: option["key"] for option in options if option.get("lead_field")}
 
     dynamic_fields = [1, 2, 3, 4, 5]
 
@@ -74,29 +68,25 @@ class RssFeed(Source):
         return resp.content
 
     def query_fields(self, params):
-        if not params or not params.get('feed-url'):
+        if not params or not params.get("feed-url"):
             return []
 
         try:
-            r = requests.get(params['feed-url'], headers=DEFAULT_HEADERS)
+            r = requests.get(params["feed-url"], headers=DEFAULT_HEADERS)
             xml = etree.fromstring(r.content)
         except requests.exceptions.RequestException:
-            raise serializers.ValidationError({
-                'feed-url': 'Could not fetch rss feed'
-            })
+            raise serializers.ValidationError({"feed-url": "Could not fetch rss feed"})
         except etree.XMLSyntaxError:
-            raise serializers.ValidationError({
-                'feed-url': 'Invalid XML'
-            })
+            raise serializers.ValidationError({"feed-url": "Invalid XML"})
 
-        item = xml.find('channel/item')
+        item = xml.find("channel/item")
         if not item:
             return []
 
         nsmap = xml.nsmap
 
         fields = []
-        for field in item.findall('./'):
+        for field in item.findall("./"):
             fields.extend(get_rss_fields(field, nsmap))
 
         # Remove fields that are present more than once,
@@ -109,16 +99,16 @@ class RssFeed(Source):
 
     def fetch(self, params):
         results = []
-        if not params or not params.get('feed-url'):
+        if not params or not params.get("feed-url"):
             return results, 0
 
-        content = self.get_content(params['feed-url'], {})
+        content = self.get_content(params["feed-url"], {})
         xml = etree.fromstring(content)
-        items = xml.findall('channel/item')
+        items = xml.findall("channel/item")
 
         for item in items:
             data = {
-                'source_type': Lead.SourceType.RSS,
+                "source_type": Lead.SourceType.RSS,
                 **{
                     lead_field: _get_field_value(item, params.get(param_key))
                     for lead_field, param_key in self._option_lead_field_map.items()

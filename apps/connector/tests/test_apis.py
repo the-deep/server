@@ -1,18 +1,14 @@
 from unittest.mock import patch
 
-from deep.tests import TestCase
-from user.models import User
-from project.models import Project
-from organization.models import Organization
-from connector.sources.store import get_random_source, acaps_briefing_notes
-from unified_connector.sources.base import OrganizationSearch
-from connector.models import (
-    Connector,
-    ConnectorSource,
-    ConnectorUser,
-    # EMMConfig,
-)
+from connector.models import Connector, ConnectorSource, ConnectorUser  # EMMConfig,
 from connector.sources import store
+from connector.sources.store import acaps_briefing_notes, get_random_source
+from organization.models import Organization
+from project.models import Project
+from unified_connector.sources.base import OrganizationSearch
+from user.models import User
+
+from deep.tests import TestCase
 
 from .connector_content_mock_data import RSS_FEED_MOCK_DATA
 
@@ -22,40 +18,39 @@ def get_source_object(key):
 
 
 SAMPLE_RSS_PARAMS = {
-    'feed-url': 'https://reliefweb.int/country/afg/rss.xml?primary_country=16',
-    'title-field': 'title',
-    'source-field': 'source',
-    'author-field': 'author',
-    'date-field': 'pubDate',
-    'url-field': 'link',
+    "feed-url": "https://reliefweb.int/country/afg/rss.xml?primary_country=16",
+    "title-field": "title",
+    "source-field": "source",
+    "author-field": "author",
+    "date-field": "pubDate",
+    "url-field": "link",
 }
 
 SAMPLE_ATOM_PARAMS = {
-    'feed-url': 'https://feedly.com/f/Lmh0gtsFqdkr3hzoDFuOeass.atom?count=10',
-    'title-field': 'title',
-    'source-field': 'author',
-    'author-field': 'author',
-    'date-field': 'published',
-    'url-field': 'link',
+    "feed-url": "https://feedly.com/f/Lmh0gtsFqdkr3hzoDFuOeass.atom?count=10",
+    "title-field": "title",
+    "source-field": "author",
+    "author-field": "author",
+    "date-field": "published",
+    "url-field": "link",
 }
 
 SAMPLE_EMM_PARAMS = {
-    'feed-url': 'https://emm.newsbrief.eu/rss/rss?type=category&'
-                'id=filter-FocusedMyanmarEW-Q&language=en&duplicates=false',
-    'url-field': 'link',
-    'date-field': 'pubDate',
-    'source-field': 'source',
-    'author-field': 'source',
-    'title-field': 'title',
+    "feed-url": "https://emm.newsbrief.eu/rss/rss?type=category&" "id=filter-FocusedMyanmarEW-Q&language=en&duplicates=false",
+    "url-field": "link",
+    "date-field": "pubDate",
+    "source-field": "source",
+    "author-field": "source",
+    "title-field": "title",
 }
 
 
 class ConnectorApiTest(TestCase):
     def test_create_connector(self):
-        url = '/api/v1/connectors/'
+        url = "/api/v1/connectors/"
         data = {
-            'title': 'Test connector',
-            'source': get_random_source(),
+            "title": "Test connector",
+            "source": get_random_source(),
         }
 
         connector_count = Connector.objects.count()
@@ -65,89 +60,88 @@ class ConnectorApiTest(TestCase):
         self.assert_201(response)
 
         self.assertEqual(Connector.objects.count(), connector_count + 1)
-        self.assertEqual(response.data['title'], data['title'])
+        self.assertEqual(response.data["title"], data["title"])
 
         # Test that the user has been made admin
-        self.assertEqual(len(response.data['users']), 1)
-        self.assertEqual(response.data['users'][0]['user'], self.user.pk)
+        self.assertEqual(len(response.data["users"]), 1)
+        self.assertEqual(response.data["users"][0]["user"], self.user.pk)
 
-        user = ConnectorUser.objects.get(pk=response.data['users'][0]['id'])
+        user = ConnectorUser.objects.get(pk=response.data["users"][0]["id"])
         self.assertEqual(user.user.pk, self.user.pk)
-        self.assertEqual(user.role, 'admin')
+        self.assertEqual(user.role, "admin")
 
     def test_add_user(self):
-        connector = self.create(Connector, role='admin')
+        connector = self.create(Connector, role="admin")
         test_user = self.create(User)
 
-        url = '/api/v1/connector-users/'
+        url = "/api/v1/connector-users/"
         data = {
-            'user': test_user.pk,
-            'connector': connector.pk,
-            'role': 'normal',
+            "user": test_user.pk,
+            "connector": connector.pk,
+            "role": "normal",
         }
 
         self.authenticate()
         response = self.client.post(url, data)
         self.assert_201(response)
 
-        self.assertEqual(response.data['role'], data['role'])
-        self.assertEqual(response.data['user'], data['user'])
-        self.assertEqual(response.data['connector'], data['connector'])
+        self.assertEqual(response.data["role"], data["role"])
+        self.assertEqual(response.data["user"], data["user"])
+        self.assertEqual(response.data["connector"], data["connector"])
 
     def test_add_project(self):
-        connector = self.create(Connector, role='admin')
+        connector = self.create(Connector, role="admin")
         test_project = self.create(Project)
 
-        url = '/api/v1/connector-projects/'
+        url = "/api/v1/connector-projects/"
         data = {
-            'project': test_project.pk,
-            'connector': connector.pk,
-            'role': 'self',
+            "project": test_project.pk,
+            "connector": connector.pk,
+            "role": "self",
         }
 
         self.authenticate()
         response = self.client.post(url, data)
         self.assert_201(response)
 
-        self.assertEqual(response.data['role'], data['role'])
-        self.assertEqual(response.data['project'], data['project'])
-        self.assertEqual(response.data['connector'], data['connector'])
+        self.assertEqual(response.data["role"], data["role"])
+        self.assertEqual(response.data["project"], data["project"])
+        self.assertEqual(response.data["connector"], data["connector"])
 
     def test_list_sources(self):
-        url = '/api/v1/connector-sources/'
+        url = "/api/v1/connector-sources/"
 
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
 
-    @patch('unified_connector.sources.rss_feed.requests')
+    @patch("unified_connector.sources.rss_feed.requests")
     def test_connector_leads(self, mock_requests):
         mock_requests.get.return_value.content = RSS_FEED_MOCK_DATA
-        connector = self.create(
-            Connector,
-            source=get_source_object('rss-feed'),
-            params=SAMPLE_RSS_PARAMS,
-            role='self'
-        )
-        url = '/api/v1/connectors/{}/leads/'.format(connector.id)
+        connector = self.create(Connector, source=get_source_object("rss-feed"), params=SAMPLE_RSS_PARAMS, role="self")
+        url = "/api/v1/connectors/{}/leads/".format(connector.id)
 
         self.authenticate()
         response = self.client.post(url)
         self.assert_200(response)
 
-        self.assertIsNotNone(response.data.get('results'))
-        self.assertTrue(response.data['count'] == 20)
-        self.assertIsInstance(response.data['results'], list)
+        self.assertIsNotNone(response.data.get("results"))
+        self.assertTrue(response.data["count"] == 20)
+        self.assertIsInstance(response.data["results"], list)
 
-        first_lead = response.data['results'][0]
+        first_lead = response.data["results"][0]
         for key in [
-            'source_raw', 'source', 'source_detail',
-            'author_raw', 'author_detail',
-            'authors', 'authors_detail',
+            "source_raw",
+            "source",
+            "source_detail",
+            "author_raw",
+            "author_detail",
+            "authors",
+            "authors_detail",
         ]:
             self.assertTrue(first_lead[key] not in [None, []])
 
-        self.assertIsNotNone(first_lead['authors'][0] == first_lead['authors_detail'][0]['id'])
+        self.assertIsNotNone(first_lead["authors"][0] == first_lead["authors_detail"][0]["id"])
 
     # FIXME: Fix the broken tests by mocking
     # def test_get_leads_from_connector(self):
@@ -278,68 +272,66 @@ class ConnectorApiTest(TestCase):
             Connector,
             source=get_source_object(store.atom_feed.AtomFeed.key),
             params=SAMPLE_ATOM_PARAMS,
-            role='self',
+            role="self",
         )
-        url = '/api/v1/connectors/'
+        url = "/api/v1/connectors/"
 
         self.authenticate()
         resp = self.client.get(url)
 
         self.assert_200(resp)
-        data = resp.data['results']
+        data = resp.data["results"]
         assert len(data) == 1
 
-        assert data[0]['id'] == connector.id
-        assert 'source' in data[0]
-        assert 'source_title' in data[0]
+        assert data[0]["id"] == connector.id
+        assert "source" in data[0]
+        assert "source_title" in data[0]
 
 
 class ConnectorSourcesApiTest(TestCase):
     """
     NOTE: The basic connector sources are added from the migration.
     """
+
     statuses = [ConnectorSource.STATUS_BROKEN, ConnectorSource.STATUS_WORKING]
 
     def setUp(self):
         super().setUp()
         # Set acaps status working, since might be set broken by other test functions
-        acaps_source = ConnectorSource.objects.get(key='acaps-briefing-notes')
+        acaps_source = ConnectorSource.objects.get(key="acaps-briefing-notes")
         acaps_source.status = ConnectorSource.STATUS_WORKING
         acaps_source.save()
 
     def test_get_connector_sources_has_status_key(self):
-        url = '/api/v1/connector-sources/'
+        url = "/api/v1/connector-sources/"
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
-        data = response.data['results']
+        data = response.data["results"]
         for each in data:
-            assert 'status' in each
-            assert each['status'] in self.statuses
+            assert "status" in each
+            assert each["status"] in self.statuses
 
     def test_get_connector_acaps_status_broken(self):
-        acaps_source = ConnectorSource.objects.get(key='acaps-briefing-notes')
+        acaps_source = ConnectorSource.objects.get(key="acaps-briefing-notes")
         acaps_source.status = ConnectorSource.STATUS_BROKEN
         acaps_source.save()
 
-        url = '/api/v1/connector-sources/'
+        url = "/api/v1/connector-sources/"
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
-        data = response.data['results']
+        data = response.data["results"]
         for each in data:
-            assert 'status' in each
-            if each['key'] == 'acaps-briefing-notes':
-                assert each['status'] == ConnectorSource.STATUS_BROKEN
+            assert "status" in each
+            if each["key"] == "acaps-briefing-notes":
+                assert each["status"] == ConnectorSource.STATUS_BROKEN
             else:
-                assert each['status'] == ConnectorSource.STATUS_WORKING
+                assert each["status"] == ConnectorSource.STATUS_WORKING
 
     def test_get_connectors_have_status_key(self):
-        url = '/api/v1/connectors/'
-        data = {
-            'title': 'Test Acaps connector',
-            'source': acaps_briefing_notes.AcapsBriefingNotes.key
-        }
+        url = "/api/v1/connectors/"
+        data = {"title": "Test Acaps connector", "source": acaps_briefing_notes.AcapsBriefingNotes.key}
 
         self.authenticate()
         response = self.client.post(url, data)
@@ -347,22 +339,19 @@ class ConnectorSourcesApiTest(TestCase):
 
         response = self.client.get(url)
         self.assert_200(response)
-        data = response.data['results']
+        data = response.data["results"]
 
         for each in data:
-            assert 'status' in each
-            assert each['status'] in self.statuses
+            assert "status" in each
+            assert each["status"] in self.statuses
 
     def test_get_acaps_connector_broken(self):
-        acaps_source = ConnectorSource.objects.get(key='acaps-briefing-notes')
+        acaps_source = ConnectorSource.objects.get(key="acaps-briefing-notes")
         acaps_source.status = ConnectorSource.STATUS_BROKEN
         acaps_source.save()
 
-        url = '/api/v1/connectors/'
-        data = {
-            'title': 'Test Acaps connector',
-            'source': acaps_briefing_notes.AcapsBriefingNotes.key
-        }
+        url = "/api/v1/connectors/"
+        data = {"title": "Test Acaps connector", "source": acaps_briefing_notes.AcapsBriefingNotes.key}
 
         self.authenticate()
         response = self.client.post(url, data)
@@ -370,20 +359,20 @@ class ConnectorSourcesApiTest(TestCase):
 
         response = self.client.get(url)
         self.assert_200(response)
-        data = response.data['results']
+        data = response.data["results"]
 
         for each in data:
-            assert 'status' in each
-            if each['source'] == 'acaps-briefing-notes':
-                assert each['status'] == ConnectorSource.STATUS_BROKEN
+            assert "status" in each
+            if each["source"] == "acaps-briefing-notes":
+                assert each["status"] == ConnectorSource.STATUS_BROKEN
             else:
-                assert each['status'] == ConnectorSource.STATUS_BROKEN
+                assert each["status"] == ConnectorSource.STATUS_BROKEN
 
     def test_organization_search_util(self):
         organization_titles = [
-            'Deep',
-            'New Deep',
-            'Old Deep',
+            "Deep",
+            "New Deep",
+            "Old Deep",
         ]
         Organization.objects.filter(title__in=organization_titles).all().delete()
         assert Organization.objects.filter(title__in=organization_titles).count() == 0

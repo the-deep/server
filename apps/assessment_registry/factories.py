@@ -1,25 +1,25 @@
-import typing
-import random
 import datetime
-import factory
-from factory import fuzzy
-from factory.django import DjangoModelFactory
-from django.db import models
+import random
+import typing
 
+import factory
 from assessment_registry.models import (
-    Question,
+    AdditionalDocument,
     Answer,
     AssessmentRegistry,
     MethodologyAttribute,
-    AdditionalDocument,
-    ScoreRating,
+    Question,
     ScoreAnalyticalDensity,
-    SummaryIssue,
+    ScoreRating,
     Summary,
     SummaryFocus,
-    SummarySubPillarIssue,
+    SummaryIssue,
     SummarySubDimensionIssue,
+    SummarySubPillarIssue,
 )
+from django.db import models
+from factory import fuzzy
+from factory.django import DjangoModelFactory
 
 DEFAULT_START_DATE = datetime.date(year=2017, month=1, day=1)
 
@@ -28,9 +28,7 @@ def _choices(enum: typing.Type[models.IntegerChoices]):
     """
     Get key from Django Choices
     """
-    return [
-        key for key, _ in enum.choices
-    ]
+    return [key for key, _ in enum.choices]
 
 
 class FuzzyChoiceList(fuzzy.FuzzyChoice):
@@ -43,10 +41,7 @@ class FuzzyChoiceList(fuzzy.FuzzyChoice):
             self.choices = list(self.choices_generator)
         if self.choices_len is None:
             self.choices_len = len(self.choices)
-        value = random.sample(
-            self.choices,
-            random.randint(0, self.choices_len)
-        )
+        value = random.sample(self.choices, random.randint(0, self.choices_len))
         if self.getter is None:
             return value
         return self.getter(value)
@@ -71,7 +66,7 @@ class SummaryMetaFactory(DjangoModelFactory):
 
 
 class SummarySubPillarIssueFactory(DjangoModelFactory):
-    text = factory.Faker('text')
+    text = factory.Faker("text")
     order = factory.Sequence(lambda n: n)
 
     class Meta:
@@ -97,7 +92,7 @@ class SummaryFocusFactory(DjangoModelFactory):
 
 class SummarySubDimensionIssueFactory(DjangoModelFactory):
     sector = fuzzy.FuzzyChoice(_choices(AssessmentRegistry.SectorType))
-    text = factory.Faker('text')
+    text = factory.Faker("text")
     order = factory.Sequence(lambda n: n)
 
     class Meta:
@@ -110,7 +105,7 @@ class QuestionFactory(DjangoModelFactory):
 
 
 class AnswerFactory(DjangoModelFactory):
-    answer = factory.Faker('boolean')
+    answer = factory.Faker("boolean")
 
     class Meta:
         model = Answer
@@ -139,7 +134,7 @@ class ScoreAnalyticalDensityFactory(DjangoModelFactory):
 
 class AdditionalDocumentFactory(DjangoModelFactory):
     document_type = fuzzy.FuzzyChoice(_choices(AdditionalDocument.DocumentType))
-    external_link = 'https://example.com/invalid-file-link'
+    external_link = "https://example.com/invalid-file-link"
 
     class Meta:
         model = AdditionalDocument
@@ -148,7 +143,7 @@ class AdditionalDocumentFactory(DjangoModelFactory):
 class ScoreRatingFactory(DjangoModelFactory):
     score_type = fuzzy.FuzzyChoice(_choices(ScoreRating.ScoreCriteria))
     rating = fuzzy.FuzzyChoice(_choices(ScoreRating.RatingType))
-    reason = factory.Faker('text')
+    reason = factory.Faker("text")
 
     class Meta:
         model = ScoreRating
@@ -179,13 +174,13 @@ class AssessmentRegistryFactory(DjangoModelFactory):
     publication_date = fuzzy.FuzzyDate(DEFAULT_START_DATE)
 
     # Additional Documents
-    executive_summary = factory.Faker('text')
+    executive_summary = factory.Faker("text")
 
     # Methodology
-    objectives = factory.Faker('text')
-    data_collection_techniques = factory.Faker('text')
-    sampling = factory.Faker('text')
-    limitations = factory.Faker('text')
+    objectives = factory.Faker("text")
+    data_collection_techniques = factory.Faker("text")
+    sampling = factory.Faker("text")
+    limitations = factory.Faker("text")
 
     # Focus
     # -- Focus Sectors
@@ -194,13 +189,13 @@ class AssessmentRegistryFactory(DjangoModelFactory):
     protection_info_mgmts = FuzzyChoiceList(_choices(AssessmentRegistry.ProtectionInfoType))
     affected_groups = FuzzyChoiceList(_choices(AssessmentRegistry.AffectedGroupType))
 
-    metadata_complete = factory.Faker('boolean')
-    additional_document_complete = factory.Faker('boolean')
-    focus_complete = factory.Faker('boolean')
-    methodology_complete = factory.Faker('boolean')
-    summary_complete = factory.Faker('boolean')
-    cna_complete = factory.Faker('boolean')
-    score_complete = factory.Faker('boolean')
+    metadata_complete = factory.Faker("boolean")
+    additional_document_complete = factory.Faker("boolean")
+    focus_complete = factory.Faker("boolean")
+    methodology_complete = factory.Faker("boolean")
+    summary_complete = factory.Faker("boolean")
+    cna_complete = factory.Faker("boolean")
+    score_complete = factory.Faker("boolean")
 
     class Meta:
         model = AssessmentRegistry
@@ -212,6 +207,4 @@ class AssessmentRegistryFactory(DjangoModelFactory):
 
         if extracted:
             for country in extracted:
-                self.bg_countries.add(  # pyright: ignore [reportGeneralTypeIssues]
-                    country
-                )
+                self.bg_countries.add(country)  # pyright: ignore [reportGeneralTypeIssues]

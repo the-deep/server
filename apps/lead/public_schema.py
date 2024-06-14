@@ -1,10 +1,10 @@
 import graphene
 from django.db import models
+from gallery.schema import PublicGalleryFileType
+from project.public_schema import PublicProjectWithMembershipData
 
 from deep.permissions import ProjectPermissions as PP
 from utils.graphene.enums import EnumDescription
-from gallery.schema import PublicGalleryFileType
-from project.public_schema import PublicProjectWithMembershipData
 
 from .models import Lead
 from .schema import LeadSourceTypeEnum
@@ -15,12 +15,12 @@ def get_public_lead_qs():
         models.Q(
             project__has_publicly_viewable_unprotected_leads=True,
             confidentiality=Lead.Confidentiality.UNPROTECTED,
-        ) |
-        models.Q(
+        )
+        | models.Q(
             project__has_publicly_viewable_restricted_leads=True,
             confidentiality=Lead.Confidentiality.RESTRICTED,
-        ) |
-        models.Q(
+        )
+        | models.Q(
             project__has_publicly_viewable_confidential_leads=True,
             confidentiality=Lead.Confidentiality.CONFIDENTIAL,
         )
@@ -36,7 +36,7 @@ class PublicLeadDetailType(graphene.ObjectType):
     published_on = graphene.Date()
 
     source_type = graphene.Field(LeadSourceTypeEnum, required=True)
-    source_type_display = EnumDescription(source='get_source_type_display', required=True)
+    source_type_display = EnumDescription(source="get_source_type_display", required=True)
     text = graphene.String()
     url = graphene.String()
     attachment = graphene.Field(PublicGalleryFileType)
@@ -81,18 +81,21 @@ class Query:
             if lead:
                 lead.has_project_access = has_access
             return {
-                'project': _project,
-                'lead': lead,
+                "project": _project,
+                "lead": lead,
             }
 
         def _get_lead_from_qs(qs):
-            return qs\
-                .select_related(
-                    'project',
-                    'created_by',
-                    'source',
-                    'source__parent',
-                ).filter(uuid=kwargs['uuid']).first()
+            return (
+                qs.select_related(
+                    "project",
+                    "created_by",
+                    "source",
+                    "source__parent",
+                )
+                .filter(uuid=kwargs["uuid"])
+                .first()
+            )
 
         user = info.context.user
         public_lead = _get_lead_from_qs(get_public_lead_qs())
@@ -116,8 +119,8 @@ class Query:
         if PP.Permission.VIEW_ALL_LEAD in user_permissions:
             return _return(lead, lead.project, True)
         if (
-            PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD in user_permissions and
-            lead.confidentiality != Lead.Confidentiality.CONFIDENTIAL
+            PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD in user_permissions
+            and lead.confidentiality != Lead.Confidentiality.CONFIDENTIAL
         ):
             return _return(lead, lead.project, True)
         return _return(None, lead.project, True)

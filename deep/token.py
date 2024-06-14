@@ -1,8 +1,8 @@
 from datetime import date
 
 from django.conf import settings
-from django.db import models
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.db import models
 from django.utils.crypto import constant_time_compare
 from django.utils.http import base36_to_int
 
@@ -12,6 +12,7 @@ class DeepTokenGenerator(PasswordResetTokenGenerator):
     Strategy object used to generate and check tokens for the deep models
     mechanism.
     """
+
     # key_salt = "deep.token.DeepTokenGenerator"
     reset_timeout_days = settings.TOKEN_DEFAULT_RESET_TIMEOUT_DAYS
     secret = settings.SECRET_KEY
@@ -40,10 +41,7 @@ class DeepTokenGenerator(PasswordResetTokenGenerator):
             return False
 
         # Check that the timestamp/uid has not been tampered with
-        if not constant_time_compare(
-                self._make_token_with_timestamp(model, ts),
-                token
-        ):
+        if not constant_time_compare(self._make_token_with_timestamp(model, ts), token):
             return False
 
         # Check TIMEOUT
@@ -53,9 +51,7 @@ class DeepTokenGenerator(PasswordResetTokenGenerator):
         return True
 
     def _make_hash_value(self, model, timestamp):
-        raise Exception(
-            "No _make_hash_value defined for Class: " + type(self).__name__
-        )
+        raise Exception("No _make_hash_value defined for Class: " + type(self).__name__)
 
     def _num_days(self, dt):
         return (dt - date(2001, 1, 1)).days

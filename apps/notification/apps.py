@@ -2,7 +2,7 @@ from django.apps import AppConfig
 
 
 class NotificationConfig(AppConfig):
-    name = 'notification'
+    name = "notification"
 
     def ready(self):
-        from . import receivers # noqa
+        from . import receivers  # noqa

@@ -1,11 +1,9 @@
 from django.utils.functional import cached_property
 
-from deep.permissions import (
-    ProjectPermissions as PP,
-    AnalysisFrameworkPermissions as AfP,
-    UserGroupPermissions as UgP,
-)
 from deep.dataloaders import GlobalDataLoaders
+from deep.permissions import AnalysisFrameworkPermissions as AfP
+from deep.permissions import ProjectPermissions as PP
+from deep.permissions import UserGroupPermissions as UgP
 
 
 class GQLContext:
@@ -27,9 +25,7 @@ class GQLContext:
 
     def set_active_af(self, af):
         self.active_af = self.request.active_af = af
-        self.af_permissions = AfP.get_permissions(
-            af.get_current_user_role(self.request.user)
-        )
+        self.af_permissions = AfP.get_permissions(af.get_current_user_role(self.request.user))
 
     def set_active_usergroup(self, user_group):
         self.active_ug = self.request.active_ug = user_group

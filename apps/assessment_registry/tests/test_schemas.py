@@ -1,55 +1,53 @@
-from utils.graphene.tests import GraphQLTestCase
-
-from assessment_registry.factories import AssessmentRegistryFactory
-from organization.factories import OrganizationFactory
-from geo.factories import RegionFactory
-from gallery.factories import FileFactory
-from project.factories import ProjectFactory
-from user.factories import UserFactory
-from lead.factories import LeadFactory
 from assessment_registry.factories import (
-    QuestionFactory,
-    MethodologyAttributeFactory,
     AdditionalDocumentFactory,
-    ScoreRatingFactory,
-    ScoreAnalyticalDensityFactory,
     AnswerFactory,
-    SummaryMetaFactory,
-    SummarySubPillarIssueFactory,
-    SummaryIssueFactory,
+    AssessmentRegistryFactory,
+    MethodologyAttributeFactory,
+    QuestionFactory,
+    ScoreAnalyticalDensityFactory,
+    ScoreRatingFactory,
     SummaryFocusFactory,
+    SummaryIssueFactory,
+    SummaryMetaFactory,
     SummarySubDimensionIssueFactory,
+    SummarySubPillarIssueFactory,
 )
-from lead.models import Lead
-from project.models import Project
 from assessment_registry.models import (
-    AssessmentRegistry,
     AdditionalDocument,
-    ScoreRating,
+    AssessmentRegistry,
     Question,
+    ScoreRating,
     SummaryIssue,
 )
+from gallery.factories import FileFactory
+from geo.factories import RegionFactory
+from lead.factories import LeadFactory
+from lead.models import Lead
+from organization.factories import OrganizationFactory
+from project.factories import ProjectFactory
+from project.models import Project
+from user.factories import UserFactory
+
+from utils.graphene.tests import GraphQLTestCase
 
 
 class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
     def setUp(self):
         super().setUp()
         self.question1 = QuestionFactory.create(
-            sector=Question.QuestionSector.RELEVANCE,
-            sub_sector=Question.QuestionSubSector.RELEVANCE,
-            question='test question'
+            sector=Question.QuestionSector.RELEVANCE, sub_sector=Question.QuestionSubSector.RELEVANCE, question="test question"
         )
         self.question2 = QuestionFactory.create(
             sector=Question.QuestionSector.COMPREHENSIVENESS,
             sub_sector=Question.QuestionSubSector.GEOGRAPHIC_COMPREHENSIVENESS,
-            question='test question',
+            question="test question",
         )
         self.country1, self.country2 = RegionFactory.create_batch(2)
         self.organization1, self.organization2 = OrganizationFactory.create_batch(2)
         self.org_list = [self.organization1.id, self.organization2.id]
 
     def test_assessment_registry_query(self):
-        query = '''
+        query = """
             query MyQuery ($projectId: ID! $assessmentRegistryId: ID!) {
               project(id: $projectId) {
                 assessmentRegistry (id: $assessmentRegistryId) {
@@ -110,7 +108,7 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
 
         project1 = ProjectFactory.create(status=Project.Status.ACTIVE)
 
@@ -130,7 +128,7 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
             cna_complete=False,
             protection_risks=[
                 AssessmentRegistry.ProtectionRiskType.ABDUCATION_KIDNAPPING,
-                AssessmentRegistry.ProtectionRiskType.ATTACKS_ON_CIVILIANS
+                AssessmentRegistry.ProtectionRiskType.ATTACKS_ON_CIVILIANS,
             ],
         )
 
@@ -142,23 +140,23 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         AdditionalDocumentFactory.create(
             assessment_registry=assessment_registry,
             document_type=AdditionalDocument.DocumentType.ASSESSMENT_DATABASE,
-            file=FileFactory()
+            file=FileFactory(),
         )
         # Add Score Ratings
         ScoreRatingFactory.create(
             assessment_registry=assessment_registry,
             score_type=ScoreRating.ScoreCriteria.RELEVANCE,
-            rating=ScoreRating.RatingType.GOOD
+            rating=ScoreRating.RatingType.GOOD,
         )
         ScoreRatingFactory.create(
             assessment_registry=assessment_registry,
             score_type=ScoreRating.ScoreCriteria.TIMELINESS,
-            rating=ScoreRating.RatingType.GOOD
+            rating=ScoreRating.RatingType.GOOD,
         )
         ScoreRatingFactory.create(
             assessment_registry=assessment_registry,
             score_type=ScoreRating.ScoreCriteria.GRANULARITY,
-            rating=ScoreRating.RatingType.GOOD
+            rating=ScoreRating.RatingType.GOOD,
         )
         # Add Score Analytical Density
         ScoreAnalyticalDensityFactory.create(
@@ -170,16 +168,8 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
             sector=AssessmentRegistry.SectorType.SHELTER,
         )
         # Add Answer to the question
-        AnswerFactory.create(
-            assessment_registry=assessment_registry,
-            question=self.question1,
-            answer=True
-        )
-        AnswerFactory.create(
-            assessment_registry=assessment_registry,
-            question=self.question2,
-            answer=False
-        )
+        AnswerFactory.create(assessment_registry=assessment_registry, question=self.question1, answer=True)
+        AnswerFactory.create(assessment_registry=assessment_registry, question=self.question2, answer=False)
         SummaryMetaFactory.create(
             assessment_registry=assessment_registry,
         )
@@ -201,42 +191,40 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
 
         def _query_check(assessment_registry, **kwargs):
             return self.query_check(
-                query,
-                variables={
-                    'projectId': project1.id,
-                    'assessmentRegistryId': assessment_registry.id
-                }, **kwargs)
+                query, variables={"projectId": project1.id, "assessmentRegistryId": assessment_registry.id}, **kwargs
+            )
 
         # -- non member user
         self.force_login(non_member_user)
         content1 = _query_check(assessment_registry)
-        self.assertIsNone(content1['data']['project']['assessmentRegistry'])
+        self.assertIsNone(content1["data"]["project"]["assessmentRegistry"])
 
         # --- member user
         self.force_login(member_user)
         content = _query_check(assessment_registry)
-        self.assertIsNotNone(content['data']['project']['assessmentRegistry']['id'])
-        self.assertEqual(content['data']['project']['assessmentRegistry']['lead']['id'], str(lead_1.id), )
-        self.assertIsNotNone(content['data']['project']['assessmentRegistry']['bgCountries'])
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['bgCountries']), 2)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['methodologyAttributes']), 2)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['additionalDocuments']), 1)
-        self.assertIsNotNone(
-            content['data']['project']['assessmentRegistry']['additionalDocuments'][0]['file']['file']['url']
+        self.assertIsNotNone(content["data"]["project"]["assessmentRegistry"]["id"])
+        self.assertEqual(
+            content["data"]["project"]["assessmentRegistry"]["lead"]["id"],
+            str(lead_1.id),
         )
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['scoreRatings']), 3)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['scoreAnalyticalDensity']), 2)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['cna']), 2)
+        self.assertIsNotNone(content["data"]["project"]["assessmentRegistry"]["bgCountries"])
+        self.assertEqual(len(content["data"]["project"]["assessmentRegistry"]["bgCountries"]), 2)
+        self.assertEqual(len(content["data"]["project"]["assessmentRegistry"]["methodologyAttributes"]), 2)
+        self.assertEqual(len(content["data"]["project"]["assessmentRegistry"]["additionalDocuments"]), 1)
+        self.assertIsNotNone(content["data"]["project"]["assessmentRegistry"]["additionalDocuments"][0]["file"]["file"]["url"])
+        self.assertEqual(len(content["data"]["project"]["assessmentRegistry"]["scoreRatings"]), 3)
+        self.assertEqual(len(content["data"]["project"]["assessmentRegistry"]["scoreAnalyticalDensity"]), 2)
+        self.assertEqual(len(content["data"]["project"]["assessmentRegistry"]["cna"]), 2)
 
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summaryPillarMeta']), 1)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summarySubPillarIssue']), 1)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summaryDimensionMeta']), 1)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['summarySubDimensionIssue']), 1)
-        self.assertEqual(content['data']['project']['assessmentRegistry']['cnaComplete'], False)
-        self.assertEqual(len(content['data']['project']['assessmentRegistry']['protectionRisks']), 2)
+        self.assertEqual(len(content["data"]["project"]["assessmentRegistry"]["summaryPillarMeta"]), 1)
+        self.assertEqual(len(content["data"]["project"]["assessmentRegistry"]["summarySubPillarIssue"]), 1)
+        self.assertEqual(len(content["data"]["project"]["assessmentRegistry"]["summaryDimensionMeta"]), 1)
+        self.assertEqual(len(content["data"]["project"]["assessmentRegistry"]["summarySubDimensionIssue"]), 1)
+        self.assertEqual(content["data"]["project"]["assessmentRegistry"]["cnaComplete"], False)
+        self.assertEqual(len(content["data"]["project"]["assessmentRegistry"]["protectionRisks"]), 2)
 
     def test_list_assessment_registry_query(self):
-        query = '''
+        query = """
           query MyQuery ($id: ID!) {
               project(id: $id) {
                   assessmentRegistries {
@@ -249,7 +237,7 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
                     }
                   }
                 }
-          '''
+          """
 
         project1 = ProjectFactory.create()
         project2 = ProjectFactory.create()
@@ -287,8 +275,10 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
             return self.query_check(
                 query,
                 variables={
-                    'id': project1.id,
-                }, **kwargs)
+                    "id": project1.id,
+                },
+                **kwargs,
+            )
 
         # -- Without login
         _query_check(assert_for_error=True)
@@ -296,21 +286,21 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
         # -- non member user
         self.force_login(non_member_user)
         content = _query_check(okay=False)
-        self.assertEqual(content['data']['project']['assessmentRegistries']['totalCount'], 0)
+        self.assertEqual(content["data"]["project"]["assessmentRegistries"]["totalCount"], 0)
 
         # -- With login
         self.force_login(member_user)
         content = _query_check(okay=False)
 
-        self.assertEqual(content['data']['project']['assessmentRegistries']['totalCount'], 4, content)
+        self.assertEqual(content["data"]["project"]["assessmentRegistries"]["totalCount"], 4, content)
 
         # -- non confidential member user
         self.force_login(non_confidential_member_user)
         content = _query_check(okay=False)
-        self.assertEqual(content['data']['project']['assessmentRegistries']['totalCount'], 3)
+        self.assertEqual(content["data"]["project"]["assessmentRegistries"]["totalCount"], 3)
 
     def test_issue_list_query_filter(self):
-        query = '''
+        query = """
             query MyQuery (
                 $isParent: Boolean
                 $label: String
@@ -326,7 +316,7 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
                 }
             }
         }
-        '''
+        """
 
         member_user = UserFactory.create()
         self.force_login(member_user)
@@ -337,22 +327,23 @@ class TestAssessmentRegistryQuerySchema(GraphQLTestCase):
 
         for filter_data, expected_issues in [
             ({}, [child_issue1, child_issue2, child_issue3, parent_issue1, parent_issue2, parent_issue3]),
-            ({'isParent': True}, [parent_issue1, parent_issue2, parent_issue3]),
-            ({'isParent': False}, [child_issue1, child_issue2, child_issue3]),
+            ({"isParent": True}, [parent_issue1, parent_issue2, parent_issue3]),
+            ({"isParent": False}, [child_issue1, child_issue2, child_issue3]),
         ]:
             content = self.query_check(query, variables={**filter_data})
 
             self.assertListIds(
-                content['data']['assessmentRegSummaryIssues']['results'], expected_issues,
-                {'response': content, 'filter': filter_data}
+                content["data"]["assessmentRegSummaryIssues"]["results"],
+                expected_issues,
+                {"response": content, "filter": filter_data},
             )
 
         #  check for child count
-        content = self.query_check(query)['data']['assessmentRegSummaryIssues']['results']
+        content = self.query_check(query)["data"]["assessmentRegSummaryIssues"]["results"]
         parents = [str(parent.id) for parent in SummaryIssue.objects.filter(parent=None)]
-        child_count_list = [item['childCount'] for item in content if item['id'] in parents]
+        child_count_list = [item["childCount"] for item in content if item["id"] in parents]
         self.assertEqual(child_count_list, [1, 2, 0])
 
         #  check for level
-        self.assertEqual(set([item['level'] for item in content if item['id'] in parents]), {1})
-        self.assertEqual(set([item['level'] for item in content if item['id'] not in parents]), {2})
+        self.assertEqual(set([item["level"] for item in content if item["id"] in parents]), {1})
+        self.assertEqual(set([item["level"] for item in content if item["id"] not in parents]), {2})

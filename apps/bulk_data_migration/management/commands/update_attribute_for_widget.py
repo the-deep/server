@@ -1,20 +1,12 @@
-from datetime import datetime, timedelta
 import time
+from datetime import datetime, timedelta
 
 from django.core.management.base import BaseCommand
-from django.db.models import (
-    Q,
-    Max,
-    OuterRef,
-    Subquery,
-    DateTimeField,
-    Exists
-)
-
+from django.db.models import DateTimeField, Exists, Max, OuterRef, Q, Subquery
 from entry.models import Attribute, ExportData
 from entry.utils import update_entry_attribute
-from entry.widgets.store import widget_store
 from entry.widgets import conditional_widget
+from entry.widgets.store import widget_store
 from lead.models import Lead
 
 HIGH = 3
@@ -23,25 +15,23 @@ LOW = 1
 
 
 class Command(BaseCommand):
-    help = 'Update attributes to export widget'
+    help = "Update attributes to export widget"
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--priority',
+            "--priority",
             type=int,
-            help='Priority based on last activity of leads (high: >{}, medium: {}, low: <{})'.format(
-                HIGH, MEDIUM, LOW
-            ),
+            help="Priority based on last activity of leads (high: >{}, medium: {}, low: <{})".format(HIGH, MEDIUM, LOW),
         )
         parser.add_argument(
-            '--project',
+            "--project",
             type=int,
-            help='Specific project export data migration',
+            help="Specific project export data migration",
         )
         parser.add_argument(
-            '--widget',
+            "--widget",
             type=str,
-            help='Specific widget export data migration',
+            help="Specific widget export data migration",
         )
 
     def update_attributes(self, widget, qs):
@@ -50,70 +40,75 @@ class Command(BaseCommand):
         if widget == conditional_widget.WIDGET_ID:
             # conditional widget is handled within each overview widget
             return
-        current_widget_data_version = getattr(widget_store[widget], 'DATA_VERSION', None)
+        current_widget_data_version = getattr(widget_store[widget], "DATA_VERSION", None)
         to_be_changed_export_data_exists = Exists(
             ExportData.objects.filter(
-                exportable__analysis_framework=OuterRef('widget__analysis_framework'),
-                exportable__widget_key=OuterRef('widget__key'),
-                entry_id=OuterRef('entry')
+                exportable__analysis_framework=OuterRef("widget__analysis_framework"),
+                exportable__widget_key=OuterRef("widget__key"),
+                entry_id=OuterRef("entry"),
             ).filter(
-                ~Q(data__has_key='common') |
-                ~Q(data__common__has_key='version') |
-                (
-                    Q(data__has_key='common') &
-                    Q(data__common__has_key='version') &
-                    ~Q(data__common__version=current_widget_data_version)
+                ~Q(data__has_key="common")
+                | ~Q(data__common__has_key="version")
+                | (
+                    Q(data__has_key="common")
+                    & Q(data__common__has_key="version")
+                    & ~Q(data__common__version=current_widget_data_version)
                 )
             )
         )
-        attribute_qs = qs.filter(
-            widget__widget_id=widget,
-        ).annotate(
-            export_data_exists=to_be_changed_export_data_exists
-        ).filter(export_data_exists=True)
+        attribute_qs = (
+            qs.filter(
+                widget__widget_id=widget,
+            )
+            .annotate(export_data_exists=to_be_changed_export_data_exists)
+            .filter(export_data_exists=True)
+        )
 
         total_to_process = attribute_qs.count()
-        print(f'Processing for {widget}. Total attributes to process: {total_to_process}')
+        print(f"Processing for {widget}. Total attributes to process: {total_to_process}")
         if total_to_process == 0:
             # Nothing to do here
             return
         for index, attr in enumerate(attribute_qs.iterator(), start=1):
-            print(f'  - {index}/{total_to_process}', end='\r')
+            print(f"  - {index}/{total_to_process}", end="\r")
             update_entry_attribute(attr)
-        print(f' - Updated {total_to_process}')
+        print(f" - Updated {total_to_process}")
 
     def handle(self, *args, **options):
         old = time.time()
         qs = Attribute.objects.all()
-        if options.get('project'):
-            qs = qs.filter(entry__project=options['project'])
-        elif options.get('priority'):
+        if options.get("project"):
+            qs = qs.filter(entry__project=options["project"])
+        elif options.get("priority"):
             today = datetime.today()
-            priority = options['priority']
+            priority = options["priority"]
             last_30_days_ago = today - timedelta(days=30)
             last_60_days_ago = today - timedelta(days=60)
             qs = qs.annotate(
-                last_lead_added=Subquery(Lead.objects.filter(
-                    project=OuterRef('entry__project_id')
-                ).order_by().values('project').annotate(max=Max('created_at')).values('max')[:1],
-                    output_field=DateTimeField())
+                last_lead_added=Subquery(
+                    Lead.objects.filter(project=OuterRef("entry__project_id"))
+                    .order_by()
+                    .values("project")
+                    .annotate(max=Max("created_at"))
+                    .values("max")[:1],
+                    output_field=DateTimeField(),
+                )
             )
             if priority >= HIGH:
                 qs = qs.filter(last_lead_added__gte=last_30_days_ago)
             elif priority == MEDIUM:
-                qs = qs.filter(last_lead_added__lt=last_30_days_ago,
-                               last_lead_added__gte=last_60_days_ago)
+                qs = qs.filter(last_lead_added__lt=last_30_days_ago, last_lead_added__gte=last_60_days_ago)
             else:
                 qs = qs.filter(last_lead_added__lt=last_60_days_ago)
 
-        if options.get('widget') in widget_store.keys():
-            widget = options['widget']
+        if options.get("widget") in widget_store.keys():
+            widget = options["widget"]
             qs = qs.filter(Q(widget__widget_id=widget) | Q(widget__widget_id=conditional_widget.WIDGET_ID))
             self.update_attributes(widget, qs)
         else:
             for widget in widget_store.keys():
-                self.update_attributes(widget, qs.filter(
-                    Q(widget__widget_id=widget) | Q(widget__widget_id=conditional_widget.WIDGET_ID)
-                ))
-        print(f'Checked on {qs.count()} attributes.')
-        print(f'It took {time.time() - old} seconds.')
+                self.update_attributes(
+                    widget, qs.filter(Q(widget__widget_id=widget) | Q(widget__widget_id=conditional_widget.WIDGET_ID))
+                )
+        print(f"Checked on {qs.count()} attributes.")
+        print(f"It took {time.time() - old} seconds.")

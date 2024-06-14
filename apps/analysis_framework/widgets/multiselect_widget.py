@@ -1,4 +1,4 @@
-WIDGET_ID = 'multiselectWidget'
+WIDGET_ID = "multiselectWidget"
 
 """
 properties:
@@ -16,23 +16,25 @@ def get_filters(widget, properties):
 
     filter_options = [
         {
-            'key': option['key'],
-            'label': option['label'],
+            "key": option["key"],
+            "label": option["label"],
         }
-        for option in properties.get('options', [])
+        for option in properties.get("options", [])
     ]
-    return [{
-        'filter_type': Filter.FilterType.LIST,
-        'properties': {
-            'type': 'multiselect',
-            'options': filter_options,
-        },
-    }]
+    return [
+        {
+            "filter_type": Filter.FilterType.LIST,
+            "properties": {
+                "type": "multiselect",
+                "options": filter_options,
+            },
+        }
+    ]
 
 
 def get_exportable(widget, properties):
     return {
-        'excel': {
-            'title': widget.title,
+        "excel": {
+            "title": widget.title,
         },
     }

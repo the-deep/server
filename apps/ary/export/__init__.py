@@ -1,26 +1,16 @@
 from functools import reduce
 
-from .common import (
-    get_assessment_meta,
-    default_values as common_defaults,
-)
-from .stakeholders_info import (
-    get_stakeholders_info,
-    default_values as stakeholders_defaults
-)
-from .locations_info import (
-    get_locations_info,
-    default_values as locations_defaults
-)
-from .data_collection_techniques_info import (
-    get_data_collection_techniques_info,
-    default_values as collection_defaults
-)
-from .affected_groups_info import (
-    get_affected_groups_info,
-    default_values as affected_defaults
-)
+from .affected_groups_info import default_values as affected_defaults
+from .affected_groups_info import get_affected_groups_info
+from .common import default_values as common_defaults
+from .common import get_assessment_meta
+from .data_collection_techniques_info import default_values as collection_defaults
+from .data_collection_techniques_info import get_data_collection_techniques_info
+from .locations_info import default_values as locations_defaults
+from .locations_info import get_locations_info
 from .questionaire import get_questionaire
+from .stakeholders_info import default_values as stakeholders_defaults
+from .stakeholders_info import get_stakeholders_info
 
 
 def get_export_data(assessment):
@@ -28,26 +18,23 @@ def get_export_data(assessment):
     questionaire_dict = get_questionaire(assessment)
 
     return {
-        'data_collection_technique': {
+        "data_collection_technique": {
             **meta_data,
             **get_data_collection_techniques_info(assessment),
         },
-        'stakeholders': {
+        "stakeholders": {
             **meta_data,
             **get_stakeholders_info(assessment),
         },
-        'locations': {
+        "locations": {
             **meta_data,
             **get_locations_info(assessment),
         },
-        'affected_groups': {
+        "affected_groups": {
             **meta_data,
             **get_affected_groups_info(assessment),
         },
-        'cna': {
-            **meta_data,
-            **(questionaire_dict or {})
-        }
+        "cna": {**meta_data, **(questionaire_dict or {})},
     }
 
 
@@ -72,39 +59,39 @@ def normalize_assessment(assessment_export_data):
     # Summary need not be normalized
 
     # Normalize stakeholders
-    stakeholders_sheet = assessment_export_data['stakeholders']
-    new_stakeholders_sheet = replicate_other_col_groups(stakeholders_sheet, 'stakeholders')
+    stakeholders_sheet = assessment_export_data["stakeholders"]
+    new_stakeholders_sheet = replicate_other_col_groups(stakeholders_sheet, "stakeholders")
 
     # Normalize Locations
-    locations_sheet = assessment_export_data['locations']
-    new_locations_sheet = replicate_other_col_groups(locations_sheet, 'locations')
+    locations_sheet = assessment_export_data["locations"]
+    new_locations_sheet = replicate_other_col_groups(locations_sheet, "locations")
 
     # Normalize Affected groups
-    affected_sheet = assessment_export_data['affected_groups']
-    new_affected_sheet = replicate_other_col_groups(affected_sheet, 'affected_groups_info')
+    affected_sheet = assessment_export_data["affected_groups"]
+    new_affected_sheet = replicate_other_col_groups(affected_sheet, "affected_groups_info")
 
     assessment_data = {
-        'stakeholders': new_stakeholders_sheet,
-        'affected_groups': new_affected_sheet,
-        'locations': new_locations_sheet,
+        "stakeholders": new_stakeholders_sheet,
+        "affected_groups": new_affected_sheet,
+        "locations": new_locations_sheet,
     }
 
     # Normailze Data Collection Techniques
-    techniques_sheet = assessment_export_data['data_collection_technique']
-    new_techniques_sheet = replicate_other_col_groups(techniques_sheet, 'data_collection_technique')
+    techniques_sheet = assessment_export_data["data_collection_technique"]
+    new_techniques_sheet = replicate_other_col_groups(techniques_sheet, "data_collection_technique")
 
     return {
         **assessment_data,
-        'data_collection_technique': new_techniques_sheet,
-        'cna': {k: [v] for k, v in assessment_export_data['cna'].items()},
+        "data_collection_technique": new_techniques_sheet,
+        "cna": {k: [v] for k, v in assessment_export_data["cna"].items()},
     }
 
 
 DEFAULTS = {
-    'stakeholders': stakeholders_defaults,
-    'data_collection_technique': collection_defaults,
-    'locations': locations_defaults,
-    'affected_groups': affected_defaults,
+    "stakeholders": stakeholders_defaults,
+    "data_collection_technique": collection_defaults,
+    "locations": locations_defaults,
+    "affected_groups": affected_defaults,
 }
 for k, v in DEFAULTS.items():
     v.update(common_defaults)
@@ -128,16 +115,14 @@ def add_assessment_to_rows(sheets, assessment, planned_assessment=False):
     NOTE: If assessment has new column name inside grouped cols, the column is
     added to all existing data with None value
     """
+
     def add_new_keys(keys, data, default=None):
         if not keys:
             return data
         if isinstance(data, dict):
             return {**data, **{x: default for x in keys}}
         elif isinstance(data, list):
-            return [
-                {**(x or {}), **{k: default for k in keys}}
-                for x in data
-            ]
+            return [{**(x or {}), **{k: default for k in keys}} for x in data]
         return data
 
     normalized_assessment = normalize_assessment(get_export_data(assessment))
@@ -167,31 +152,27 @@ def add_assessment_to_rows(sheets, assessment, planned_assessment=False):
 
             columns_data = [columns_data] if not isinstance(columns_data, list) else columns_data
 
-            assessment_col_data = [assessment_col_data]\
-                if not isinstance(assessment_col_data, list) else assessment_col_data
+            assessment_col_data = [assessment_col_data] if not isinstance(assessment_col_data, list) else assessment_col_data
 
             if isinstance(columns_data[0], dict):
                 # if assessment data empty, add empty dict
                 if not assessment_col_data:
                     assessment_col_data = [{}]
-                assessment_row_keys = set((assessment_col_data[0] or {}).keys())\
-                    if assessment_col_data else set()
+                assessment_row_keys = set((assessment_col_data[0] or {}).keys()) if assessment_col_data else set()
 
                 sheet_row_keys = set(columns_data[0].keys())
                 new_ass_keys = assessment_row_keys.difference(sheet_row_keys)
                 new_sheet_keys = sheet_row_keys.difference(assessment_row_keys)
 
                 default_sheet = DEFAULTS.get(sheet)
-                default = default_sheet and default_sheet.get(col, default_sheet.get('*'))
+                default = default_sheet and default_sheet.get(col, default_sheet.get("*"))
                 if new_ass_keys:
                     # Add the key to each row in  column data
                     columns_data = add_new_keys(new_ass_keys, columns_data, default)
 
                 if new_sheet_keys:
                     # Add new keys to assessment data
-                    assessment_col_data = add_new_keys(
-                        new_sheet_keys, assessment_col_data, default
-                    )
+                    assessment_col_data = add_new_keys(new_sheet_keys, assessment_col_data, default)
             # Now all the data is normalized(have same keys)
             # Append assessment data to col data
             columns_data.extend(assessment_col_data)
@@ -211,10 +192,7 @@ def add_assessment_to_rows(sheets, assessment, planned_assessment=False):
             if not isinstance(coldata[0], dict):
                 newcols_data[newcol] = [*[None] * (sheet_data_len), *coldata]
             else:
-                empty_data = {
-                    key: None
-                    for key in coldata[0].keys()
-                }
+                empty_data = {key: None for key in coldata[0].keys()}
                 newcols_data[newcol] = [dict(empty_data) for _ in range(sheet_data_len)]
                 newcols_data[newcol].extend(coldata)
 

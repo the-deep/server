@@ -1,21 +1,16 @@
 import time
+
 from django.db import transaction
-from rest_framework import serializers
 from drf_dynamic_fields import DynamicFieldsMixin
-from drf_writable_nested.serializers import (
-    NestedCreateMixin,
-    NestedUpdateMixin,
-)
+from drf_writable_nested.serializers import NestedCreateMixin, NestedUpdateMixin
+from entry.models import Entry
+from geo.serializers import AdminLevel, Region, SimpleRegionSerializer
+from rest_framework import serializers
+from user_resource.serializers import UserResourceSerializer
 
 from deep.serializers import RemoveNullFieldsMixin
 
-from user_resource.serializers import UserResourceSerializer
-
-from geo.serializers import SimpleRegionSerializer, Region, AdminLevel
-
-from entry.models import Entry
-
-from .models import Book, Sheet, Field, Geodata
+from .models import Book, Field, Geodata, Sheet
 from .tasks import tabular_generate_column_image
 
 
@@ -25,50 +20,43 @@ class GeodataSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Geodata
-        exclude = ('field',)
+        exclude = ("field",)
 
     def get_regions(self, geodata):
         if not geodata.data:
             return []
-        area_ids = [d['selected_id'] for d in geodata.data]
-        regions = Region.objects.filter(
-            adminlevel__geoarea__id__in=area_ids
-        ).distinct()
+        area_ids = [d["selected_id"] for d in geodata.data]
+        regions = Region.objects.filter(adminlevel__geoarea__id__in=area_ids).distinct()
         return SimpleRegionSerializer(regions, many=True).data
 
     def get_admin_levels(self, geodata):
         if not geodata.data:
             return []
-        area_ids = [d['selected_id'] for d in geodata.data]
-        admin_levels = AdminLevel.objects.filter(
-            geoarea__id__in=area_ids
-        ).distinct()
-        return admin_levels.values_list('id', flat=True)
+        area_ids = [d["selected_id"] for d in geodata.data]
+        admin_levels = AdminLevel.objects.filter(geoarea__id__in=area_ids).distinct()
+        return admin_levels.values_list("id", flat=True)
 
 
-class FieldSerializer(
-        RemoveNullFieldsMixin,
-        DynamicFieldsMixin,
-        serializers.ModelSerializer
-):
+class FieldSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer):
     geodata = serializers.SerializerMethodField()
 
     class Meta:
         model = Field
-        ref_name = 'TabularFieldSerializer'
-        exclude = ('sheet', 'cache',)
+        ref_name = "TabularFieldSerializer"
+        exclude = (
+            "sheet",
+            "cache",
+        )
 
     def get_geodata(self, obj):
-        if obj.type == Field.GEO and hasattr(obj, 'geodata'):
+        if obj.type == Field.GEO and hasattr(obj, "geodata"):
             return GeodataSerializer(obj.geodata).data
         return None
 
     def update(self, instance, validated_data):
-        validated_data['cache'] = {'status': Field.CACHE_PENDING, 'time': time.time()}
+        validated_data["cache"] = {"status": Field.CACHE_PENDING, "time": time.time()}
         instance = super().update(instance, validated_data)
-        transaction.on_commit(
-            lambda: tabular_generate_column_image.delay(instance.id)
-        )
+        transaction.on_commit(lambda: tabular_generate_column_image.delay(instance.id))
         return instance
 
 
@@ -77,51 +65,57 @@ class FieldMetaSerializer(FieldSerializer):
 
     class Meta:
         model = Field
-        exclude = ('sheet', 'data', 'cache',)
+        exclude = (
+            "sheet",
+            "data",
+            "cache",
+        )
 
 
 class FieldProcessedOnlySerializer(FieldSerializer):
     class Meta:
         model = Field
-        exclude = ('data',)
+        exclude = ("data",)
 
 
 class SheetSerializer(
-        RemoveNullFieldsMixin,
-        DynamicFieldsMixin,
-        NestedCreateMixin,
-        NestedUpdateMixin,
+    RemoveNullFieldsMixin,
+    DynamicFieldsMixin,
+    NestedCreateMixin,
+    NestedUpdateMixin,
 ):
-    fields = FieldSerializer(many=True, source='field_set', required=False)
+    fields = FieldSerializer(many=True, source="field_set", required=False)
 
     class Meta:
         model = Sheet
-        exclude = ('book',)
+        exclude = ("book",)
 
 
 class SheetMetaSerializer(SheetSerializer):
-    fields = FieldMetaSerializer(many=True, source='field_set', required=False)
+    fields = FieldMetaSerializer(many=True, source="field_set", required=False)
 
 
 class SheetProcessedOnlySerializer(SheetSerializer):
     fields = FieldProcessedOnlySerializer(
-        many=True, source='field_set', required=False,
+        many=True,
+        source="field_set",
+        required=False,
     )
 
 
 class BookSerializer(
-        RemoveNullFieldsMixin,
-        DynamicFieldsMixin,
-        UserResourceSerializer,
-        NestedCreateMixin,
-        NestedUpdateMixin,
+    RemoveNullFieldsMixin,
+    DynamicFieldsMixin,
+    UserResourceSerializer,
+    NestedCreateMixin,
+    NestedUpdateMixin,
 ):
-    sheets = SheetSerializer(many=True, source='sheet_set', required=False)
+    sheets = SheetSerializer(many=True, source="sheet_set", required=False)
     entry_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Book
-        fields = '__all__'
+        fields = "__all__"
 
     def get_entry_count(self, instance):
         return Entry.objects.filter(
@@ -130,12 +124,14 @@ class BookSerializer(
 
 
 class BookMetaSerializer(BookSerializer):
-    sheets = SheetMetaSerializer(many=True, source='sheet_set', required=False)
+    sheets = SheetMetaSerializer(many=True, source="sheet_set", required=False)
 
 
 class BookProcessedOnlySerializer(BookSerializer):
     sheets = SheetProcessedOnlySerializer(
-        many=True, source='sheet_set', required=False,
+        many=True,
+        source="sheet_set",
+        required=False,
     )
     pending_fields = serializers.SerializerMethodField()
 

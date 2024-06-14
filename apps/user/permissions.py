@@ -6,7 +6,7 @@ class UserPermission(permissions.BasePermission):
         return rq.user.is_authenticated
 
     def has_permission(self, request, view):
-        if self._is_authenticated(request) or view.action == 'create':
+        if self._is_authenticated(request) or view.action == "create":
             # NOTE:for create user using same api, so return True for `create`
             return True
         return False

@@ -1,16 +1,16 @@
 import json
-
 from typing import List, Union
+
 from django.contrib.gis.db import models
-from django.core.serializers import serialize
-from django.db import transaction, connection
-from django.contrib.gis.gdal import Envelope
 from django.contrib.gis.db.models.aggregates import Union as PgUnion
 from django.contrib.gis.db.models.functions import Centroid
+from django.contrib.gis.gdal import Envelope
+from django.core.serializers import serialize
+from django.db import connection, transaction
+from gallery.models import File
+from user_resource.models import UserResource
 
 from utils.files import generate_json_file_for_upload
-from user_resource.models import UserResource
-from gallery.models import File
 
 
 class Region(UserResource):
@@ -21,6 +21,7 @@ class Region(UserResource):
     Region can be global in which case it will be available directly
     to public. Project specific regions won't be available publicly.
     """
+
     code = models.CharField(max_length=10)
     title = models.CharField(max_length=255)
     public = models.BooleanField(default=True)
@@ -45,30 +46,32 @@ class Region(UserResource):
         return f"[{'Public' if self.public else 'Private'}] {self.title}"
 
     class Meta:
-        ordering = ['title', 'code']
+        ordering = ["title", "code"]
 
     def calc_cache(self, save=True):
         self.geo_options = [
             {
-                'label': '{} / {}'.format(geo_area.admin_level.title, geo_area.title),
-                'title': geo_area.title,
-                'key': str(geo_area.id),
-                'admin_level': geo_area.admin_level.level,
-                'admin_level_title': geo_area.admin_level.title,
-                'region': self.id,
-                'region_title': self.title,
-                'parent': geo_area.parent.id if geo_area.parent else None,
-            } for geo_area in GeoArea.objects.prefetch_related(
-                'admin_level',
-            ).filter(
-                admin_level__region=self
-            ).order_by('admin_level__level').distinct()
+                "label": "{} / {}".format(geo_area.admin_level.title, geo_area.title),
+                "title": geo_area.title,
+                "key": str(geo_area.id),
+                "admin_level": geo_area.admin_level.level,
+                "admin_level_title": geo_area.admin_level.title,
+                "region": self.id,
+                "region_title": self.title,
+                "parent": geo_area.parent.id if geo_area.parent else None,
+            }
+            for geo_area in GeoArea.objects.prefetch_related(
+                "admin_level",
+            )
+            .filter(admin_level__region=self)
+            .order_by("admin_level__level")
+            .distinct()
         ]
 
         # Calculate region centroid
-        self.centroid = GeoArea.objects\
-            .filter(admin_level__region=self)\
-            .aggregate(centroid=Centroid(PgUnion(Centroid('polygons'))))['centroid']
+        self.centroid = GeoArea.objects.filter(admin_level__region=self).aggregate(
+            centroid=Centroid(PgUnion(Centroid("polygons")))
+        )["centroid"]
         self.cache_index += 1  # Increment after every calc_cache. This is used by project to generate overall cache.
         if save:
             self.save()
@@ -76,13 +79,13 @@ class Region(UserResource):
     def get_verbose_title(self):
         if self.public:
             return self.title
-        return '{} (Private)'.format(self.title)
+        return "{} (Private)".format(self.title)
 
     def clone_to_private(self, user):
         region = Region(
             code=self.code,
             # Strip off extra chars from title to add ' (cloned)
-            title='{} (cloned)'.format(self.title[:230]),
+            title="{} (cloned)".format(self.title[:230]),
             public=False,
             regional_groups=self.regional_groups,
             key_figures=self.key_figures,
@@ -107,9 +110,7 @@ class Region(UserResource):
     @staticmethod
     def get_for(user):
         return Region.objects.filter(
-            models.Q(public=True) |
-            models.Q(created_by=user) |
-            models.Q(project__members=user)
+            models.Q(public=True) | models.Q(created_by=user) | models.Q(project__members=user)
         ).distinct()
 
     def can_get(self, user):
@@ -117,19 +118,26 @@ class Region(UserResource):
 
     def can_modify(self, user):
         from project.models import ProjectMembership, ProjectRole
+
         return (
             # Either created by user
-            not self.is_published and (
-                (self.created_by == user) or
+            not self.is_published
+            and (
+                (self.created_by == user)
+                or
                 # Or is public and user is superuser
-                (self.public and user.is_superuser) or
+                (self.public and user.is_superuser)
+                or
                 # Or is private and user is admin of one of the projects
                 # with this region
-                (not self.public and ProjectMembership.objects.filter(
-                    project__regions=self,
-                    member=user,
-                    role__in=ProjectRole.get_admin_roles(),
-                ).exists())
+                (
+                    not self.public
+                    and ProjectMembership.objects.filter(
+                        project__regions=self,
+                        member=user,
+                        role__in=ProjectRole.get_admin_roles(),
+                    ).exists()
+                )
             )
         )
 
@@ -154,10 +162,9 @@ class AdminLevel(models.Model):
     * parent_name_prop  -   Property defining name of parent of the geo area
     * parent_code_prop  -   Property defining code of parent of the geo area
     """
+
     region = models.ForeignKey(Region, on_delete=models.CASCADE)
-    parent = models.ForeignKey('AdminLevel',
-                               on_delete=models.SET_NULL,
-                               null=True, blank=True, default=None)
+    parent = models.ForeignKey("AdminLevel", on_delete=models.SET_NULL, null=True, blank=True, default=None)
     title = models.CharField(max_length=255)
     level = models.IntegerField(null=True, blank=True, default=None)
     name_prop = models.CharField(max_length=255, blank=True)
@@ -165,18 +172,25 @@ class AdminLevel(models.Model):
     parent_name_prop = models.CharField(max_length=255, blank=True)
     parent_code_prop = models.CharField(max_length=255, blank=True)
 
-    geo_shape_file = models.ForeignKey(File, on_delete=models.SET_NULL,
-                                       null=True, blank=True, default=None)
+    geo_shape_file = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True, default=None)
     tolerance = models.FloatField(default=0.0001)
 
     stale_geo_areas = models.BooleanField(default=True)
 
     # cache data
     geojson_file = models.FileField(
-        upload_to='geojson/', max_length=255, null=True, blank=True, default=None,
+        upload_to="geojson/",
+        max_length=255,
+        null=True,
+        blank=True,
+        default=None,
     )
     bounds_file = models.FileField(
-        upload_to='geo-bounds/', max_length=255, null=True, blank=True, default=None,
+        upload_to="geo-bounds/",
+        max_length=255,
+        null=True,
+        blank=True,
+        default=None,
     )
     geo_area_titles = models.JSONField(default=None, blank=True, null=True)
 
@@ -184,7 +198,7 @@ class AdminLevel(models.Model):
         return self.title
 
     class Meta:
-        ordering = ['level']
+        ordering = ["level"]
 
     def get_geo_area_titles(self):
         if not self.geo_area_titles:
@@ -194,7 +208,7 @@ class AdminLevel(models.Model):
     def calc_cache(self, save=True):
         # Update geo parent_titles data
         with transaction.atomic():
-            GEO_PARENT_DATA_CALC_SQL = f'''
+            GEO_PARENT_DATA_CALC_SQL = f"""
                 WITH geo_parents_data as (
                   SELECT
                     id,
@@ -237,24 +251,26 @@ class AdminLevel(models.Model):
                 FROM geo_parents_data GP
                 WHERE
                     G.id = GP.id
-            '''
+            """
             with connection.cursor() as cursor:
-                cursor.execute(GEO_PARENT_DATA_CALC_SQL, {'admin_level_id': self.pk})
+                cursor.execute(GEO_PARENT_DATA_CALC_SQL, {"admin_level_id": self.pk})
 
-        geojson = json.loads(serialize(
-            'geojson',
-            self.geoarea_set.all(),
-            geometry_field='polygons',
-            fields=('pk', 'title', 'code', 'cached_data'),
-        ))
+        geojson = json.loads(
+            serialize(
+                "geojson",
+                self.geoarea_set.all(),
+                geometry_field="polygons",
+                fields=("pk", "title", "code", "cached_data"),
+            )
+        )
 
         # Titles
         titles = {}
         for geo_area in self.geoarea_set.all():
             titles[str(geo_area.id)] = {
-                'title': geo_area.title,
-                'parent_id': str(geo_area.parent.pk) if geo_area.parent else None,
-                'code': geo_area.code,
+                "title": geo_area.title,
+                "parent_id": str(geo_area.parent.pk) if geo_area.parent else None,
+                "code": geo_area.code,
             }
         self.geo_area_titles = titles
 
@@ -267,21 +283,21 @@ class AdminLevel(models.Model):
                 for area in areas[1:]:
                     envelope.expand_to_include(*area.polygons.extent)
                 bounds = {
-                    'minX': envelope.min_x,
-                    'minY': envelope.min_y,
-                    'maxX': envelope.max_x,
-                    'maxY': envelope.max_y,
+                    "minX": envelope.min_x,
+                    "minY": envelope.min_y,
+                    "maxX": envelope.max_x,
+                    "maxY": envelope.max_y,
                 }
             except ValueError:
                 pass
 
         self.geojson_file.save(
-            f'admin-level-{self.pk}.json',
+            f"admin-level-{self.pk}.json",
             generate_json_file_for_upload(geojson),
         )
         self.bounds_file.save(
-            f'admin-level-{self.pk}.json',
-            generate_json_file_for_upload({'bounds': bounds}),
+            f"admin-level-{self.pk}.json",
+            generate_json_file_for_upload({"bounds": bounds}),
         )
         if save:
             self.save()
@@ -318,9 +334,7 @@ class AdminLevel(models.Model):
     @staticmethod
     def get_for(user):
         return AdminLevel.objects.filter(
-            models.Q(region__public=True) |
-            models.Q(region__created_by=user) |
-            models.Q(region__project__members=user)
+            models.Q(region__public=True) | models.Q(region__created_by=user) | models.Q(region__project__members=user)
         ).distinct()
 
     def can_get(self, user):
@@ -334,11 +348,14 @@ class GeoArea(models.Model):
     """
     An actual geo area in a given admin level
     """
+
     admin_level = models.ForeignKey(AdminLevel, on_delete=models.CASCADE)
     parent = models.ForeignKey(
-        'GeoArea',
+        "GeoArea",
         on_delete=models.SET_NULL,
-        null=True, blank=True, default=None,
+        null=True,
+        blank=True,
+        default=None,
     )
     title = models.CharField(max_length=255)
     code = models.CharField(max_length=255, blank=True)
@@ -357,14 +374,9 @@ class GeoArea(models.Model):
     @classmethod
     def sync_centroid(cls):
         cls.objects.filter(
-            (
-                models.Q(centroid__isempty=True) |
-                models.Q(centroid__isnull=True)
-            ),
+            (models.Q(centroid__isempty=True) | models.Q(centroid__isnull=True)),
             polygons__isempty=False,
-        ).update(
-            centroid=Centroid('polygons')
-        )
+        ).update(centroid=Centroid("polygons"))
 
     @classmethod
     def get_for_project(cls, project, is_published=True):
@@ -379,7 +391,7 @@ class GeoArea(models.Model):
             admin_level=admin_level,
             parent=parent,
             # Strip off extra chars from title to add ' (cloned)
-            title='{} (cloned)'.format(self.title[:230]),
+            title="{} (cloned)".format(self.title[:230]),
             code=self.code,
             data=self.data,
             polygons=self.polygons,
@@ -404,9 +416,9 @@ class GeoArea(models.Model):
     @staticmethod
     def get_for(user):
         return AdminLevel.objects.filter(
-            models.Q(admin_level__region__public=True) |
-            models.Q(admin_level__region__created_by=user) |
-            models.Q(admin_level__region__project__members=user)
+            models.Q(admin_level__region__public=True)
+            | models.Q(admin_level__region__created_by=user)
+            | models.Q(admin_level__region__project__members=user)
         ).distinct()
 
     def can_get(self, user):
@@ -416,4 +428,4 @@ class GeoArea(models.Model):
         return self.admin_level.can_modify(user)
 
     def get_label(self):
-        return '{} / {}'.format(self.admin_level.title, self.title)
+        return "{} / {}".format(self.admin_level.title, self.title)

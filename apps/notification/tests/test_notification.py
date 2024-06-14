@@ -1,18 +1,18 @@
 from unittest.mock import patch
 
-from deep.tests import TestCase
-from user.models import User
-from notification.models import Notification, Assignment
-from project.models import ProjectJoinRequest, Project
-from lead.models import Lead
-from quality_assurance.models import EntryReviewComment
-
-from user.factories import UserFactory
-from project.factories import ProjectFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
 from entry.factories import EntryFactory
-from quality_assurance.factories import EntryReviewCommentFactory
 from lead.factories import LeadFactory
+from lead.models import Lead
+from notification.models import Assignment, Notification
+from project.factories import ProjectFactory
+from project.models import Project, ProjectJoinRequest
+from quality_assurance.factories import EntryReviewCommentFactory
+from quality_assurance.models import EntryReviewComment
+from user.factories import UserFactory
+from user.models import User
+
+from deep.tests import TestCase
 
 
 class TestNotification(TestCase):
@@ -27,24 +27,19 @@ class TestNotification(TestCase):
         # Add admin user to project
         project.add_member(admin_user, role=self.admin_role)
         ProjectJoinRequest.objects.create(
-            project=project,
-            requested_by=normal_user,
-            role=self.normal_role,
-            data={'reason': 'bla'}
+            project=project, requested_by=normal_user, role=self.normal_role, data={"reason": "bla"}
         )
         # Get notifications for admin_users
         for user in [self.user, admin_user]:
             notifications = Notification.get_for(user)
-            assert notifications.count() == 1, \
-                "A notification should have been created for admin"
+            assert notifications.count() == 1, "A notification should have been created for admin"
 
             notification = notifications[0]
             assert notification.status == Notification.Status.UNSEEN
-            assert notification.notification_type ==\
-                Notification.Type.PROJECT_JOIN_REQUEST
+            assert notification.notification_type == Notification.Type.PROJECT_JOIN_REQUEST
             assert notification.receiver == user
-            assert notification.data['status'] == 'pending'
-            assert notification.data['data']['reason'] is not None
+            assert notification.data["status"] == "pending"
+            assert notification.data["data"]["reason"] is not None
 
         # Get notifications for requesting user
         # there should be none
@@ -57,34 +52,29 @@ class TestNotification(TestCase):
         normal_user = self.create(User)
 
         join_request = ProjectJoinRequest.objects.create(
-            project=project,
-            requested_by=normal_user,
-            role=self.normal_role,
-            data={'reason': 'bla'}
+            project=project, requested_by=normal_user, role=self.normal_role, data={"reason": "bla"}
         )
 
         # Get notification for self.user
         notifications = Notification.get_for(self.user)
         assert notifications.count() == 1
-        assert notifications[0].notification_type ==\
-            Notification.Type.PROJECT_JOIN_REQUEST
+        assert notifications[0].notification_type == Notification.Type.PROJECT_JOIN_REQUEST
 
         # Update join_request by adding member
         project.add_member(join_request.requested_by, role=join_request.role)
 
         # Manually updateing join_request because add_member does not trigger
         # receiver for join_request post_save
-        join_request.status = 'accepted'
+        join_request.status = "accepted"
         join_request.role = join_request.role
         join_request.save()
 
         # Get notifications for admin
         notifications = Notification.get_for(self.user)
         assert notifications.count() == 2
-        new_notif = Notification.get_for(self.user).order_by('-timestamp')[0]
-        assert new_notif.notification_type ==\
-            Notification.Type.PROJECT_JOIN_RESPONSE
-        assert new_notif.data['status'] == 'accepted'
+        new_notif = Notification.get_for(self.user).order_by("-timestamp")[0]
+        assert new_notif.notification_type == Notification.Type.PROJECT_JOIN_RESPONSE
+        assert new_notif.data["status"] == "accepted"
 
         # Get notifications for requesting user
         # He/She should get a notification saying request is accepted
@@ -92,9 +82,8 @@ class TestNotification(TestCase):
 
         assert notifications.count() == 1
         new_notif = notifications[0]
-        assert new_notif.notification_type ==\
-            Notification.Type.PROJECT_JOIN_RESPONSE
-        assert new_notif.data['status'] == 'accepted'
+        assert new_notif.notification_type == Notification.Type.PROJECT_JOIN_RESPONSE
+        assert new_notif.data["status"] == "accepted"
 
     def test_notification_updated_on_request_rejected(self):
         project = self.create(Project, role=self.admin_role)
@@ -102,31 +91,26 @@ class TestNotification(TestCase):
         normal_user = self.create(User)
 
         join_request = ProjectJoinRequest.objects.create(
-            project=project,
-            requested_by=normal_user,
-            role=self.normal_role,
-            data={'reason': 'bla'}
+            project=project, requested_by=normal_user, role=self.normal_role, data={"reason": "bla"}
         )
 
         # Get notification for self.user
         notifications = Notification.get_for(self.user)
         assert notifications.count() == 1
-        assert notifications[0].notification_type ==\
-            Notification.Type.PROJECT_JOIN_REQUEST
-        assert notifications[0].data['status'] == 'pending'
+        assert notifications[0].notification_type == Notification.Type.PROJECT_JOIN_REQUEST
+        assert notifications[0].data["status"] == "pending"
 
         # Update join_request without adding member
-        join_request.status = 'rejected'
+        join_request.status = "rejected"
         join_request.role = join_request.role
         join_request.save()
 
         # Get notifications for admin
         notifications = Notification.get_for(self.user)
         assert notifications.count() == 2
-        new_notif = notifications.order_by('-timestamp')[0]
-        assert new_notif.notification_type ==\
-            Notification.Type.PROJECT_JOIN_RESPONSE
-        assert new_notif.data['status'] == 'rejected'
+        new_notif = notifications.order_by("-timestamp")[0]
+        assert new_notif.notification_type == Notification.Type.PROJECT_JOIN_RESPONSE
+        assert new_notif.data["status"] == "rejected"
 
         # Get notifications for requesting user
         # He/She should get a notification saying request is rejected
@@ -134,27 +118,22 @@ class TestNotification(TestCase):
 
         assert notifications.count() == 1
         new_notif = notifications[0]
-        assert new_notif.notification_type ==\
-            Notification.Type.PROJECT_JOIN_RESPONSE
-        assert new_notif.data['status'] == 'rejected'
+        assert new_notif.notification_type == Notification.Type.PROJECT_JOIN_RESPONSE
+        assert new_notif.data["status"] == "rejected"
 
     def test_notification_updated_on_request_aborted(self):
         project = self.create(Project, role=self.admin_role)
         normal_user = self.create(User)
 
         join_request = ProjectJoinRequest.objects.create(
-            project=project,
-            requested_by=normal_user,
-            role=self.normal_role,
-            data={'reason': 'bla'}
+            project=project, requested_by=normal_user, role=self.normal_role, data={"reason": "bla"}
         )
 
         # Get notification for self.user
         notifications = Notification.get_for(self.user)
         assert notifications.count() == 1
-        assert notifications[0].notification_type ==\
-            Notification.Type.PROJECT_JOIN_REQUEST
-        assert notifications[0].data['status'] == 'pending'
+        assert notifications[0].notification_type == Notification.Type.PROJECT_JOIN_REQUEST
+        assert notifications[0].data["status"] == "pending"
 
         # Now abort join request by deleting it
         join_request.delete()
@@ -162,10 +141,9 @@ class TestNotification(TestCase):
         # Get notifications again
         notifications = Notification.get_for(self.user)
         assert notifications.count() == 2
-        new_notif = notifications.order_by('-timestamp')[0]
-        assert new_notif.data['status'] == 'aborted'
-        assert new_notif.notification_type ==\
-            Notification.Type.PROJECT_JOIN_REQUEST_ABORT
+        new_notif = notifications.order_by("-timestamp")[0]
+        assert new_notif.data["status"] == "aborted"
+        assert new_notif.notification_type == Notification.Type.PROJECT_JOIN_REQUEST_ABORT
 
         # Get notifications for requesting user
         # there should be none
@@ -174,17 +152,15 @@ class TestNotification(TestCase):
 
 
 class TestAssignment(TestCase):
-    """ Unit test for Assignment"""
+    """Unit test for Assignment"""
 
-    @patch('notification.receivers.assignment.get_current_user')
+    @patch("notification.receivers.assignment.get_current_user")
     def test_create_assignment_create_on_entry_review_comment(self, get_user_mocked_func):
         af = AnalysisFrameworkFactory.create()
         project = ProjectFactory.create(analysis_framework=af)
         user1, user2 = UserFactory.create_batch(2)
         get_user_mocked_func.return_value = user2
-        entry = EntryFactory.create(
-            lead=LeadFactory.create(project=project)
-        )
+        entry = EntryFactory.create(lead=LeadFactory.create(project=project))
 
         old_assignment_count = Assignment.objects.count()
         entry_review_comment = EntryReviewCommentFactory.create(entry=entry, entry_comment=None, created_by=user1)
@@ -214,7 +190,7 @@ class TestAssignment(TestCase):
         assert assignment.count() == 1  # for only the user
         assert get_user_mocked_func.called
 
-    @patch('notification.receivers.assignment.get_current_user')
+    @patch("notification.receivers.assignment.get_current_user")
     def test_assignment_create_on_lead_create(self, get_user_mocked_func):
         project = self.create(Project)
         user1 = self.create_user()
@@ -252,7 +228,7 @@ class TestAssignment(TestCase):
         assert assignment.count() == 1  # for only the user
         assert get_user_mocked_func.called
 
-    @patch('notification.receivers.assignment.get_current_user')
+    @patch("notification.receivers.assignment.get_current_user")
     def test_assignment_on_lead_and_entry_review_comment_delete(self, get_user_mocked_func):
         project = self.create_project()
         user1 = self.create(User)

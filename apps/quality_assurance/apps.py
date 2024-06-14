@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class QualityAssuranceConfig(AppConfig):
-    name = 'quality_assurance'
+    name = "quality_assurance"

@@ -1,20 +1,15 @@
 import django_filters
 
+from utils.graphene.filters import IDFilter, IDListFilter, MultipleInputFilter
+
+from .enums import DraftEntryTypeEnum
 from .models import DraftEntry
-from utils.graphene.filters import (
-    IDFilter,
-    MultipleInputFilter,
-    IDListFilter,
-)
-from .enums import (
-    DraftEntryTypeEnum
-)
 
 
 class DraftEntryFilterSet(django_filters.FilterSet):
-    lead = IDFilter(field_name='lead')
-    draft_entry_types = MultipleInputFilter(DraftEntryTypeEnum, field_name='type')
-    ignore_ids = IDListFilter(method='filter_ignore_draft_ids', help_text='Ids are filtered out.')
+    lead = IDFilter(field_name="lead")
+    draft_entry_types = MultipleInputFilter(DraftEntryTypeEnum, field_name="type")
+    ignore_ids = IDListFilter(method="filter_ignore_draft_ids", help_text="Ids are filtered out.")
     is_discarded = django_filters.BooleanFilter()
 
     class Meta:

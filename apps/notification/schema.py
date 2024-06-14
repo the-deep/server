@@ -1,21 +1,20 @@
 import graphene
-
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
-from utils.graphene.enums import EnumDescription
-from utils.graphene.types import CustomDjangoListObjectType
-from utils.graphene.fields import DjangoPaginatedListObjectField
 from deep.trackers import track_user
+from utils.graphene.enums import EnumDescription
+from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.types import CustomDjangoListObjectType
 
-from .models import Assignment, Notification
-from .filter_set import NotificationGqlFilterSet, AssignmentFilterSet
 from .enums import (
-    NotificationTypeEnum,
+    AssignmentContentTypeEnum,
     NotificationStatusEnum,
-    AssignmentContentTypeEnum
+    NotificationTypeEnum,
 )
+from .filter_set import AssignmentFilterSet, NotificationGqlFilterSet
+from .models import Assignment, Notification
 
 
 def get_user_notification_qs(info):
@@ -34,13 +33,16 @@ class NotificationType(DjangoObjectType):
     class Meta:
         model = Notification
         only_fields = (
-            'id', 'project', 'data', 'timestamp',
+            "id",
+            "project",
+            "data",
+            "timestamp",
         )
 
     notification_type = graphene.Field(graphene.NonNull(NotificationTypeEnum))
-    notification_type_display = EnumDescription(source='get_notification_type_display', required=True)
+    notification_type_display = EnumDescription(source="get_notification_type_display", required=True)
     status = graphene.Field(graphene.NonNull(NotificationStatusEnum))
-    status_display = EnumDescription(source='get_status_display', required=True)
+    status_display = EnumDescription(source="get_status_display", required=True)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -72,6 +74,7 @@ class AssignmentContentDataType(graphene.ObjectType):
 class AssignmentType(DjangoObjectType):
     class Meta:
         model = Assignment
+
     id = graphene.ID(required=True)
     project = graphene.Field(AssignmentProjectDetailType)
     content_data = graphene.Field(AssignmentContentDataType)
@@ -96,16 +99,10 @@ class AssignmentListType(CustomDjangoListObjectType):
 class Query:
     notification = DjangoObjectField(NotificationType)
     notifications = DjangoPaginatedListObjectField(
-        NotificationListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        NotificationListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
     assignments = DjangoPaginatedListObjectField(
-        AssignmentListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        AssignmentListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
 
     @staticmethod

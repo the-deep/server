@@ -1,8 +1,6 @@
 from django.contrib import admin
 
-from .models import (
-    CrisisType,
-)
+from .models import CrisisType
 
 
 @admin.register(CrisisType)

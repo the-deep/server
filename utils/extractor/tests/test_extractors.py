@@ -1,12 +1,11 @@
 from os.path import join
 
-from django.test import TestCase
 from django.conf import settings
+from django.test import TestCase
 
 from utils.common import get_or_write_file
-from ..extractors import (
-    PdfExtractor, DocxExtractor, PptxExtractor
-)
+
+from ..extractors import DocxExtractor, PdfExtractor, PptxExtractor
 
 
 class ExtractorTest(TestCase):
@@ -15,12 +14,13 @@ class ExtractorTest(TestCase):
     Pdf, Pptx and docx
     Note: Html test is in WebDocument Test
     """
+
     def setUp(self):
-        self.path = join(settings.TEST_DIR, 'documents')
+        self.path = join(settings.TEST_DIR, "documents")
 
     def extract(self, extractor, path):
         text, images, page_count = extractor.extract()
-        extracted = get_or_write_file(path + '.txt', text)
+        extracted = get_or_write_file(path + ".txt", text)
 
         self.assertEqual(text, extracted.read())
         # TODO: Verify image
@@ -30,22 +30,22 @@ class ExtractorTest(TestCase):
         """
         Test Docx import
         """
-        docx_file = join(self.path, 'doc.docx')
-        extractor = DocxExtractor(open(docx_file, 'rb+'))
+        docx_file = join(self.path, "doc.docx")
+        extractor = DocxExtractor(open(docx_file, "rb+"))
         self.extract(extractor, docx_file)
 
     def test_pptx(self):
         """
         Test pptx import
         """
-        pptx_file = join(self.path, 'doc.pptx')
-        extractor = PptxExtractor(open(pptx_file, 'rb+'))
+        pptx_file = join(self.path, "doc.pptx")
+        extractor = PptxExtractor(open(pptx_file, "rb+"))
         self.extract(extractor, pptx_file)
 
     def test_pdf(self):
         """
         Test Pdf import
         """
-        pdf_file = join(self.path, 'doc.pdf')
-        extractor = PdfExtractor(open(pdf_file, 'rb+'))
+        pdf_file = join(self.path, "doc.pdf")
+        extractor = PdfExtractor(open(pdf_file, "rb+"))
         self.extract(extractor, pdf_file)

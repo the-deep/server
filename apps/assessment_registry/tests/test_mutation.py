@@ -1,27 +1,24 @@
-from utils.graphene.tests import GraphQLTestCase
-
-from organization.factories import OrganizationFactory
-from geo.factories import GeoAreaFactory, AdminLevelFactory, RegionFactory
-from gallery.factories import FileFactory
-from project.factories import ProjectFactory
-from user.factories import UserFactory
-from lead.factories import LeadFactory
-from assessment_registry.factories import (
-    QuestionFactory,
-    SummaryIssueFactory,
-)
+from assessment_registry.factories import QuestionFactory, SummaryIssueFactory
 from assessment_registry.models import (
+    AdditionalDocument,
     AssessmentRegistry,
     MethodologyAttribute,
-    AdditionalDocument,
-    ScoreRating,
     Question,
     ScoreAnalyticalDensity,
+    ScoreRating,
 )
+from gallery.factories import FileFactory
+from geo.factories import AdminLevelFactory, GeoAreaFactory, RegionFactory
+from lead.factories import LeadFactory
+from organization.factories import OrganizationFactory
+from project.factories import ProjectFactory
+from user.factories import UserFactory
+
+from utils.graphene.tests import GraphQLTestCase
 
 
 class TestAssessmentRegistryMutation(GraphQLTestCase):
-    CREATE_ASSESSMENT_REGISTRY_QUERY = '''
+    CREATE_ASSESSMENT_REGISTRY_QUERY = """
         mutation MyMutation ($projectId: ID!, $input: AssessmentRegistryCreateInputType!) {
             project(id:$projectId) {
                  createAssessmentRegistry(data: $input) {
@@ -122,7 +119,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
             }
         }
     }
-'''
+"""
 
     def setUp(self):
         super().setUp()
@@ -138,7 +135,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
         self.question1 = QuestionFactory.create(
             sector=Question.QuestionSector.RELEVANCE.value,
             sub_sector=Question.QuestionSubSector.RELEVANCE.value,
-            question="test question"
+            question="test question",
         )
         self.file = FileFactory.create()
         self.project1.add_member(self.member_user, role=self.project_role_member)
@@ -147,10 +144,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
     def test_create_assessment_registry(self):
         def _query_check(minput, **kwargs):
             return self.query_check(
-                self.CREATE_ASSESSMENT_REGISTRY_QUERY,
-                minput=minput,
-                variables={'projectId': self.project1.id},
-                **kwargs
+                self.CREATE_ASSESSMENT_REGISTRY_QUERY, minput=minput, variables={"projectId": self.project1.id}, **kwargs
             )
 
         minput = dict(
@@ -167,21 +161,21 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
             focuses=[
                 self.genum(AssessmentRegistry.FocusType.CONTEXT),
                 self.genum(AssessmentRegistry.FocusType.HUMANITERIAN_ACCESS),
-                self.genum(AssessmentRegistry.FocusType.DISPLACEMENT)
+                self.genum(AssessmentRegistry.FocusType.DISPLACEMENT),
             ],
             frequency=self.genum(AssessmentRegistry.FrequencyType.ONE_OFF),
             protectionInfoMgmts=[
                 self.genum(AssessmentRegistry.ProtectionInfoType.PROTECTION_MONITORING),
-                self.genum(AssessmentRegistry.ProtectionInfoType.PROTECTION_NEEDS_ASSESSMENT)
+                self.genum(AssessmentRegistry.ProtectionInfoType.PROTECTION_NEEDS_ASSESSMENT),
             ],
             protectionRisks=[
                 self.genum(AssessmentRegistry.ProtectionRiskType.ABDUCATION_KIDNAPPING),
-                self.genum(AssessmentRegistry.ProtectionRiskType.ATTACKS_ON_CIVILIANS)
+                self.genum(AssessmentRegistry.ProtectionRiskType.ATTACKS_ON_CIVILIANS),
             ],
             sectors=[
                 self.genum(AssessmentRegistry.SectorType.HEALTH),
                 self.genum(AssessmentRegistry.SectorType.SHELTER),
-                self.genum(AssessmentRegistry.SectorType.WASH)
+                self.genum(AssessmentRegistry.SectorType.WASH),
             ],
             lead=self.lead1.id,
             locations=[self.geo_area1.id, self.geo_area2.id],
@@ -193,10 +187,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
             noOfPages=10,
             publicationDate="2023-01-01",
             sampling="test",
-            language=[
-                self.genum(AssessmentRegistry.Language.ENGLISH),
-                self.genum(AssessmentRegistry.Language.SPANISH)
-            ],
+            language=[self.genum(AssessmentRegistry.Language.ENGLISH), self.genum(AssessmentRegistry.Language.SPANISH)],
             bgCountries=[self.region.id],
             affectedGroups=[self.genum(AssessmentRegistry.AffectedGroupType.ALL_AFFECTED)],
             metadataComplete=True,
@@ -210,27 +201,27 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     samplingApproach=self.genum(MethodologyAttribute.SamplingApproachType.NON_RANDOM_SELECTION),
                     samplingSize=10,
                     unitOfAnalysis=self.genum(MethodologyAttribute.UnitOfAnalysisType.CRISIS),
-                    unitOfReporting=self.genum(MethodologyAttribute.UnitOfReportingType.CRISIS)
+                    unitOfReporting=self.genum(MethodologyAttribute.UnitOfReportingType.CRISIS),
                 ),
             ],
             additionalDocuments=[
                 dict(
                     documentType=self.genum(AdditionalDocument.DocumentType.ASSESSMENT_DATABASE),
                     externalLink="",
-                    file=str(self.file.id)
+                    file=str(self.file.id),
                 ),
             ],
             scoreRatings=[
                 dict(
                     scoreType=self.genum(ScoreRating.ScoreCriteria.ASSUMPTIONS),
                     rating=self.genum(ScoreRating.RatingType.VERY_POOR),
-                    reason="test"
+                    reason="test",
                 ),
                 dict(
                     scoreType=self.genum(ScoreRating.ScoreCriteria.RELEVANCE),
                     rating=self.genum(ScoreRating.RatingType.VERY_POOR),
-                    reason="test"
-                )
+                    reason="test",
+                ),
             ],
             scoreAnalyticalDensity=[
                 dict(
@@ -244,11 +235,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     ],
                     score=1,
                 ),
-                dict(
-                    sector=self.genum(AssessmentRegistry.SectorType.SHELTER),
-                    analysisLevelCovered=[],
-                    score=2
-                )
+                dict(sector=self.genum(AssessmentRegistry.SectorType.SHELTER), analysisLevelCovered=[], score=2),
             ],
             cna=[
                 dict(
@@ -256,9 +243,7 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     question=self.question1.id,
                 )
             ],
-            summaryPillarMeta=dict(
-                totalPeopleAssessed=1000
-            ),
+            summaryPillarMeta=dict(totalPeopleAssessed=1000),
             summarySubPillarIssue=[
                 dict(
                     summaryIssue=self.summary_issue1.id,
@@ -281,18 +266,18 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
                     sector=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
                     order=1,
                 )
-            ]
+            ],
         )
         self.force_login(self.member_user)
         content = _query_check(minput, okay=False)
-        data = content['data']['project']['createAssessmentRegistry']['result']
-        self.assertEqual(data['costEstimatesUsd'], minput['costEstimatesUsd'], data)
-        self.assertIsNotNone(data['methodologyAttributes'])
-        self.assertIsNotNone(data['additionalDocuments'])
-        self.assertIsNotNone(data['cna'])
-        self.assertIsNotNone(data['summaryPillarMeta'])
-        self.assertIsNotNone(data['summaryDimensionMeta'])
-        self.assertIsNotNone(data['summarySubPillarIssue'])
-        self.assertIsNotNone(data['summarySubDimensionIssue'])
-        self.assertEqual(data['metadataComplete'], True)
-        self.assertIsNotNone(data['protectionRisks'])
+        data = content["data"]["project"]["createAssessmentRegistry"]["result"]
+        self.assertEqual(data["costEstimatesUsd"], minput["costEstimatesUsd"], data)
+        self.assertIsNotNone(data["methodologyAttributes"])
+        self.assertIsNotNone(data["additionalDocuments"])
+        self.assertIsNotNone(data["cna"])
+        self.assertIsNotNone(data["summaryPillarMeta"])
+        self.assertIsNotNone(data["summaryDimensionMeta"])
+        self.assertIsNotNone(data["summarySubPillarIssue"])
+        self.assertIsNotNone(data["summarySubDimensionIssue"])
+        self.assertEqual(data["metadataComplete"], True)
+        self.assertIsNotNone(data["protectionRisks"])

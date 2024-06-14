@@ -1,31 +1,26 @@
 import graphene
 
-from utils.graphene.mutation import (
-    generate_input_type_for_serializer,
-    PsGrapheneMutation,
-    GrapheneMutation,
-)
 from deep.permissions import ProjectPermissions as PP
-from utils.graphene.mutation import PsDeleteMutation
+from utils.graphene.mutation import (
+    GrapheneMutation,
+    PsDeleteMutation,
+    PsGrapheneMutation,
+    generate_input_type_for_serializer,
+)
 
 from .models import AssessmentRegistry, SummaryIssue
-from .schema import AssessmentRegistryType, AssessmentRegistrySummaryIssueType
-from .serializers import (
-    AssessmentRegistrySerializer,
-    IssueSerializer,
-)
+from .schema import AssessmentRegistrySummaryIssueType, AssessmentRegistryType
+from .serializers import AssessmentRegistrySerializer, IssueSerializer
 
 AssessmentRegistryCreateInputType = generate_input_type_for_serializer(
-    'AssessmentRegistryCreateInputType',
-    serializer_class=AssessmentRegistrySerializer
+    "AssessmentRegistryCreateInputType", serializer_class=AssessmentRegistrySerializer
 )
 AssessmentRegistrySummaryIssueCreateInputType = generate_input_type_for_serializer(
-    'AssessmentRegistrySummaryIssueCreateInputType',
-    serializer_class=IssueSerializer
+    "AssessmentRegistrySummaryIssueCreateInputType", serializer_class=IssueSerializer
 )
 
 
-class AssessmentRegsitryMutationMixin():
+class AssessmentRegsitryMutationMixin:
     @classmethod
     def filter_queryset(cls, qs, info):
         return qs.filter(project=info.context.active_project)
@@ -68,16 +63,17 @@ class UpdateAssessmentRegistry(AssessmentRegsitryMutationMixin, PsGrapheneMutati
 class DeleteAssessmentRegistry(AssessmentRegsitryMutationMixin, PsDeleteMutation):
     class Arguments:
         id = graphene.ID(required=True)
+
     model = AssessmentRegistry
     result = graphene.Field(AssessmentRegistryType)
     permissions = [PP.Permission.DELETE_LEAD]
 
 
-class ProjectMutation():
+class ProjectMutation:
     create_assessment_registry = CreateAssessmentRegistry.Field()
     update_assessment_registry = UpdateAssessmentRegistry.Field()
     delete_assessment_registry = DeleteAssessmentRegistry.Field()
 
 
-class Mutation():
+class Mutation:
     create_assessment_reg_summary_issue = AssessmentRegistryCreateIssue.Field()

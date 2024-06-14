@@ -1,13 +1,12 @@
-import requests
 import tempfile
+
+import requests
 from django.conf import settings
 
-from utils.common import (write_file, DEFAULT_HEADERS)
+from utils.common import DEFAULT_HEADERS, write_file
 from utils.web_info_extractor import get_web_info_extractor
-from .document import (
-    Document,
-    HTML, PDF, DOCX, PPTX,
-)
+
+from .document import DOCX, HTML, PDF, PPTX, Document
 
 
 class WebDocument(Document):
@@ -15,18 +14,23 @@ class WebDocument(Document):
     Web documents can be html or pdf.
     Taks url Gives document and type
     """
-    HTML_TYPES = ['text/html', 'text/plain']
-    PDF_TYPES = ['application/pdf', ]
-    DOCX_TYPES = ['application/vnd.openxmlformats-officedocument'
-                  '.wordprocessingml.document', ]
-    PPTX_TYPES = ['application/vnd.openxmlformats-officedocument'
-                  '.presentationml.presentation', ]
+
+    HTML_TYPES = ["text/html", "text/plain"]
+    PDF_TYPES = [
+        "application/pdf",
+    ]
+    DOCX_TYPES = [
+        "application/vnd.openxmlformats-officedocument" ".wordprocessingml.document",
+    ]
+    PPTX_TYPES = [
+        "application/vnd.openxmlformats-officedocument" ".presentationml.presentation",
+    ]
 
     def __init__(self, url):
 
         type = HTML
         doc = None
-        params = {'url': url}
+        params = {"url": url}
 
         try:
             r = requests.head(url, headers=DEFAULT_HEADERS, verify=False)
@@ -37,26 +41,21 @@ class WebDocument(Document):
             super().__init__(doc, type, params=params)
             return
 
-        if not r.headers.get('content-type') or \
-                any(x in r.headers["content-type"] for x in self.HTML_TYPES):
+        if not r.headers.get("content-type") or any(x in r.headers["content-type"] for x in self.HTML_TYPES):
             doc = get_web_info_extractor(url).get_content()
         else:
-            fp = tempfile.NamedTemporaryFile(
-                dir=settings.TEMP_DIR, delete=False)
+            fp = tempfile.NamedTemporaryFile(dir=settings.TEMP_DIR, delete=False)
             r = requests.get(url, stream=True, headers=DEFAULT_HEADERS, verify=False)
             write_file(r, fp)
 
             doc = fp
-            if any(x in r.headers["content-type"]
-                   for x in self.PDF_TYPES):
+            if any(x in r.headers["content-type"] for x in self.PDF_TYPES):
                 type = PDF
 
-            elif any(x in r.headers["content-type"]
-                     for x in self.DOCX_TYPES):
+            elif any(x in r.headers["content-type"] for x in self.DOCX_TYPES):
                 type = DOCX
 
-            elif any(x in r.headers["content-type"]
-                     for x in self.PPTX_TYPES):
+            elif any(x in r.headers["content-type"] for x in self.PPTX_TYPES):
                 type = PPTX
 
         super().__init__(doc, type, params=params)

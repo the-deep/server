@@ -1,19 +1,21 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 
 
 class UserResourceCreated(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
         User,
-        related_name='%(class)s_created',
-        default=None, blank=True, null=True,
+        related_name="%(class)s_created",
+        default=None,
+        blank=True,
+        null=True,
         on_delete=models.SET_NULL,
     )
 
     class Meta:
         abstract = True
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
 
 
 class UserResource(models.Model):
@@ -21,14 +23,18 @@ class UserResource(models.Model):
     modified_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
         User,
-        related_name='%(class)s_created',
-        default=None, blank=True, null=True,
+        related_name="%(class)s_created",
+        default=None,
+        blank=True,
+        null=True,
         on_delete=models.SET_NULL,
     )
     modified_by = models.ForeignKey(
         User,
-        related_name='%(class)s_modified',
-        default=None, blank=True, null=True,
+        related_name="%(class)s_modified",
+        default=None,
+        blank=True,
+        null=True,
         on_delete=models.SET_NULL,
     )
 
@@ -36,4 +42,4 @@ class UserResource(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ['-created_at']
+        ordering = ["-created_at"]

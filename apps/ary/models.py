@@ -1,21 +1,21 @@
 from collections import OrderedDict
-from django.db import models
-from django.core.exceptions import ValidationError
 
-from user_resource.models import UserResource
-from deep.models import Field, FieldOption
+from django.core.exceptions import ValidationError
+from django.db import models
 from lead.models import Lead, LeadGroup
 from project.mixins import ProjectEntityMixin
+from user_resource.models import UserResource
+
+from deep.models import Field, FieldOption
+from utils.common import identity, underscore_to_title
 
 from .utils import (
     FIELDS_KEYS_VALUE_EXTRACTORS,
-    get_title_or_none,
+    get_integer_enum_title,
     get_location_title,
     get_model_attrs_or_empty_dict,
-    get_integer_enum_title,
+    get_title_or_none,
 )
-
-from utils.common import identity, underscore_to_title
 
 
 class AssessmentTemplate(UserResource):
@@ -53,11 +53,11 @@ class BasicEntity(models.Model):
     order = models.IntegerField(default=1)
 
     def __str__(self):
-        return '{}'.format(self.title)
+        return "{}".format(self.title)
 
     class Meta:
         abstract = True
-        ordering = ['order']
+        ordering = ["order"]
 
 
 class BasicTemplateEntity(models.Model):
@@ -66,11 +66,11 @@ class BasicTemplateEntity(models.Model):
     order = models.IntegerField(default=1)
 
     def __str__(self):
-        return '{} ({})'.format(self.title, self.template)
+        return "{} ({})".format(self.title, self.template)
 
     class Meta:
         abstract = True
-        ordering = ['order']
+        ordering = ["order"]
 
 
 class MetadataGroup(BasicTemplateEntity):
@@ -79,30 +79,34 @@ class MetadataGroup(BasicTemplateEntity):
 
 class MetadataField(Field):
     group = models.ForeignKey(
-        MetadataGroup, related_name='fields', on_delete=models.CASCADE,
+        MetadataGroup,
+        related_name="fields",
+        on_delete=models.CASCADE,
     )
     tooltip = models.TextField(blank=True)
     order = models.IntegerField(default=1)
     show_in_planned_assessment = models.BooleanField(default=False)
 
     def __str__(self):
-        return '{} ({})'.format(self.title, self.group.template)
+        return "{} ({})".format(self.title, self.group.template)
 
     class Meta(Field.Meta):
-        ordering = ['order']
+        ordering = ["order"]
 
 
 class MetadataOption(FieldOption):
     field = models.ForeignKey(
-        MetadataField, related_name='options', on_delete=models.CASCADE,
+        MetadataField,
+        related_name="options",
+        on_delete=models.CASCADE,
     )
     order = models.IntegerField(default=1)
 
     def __str__(self):
-        return 'Option {} for {}'.format(self.title, self.field)
+        return "Option {} for {}".format(self.title, self.field)
 
     class Meta(FieldOption.Meta):
-        ordering = ['order']
+        ordering = ["order"]
 
 
 class MethodologyGroup(BasicTemplateEntity):
@@ -110,42 +114,46 @@ class MethodologyGroup(BasicTemplateEntity):
 
 
 class MethodologyProtectionInfo(models.IntegerChoices):
-    PROTECTION_MONITORING = 1, 'Protection Monitoring'
-    PROTECTION_NEEDS_ASSESSMENT = 2, 'Protection Needs Assessment'
-    CASE_MANAGEMENT = 3, 'Case Management'
-    POPULATION_DATA = 4, 'Population Data'
-    PROTECTION_RESPONSE = 5, 'Protection Response M&E'
-    COMMUNICATING_WITH_OR_IN_AFFECTED_COMMUNITIES = 6, 'Communicating with(in) Affected Communities'
-    SECURITY_AND_SITUATIONAL_AWARENESS = 7, 'Security & Situational Awareness'
-    SECTORAL_SYSTEMS_OR_OTHER = 8, 'Sectoral Systems/Other'
+    PROTECTION_MONITORING = 1, "Protection Monitoring"
+    PROTECTION_NEEDS_ASSESSMENT = 2, "Protection Needs Assessment"
+    CASE_MANAGEMENT = 3, "Case Management"
+    POPULATION_DATA = 4, "Population Data"
+    PROTECTION_RESPONSE = 5, "Protection Response M&E"
+    COMMUNICATING_WITH_OR_IN_AFFECTED_COMMUNITIES = 6, "Communicating with(in) Affected Communities"
+    SECURITY_AND_SITUATIONAL_AWARENESS = 7, "Security & Situational Awareness"
+    SECTORAL_SYSTEMS_OR_OTHER = 8, "Sectoral Systems/Other"
 
 
 class MethodologyField(Field):
     group = models.ForeignKey(
-        MethodologyGroup, related_name='fields', on_delete=models.CASCADE,
+        MethodologyGroup,
+        related_name="fields",
+        on_delete=models.CASCADE,
     )
     tooltip = models.TextField(blank=True)
     order = models.IntegerField(default=1)
     show_in_planned_assessment = models.BooleanField(default=False)
 
     def __str__(self):
-        return '{} ({})'.format(self.title, self.group.template)
+        return "{} ({})".format(self.title, self.group.template)
 
     class Meta(Field.Meta):
-        ordering = ['order']
+        ordering = ["order"]
 
 
 class MethodologyOption(FieldOption):
     field = models.ForeignKey(
-        MethodologyField, related_name='options', on_delete=models.CASCADE,
+        MethodologyField,
+        related_name="options",
+        on_delete=models.CASCADE,
     )
     order = models.IntegerField(default=1)
 
     def __str__(self):
-        return 'Option {} for {}'.format(self.title, self.field)
+        return "Option {} for {}".format(self.title, self.field)
 
     class Meta(FieldOption.Meta):
-        ordering = ['order']
+        ordering = ["order"]
 
 
 class Sector(BasicTemplateEntity):
@@ -154,14 +162,17 @@ class Sector(BasicTemplateEntity):
 
 class Focus(BasicTemplateEntity):
     class Meta(BasicTemplateEntity.Meta):
-        verbose_name_plural = 'focuses'
+        verbose_name_plural = "focuses"
 
 
 class AffectedGroup(BasicTemplateEntity):
     parent = models.ForeignKey(
-        'AffectedGroup',
-        related_name='children', on_delete=models.CASCADE,
-        default=None, null=True, blank=True,
+        "AffectedGroup",
+        related_name="children",
+        on_delete=models.CASCADE,
+        default=None,
+        null=True,
+        blank=True,
     )
 
     def get_children_list(self):
@@ -175,73 +186,74 @@ class AffectedGroup(BasicTemplateEntity):
         ]
         """
         # TODO: cache, but very careful
-        nodes_list = [
-            {
-                'title': self.title,
-                'parents': [self.title],  # includes self as well
-                'id': self.id
-            }
-        ]
+        nodes_list = [{"title": self.title, "parents": [self.title], "id": self.id}]  # includes self as well
         children = self.children.all()
         if not children:
             return nodes_list
         for child in children:
-            nodes_list.extend([
-                {
-                    'title': f'{self.title} - {x["title"]}',
-                    'parents': [*x['parents'], self.title],
-                    'id': x['id']
-                }
-                for x in child.get_children_list()
-            ])
+            nodes_list.extend(
+                [
+                    {"title": f'{self.title} - {x["title"]}', "parents": [*x["parents"], self.title], "id": x["id"]}
+                    for x in child.get_children_list()
+                ]
+            )
         return nodes_list
 
 
 class PrioritySector(BasicTemplateEntity):
     parent = models.ForeignKey(
-        'PrioritySector',
-        related_name='children', on_delete=models.CASCADE,
-        default=None, null=True, blank=True,
+        "PrioritySector",
+        related_name="children",
+        on_delete=models.CASCADE,
+        default=None,
+        null=True,
+        blank=True,
     )
 
     class Meta(BasicTemplateEntity.Meta):
-        verbose_name = 'sector with most unmet need'
-        verbose_name_plural = 'sectors with most unmet need'
+        verbose_name = "sector with most unmet need"
+        verbose_name_plural = "sectors with most unmet need"
 
 
 class PriorityIssue(BasicTemplateEntity):
     parent = models.ForeignKey(
-        'PriorityIssue',
-        related_name='children', on_delete=models.CASCADE,
-        default=None, null=True, blank=True,
+        "PriorityIssue",
+        related_name="children",
+        on_delete=models.CASCADE,
+        default=None,
+        null=True,
+        blank=True,
     )
 
     class Meta(BasicTemplateEntity.Meta):
-        verbose_name = 'priority humanitarian access issue'
+        verbose_name = "priority humanitarian access issue"
 
 
 class UnderlyingFactor(BasicTemplateEntity):
     parent = models.ForeignKey(
-        'UnderlyingFactor',
-        related_name='children', on_delete=models.CASCADE,
-        default=None, null=True, blank=True,
+        "UnderlyingFactor",
+        related_name="children",
+        on_delete=models.CASCADE,
+        default=None,
+        null=True,
+        blank=True,
     )
 
     class Meta(BasicTemplateEntity.Meta):
-        verbose_name = 'main sectoral underlying factor'
+        verbose_name = "main sectoral underlying factor"
 
 
 class SpecificNeedGroup(BasicTemplateEntity):
     class Meta(BasicTemplateEntity.Meta):
-        verbose_name = 'priority group with specific need'
-        verbose_name_plural = 'priority groups with specific need'
+        verbose_name = "priority group with specific need"
+        verbose_name_plural = "priority groups with specific need"
 
 
 # TODO: Remove / This is text field now and is not required anymore
 class AffectedLocation(BasicTemplateEntity):
     class Meta(BasicTemplateEntity.Meta):
-        verbose_name = 'setting facing most humanitarian access issues'
-        verbose_name_plural = 'settings facing most humanitarian access issues'
+        verbose_name = "setting facing most humanitarian access issues"
+        verbose_name_plural = "settings facing most humanitarian access issues"
 
 
 class ScoreBucket(models.Model):
@@ -251,7 +263,7 @@ class ScoreBucket(models.Model):
     score = models.FloatField(default=1)
 
     def __str__(self):
-        return '{} <= x < {} : {} ({})'.format(
+        return "{} <= x < {} : {} ({})".format(
             self.min_value,
             self.max_value,
             self.score,
@@ -259,7 +271,7 @@ class ScoreBucket(models.Model):
         )
 
     class Meta:
-        ordering = ['min_value']
+        ordering = ["min_value"]
 
 
 class ScorePillar(BasicTemplateEntity):
@@ -268,7 +280,9 @@ class ScorePillar(BasicTemplateEntity):
 
 class ScoreQuestion(BasicEntity):
     pillar = models.ForeignKey(
-        ScorePillar, on_delete=models.CASCADE, related_name='questions',
+        ScorePillar,
+        on_delete=models.CASCADE,
+        related_name="questions",
     )
     description = models.TextField(blank=True)
 
@@ -281,7 +295,7 @@ class ScoreScale(models.Model):
     default = models.BooleanField(default=False)
 
     def __str__(self):
-        return '{} ({} : {}) - ({})'.format(
+        return "{} ({} : {}) - ({})".format(
             self.title,
             self.value,
             self.color,
@@ -289,7 +303,7 @@ class ScoreScale(models.Model):
         )
 
     class Meta:
-        ordering = ['value']
+        ordering = ["value"]
 
 
 class ScoreMatrixPillar(BasicTemplateEntity):
@@ -298,19 +312,25 @@ class ScoreMatrixPillar(BasicTemplateEntity):
 
 class ScoreMatrixRow(BasicEntity):
     pillar = models.ForeignKey(
-        ScoreMatrixPillar, on_delete=models.CASCADE, related_name='rows',
+        ScoreMatrixPillar,
+        on_delete=models.CASCADE,
+        related_name="rows",
     )
 
 
 class ScoreMatrixColumn(BasicEntity):
     pillar = models.ForeignKey(
-        ScoreMatrixPillar, on_delete=models.CASCADE, related_name='columns',
+        ScoreMatrixPillar,
+        on_delete=models.CASCADE,
+        related_name="columns",
     )
 
 
 class ScoreMatrixScale(models.Model):
     pillar = models.ForeignKey(
-        ScoreMatrixPillar, on_delete=models.CASCADE, related_name='scales',
+        ScoreMatrixPillar,
+        on_delete=models.CASCADE,
+        related_name="scales",
     )
     row = models.ForeignKey(ScoreMatrixRow, on_delete=models.CASCADE)
     column = models.ForeignKey(ScoreMatrixColumn, on_delete=models.CASCADE)
@@ -318,28 +338,27 @@ class ScoreMatrixScale(models.Model):
     default = models.BooleanField(default=False)
 
     def __str__(self):
-        return '{}-{} : {}'.format(str(self.row), str(self.column),
-                                   str(self.value))
+        return "{}-{} : {}".format(str(self.row), str(self.column), str(self.value))
 
     class Meta:
-        ordering = ['value']
+        ordering = ["value"]
 
 
 class ScoreQuestionnaireSector(BasicTemplateEntity):
-    HNO = 'hno'
-    CNA = 'cna'
+    HNO = "hno"
+    CNA = "cna"
 
-    CRITERIA = 'criteria'
-    ETHOS = 'ethos'
+    CRITERIA = "criteria"
+    ETHOS = "ethos"
 
     METHOD_CHOICES = (
-        (HNO, 'HNO'),
-        (CNA, 'CNA'),
+        (HNO, "HNO"),
+        (CNA, "CNA"),
     )
 
     SUB_METHOD_CHOICES = (
-        (CRITERIA, 'Criteria'),
-        (ETHOS, 'Ethos'),
+        (CRITERIA, "Criteria"),
+        (ETHOS, "Ethos"),
     )
     method = models.CharField(max_length=10, choices=METHOD_CHOICES)
     sub_method = models.CharField(max_length=10, choices=SUB_METHOD_CHOICES)
@@ -360,13 +379,21 @@ class Assessment(UserResource, ProjectEntityMixin):
     """
     Assessment belonging to a lead
     """
+
     lead = models.OneToOneField(
-        Lead, default=None, blank=True, null=True, on_delete=models.CASCADE,
+        Lead,
+        default=None,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
     )
-    project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
+    project = models.ForeignKey("project.Project", on_delete=models.CASCADE)
     lead_group = models.OneToOneField(
-        LeadGroup, on_delete=models.CASCADE,
-        default=None, blank=True, null=True,
+        LeadGroup,
+        on_delete=models.CASCADE,
+        default=None,
+        blank=True,
+        null=True,
     )
     metadata = models.JSONField(default=None, blank=True, null=True)
     methodology = models.JSONField(default=None, blank=True, null=True)
@@ -379,13 +406,9 @@ class Assessment(UserResource, ProjectEntityMixin):
 
     def clean(self):
         if not self.lead and not self.lead_group:
-            raise ValidationError(
-                'Neither `lead` nor `lead_group` defined'
-            )
+            raise ValidationError("Neither `lead` nor `lead_group` defined")
         if self.lead and self.lead_group:
-            raise ValidationError(
-                'Assessment cannot have both `lead` and `lead_group` defined'
-            )
+            raise ValidationError("Assessment cannot have both `lead` and `lead_group` defined")
         return super().clean()
 
     def save(self, *args, **kwargs):
@@ -395,36 +418,32 @@ class Assessment(UserResource, ProjectEntityMixin):
     def create_schema_for_group(self, GroupClass):
         schema = {}
         assessment_template = self.lead.project.assessment_template
-        groups = GroupClass.objects.filter(template=assessment_template).prefetch_related('fields')
+        groups = GroupClass.objects.filter(template=assessment_template).prefetch_related("fields")
         schema = {
             group.title: [
                 {
-                    'id': field.id,
-                    'name': field.title,
-                    'type': field.field_type,
-                    'source_type': field.source_type,
-                    'options': {
-                        x['key']: x['title'] for x in field.get_options()
-                    }
+                    "id": field.id,
+                    "name": field.title,
+                    "type": field.field_type,
+                    "source_type": field.source_type,
+                    "options": {x["key"]: x["title"] for x in field.get_options()},
                 }
                 for field in group.fields.all()
-            ] for group in groups
+            ]
+            for group in groups
         }
         return schema
 
     @staticmethod
     def get_actual_value(schema, value):
-        value_function = FIELDS_KEYS_VALUE_EXTRACTORS.get(schema['name'], identity)
-        if schema['type'] == Field.SELECT:
+        value_function = FIELDS_KEYS_VALUE_EXTRACTORS.get(schema["name"], identity)
+        if schema["type"] == Field.SELECT:
             # value should not be list but just in case it is a list
-            value = value[0] if isinstance(value, list) and len(value) > 0 else value or ''
-            actual_value = schema['options'].get(value, value)
-        elif schema['type'] == Field.MULTISELECT:
+            value = value[0] if isinstance(value, list) and len(value) > 0 else value or ""
+            actual_value = schema["options"].get(value, value)
+        elif schema["type"] == Field.MULTISELECT:
             value = value or []
-            actual_value = [
-                value_function(schema['options'].get(x, x))
-                for x in value
-            ]
+            actual_value = [value_function(schema["options"].get(x, x)) for x in value]
         else:
             actual_value = value
         return actual_value
@@ -434,22 +453,18 @@ class Assessment(UserResource, ProjectEntityMixin):
         if not raw_data:
             return {}
 
-        if 'id' in schema:
-            key = str(schema['id'])
-            value = raw_data.get(key, '')
+        if "id" in schema:
+            key = str(schema["id"])
+            value = raw_data.get(key, "")
             return {
-                'schema': schema,
-                'value': Assessment.get_actual_value(schema, value),
-                'key': value,
+                "schema": schema,
+                "value": Assessment.get_actual_value(schema, value),
+                "key": value,
             }
         if isinstance(schema, dict):
-            data = {
-                k: Assessment.get_data_from_schema(v, raw_data)
-                for k, v in schema.items()
-            }
+            data = {k: Assessment.get_data_from_schema(v, raw_data) for k, v in schema.items()}
         elif isinstance(schema, list):
-            data = [Assessment.get_data_from_schema(x, raw_data)
-                    for x in schema]
+            data = [Assessment.get_data_from_schema(x, raw_data) for x in schema]
         else:
             raise Exception("Something that could not be parsed from schema")
         return data
@@ -457,7 +472,7 @@ class Assessment(UserResource, ProjectEntityMixin):
     def get_metadata_json(self):
         metadata_schema = self.create_schema_for_group(MetadataGroup)
         metadata_raw = self.metadata or {}
-        metadata_raw = metadata_raw.get('basic_information', {})
+        metadata_raw = metadata_raw.get("basic_information", {})
         metadata = self.get_data_from_schema(metadata_schema, metadata_raw)
         return metadata
 
@@ -466,27 +481,20 @@ class Assessment(UserResource, ProjectEntityMixin):
         methodology_raw = self.methodology or {}
 
         mapping = {
-            'attributes': lambda x: self.get_data_from_schema(
-                methodology_sch, x
-            ),
-            'sectors': get_title_or_none(Sector),
-            'focuses': get_title_or_none(Focus),
-            'affected_groups': lambda x: {
-                'key': x,
-                **get_model_attrs_or_empty_dict(AffectedGroup, ['title', 'order'])(x)
-            },
-            'locations': get_location_title,
-            'objectives': identity,
-            'sampling': identity,
-            'limitations': identity,
-            'data_collection_techniques': identity,
-            'protection_info': get_integer_enum_title(MethodologyProtectionInfo),
+            "attributes": lambda x: self.get_data_from_schema(methodology_sch, x),
+            "sectors": get_title_or_none(Sector),
+            "focuses": get_title_or_none(Focus),
+            "affected_groups": lambda x: {"key": x, **get_model_attrs_or_empty_dict(AffectedGroup, ["title", "order"])(x)},
+            "locations": get_location_title,
+            "objectives": identity,
+            "sampling": identity,
+            "limitations": identity,
+            "data_collection_techniques": identity,
+            "protection_info": get_integer_enum_title(MethodologyProtectionInfo),
         }
 
         return {
-            underscore_to_title(k):
-                v if not isinstance(v, list)
-                else [mapping[k](y) for y in v]
+            underscore_to_title(k): v if not isinstance(v, list) else [mapping[k](y) for y in v]
             for k, v in methodology_raw.items()
         }
 
@@ -494,11 +502,11 @@ class Assessment(UserResource, ProjectEntityMixin):
         # Formatting of underscored keywords, by default is upper case as given
         # by default_format() function below
         formatting = {
-            'priority_sectors': lambda x: 'Most Unmet Needs Sectors',
-            'affected_location': lambda x: 'Settings Facing Most Humanitarian Issues'  # noqa
+            "priority_sectors": lambda x: "Most Unmet Needs Sectors",
+            "affected_location": lambda x: "Settings Facing Most Humanitarian Issues",  # noqa
         }
 
-        default_format = underscore_to_title   # function
+        default_format = underscore_to_title  # function
 
         summary_raw = self.summary
         if not summary_raw:
@@ -511,7 +519,7 @@ class Assessment(UserResource, ProjectEntityMixin):
         # Add sectors data first
         for sectorname, sector_data in summary_raw.items():
             try:
-                _, sec_id = sectorname.split('-')
+                _, sec_id = sectorname.split("-")
                 sector = Sector.objects.get(id=sec_id).title
             # Exception because, we have cross_sector and humanitarian_access
             # in addition to "sector-<id>" keys
@@ -529,11 +537,8 @@ class Assessment(UserResource, ProjectEntityMixin):
                 for rank, data in group_data.items():
                     for colname, colval in data.items():
                         col_f = formatting.get(colname, default_format)(colname)
-                        group_col_data = parsed_group_data.get(
-                            col_f,
-                            [None] * numrows
-                        )
-                        rankvalue = int(rank.replace('rank', ''))  # rank<number>
+                        group_col_data = parsed_group_data.get(col_f, [None] * numrows)
+                        rankvalue = int(rank.replace("rank", ""))  # rank<number>
                         group_col_data[rankvalue - 1] = colval
 
                         parsed_group_data[col_f] = group_col_data
@@ -549,7 +554,7 @@ class Assessment(UserResource, ProjectEntityMixin):
         for sector, data in summary_data.items():
             for group, groupdata in data.items():
                 for col, coldata in groupdata.items():
-                    key = '{} - {} - {}'.format(sector, group, col)
+                    key = "{} - {} - {}".format(sector, group, col)
                     new_summary_data[key] = coldata
         return new_summary_data
 
@@ -557,12 +562,9 @@ class Assessment(UserResource, ProjectEntityMixin):
         if not self.score:
             return {}
 
-        pillars_raw = self.score['pillars'] or {}
-        matrix_pillars_raw = self.score['matrix_pillars'] or {}
-        matrix_pillars_final_raw = {
-            x: self.score[x]
-            for x in self.score.keys() if 'matrix-score' in x
-        }
+        pillars_raw = self.score["pillars"] or {}
+        matrix_pillars_raw = self.score["matrix_pillars"] or {}
+        matrix_pillars_final_raw = {x: self.score[x] for x in self.score.keys() if "matrix-score" in x}
 
         matrix_pillars_final_score = {}
 
@@ -573,17 +575,17 @@ class Assessment(UserResource, ProjectEntityMixin):
             data = {}
             for qid, sid in pdata.items():
                 q = get_title_or_none(ScoreQuestion)(qid)
-                data[q] = get_model_attrs_or_empty_dict(ScoreScale, ['title', 'value'])(sid)
+                data[q] = get_model_attrs_or_empty_dict(ScoreScale, ["title", "value"])(sid)
             pillars[pillar_title] = data
-            final_pillars_score[pillar_title] = self.score.get('{}-score'.format(pid))
+            final_pillars_score[pillar_title] = self.score.get("{}-score".format(pid))
 
         matrix_pillars = {}
         for mpid, mpdata in matrix_pillars_raw.items():
             mpillar_title = get_title_or_none(ScoreMatrixPillar)(mpid)
 
             data = {}
-            matrix_final_data = matrix_pillars_final_raw.get(f'{mpid}-matrix-score') or ''
-            matrix_pillars_final_score[f'{mpillar_title}_final_score'] = matrix_final_data
+            matrix_final_data = matrix_pillars_final_raw.get(f"{mpid}-matrix-score") or ""
+            matrix_pillars_final_score[f"{mpillar_title}_final_score"] = matrix_final_data
 
             for sector in Sector.objects.filter(template=self.project.assessment_template):
                 scale = None
@@ -591,17 +593,17 @@ class Assessment(UserResource, ProjectEntityMixin):
                 if mpdata is not None and sector_id in mpdata:
                     scale = ScoreMatrixScale.objects.filter(id=mpdata[sector_id]).first()
                 data[sector.title] = {
-                    'value': scale.value if scale else '',
-                    'title': f'{scale.row.title} / {scale.column.title}' if scale else ''
+                    "value": scale.value if scale else "",
+                    "title": f"{scale.row.title} / {scale.column.title}" if scale else "",
                 }
             matrix_pillars[mpillar_title] = data
 
         return {
-            'final_score': self.score.get('final_score'),
-            'final_pillars_score': final_pillars_score,
-            'pillars': pillars,
-            'matrix_pillars': matrix_pillars,
-            'matrix_pillars_final_score': matrix_pillars_final_score,
+            "final_score": self.score.get("final_score"),
+            "final_pillars_score": final_pillars_score,
+            "pillars": pillars,
+            "matrix_pillars": matrix_pillars,
+            "matrix_pillars_final_score": matrix_pillars_final_score,
         }
 
     def get_questionnaire_json(self, questionnaire_subsectors=None):
@@ -610,13 +612,11 @@ class Assessment(UserResource, ProjectEntityMixin):
         template = self.project.assessment_template
         raw_questionnaire = self.questionnaire or {}
 
-        questionnaire_subsectors = ScoreQuestionnaireSubSector.objects.filter(
-            sector__template=template
-        ).prefetch_related('sector', 'scorequestionnaire_set')
-
-        questionnaire_sectors = ScoreQuestionnaireSector.objects.filter(
-            template=template
+        questionnaire_subsectors = ScoreQuestionnaireSubSector.objects.filter(sector__template=template).prefetch_related(
+            "sector", "scorequestionnaire_set"
         )
+
+        questionnaire_sectors = ScoreQuestionnaireSector.objects.filter(template=template)
 
         questionnaire_json = {}
 
@@ -635,15 +635,14 @@ class Assessment(UserResource, ProjectEntityMixin):
         # Add Method summaries
         for method in methods:
             raw_data = raw_questionnaire.get(method) or {}
-            questionnaire_json[method][f'{method}_score'] = {
-                'all_quality_criteria': raw_data.get('all-quality-criteria', {}).get('value'),
-                'minimum_requirement': raw_data.get('minimum-requirements', {}).get('value'),
-                'use': raw_data.get('use-criteria', {}).get('value'),
+            questionnaire_json[method][f"{method}_score"] = {
+                "all_quality_criteria": raw_data.get("all-quality-criteria", {}).get("value"),
+                "minimum_requirement": raw_data.get("minimum-requirements", {}).get("value"),
+                "use": raw_data.get("use-criteria", {}).get("value"),
             }
 
-            questionnaire_json[method]['breakdown_of_quality_criteria'] = {
-                x.title: raw_data.get(f'sector-{x.id}')
-                for x in questionnaire_sectors
+            questionnaire_json[method]["breakdown_of_quality_criteria"] = {
+                x.title: raw_data.get(f"sector-{x.id}") for x in questionnaire_sectors
             }
         return questionnaire_json
 
@@ -658,19 +657,15 @@ class Assessment(UserResource, ProjectEntityMixin):
         summary = self.get_summary_json()
         # score
         score = self.get_score_json()
-        return OrderedDict((
-            ('metadata', metadata),
-            ('methodology', methodology),
-            ('summary', summary),
-            ('score', score)
-        ))
+        return OrderedDict((("metadata", metadata), ("methodology", methodology), ("summary", summary), ("score", score)))
 
 
 class PlannedAssessment(UserResource, ProjectEntityMixin):
     """
     Planned Assessment belonging to a lead
     """
-    project = models.ForeignKey('project.Project', on_delete=models.CASCADE)
+
+    project = models.ForeignKey("project.Project", on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     metadata = models.JSONField(default=None, blank=True, null=True)
     methodology = models.JSONField(default=None, blank=True, null=True)
@@ -681,39 +676,39 @@ class PlannedAssessment(UserResource, ProjectEntityMixin):
     def create_schema_for_group(self, GroupClass):
         schema = {}
         assessment_template = self.project.assessment_template
-        groups = GroupClass.objects.filter(
-            template=assessment_template,
-            fields__show_in_planned_assessment=True,
-        ).prefetch_related('fields').distinct()
+        groups = (
+            GroupClass.objects.filter(
+                template=assessment_template,
+                fields__show_in_planned_assessment=True,
+            )
+            .prefetch_related("fields")
+            .distinct()
+        )
         schema = {
             group.title: [
                 {
-                    'id': field.id,
-                    'name': field.title,
-                    'type': field.field_type,
-                    'source_type': field.source_type,
-                    'options': {
-                        x['key']: x['title'] for x in field.get_options()
-                    }
+                    "id": field.id,
+                    "name": field.title,
+                    "type": field.field_type,
+                    "source_type": field.source_type,
+                    "options": {x["key"]: x["title"] for x in field.get_options()},
                 }
                 for field in group.fields.all()
-            ] for group in groups
+            ]
+            for group in groups
         }
         return schema
 
     @staticmethod
     def get_actual_value(schema, value):
-        value_function = FIELDS_KEYS_VALUE_EXTRACTORS.get(schema['name'], identity)
-        if schema['type'] == Field.SELECT:
+        value_function = FIELDS_KEYS_VALUE_EXTRACTORS.get(schema["name"], identity)
+        if schema["type"] == Field.SELECT:
             # value should not be list but just in case it is a list
-            value = value[0] if isinstance(value, list) and len(value) > 0 else value or ''
-            actual_value = schema['options'].get(value, value)
-        elif schema['type'] == Field.MULTISELECT:
+            value = value[0] if isinstance(value, list) and len(value) > 0 else value or ""
+            actual_value = schema["options"].get(value, value)
+        elif schema["type"] == Field.MULTISELECT:
             value = value or []
-            actual_value = [
-                value_function(schema['options'].get(x, x))
-                for x in value
-            ]
+            actual_value = [value_function(schema["options"].get(x, x)) for x in value]
         else:
             actual_value = value
         return actual_value
@@ -723,22 +718,18 @@ class PlannedAssessment(UserResource, ProjectEntityMixin):
         if not raw_data:
             return {}
 
-        if 'id' in schema:
-            key = str(schema['id'])
-            value = raw_data.get(key, '')
+        if "id" in schema:
+            key = str(schema["id"])
+            value = raw_data.get(key, "")
             return {
-                'schema': schema,
-                'value': Assessment.get_actual_value(schema, value),
-                'key': value,
+                "schema": schema,
+                "value": Assessment.get_actual_value(schema, value),
+                "key": value,
             }
         if isinstance(schema, dict):
-            data = {
-                k: Assessment.get_data_from_schema(v, raw_data)
-                for k, v in schema.items()
-            }
+            data = {k: Assessment.get_data_from_schema(v, raw_data) for k, v in schema.items()}
         elif isinstance(schema, list):
-            data = [Assessment.get_data_from_schema(x, raw_data)
-                    for x in schema]
+            data = [Assessment.get_data_from_schema(x, raw_data) for x in schema]
         else:
             raise Exception("Something that could not be parsed from schema")
         return data
@@ -753,8 +744,10 @@ class PlannedAssessment(UserResource, ProjectEntityMixin):
         metadata = self.get_metadata_json()
         # for methodology
         methodology = self.get_methodology_json()
-        return OrderedDict((
-            ('title', self.title),
-            ('metadata', metadata),
-            ('methodology', methodology),
-        ))
+        return OrderedDict(
+            (
+                ("title", self.title),
+                ("metadata", metadata),
+                ("methodology", methodology),
+            )
+        )

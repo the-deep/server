@@ -1,30 +1,29 @@
 from typing import Union
 
-from django.db import models
-from django.db import transaction
-from user_resource.models import UserResource
-
+from django.db import models, transaction
 from lead.models import Lead
 from organization.models import Organization
 from project.models import Project, ProjectStats
+from user_resource.models import UserResource
+
 from .sources import (
     atom_feed,
-    rss_feed,
-    unhcr_portal,
-    relief_web,
+    emm,
     humanitarian_response,
     pdna,
-    emm,
+    relief_web,
+    rss_feed,
+    unhcr_portal,
 )
 
 
 class ConnectorLead(models.Model):
     class ExtractionStatus(models.IntegerChoices):
-        PENDING = 0, 'Pending'
-        RETRYING = 1, 'Retrying'
-        STARTED = 2, 'Started'
-        SUCCESS = 3, 'Success'
-        FAILED = 4, 'Failed'
+        PENDING = 0, "Pending"
+        RETRYING = 1, "Retrying"
+        STARTED = 2, "Started"
+        SUCCESS = 3, "Success"
+        FAILED = 4, "Failed"
 
     id: Union[int, None]
     url = models.TextField(unique=True)
@@ -33,8 +32,8 @@ class ConnectorLead(models.Model):
     published_on = models.DateField(default=None, null=True, blank=True)
     source_raw = models.CharField(max_length=255, blank=True)
     author_raw = models.CharField(max_length=255, blank=True)
-    authors = models.ManyToManyField(Organization, blank=True, related_name='+')
-    source = models.ForeignKey(Organization, related_name='+', on_delete=models.SET_NULL, null=True, blank=True)
+    authors = models.ManyToManyField(Organization, blank=True, related_name="+")
+    source = models.ForeignKey(Organization, related_name="+", on_delete=models.SET_NULL, null=True, blank=True)
 
     # Extracted data
     simplified_text = models.TextField(blank=True)
@@ -44,9 +43,7 @@ class ConnectorLead(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
-    extraction_status = models.SmallIntegerField(
-        choices=ExtractionStatus.choices, default=ExtractionStatus.PENDING
-    )
+    extraction_status = models.SmallIntegerField(choices=ExtractionStatus.choices, default=ExtractionStatus.PENDING)
 
     def __init__(self, *args, **kwargs):
         self.preview_images: models.QuerySet[ConnectorLeadPreviewImage]
@@ -59,15 +56,15 @@ class ConnectorLead(models.Model):
             defaults=dict(
                 title=lead.title,
                 published_on=lead.published_on,
-                source_raw=lead.source_raw or '',
-                author_raw=lead.author_raw or '',
+                source_raw=lead.source_raw or "",
+                author_raw=lead.author_raw or "",
                 source=lead.source,
             ),
         )
         if not created:
             return instance, False
         # NOTE: Custom attributes from connector
-        authors = getattr(lead, '_authors', None)
+        authors = getattr(lead, "_authors", None)
         if authors:
             instance.authors.set(authors)
         return instance, True
@@ -75,18 +72,19 @@ class ConnectorLead(models.Model):
     def update_extraction_status(self, new_status, commit=True):
         self.extraction_status = new_status
         if commit:
-            self.save(update_fields=('extraction_status',))
+            self.save(update_fields=("extraction_status",))
 
 
 class ConnectorLeadPreviewImage(models.Model):
-    connector_lead = models.ForeignKey(ConnectorLead, on_delete=models.CASCADE, related_name='preview_images')
-    image = models.FileField(upload_to='connector-lead/preview-images/', max_length=255)
+    connector_lead = models.ForeignKey(ConnectorLead, on_delete=models.CASCADE, related_name="preview_images")
+    image = models.FileField(upload_to="connector-lead/preview-images/", max_length=255)
 
 
 class UnifiedConnector(UserResource):
     """
     Unified Connector: Contains source level connector
     """
+
     title = models.CharField(max_length=255)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=False)
@@ -102,19 +100,19 @@ class UnifiedConnector(UserResource):
 
 class ConnectorSource(UserResource):
     class Source(models.TextChoices):
-        ATOM_FEED = 'atom-feed', 'Atom Feed'
-        RELIEF_WEB = 'relief-web', 'Relifweb'
-        RSS_FEED = 'rss-feed', 'RSS Feed'
-        UNHCR = 'unhcr-portal', 'UNHCR Portal'
-        HUMANITARIAN_RESP = 'humanitarian-resp', 'Humanitarian Response'
-        PDNA = 'pdna', 'Post Disaster Needs Assessments'
-        EMM = 'emm', 'European Media Monitor'
+        ATOM_FEED = "atom-feed", "Atom Feed"
+        RELIEF_WEB = "relief-web", "Relifweb"
+        RSS_FEED = "rss-feed", "RSS Feed"
+        UNHCR = "unhcr-portal", "UNHCR Portal"
+        HUMANITARIAN_RESP = "humanitarian-resp", "Humanitarian Response"
+        PDNA = "pdna", "Post Disaster Needs Assessments"
+        EMM = "emm", "European Media Monitor"
 
     class Status(models.IntegerChoices):
-        PENDING = 0, 'Pending'
-        PROCESSING = 1, 'Processing'
-        SUCCESS = 2, 'success'
-        FAILURE = 3, 'failure'
+        PENDING = 0, "Pending"
+        PROCESSING = 1, "Processing"
+        SUCCESS = 2, "success"
+        FAILURE = 3, "failure"
 
     SOURCE_FETCHER_MAP = {
         Source.ATOM_FEED: atom_feed.AtomFeed,
@@ -127,15 +125,16 @@ class ConnectorSource(UserResource):
     }
 
     title = models.CharField(max_length=255)
-    unified_connector = models.ForeignKey(UnifiedConnector, on_delete=models.CASCADE, related_name='sources')
+    unified_connector = models.ForeignKey(UnifiedConnector, on_delete=models.CASCADE, related_name="sources")
     source = models.CharField(max_length=20, choices=Source.choices)
     params = models.JSONField(default=dict)
     client_id = None
 
     leads = models.ManyToManyField(
-        ConnectorLead, blank=True,
-        through_fields=('source', 'connector_lead'),
-        through='ConnectorSourceLead',
+        ConnectorLead,
+        blank=True,
+        through_fields=("source", "connector_lead"),
+        through="ConnectorSourceLead",
     )
     last_fetched_at = models.DateTimeField(blank=True, null=True)
     stats = models.JSONField(default=dict)  # {published_dates: ['date': <>, 'count': <>]}
@@ -158,18 +157,23 @@ class ConnectorSource(UserResource):
     def generate_stats(self, commit=True):
         threshold = ProjectStats.get_activity_timeframe()
         self.stats = {
-            'published_dates': [
+            "published_dates": [
                 {
-                    'date': str(date),
-                    'count': count,
-                } for count, date in self.leads.filter(
+                    "date": str(date),
+                    "count": count,
+                }
+                for count, date in self.leads.filter(
                     published_on__isnull=False,
                     published_on__gte=threshold,
-                ).order_by().values('published_on').annotate(
-                    count=models.Count('*'),
-                ).values_list('count', models.F('published_on'))
+                )
+                .order_by()
+                .values("published_on")
+                .annotate(
+                    count=models.Count("*"),
+                )
+                .values_list("count", models.F("published_on"))
             ],
-            'leads_count': self.leads.count(),
+            "leads_count": self.leads.count(),
         }
         if commit:
             self.save()
@@ -184,9 +188,8 @@ class ConnectorSource(UserResource):
         )
 
     def save(self, *args, **kwargs):
-        params_changed = (
-            self.old_params != self.params and
-            ('params' in kwargs['update_fields'] if 'update_fields' in kwargs else True)
+        params_changed = self.old_params != self.params and (
+            "params" in kwargs["update_fields"] if "update_fields" in kwargs else True
         )
         if params_changed:
             # Reset attributes if params are changed
@@ -194,19 +197,14 @@ class ConnectorSource(UserResource):
             self.last_fetched_at = None
             self.stats = {}
             self.status = ConnectorSource.Status.PENDING
-            if 'update_fields' in kwargs:
-                kwargs['update_fields'] = list(set([
-                    'stats',
-                    'status',
-                    'last_fetched_at',
-                    *kwargs['update_fields']
-                ]))
+            if "update_fields" in kwargs:
+                kwargs["update_fields"] = list(set(["stats", "status", "last_fetched_at", *kwargs["update_fields"]]))
         super().save(*args, **kwargs)
         self.old_params = self.params
 
 
 class ConnectorSourceLead(models.Model):  # ConnectorSource's Leads
-    source = models.ForeignKey(ConnectorSource, on_delete=models.CASCADE, related_name='source_leads')
+    source = models.ForeignKey(ConnectorSource, on_delete=models.CASCADE, related_name="source_leads")
     connector_lead = models.ForeignKey(ConnectorLead, on_delete=models.CASCADE)
     blocked = models.BooleanField(default=False)
     already_added = models.BooleanField(default=False)

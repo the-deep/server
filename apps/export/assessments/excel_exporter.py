@@ -1,45 +1,44 @@
+import logging
 from collections import OrderedDict
 
 from django.core.files.base import ContentFile
-
-from export.formats.xlsx import WorkBook, RowsBuilder
+from export.formats.xlsx import RowsBuilder, WorkBook
 from openpyxl.styles import Alignment, Font
+
 from utils.common import deep_date_format, underscore_to_title
 
-import logging
-
-logger = logging.getLogger('django')
+logger = logging.getLogger("django")
 
 
 class ExcelExporter:
     """
     NOTE: Legacy exporter (Not used)
     """
+
     def __init__(self, decoupled=True):
         self.wb = WorkBook()
 
         # Create two worksheets
         if decoupled:
-            self.split = self.wb.get_active_sheet()\
-                .set_title('Split Assessments')
-            self.group = self.wb.create_sheet('Grouped Assessments')
+            self.split = self.wb.get_active_sheet().set_title("Split Assessments")
+            self.group = self.wb.create_sheet("Grouped Assessments")
         else:
             self.split = None
-            self.group = self.wb.get_active_sheet().set_title('Assessments')
+            self.group = self.wb.get_active_sheet().set_title("Assessments")
         self.decoupled = decoupled
 
         # Cells to be merged
         self.merge_cells = {}
         # Initial titles
         self.lead_titles = [
-            'Date of Source Publication',
-            'Imported By',
-            'Source Title',
-            'Publisher',
+            "Date of Source Publication",
+            "Imported By",
+            "Source Title",
+            "Publisher",
         ]
         self.titles = [*self.lead_titles]
         self.col_types = {
-            0: 'date',
+            0: "date",
         }
         self._titles_dict = {k: True for k in self.titles}
 
@@ -68,17 +67,15 @@ class ExcelExporter:
                 # check if list elements are dict or not
                 for i in v:
                     if isinstance(i, dict):
-                        flat.update(
-                            self.to_flattened_key_vals(i, [k, *parents])
-                        )
+                        flat.update(self.to_flattened_key_vals(i, [k, *parents]))
                     else:
-                        vals = flat.get(k, {}).get('value', [])
+                        vals = flat.get(k, {}).get("value", [])
                         vals.append(i)
                         # FIXME: assigning parents is repeated every step
-                        flat[k] = {'value': vals, 'parents': parents}
+                        flat[k] = {"value": vals, "parents": parents}
             else:
                 # Just add key value
-                flat[k] = {'value': v, 'parents': parents}
+                flat[k] = {"value": v, "parents": parents}
         return flat
 
     def add_assessments(self, assessments):
@@ -94,35 +91,34 @@ class ExcelExporter:
 
         # update the titles
         for k, v in flat.items():
-            parent = v['parents'][-1]
+            parent = v["parents"][-1]
             header_titles = self._headers_titles.get(parent, [])
 
             if k not in header_titles:
                 header_titles.append(k)
             self._headers_titles[parent] = header_titles
-            '''
+            """
             if not self._titles_dict.get(k):
                 self.titles.append(k)
                 self._titles_dict[k] = True
-            '''
+            """
         return self
 
     def get_titles(self):
-        return [
-            *self.lead_titles,
-            *[y for k, v in self._headers_titles.items() for y in v]
-        ]
+        return [*self.lead_titles, *[y for k, v in self._headers_titles.items() for y in v]]
 
     def assessments_to_rows(self):
         for index, assessment in enumerate(self._assessments):
             rows = RowsBuilder(self.split, self.group, split=False)
             lead = assessment.lead
-            rows.add_value_list([
-                deep_date_format(lead.created_at),
-                lead.created_by.username,
-                lead.title,
-                (lead.source and lead.source.title) or lead.source_raw,
-            ])
+            rows.add_value_list(
+                [
+                    deep_date_format(lead.created_at),
+                    lead.created_by.username,
+                    lead.title,
+                    (lead.source and lead.source.title) or lead.source_raw,
+                ]
+            )
             headers_dict = {}
             flat = self._flats[index]
             for i, t in enumerate(self.get_titles()):
@@ -135,19 +131,19 @@ class ExcelExporter:
                     self._title_headers.append("")
                     continue
 
-                v = flat[t]['value']
-                val = ', '.join([str(x) for x in v]) if isinstance(v, list) else str(v)
+                v = flat[t]["value"]
+                val = ", ".join([str(x) for x in v]) if isinstance(v, list) else str(v)
                 rows.add_value(val)
-                header = flat[t]['parents'][-1]
+                header = flat[t]["parents"][-1]
 
                 if not self._headers_dict.get(header):
                     self._title_headers.append(header.upper())
                     self._headers_dict[header] = True
                 else:
-                    self.merge_cells[header]['end'] += 1
+                    self.merge_cells[header]["end"] += 1
 
                 if not headers_dict.get(header):
-                    self.merge_cells[header] = {'start': i, 'end': i}
+                    self.merge_cells[header] = {"start": i, "end": i}
                     headers_dict[header] = True
                 else:
                     self._title_headers.append("")
@@ -177,12 +173,9 @@ class ExcelExporter:
         if self.merge_cells:
             sheet = self.wb.wb.active
             for k, v in self.merge_cells.items():
-                sheet.merge_cells(
-                    start_row=1, start_column=v['start'] + 1,
-                    end_row=1, end_column=v['end'] + 1
-                )
-                cell = sheet.cell(row=1, column=v['start'] + 1)
-                cell.alignment = Alignment(horizontal='center')
+                sheet.merge_cells(start_row=1, start_column=v["start"] + 1, end_row=1, end_column=v["end"] + 1)
+                cell = sheet.cell(row=1, column=v["start"] + 1)
+                cell.alignment = Alignment(horizontal="center")
 
         self.group.set_col_types(self.col_types)
         if self.split:
@@ -249,18 +242,13 @@ class NewExcelExporter:
             for header, info in headerinfo.items():
                 wb_sheet = self.wb_sheets[sheet].ws
                 if info:
-                    wb_sheet.merge_cells(
-                        start_row=1,
-                        start_column=counter,
-                        end_row=1,
-                        end_column=counter + len(info) - 1
-                    )
+                    wb_sheet.merge_cells(start_row=1, start_column=counter, end_row=1, end_column=counter + len(info) - 1)
                     counter += len(info)
                 else:
                     counter += 1
                 # Styling
                 cell = wb_sheet.cell(row=1, column=counter)
-                cell.alignment = Alignment(horizontal='center')
+                cell.alignment = Alignment(horizontal="center")
                 cell.font = Font(bold=True)
             # Style sub headers
             for i, header in enumerate(sub_header_row):
@@ -288,7 +276,7 @@ class NewExcelExporter:
 
         # Remove default sheet only if other sheets present
         if self.wb_sheets:
-            self.wb.wb.remove(self.wb.wb.get_sheet_by_name('Sheet'))
+            self.wb.wb.remove(self.wb.wb.get_sheet_by_name("Sheet"))
 
         buffer = self.wb.save()
         return ContentFile(buffer)

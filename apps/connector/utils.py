@@ -1,11 +1,10 @@
 import logging
 
-from django.core.cache import cache
 from django.conf import settings
+from django.core.cache import cache
 
 from deep.caches import CacheKey
 from utils.common import replace_ns
-
 
 logger = logging.getLogger(__name__)
 
@@ -23,11 +22,12 @@ def ConnectorWrapper(ConnectorClass):
         This wraps the basic connector class and provides functionalities like
         profiling on fetch and caching on get_content
         """
+
         def get_leads(self, *args, **kwargs):
             try:
                 ret = super().get_leads(*args, **kwargs)
             except Exception as e:
-                logger.error('Connector: Get lead failed', exc_info=True)
+                logger.error("Connector: Get lead failed", exc_info=True)
                 raise ConnectorGetLeadException(
                     f"Parsing Connector Source data for {self.title} failed. "
                     "Maybe the source HTML structure has changed "
@@ -41,7 +41,7 @@ def ConnectorWrapper(ConnectorClass):
             This will get the cached content if present else fetch
             from respective source
             """
-            url_params = f'{url}:{str(params)}'
+            url_params = f"{url}:{str(params)}"
             cache_key = CacheKey.CONNECTOR_KEY_FORMAT.format(hash(url_params))
 
             data = cache.get(cache_key)
@@ -57,7 +57,7 @@ def ConnectorWrapper(ConnectorClass):
 
 
 def get_rss_fields(item, nsmap, parent_tag=None):
-    tag = '{}/{}'.format(parent_tag, item.tag) if parent_tag else item.tag
+    tag = "{}/{}".format(parent_tag, item.tag) if parent_tag else item.tag
     childs = item.getchildren()
     fields = []
     if len(childs) > 0:
@@ -66,8 +66,10 @@ def get_rss_fields(item, nsmap, parent_tag=None):
             children_fields.extend(get_rss_fields(child, nsmap, tag))
         fields.extend(children_fields)
     else:
-        fields.append({
-            'key': tag,
-            'label': replace_ns(nsmap, tag),
-        })
+        fields.append(
+            {
+                "key": tag,
+                "label": replace_ns(nsmap, tag),
+            }
+        )
     return fields

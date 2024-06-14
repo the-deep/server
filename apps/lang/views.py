@@ -1,17 +1,14 @@
 from django.conf import settings
-from rest_framework import (
-    viewsets,
-    response,
-    permissions,
-)
+from rest_framework import permissions, response, viewsets
+
 from deep.permissions import IsSuperAdmin
+
+from .models import LinkCollection, String
 from .serializers import LanguageSerializer, StringsSerializer
-from .models import String, LinkCollection
 
 
 class LanguageViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated,
-                          IsSuperAdmin]
+    permission_classes = [permissions.IsAuthenticated, IsSuperAdmin]
 
     def retrieve(self, request, pk=None, version=None):
         code = pk
@@ -22,13 +19,10 @@ class LanguageViewSet(viewsets.ViewSet):
             return collection.links.filter(language=code)
 
         obj = {
-            'code': code,
-            'title': language[1],
-            'strings': String.objects.filter(language=code),
-            'links': {
-                link_collection.key: get_links(link_collection)
-                for link_collection in LinkCollection.objects.all()
-            },
+            "code": code,
+            "title": language[1],
+            "strings": String.objects.filter(language=code),
+            "links": {link_collection.key: get_links(link_collection) for link_collection in LinkCollection.objects.all()},
         }
 
         return response.Response(StringsSerializer(obj).data)
@@ -36,8 +30,8 @@ class LanguageViewSet(viewsets.ViewSet):
     def list(self, request, version=None):
         languages = [
             {
-                'code': _lang[0],
-                'title': _lang[1],
+                "code": _lang[0],
+                "title": _lang[1],
             }
             for _lang in settings.LANGUAGES
         ]
@@ -47,15 +41,19 @@ class LanguageViewSet(viewsets.ViewSet):
         )
         results = serializer.data
 
-        return response.Response({
-            'count': len(results),
-            'results': results,
-        })
+        return response.Response(
+            {
+                "count": len(results),
+                "results": results,
+            }
+        )
 
     def update(self, request, pk=None, version=None):
-        serializer = StringsSerializer(data={
-            'code': pk,
-            **request.data,
-        })
+        serializer = StringsSerializer(
+            data={
+                "code": pk,
+                **request.data,
+            }
+        )
         serializer.save()
         return self.retrieve(request, pk=pk)

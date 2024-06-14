@@ -5,23 +5,23 @@ from utils.graphene.enums import (
 
 from .models import Export, GenericExport
 
-ExportFormatEnum = convert_enum_to_graphene_enum(Export.Format, name='ExportFormatEnum')
-ExportStatusEnum = convert_enum_to_graphene_enum(Export.Status, name='ExportStatusEnum')
-ExportDataTypeEnum = convert_enum_to_graphene_enum(Export.DataType, name='ExportDataTypeEnum')
-ExportExportTypeEnum = convert_enum_to_graphene_enum(Export.ExportType, name='ExportExportTypeEnum')
+ExportFormatEnum = convert_enum_to_graphene_enum(Export.Format, name="ExportFormatEnum")
+ExportStatusEnum = convert_enum_to_graphene_enum(Export.Status, name="ExportStatusEnum")
+ExportDataTypeEnum = convert_enum_to_graphene_enum(Export.DataType, name="ExportDataTypeEnum")
+ExportExportTypeEnum = convert_enum_to_graphene_enum(Export.ExportType, name="ExportExportTypeEnum")
 ExportExcelSelectedStaticColumnEnum = convert_enum_to_graphene_enum(
     Export.StaticColumn,
-    name='ExportExcelSelectedStaticColumnEnum',
+    name="ExportExcelSelectedStaticColumnEnum",
 )
-ExportDateFormatEnum = convert_enum_to_graphene_enum(Export.DateFormat, name='ExportDateFormatEnum')
+ExportDateFormatEnum = convert_enum_to_graphene_enum(Export.DateFormat, name="ExportDateFormatEnum")
 ExportReportCitationStyleEnum = convert_enum_to_graphene_enum(
     Export.CitationStyle,
-    name='ExportReportCitationStyleEnum',
+    name="ExportReportCitationStyleEnum",
 )
 
-GenericExportFormatEnum = convert_enum_to_graphene_enum(GenericExport.Format, name='GenericExportFormatEnum')
-GenericExportStatusEnum = convert_enum_to_graphene_enum(GenericExport.Status, name='GenericExportStatusEnum')
-GenericExportDataTypeEnum = convert_enum_to_graphene_enum(GenericExport.DataType, name='GenericExportDataTypeEnum')
+GenericExportFormatEnum = convert_enum_to_graphene_enum(GenericExport.Format, name="GenericExportFormatEnum")
+GenericExportStatusEnum = convert_enum_to_graphene_enum(GenericExport.Status, name="GenericExportStatusEnum")
+GenericExportDataTypeEnum = convert_enum_to_graphene_enum(GenericExport.DataType, name="GenericExportDataTypeEnum")
 
 enum_map = {
     # Need to pass model with abstract base class
@@ -39,20 +39,22 @@ enum_map = {
     )
 }
 
-enum_map.update({
-    get_enum_name_from_django_field(
-        None,
-        field_name='static_column',
-        serializer_name='ExportExcelSelectedColumnSerializer',
-    ): ExportExcelSelectedStaticColumnEnum,
-    get_enum_name_from_django_field(
-        None,
-        field_name='date_format',
-        serializer_name='ExportExtraOptionsSerializer',
-    ): ExportDateFormatEnum,
-    get_enum_name_from_django_field(
-        None,
-        field_name='report_citation_style',
-        serializer_name='ExportExtraOptionsSerializer',
-    ): ExportReportCitationStyleEnum,
-})
+enum_map.update(
+    {
+        get_enum_name_from_django_field(
+            None,
+            field_name="static_column",
+            serializer_name="ExportExcelSelectedColumnSerializer",
+        ): ExportExcelSelectedStaticColumnEnum,
+        get_enum_name_from_django_field(
+            None,
+            field_name="date_format",
+            serializer_name="ExportExtraOptionsSerializer",
+        ): ExportDateFormatEnum,
+        get_enum_name_from_django_field(
+            None,
+            field_name="report_citation_style",
+            serializer_name="ExportExtraOptionsSerializer",
+        ): ExportReportCitationStyleEnum,
+    }
+)

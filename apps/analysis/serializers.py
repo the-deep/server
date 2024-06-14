@@ -1,56 +1,56 @@
 import logging
 from typing import Callable
-from django.conf import settings
-from django.shortcuts import get_object_or_404
 
-from rest_framework import serializers
+from commons.schema_snapshots import SnapshotQuery, generate_query_snapshot
+from django.conf import settings
+from django.db import models, transaction
+from django.shortcuts import get_object_or_404
 from drf_dynamic_fields import DynamicFieldsMixin
-from drf_writable_nested import UniqueFieldsMixin, NestedCreateMixin
-from django.db import transaction, models
+from drf_writable_nested import NestedCreateMixin, UniqueFieldsMixin
+from entry.filter_set import EntriesFilterDataInputType, EntryGQFilterSet
+from entry.serializers import SimpleEntrySerializer
+from rest_framework import serializers
+from user.serializers import NanoUserSerializer
+from user_resource.serializers import UserResourceSerializer
 
 from deep.graphene_context import GQLContext
-from utils.graphene.fields import generate_serializer_field_class
-from commons.schema_snapshots import generate_query_snapshot, SnapshotQuery
-from deep.writable_nested_serializers import NestedUpdateMixin as CustomNestedUpdateMixin
 from deep.serializers import (
+    GraphqlSupportDrfSerializerJSONField,
+    IdListField,
+    IntegerIDField,
+    ProjectPropertySerializerMixin,
     RemoveNullFieldsMixin,
     StringListField,
     TempClientIdMixin,
-    IntegerIDField,
-    IdListField,
-    GraphqlSupportDrfSerializerJSONField,
-    ProjectPropertySerializerMixin,
 )
-from user_resource.serializers import UserResourceSerializer
-from user.serializers import NanoUserSerializer
-from entry.serializers import SimpleEntrySerializer
-from entry.filter_set import EntryGQFilterSet, EntriesFilterDataInputType
+from deep.writable_nested_serializers import (
+    NestedUpdateMixin as CustomNestedUpdateMixin,
+)
+from utils.graphene.fields import generate_serializer_field_class
 
-from .models import (
+from .models import (  # Report
     Analysis,
     AnalysisPillar,
+    AnalysisReport,
+    AnalysisReportContainer,
+    AnalysisReportContainerData,
+    AnalysisReportSnapshot,
+    AnalysisReportUpload,
     AnalyticalStatement,
     AnalyticalStatementEntry,
-    DiscardedEntry,
-    TopicModel,
-    EntriesCollectionNlpTriggerBase,
-    AutomaticSummary,
-    AnalyticalStatementNGram,
     AnalyticalStatementGeoTask,
-    # Report
-    AnalysisReport,
-    AnalysisReportUpload,
-    AnalysisReportContainerData,
-    AnalysisReportContainer,
-    AnalysisReportSnapshot,
+    AnalyticalStatementNGram,
+    AutomaticSummary,
+    DiscardedEntry,
+    EntriesCollectionNlpTriggerBase,
+    TopicModel,
 )
 from .tasks import (
-    trigger_topic_model,
-    trigger_automatic_summary,
     trigger_automatic_ngram,
+    trigger_automatic_summary,
     trigger_geo_location,
+    trigger_topic_model,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -58,19 +58,21 @@ logger = logging.getLogger(__name__)
 class AnalyticalEntriesSerializer(UniqueFieldsMixin, UserResourceSerializer):
     class Meta:
         model = AnalyticalStatementEntry
-        fields = ('id', 'client_id', 'order', 'entry')
-        read_only_fields = ('analytical_statement',)
+        fields = ("id", "client_id", "order", "entry")
+        read_only_fields = ("analytical_statement",)
 
     def validate(self, data):
-        analysis_id = self.context['view'].kwargs.get('analysis_id')
+        analysis_id = self.context["view"].kwargs.get("analysis_id")
         analysis = get_object_or_404(Analysis, id=analysis_id)
         analysis_end_date = analysis.end_date
-        entry = data.get('entry')
+        entry = data.get("entry")
         lead_published = entry.lead.published_on
         if analysis_end_date and lead_published and lead_published > analysis_end_date:
-            raise serializers.ValidationError({
-                'entry': f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis_end_date}',
-            })
+            raise serializers.ValidationError(
+                {
+                    "entry": f"Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis_end_date}",
+                }
+            )
         return data
 
 
@@ -82,47 +84,47 @@ class AnalyticalStatementSerializer(
     # XXX: This is a custom mixin where we delete first and then create to avoid duplicate key value
     CustomNestedUpdateMixin,
 ):
-    analytical_entries = AnalyticalEntriesSerializer(source='analyticalstatemententry_set', many=True, required=False)
+    analytical_entries = AnalyticalEntriesSerializer(source="analyticalstatemententry_set", many=True, required=False)
 
     class Meta:
         model = AnalyticalStatement
-        fields = '__all__'
-        read_only_fields = ('analysis_pillar',)
+        fields = "__all__"
+        read_only_fields = ("analysis_pillar",)
 
     def validate(self, data):
-        analysis_pillar_id = self.context['view'].kwargs.get('analysis_pillar_id', None)
+        analysis_pillar_id = self.context["view"].kwargs.get("analysis_pillar_id", None)
         if analysis_pillar_id:
-            data['analysis_pillar_id'] = int(analysis_pillar_id)
+            data["analysis_pillar_id"] = int(analysis_pillar_id)
         # Validate the analytical_entries
-        entries = data.get('analyticalstatemententry_set')
+        entries = data.get("analyticalstatemententry_set")
         if entries and len(entries) > settings.ANALYTICAL_ENTRIES_COUNT:
-            raise serializers.ValidationError(
-                f'Analytical entires count must be less than {settings.ANALYTICAL_ENTRIES_COUNT}'
-            )
+            raise serializers.ValidationError(f"Analytical entires count must be less than {settings.ANALYTICAL_ENTRIES_COUNT}")
         return data
 
 
 class DiscardedEntrySerializer(serializers.ModelSerializer):
-    tag_display = serializers.CharField(source='get_tag_display', read_only=True)
-    entry_details = SimpleEntrySerializer(source='entry', read_only=True)
+    tag_display = serializers.CharField(source="get_tag_display", read_only=True)
+    entry_details = SimpleEntrySerializer(source="entry", read_only=True)
 
     class Meta:
         model = DiscardedEntry
-        fields = '__all__'
-        read_only_fields = ['analysis_pillar']
+        fields = "__all__"
+        read_only_fields = ["analysis_pillar"]
 
     def validate(self, data):
-        data['analysis_pillar_id'] = int(self.context['analysis_pillar_id'])
-        analysis_pillar = get_object_or_404(AnalysisPillar, id=data['analysis_pillar_id'])
-        entry = data.get('entry')
+        data["analysis_pillar_id"] = int(self.context["analysis_pillar_id"])
+        analysis_pillar = get_object_or_404(AnalysisPillar, id=data["analysis_pillar_id"])
+        entry = data.get("entry")
         if entry.project != analysis_pillar.analysis.project:
-            raise serializers.ValidationError('Analysis pillar project doesnot match Entry project')
+            raise serializers.ValidationError("Analysis pillar project doesnot match Entry project")
         # validating the entry for the lead published_on greater than analysis end date
         analysis_end_date = analysis_pillar.analysis.end_date
         if entry.lead.published_on > analysis_end_date:
-            raise serializers.ValidationError({
-                'entry': f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis_end_date}',
-            })
+            raise serializers.ValidationError(
+                {
+                    "entry": f"Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis_end_date}",
+                }
+            )
         return data
 
 
@@ -131,24 +133,24 @@ class AnalysisPillarSerializer(
     DynamicFieldsMixin,
     UserResourceSerializer,
 ):
-    assignee_details = NanoUserSerializer(source='assignee', read_only=True)
-    analysis_title = serializers.CharField(source='analysis.title', read_only=True)
-    analytical_statements = AnalyticalStatementSerializer(many=True, source='analyticalstatement_set', required=False)
+    assignee_details = NanoUserSerializer(source="assignee", read_only=True)
+    analysis_title = serializers.CharField(source="analysis.title", read_only=True)
+    analytical_statements = AnalyticalStatementSerializer(many=True, source="analyticalstatement_set", required=False)
 
     class Meta:
         model = AnalysisPillar
-        fields = '__all__'
-        read_only_fields = ('analysis',)
+        fields = "__all__"
+        read_only_fields = ("analysis",)
 
     def validate(self, data):
-        analysis_id = self.context['view'].kwargs.get('analysis_id', None)
+        analysis_id = self.context["view"].kwargs.get("analysis_id", None)
         if analysis_id:
-            data['analysis_id'] = int(analysis_id)
+            data["analysis_id"] = int(analysis_id)
         # validate analysis_statement
-        analytical_statement = data.get('analyticalstatement_set')
+        analytical_statement = data.get("analyticalstatement_set")
         if analytical_statement and len(analytical_statement) > settings.ANALYTICAL_STATEMENT_COUNT:
             raise serializers.ValidationError(
-                f'Analytical statement count must be less than {settings.ANALYTICAL_STATEMENT_COUNT}'
+                f"Analytical statement count must be less than {settings.ANALYTICAL_STATEMENT_COUNT}"
             )
         return data
 
@@ -158,23 +160,21 @@ class AnalysisSerializer(
     DynamicFieldsMixin,
     UserResourceSerializer,
 ):
-    analysis_pillar = AnalysisPillarSerializer(many=True, source='analysispillar_set', required=False)
-    team_lead_details = NanoUserSerializer(source='team_lead', read_only=True)
+    analysis_pillar = AnalysisPillarSerializer(many=True, source="analysispillar_set", required=False)
+    team_lead_details = NanoUserSerializer(source="team_lead", read_only=True)
     start_date = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = Analysis
-        fields = '__all__'
-        read_only_fields = ('project',)
+        fields = "__all__"
+        read_only_fields = ("project",)
 
     def validate(self, data):
-        data['project_id'] = int(self.context['view'].kwargs['project_id'])
-        start_date = data.get('start_date')
-        end_date = data.get('end_date')
+        data["project_id"] = int(self.context["view"].kwargs["project_id"])
+        start_date = data.get("start_date")
+        end_date = data.get("end_date")
         if start_date and start_date > end_date:
-            raise serializers.ValidationError(
-                {'end_date': 'End date must occur after start date'}
-            )
+            raise serializers.ValidationError({"end_date": "End date must occur after start date"})
         return data
 
 
@@ -184,53 +184,61 @@ class AnalysisCloneInputSerializer(serializers.Serializer):
     end_date = serializers.DateField(required=True, write_only=True)
 
     def validate(self, data):
-        start_date = data.get('start_date')
-        end_date = data.get('end_date')
+        start_date = data.get("start_date")
+        end_date = data.get("end_date")
         if start_date and start_date > end_date:
-            raise serializers.ValidationError(
-                {'end_date': 'End date must occur after start date'}
-            )
+            raise serializers.ValidationError({"end_date": "End date must occur after start date"})
         return data
 
 
 class AnalysisSummaryPillarSerializer(serializers.ModelSerializer):
     analyzed_entries = serializers.IntegerField()
-    assignee_details = NanoUserSerializer(source='assignee')
+    assignee_details = NanoUserSerializer(source="assignee")
 
     class Meta:
         model = AnalysisPillar
-        fields = ('id', 'title', 'analyzed_entries', 'assignee_details')
+        fields = ("id", "title", "analyzed_entries", "assignee_details")
 
 
 class AnalysisSummarySerializer(serializers.ModelSerializer):
     """
     Used with Analysis.annotate_for_analysis_summary
     """
+
     total_entries = serializers.IntegerField()
     total_sources = serializers.IntegerField()
     analyzed_entries = serializers.SerializerMethodField()
 
     publication_date = serializers.JSONField()
-    team_lead_details = NanoUserSerializer(source='team_lead', read_only=True)
-    pillars = AnalysisSummaryPillarSerializer(source='analysispillar_set', many=True, read_only=True)
+    team_lead_details = NanoUserSerializer(source="team_lead", read_only=True)
+    pillars = AnalysisSummaryPillarSerializer(source="analysispillar_set", many=True, read_only=True)
 
     analyzed_sources = serializers.SerializerMethodField()
 
     class Meta:
         model = Analysis
         fields = (
-            'id', 'title', 'team_lead', 'team_lead_details',
-            'publication_date', 'pillars',
-            'end_date', 'start_date',
-            'analyzed_entries', 'analyzed_sources', 'total_entries',
-            'total_sources', 'created_at', 'modified_at',
+            "id",
+            "title",
+            "team_lead",
+            "team_lead_details",
+            "publication_date",
+            "pillars",
+            "end_date",
+            "start_date",
+            "analyzed_entries",
+            "analyzed_sources",
+            "total_entries",
+            "total_sources",
+            "created_at",
+            "modified_at",
         )
 
     def get_analyzed_sources(self, analysis):
-        return self.context['analyzed_sources'].get(analysis.pk)
+        return self.context["analyzed_sources"].get(analysis.pk)
 
     def get_analyzed_entries(self, analysis):
-        return self.context['analyzed_entries'].get(analysis.pk)
+        return self.context["analyzed_entries"].get(analysis.pk)
 
 
 class AnalysisPillarSummaryAnalyticalStatementSerializer(serializers.ModelSerializer):
@@ -238,26 +246,23 @@ class AnalysisPillarSummaryAnalyticalStatementSerializer(serializers.ModelSerial
 
     class Meta:
         model = AnalyticalStatement
-        fields = ('id', 'statement', 'entries_count')
+        fields = ("id", "statement", "entries_count")
 
 
 class AnalysisPillarSummarySerializer(serializers.ModelSerializer):
-    assignee_details = NanoUserSerializer(source='assignee', read_only=True)
+    assignee_details = NanoUserSerializer(source="assignee", read_only=True)
     analytical_statements = AnalysisPillarSummaryAnalyticalStatementSerializer(
-        source='analyticalstatement_set', many=True, read_only=True)
+        source="analyticalstatement_set", many=True, read_only=True
+    )
     analyzed_entries = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = AnalysisPillar
-        fields = (
-            'id', 'title', 'assignee', 'created_at',
-            'assignee_details',
-            'analytical_statements',
-            'analyzed_entries'
-        )
+        fields = ("id", "title", "assignee", "created_at", "assignee_details", "analytical_statements", "analyzed_entries")
 
 
 # ------ GRAPHQL ------------
+
 
 class AnalyticalEntriesGqlSerializer(TempClientIdMixin, UniqueFieldsMixin, UserResourceSerializer):
     id = IntegerIDField(required=False)
@@ -265,25 +270,27 @@ class AnalyticalEntriesGqlSerializer(TempClientIdMixin, UniqueFieldsMixin, UserR
     class Meta:
         model = AnalyticalStatementEntry
         fields = (
-            'id',
-            'order',
-            'entry',
-            'client_id',
+            "id",
+            "order",
+            "entry",
+            "client_id",
         )
 
     def validate_entry(self, entry):
-        if entry.project != self.context['request'].active_project:
-            raise serializers.ValidationError('Invalid entry')
+        if entry.project != self.context["request"].active_project:
+            raise serializers.ValidationError("Invalid entry")
         return entry
 
     def validate(self, data):
-        analysis_end_date = self.context['analysis_end_date']  # Passed by UpdateAnalysisPillar Mutation
-        entry = data.get('entry')
+        analysis_end_date = self.context["analysis_end_date"]  # Passed by UpdateAnalysisPillar Mutation
+        entry = data.get("entry")
         lead_published = entry.lead.published_on
         if analysis_end_date and lead_published and lead_published > analysis_end_date:
-            raise serializers.ValidationError({
-                'entry': f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis_end_date}',
-            })
+            raise serializers.ValidationError(
+                {
+                    "entry": f"Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis_end_date}",
+                }
+            )
         return data
 
 
@@ -295,22 +302,22 @@ class AnalyticalStatementGqlSerializer(
     CustomNestedUpdateMixin,
 ):
     id = IntegerIDField(required=False)
-    entries = AnalyticalEntriesGqlSerializer(source='analyticalstatemententry_set', many=True, required=False)
+    entries = AnalyticalEntriesGqlSerializer(source="analyticalstatemententry_set", many=True, required=False)
 
     class Meta:
         model = AnalyticalStatement
         fields = (
-            'title',
-            'id',
-            'statement',
-            'report_text',
-            'information_gaps',
-            'include_in_report',
-            'order',
-            'cloned_from',
+            "title",
+            "id",
+            "statement",
+            "report_text",
+            "information_gaps",
+            "include_in_report",
+            "order",
+            "cloned_from",
             # Custom
-            'entries',
-            'client_id',
+            "entries",
+            "client_id",
         )
 
     # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
@@ -322,30 +329,28 @@ class AnalyticalStatementGqlSerializer(
 
     def validate(self, data):
         # Validate the analytical_entries
-        entries = data.get('analyticalstatemententry_set')
+        entries = data.get("analyticalstatemententry_set")
         if entries and len(entries) > settings.ANALYTICAL_ENTRIES_COUNT:
-            raise serializers.ValidationError(
-                f'Analytical entires count must be less than {settings.ANALYTICAL_ENTRIES_COUNT}'
-            )
+            raise serializers.ValidationError(f"Analytical entires count must be less than {settings.ANALYTICAL_ENTRIES_COUNT}")
         return data
 
 
 class AnalysisPillarGqlSerializer(TempClientIdMixin, UserResourceSerializer):
-    statements = AnalyticalStatementGqlSerializer(many=True, source='analyticalstatement_set', required=False)
+    statements = AnalyticalStatementGqlSerializer(many=True, source="analyticalstatement_set", required=False)
 
     class Meta:
         model = AnalysisPillar
         fields = (
-            'title',
-            'main_statement',
-            'information_gap',
-            'filters',
-            'assignee',
-            'analysis',
-            'cloned_from',
+            "title",
+            "main_statement",
+            "information_gap",
+            "filters",
+            "assignee",
+            "analysis",
+            "cloned_from",
             # Custom
-            'statements',
-            'client_id',
+            "statements",
+            "client_id",
         )
 
     # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
@@ -357,16 +362,16 @@ class AnalysisPillarGqlSerializer(TempClientIdMixin, UserResourceSerializer):
         return qs.none()  # On create throw error if existing id is provided
 
     def validate_analysis(self, analysis):
-        if analysis.project != self.context['request'].active_project:
-            raise serializers.ValidationError('Invalid analysis')
+        if analysis.project != self.context["request"].active_project:
+            raise serializers.ValidationError("Invalid analysis")
         return analysis
 
     def validate(self, data):
         # validate analysis_statement
-        analytical_statement = data.get('analyticalstatement_set')
+        analytical_statement = data.get("analyticalstatement_set")
         if analytical_statement and len(analytical_statement) > settings.ANALYTICAL_STATEMENT_COUNT:
             raise serializers.ValidationError(
-                f'Analytical statement count must be less than {settings.ANALYTICAL_STATEMENT_COUNT}'
+                f"Analytical statement count must be less than {settings.ANALYTICAL_STATEMENT_COUNT}"
             )
         return data
 
@@ -377,67 +382,64 @@ class DiscardedEntryGqlSerializer(serializers.ModelSerializer):
     class Meta:
         model = DiscardedEntry
         fields = (
-            'id',
-            'analysis_pillar',
-            'entry',
-            'tag',
+            "id",
+            "analysis_pillar",
+            "entry",
+            "tag",
         )
 
     def validate_analysis_pillar(self, analysis_pillar):
-        if analysis_pillar.analysis.project != self.context['request'].active_project:
-            raise serializers.ValidationError('Invalid analysis_pillar')
+        if analysis_pillar.analysis.project != self.context["request"].active_project:
+            raise serializers.ValidationError("Invalid analysis_pillar")
         return analysis_pillar
 
     def validate(self, data):
         # Validate entry data but analysis_pillar is required to do so
-        entry = data.get('entry')
+        entry = data.get("entry")
         if entry:
-            analysis_pillar = (
-                self.instance.analysis_pillar if self.instance
-                else data['analysis_pillar']
-            )
+            analysis_pillar = self.instance.analysis_pillar if self.instance else data["analysis_pillar"]
             if entry.project != analysis_pillar.analysis.project:
-                raise serializers.ValidationError('Analysis pillar project doesnot match Entry project')
+                raise serializers.ValidationError("Analysis pillar project doesnot match Entry project")
             # validating the entry for the lead published_on greater than analysis end date
             analysis_end_date = analysis_pillar.analysis.end_date
             if entry.lead.published_on > analysis_end_date:
-                raise serializers.ValidationError({
-                    'entry': (
-                        f'Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis_end_date}'
-                    ),
-                })
+                raise serializers.ValidationError(
+                    {
+                        "entry": (
+                            f"Entry {entry.id} lead published_on cannot be greater than analysis end_date {analysis_end_date}"
+                        ),
+                    }
+                )
         return data
 
 
 class AnalysisGqlSerializer(UserResourceSerializer):
     id = IntegerIDField(required=False)
-    analysis_pillar = AnalysisPillarGqlSerializer(many=True, source='analysispillar_set', required=False)
+    analysis_pillar = AnalysisPillarGqlSerializer(many=True, source="analysispillar_set", required=False)
     start_date = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = Analysis
         fields = (
-            'id',
-            'title',
-            'team_lead',
-            'project',
-            'start_date',
-            'end_date',
-            'cloned_from',
+            "id",
+            "title",
+            "team_lead",
+            "project",
+            "start_date",
+            "end_date",
+            "cloned_from",
         )
 
     def validate_project(self, project):
-        if project != self.context['request'].active_project:
-            raise serializers.ValidationError('Invalid project')
+        if project != self.context["request"].active_project:
+            raise serializers.ValidationError("Invalid project")
         return project
 
     def validate(self, data):
-        start_date = data.get('start_date')
-        end_date = data.get('end_date')
+        start_date = data.get("start_date")
+        end_date = data.get("end_date")
         if start_date and start_date > end_date:
-            raise serializers.ValidationError(
-                {'end_date': 'End date must occur after start date'}
-            )
+            raise serializers.ValidationError({"end_date": "End date must occur after start date"})
         return data
 
 
@@ -454,32 +456,30 @@ class AnalysisTopicModelSerializer(UserResourceSerializer, serializers.ModelSeri
     class Meta:
         model = TopicModel
         fields = (
-            'analysis_pillar',
-            'additional_filters',
-            'widget_tags',
+            "analysis_pillar",
+            "additional_filters",
+            "widget_tags",
         )
 
     def validate_analysis_pillar(self, analysis_pillar):
-        if analysis_pillar.analysis.project != self.context['request'].active_project:
-            raise serializers.ValidationError('Invalid analysis pillar')
+        if analysis_pillar.analysis.project != self.context["request"].active_project:
+            raise serializers.ValidationError("Invalid analysis pillar")
         return analysis_pillar
 
     def validate_additional_filters(self, additional_filters):
-        filter_set = EntryGQFilterSet(data=additional_filters, request=self.context['request'])
+        filter_set = EntryGQFilterSet(data=additional_filters, request=self.context["request"])
         if not filter_set.is_valid():
             raise serializers.ValidationError(filter_set.errors)
         return additional_filters
 
     def create(self, data):
         if not TopicModel._get_entries_qs(
-                data['analysis_pillar'],
-                data.get('additional_filters') or {},
+            data["analysis_pillar"],
+            data.get("additional_filters") or {},
         ).exists():
-            raise serializers.ValidationError('No entries found to process')
+            raise serializers.ValidationError("No entries found to process")
         instance = super().create(data)
-        transaction.on_commit(
-            lambda: trigger_topic_model.delay(instance.pk)
-        )
+        transaction.on_commit(lambda: trigger_topic_model.delay(instance.pk))
         return instance
 
 
@@ -489,32 +489,25 @@ class EntriesCollectionNlpTriggerBaseSerializer(UserResourceSerializer, serializ
 
     class Meta:
         model = EntriesCollectionNlpTriggerBase
-        fields = (
-            'entries_id',
-        )
+        fields = ("entries_id",)
 
     def validate_entries_id(self, entries_id):
-        entries_id = self.Meta.model.get_valid_entries_id(
-            self.context['request'].active_project.id,
-            entries_id
-        )
+        entries_id = self.Meta.model.get_valid_entries_id(self.context["request"].active_project.id, entries_id)
         if not entries_id:
-            raise serializers.ValidationError('No entries found to process')
+            raise serializers.ValidationError("No entries found to process")
         return entries_id
 
     def create(self, data):
-        data['project'] = self.context['request'].active_project
-        existing_instance = self.Meta.model.get_existing(data['entries_id'])
+        data["project"] = self.context["request"].active_project
+        existing_instance = self.Meta.model.get_existing(data["entries_id"])
         if existing_instance:
             return existing_instance
         instance = super().create(data)
-        transaction.on_commit(
-            lambda: self.trigger_task_func.delay(instance.pk)
-        )
+        transaction.on_commit(lambda: self.trigger_task_func.delay(instance.pk))
         return instance
 
     def update(self, _):
-        raise serializers.ValidationError('Not allowed using this serializer.')
+        raise serializers.ValidationError("Not allowed using this serializer.")
 
 
 class AnalysisAutomaticSummarySerializer(EntriesCollectionNlpTriggerBaseSerializer):
@@ -524,8 +517,8 @@ class AnalysisAutomaticSummarySerializer(EntriesCollectionNlpTriggerBaseSerializ
     class Meta:
         model = AutomaticSummary
         fields = (
-            'entries_id',
-            'widget_tags',
+            "entries_id",
+            "widget_tags",
         )
 
 
@@ -534,9 +527,7 @@ class AnalyticalStatementNGramSerializer(EntriesCollectionNlpTriggerBaseSerializ
 
     class Meta:
         model = AnalyticalStatementNGram
-        fields = (
-            'entries_id',
-        )
+        fields = ("entries_id",)
 
 
 class AnalyticalStatementGeoTaskSerializer(EntriesCollectionNlpTriggerBaseSerializer):
@@ -544,97 +535,95 @@ class AnalyticalStatementGeoTaskSerializer(EntriesCollectionNlpTriggerBaseSerial
 
     class Meta:
         model = AnalyticalStatementGeoTask
-        fields = (
-            'entries_id',
-        )
+        fields = ("entries_id",)
 
 
 # -------------------------- ReportModule --------------------------------
 class ReportEnum:
     class VariableType(models.TextChoices):
-        TEXT = 'text'
-        NUMBER = 'number'
-        DATE = 'date'
-        BOOLEAN = 'boolean'
+        TEXT = "text"
+        NUMBER = "number"
+        DATE = "date"
+        BOOLEAN = "boolean"
 
     class TextStyleAlign(models.TextChoices):
-        START = 'start'
-        END = 'end'
-        CENTER = 'center'
-        JUSTIFIED = 'justified'
+        START = "start"
+        END = "end"
+        CENTER = "center"
+        JUSTIFIED = "justified"
 
     class BorderStyleStyle(models.TextChoices):
-        DOTTED = 'dotted'
-        DASHED = 'dashed'
-        SOLID = 'solid'
-        DOUBLE = 'double'
-        NONE = 'none'
+        DOTTED = "dotted"
+        DASHED = "dashed"
+        SOLID = "solid"
+        DOUBLE = "double"
+        NONE = "none"
 
     class ImageContentStyleFit(models.TextChoices):
-        FILL = 'fill'
-        CONTAIN = 'contain'
-        COVER = 'cover'
-        SCALE_DOWN = 'scale-down'
-        NONE = 'none'
+        FILL = "fill"
+        CONTAIN = "contain"
+        COVER = "cover"
+        SCALE_DOWN = "scale-down"
+        NONE = "none"
 
     class HeadingConfigurationVariant(models.TextChoices):
-        H1 = 'h1'
-        H2 = 'h2'
-        H3 = 'h3'
-        H4 = 'h4'
+        H1 = "h1"
+        H2 = "h2"
+        H3 = "h3"
+        H4 = "h4"
 
     class HorizontalAxisType(models.TextChoices):
-        CATEGORICAL = 'categorical'
-        NUMERIC = 'numeric'
-        DATE = 'date'
+        CATEGORICAL = "categorical"
+        NUMERIC = "numeric"
+        DATE = "date"
 
     class BarChartType(models.TextChoices):
-        SIDE_BY_SIDE = 'side-by-side'
-        STACKED = 'stacked'
+        SIDE_BY_SIDE = "side-by-side"
+        STACKED = "stacked"
 
     class BarChartDirection(models.TextChoices):
-        VERTICAL = 'vertical'
-        HORIZONTAL = 'horizontal'
+        VERTICAL = "vertical"
+        HORIZONTAL = "horizontal"
 
     class LegendPosition(models.TextChoices):
-        TOP = 'top'
-        LEFT = 'left'
-        BOTTOM = 'bottom'
-        RIGHT = 'right'
+        TOP = "top"
+        LEFT = "left"
+        BOTTOM = "bottom"
+        RIGHT = "right"
 
     class LegendDotShape(models.TextChoices):
-        CIRCLE = 'circle'
-        TRIANGLE = 'triangle'
-        SQUARE = 'square'
-        DIAMOND = 'diamond'
+        CIRCLE = "circle"
+        TRIANGLE = "triangle"
+        SQUARE = "square"
+        DIAMOND = "diamond"
 
     class AggregationType(models.TextChoices):
-        COUNT = 'count'
-        SUM = 'sum'
-        MEAN = 'mean'
-        MEDIAN = 'median'
-        MIN = 'min'
-        MAX = 'max'
+        COUNT = "count"
+        SUM = "sum"
+        MEAN = "mean"
+        MEDIAN = "median"
+        MIN = "min"
+        MAX = "max"
 
     class ScaleType(models.TextChoices):
-        FIXED = 'fixed'
-        PROPORTIONAL = 'proportional'
+        FIXED = "fixed"
+        PROPORTIONAL = "proportional"
 
     class ScalingTechnique(models.TextChoices):
-        ABSOLUTE = 'absolute'
-        FLANNERY = 'flannery'
+        ABSOLUTE = "absolute"
+        FLANNERY = "flannery"
 
     class MapLayerType(models.TextChoices):
-        OSM_LAYER = 'OSM Layer'
-        MAPBOX_LAYER = 'Mapbox Layer'
-        SYMBOL_LAYER = 'Symbol Layer'
-        POLYGON_LAYER = 'Polygon Layer'
-        LINE_LAYER = 'Line Layer'
-        HEAT_MAP_LAYER = 'Heatmap Layer'
+        OSM_LAYER = "OSM Layer"
+        MAPBOX_LAYER = "Mapbox Layer"
+        SYMBOL_LAYER = "Symbol Layer"
+        POLYGON_LAYER = "Polygon Layer"
+        LINE_LAYER = "Line Layer"
+        HEAT_MAP_LAYER = "Heatmap Layer"
 
     class LineLayerStrokeType(models.TextChoices):
-        DASH = 'dash'
-        SOLID = 'solid'
+        DASH = "dash"
+        SOLID = "solid"
 
 
 class AnalysisReportVariableSerializer(serializers.Serializer):
@@ -1048,23 +1037,19 @@ class AnalysisReportContainerDataSerializer(TempClientIdMixin, serializers.Model
     class Meta:
         model = AnalysisReportContainerData
         fields = (
-            'id',
-            'client_id',
-            'client_reference_id',
-            'upload',
-            'data',
+            "id",
+            "client_id",
+            "client_reference_id",
+            "upload",
+            "data",
         )
 
     def validate_upload(self, upload):
-        report = self.context.get('report')
+        report = self.context.get("report")
         if report is None:
-            raise serializers.ValidationError(
-                'Report needs to be created before assigning uploads to container'
-            )
+            raise serializers.ValidationError("Report needs to be created before assigning uploads to container")
         if report.id != upload.report_id:
-            raise serializers.ValidationError(
-                'Upload within report are only allowed'
-            )
+            raise serializers.ValidationError("Upload within report are only allowed")
         return upload
 
 
@@ -1074,26 +1059,25 @@ class AnalysisReportContainerSerializer(TempClientIdMixin, UserResourceSerialize
     class Meta:
         model = AnalysisReportContainer
         fields = (
-            'id',
-            'client_id',
-            'row',
-            'column',
-            'width',
-            'height',
-            'content_type',
+            "id",
+            "client_id",
+            "row",
+            "column",
+            "width",
+            "height",
+            "content_type",
             # Custom
-            'style',
-            'content_configuration',
-            'content_data',
+            "style",
+            "content_configuration",
+            "content_data",
         )
 
     style = AnalysisReportContainerStyleSerializer(required=False, allow_null=True)
 
     # Content metadata
-    content_configuration = AnalysisReportContainerContentConfigurationSerializer(
-        required=False, allow_null=True)
+    content_configuration = AnalysisReportContainerContentConfigurationSerializer(required=False, allow_null=True)
 
-    content_data = AnalysisReportContainerDataSerializer(many=True, source='analysisreportcontainerdata_set')
+    content_data = AnalysisReportContainerDataSerializer(many=True, source="analysisreportcontainerdata_set")
 
     # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
     # This makes sure only scoped (individual Analysis Report) instances (container data) are updated.
@@ -1107,19 +1091,19 @@ class AnalysisReportSerializer(ProjectPropertySerializerMixin, UserResourceSeria
     class Meta:
         model = AnalysisReport
         fields = (
-            'analysis',
-            'slug',
-            'title',
-            'sub_title',
-            'is_public',
-            'organizations',
+            "analysis",
+            "slug",
+            "title",
+            "sub_title",
+            "is_public",
+            "organizations",
             # Custom
-            'configuration',
-            'containers',
+            "configuration",
+            "containers",
         )
 
     configuration = AnalysisReportConfigurationSerializer(required=False, allow_null=True)
-    containers = AnalysisReportContainerSerializer(many=True, source='analysisreportcontainer_set')
+    containers = AnalysisReportContainerSerializer(many=True, source="analysisreportcontainer_set")
 
     # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
     # This makes sure only scoped (individual Analysis Report) instances (containers) are updated.
@@ -1131,11 +1115,8 @@ class AnalysisReportSerializer(ProjectPropertySerializerMixin, UserResourceSeria
     def validate_analysis(self, analysis):
         existing_analysis_id = self.instance and self.instance.analysis_id
         # NOTE: if changed, make sure user have access to that analysis
-        if (
-            analysis.id != existing_analysis_id and
-            analysis.project_id != self.project.id
-        ):
-            raise serializers.ValidationError('You need access to analysis')
+        if analysis.id != existing_analysis_id and analysis.project_id != self.project.id:
+            raise serializers.ValidationError("You need access to analysis")
         return analysis
 
 
@@ -1143,46 +1124,44 @@ class AnalysisReportSerializer(ProjectPropertySerializerMixin, UserResourceSeria
 class AnalysisReportSnapshotSerializer(ProjectPropertySerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = AnalysisReportSnapshot
-        fields = (
-            'report',
-        )
+        fields = ("report",)
 
     serializers.FileField()
 
     def validate_report(self, report):
         if self.project.id != report.analysis.project_id:
-            raise serializers.ValidationError('Invalid report')
+            raise serializers.ValidationError("Invalid report")
         return report
 
     def validate(self, data):
-        report = data['report']
+        report = data["report"]
         snaphost_file, errors = generate_query_snapshot(
             SnapshotQuery.AnalysisReport.Snapshot,
             {
-                'projectID': str(self.project.id),
-                'reportID': str(report.id),
+                "projectID": str(self.project.id),
+                "reportID": str(report.id),
             },
-            data_callback=lambda x: x['project']['analysisReport'],
-            context=GQLContext(self.context['request']),
+            data_callback=lambda x: x["project"]["analysisReport"],
+            context=GQLContext(self.context["request"]),
         )
         if snaphost_file is None:
             logger.error(
-                f'Failed to generate snapshot for report-pk: {report.id}',
-                extra={'data': {'errors': errors}},
+                f"Failed to generate snapshot for report-pk: {report.id}",
+                extra={"data": {"errors": errors}},
             )
-            raise serializers.ValidationError('Failed to generate snapshot')
-        data['report_data_file'] = snaphost_file
-        data['published_by'] = self.context['request'].user
+            raise serializers.ValidationError("Failed to generate snapshot")
+        data["report_data_file"] = snaphost_file
+        data["published_by"] = self.context["request"].user
         return data
 
     def create(self, data):
         instance = super().create(data)
         # Save file
-        instance.report_data_file.save(f'{instance.report.id}-{instance.report.slug}.json', data['report_data_file'])
+        instance.report_data_file.save(f"{instance.report.id}-{instance.report.slug}.json", data["report_data_file"])
         return instance
 
     def update(self, _):
-        raise Exception('Not implemented')
+        raise Exception("Not implemented")
 
 
 # -- Uploads
@@ -1217,12 +1196,12 @@ class AnalysisReportUploadSerializer(ProjectPropertySerializerMixin, serializers
     class Meta:
         model = AnalysisReportUpload
         fields = (
-            'id',
-            'report',
-            'file',
-            'type',
+            "id",
+            "report",
+            "file",
+            "type",
             # Custom
-            'metadata',
+            "metadata",
         )
 
     metadata = AnalysisReportUploadMetadataSerializer()
@@ -1230,19 +1209,13 @@ class AnalysisReportUploadSerializer(ProjectPropertySerializerMixin, serializers
     def validate_file(self, file):
         existing_file_id = self.instance and self.instance.file_id
         # NOTE: if changed, make sure only owner can assign files
-        if (
-            file.id != existing_file_id and
-            file.created_by != self.context['request'].user
-        ):
-            raise serializers.ValidationError('Only owner can assign file')
+        if file.id != existing_file_id and file.created_by != self.context["request"].user:
+            raise serializers.ValidationError("Only owner can assign file")
         return file
 
     def validate_report(self, report):
         existing_report_id = self.instance and self.instance.report_id
         # NOTE: if changed, make sure user have access to that report
-        if (
-            report.id != existing_report_id and
-            report.analysis.project_id != self.project.id
-        ):
-            raise serializers.ValidationError('You need access to report')
+        if report.id != existing_report_id and report.analysis.project_id != self.project.id:
+            raise serializers.ValidationError("You need access to report")
         return report

@@ -1,26 +1,26 @@
-import factory
 import datetime
+
+import factory
 from factory import fuzzy
 from factory.django import DjangoModelFactory
-
-from project.factories import ProjectFactory
 from gallery.factories import FileFactory
+from project.factories import ProjectFactory
+
 from .models import (
-    Lead,
     EMMEntity,
-    LeadGroup,
+    Lead,
     LeadEMMTrigger,
+    LeadGroup,
     LeadPreview,
     LeadPreviewImage,
     UserSavedLeadFilter,
 )
 
-
 DEFAULT_START_DATE = datetime.date(year=2017, month=1, day=1)
 
 
 class LeadFactory(DjangoModelFactory):
-    title = factory.Sequence(lambda n: f'Lead-{n}')
+    title = factory.Sequence(lambda n: f"Lead-{n}")
     text = fuzzy.FuzzyText(length=100)
     project = factory.SubFactory(ProjectFactory)
     attachment = factory.SubFactory(FileFactory)
@@ -56,29 +56,29 @@ class LeadFactory(DjangoModelFactory):
 
 
 class EmmEntityFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda n: f'emm-name-{n}')
+    name = factory.Sequence(lambda n: f"emm-name-{n}")
 
     class Meta:
         model = EMMEntity
 
 
 class LeadGroupFactory(DjangoModelFactory):
-    title = factory.Sequence(lambda n: f'LeadGroup-{n}')
+    title = factory.Sequence(lambda n: f"LeadGroup-{n}")
 
     class Meta:
         model = LeadGroup
 
 
 class LeadEMMTriggerFactory(DjangoModelFactory):
-    emm_keyword = factory.Sequence(lambda n: f'emm_keyword-{n}')
-    emm_risk_factor = factory.Sequence(lambda n: f'emm_risk_factor-{n}')
+    emm_keyword = factory.Sequence(lambda n: f"emm_keyword-{n}")
+    emm_risk_factor = factory.Sequence(lambda n: f"emm_risk_factor-{n}")
 
     class Meta:
         model = LeadEMMTrigger
 
 
 class LeadPreviewFactory(DjangoModelFactory):
-    text_extract = factory.Faker('text', max_nb_chars=4000)
+    text_extract = factory.Faker("text", max_nb_chars=4000)
 
     class Meta:
         model = LeadPreview

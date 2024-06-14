@@ -1,11 +1,10 @@
 from collections import defaultdict
 
-from promise import Promise
 from django.utils.functional import cached_property
+from promise import Promise
+from quality_assurance.models import EntryReviewCommentText
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
-
-from quality_assurance.models import EntryReviewCommentText
 
 
 class EntryReviewCommentTextLoader(DataLoaderWithContext):

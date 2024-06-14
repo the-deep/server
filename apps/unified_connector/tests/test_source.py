@@ -1,17 +1,14 @@
-from parameterized import parameterized
 from unittest.mock import patch
 
-from utils.graphene.tests import GraphQLTestCase
-from project.factories import ProjectFactory
-
-from unified_connector.factories import (
-    ConnectorSourceFactory,
-    UnifiedConnectorFactory,
-)
-from unified_connector.models import ConnectorSource
-from unified_connector.tests.mock_data.store import ConnectorSourceResponseMock
-from unified_connector.sources.base import OrganizationSearch
 from organization.models import Organization
+from parameterized import parameterized
+from project.factories import ProjectFactory
+from unified_connector.factories import ConnectorSourceFactory, UnifiedConnectorFactory
+from unified_connector.models import ConnectorSource
+from unified_connector.sources.base import OrganizationSearch
+from unified_connector.tests.mock_data.store import ConnectorSourceResponseMock
+
+from utils.graphene.tests import GraphQLTestCase
 
 
 class TestUnifiedConnectorResponse(GraphQLTestCase):
@@ -42,16 +39,20 @@ class TestUnifiedConnectorResponse(GraphQLTestCase):
         self.assertEqual(len(leads_result), count)
         self._assert_lead_equal_to_expected_data(leads_result, mock_data.expected_data)
 
-    @parameterized.expand([
-        [ConnectorSource.Source.UNHCR, 'unified_connector.sources.unhcr_portal.UNHCRPortal.get_content'],
-        [ConnectorSource.Source.RELIEF_WEB, 'unified_connector.sources.relief_web.ReliefWeb.get_content'],
-        [ConnectorSource.Source.RSS_FEED, 'unified_connector.sources.rss_feed.RssFeed.get_content'],
-        [ConnectorSource.Source.ATOM_FEED, 'unified_connector.sources.atom_feed.AtomFeed.get_content'],
-        [ConnectorSource.Source.PDNA, 'unified_connector.sources.pdna.PDNA.get_content'],
-        [ConnectorSource.Source.HUMANITARIAN_RESP,
-            'unified_connector.sources.humanitarian_response.HumanitarianResponse.get_content'],
-        [ConnectorSource.Source.EMM, 'unified_connector.sources.emm.EMM.get_content'],
-    ])
+    @parameterized.expand(
+        [
+            [ConnectorSource.Source.UNHCR, "unified_connector.sources.unhcr_portal.UNHCRPortal.get_content"],
+            [ConnectorSource.Source.RELIEF_WEB, "unified_connector.sources.relief_web.ReliefWeb.get_content"],
+            [ConnectorSource.Source.RSS_FEED, "unified_connector.sources.rss_feed.RssFeed.get_content"],
+            [ConnectorSource.Source.ATOM_FEED, "unified_connector.sources.atom_feed.AtomFeed.get_content"],
+            [ConnectorSource.Source.PDNA, "unified_connector.sources.pdna.PDNA.get_content"],
+            [
+                ConnectorSource.Source.HUMANITARIAN_RESP,
+                "unified_connector.sources.humanitarian_response.HumanitarianResponse.get_content",
+            ],
+            [ConnectorSource.Source.EMM, "unified_connector.sources.emm.EMM.get_content"],
+        ]
+    )
     def test_connector_source_(self, source_type, response_mock_path):
         response_mock_patch = patch(response_mock_path)
         response_mock = response_mock_patch.start()
@@ -63,14 +64,14 @@ class TestUnifiedConnectorResponse(GraphQLTestCase):
             qs = Organization.objects.filter(title__in=titles)
             return qs
 
-        Organization.objects.create(title='Organization 1', short_name='Organization 1', long_name='Organization 1')
+        Organization.objects.create(title="Organization 1", short_name="Organization 1", long_name="Organization 1")
         raw_text_labels = [
             # Existing
-            'Organization 1',
+            "Organization 1",
             # New
-            'Relief Web',
-            'reliefweb',
-            'the relief web',
+            "Relief Web",
+            "reliefweb",
+            "the relief web",
         ]
 
         # Fetch/Create using raw_text_labels
@@ -82,8 +83,8 @@ class TestUnifiedConnectorResponse(GraphQLTestCase):
         self.assertEqual(qs.count(), len(raw_text_labels))
 
         # Set Parent Organizations
-        parent_org = Organization.objects.get(title='Relief Web')
-        child_titles = ['reliefweb', 'the relief web']
+        parent_org = Organization.objects.get(title="Relief Web")
+        child_titles = ["reliefweb", "the relief web"]
         qs = _get_orgs(child_titles)
         self.assertEqual(qs.count(), len(child_titles))
         qs.update(parent=parent_org)
@@ -94,9 +95,9 @@ class TestUnifiedConnectorResponse(GraphQLTestCase):
             self.assertEqual(search_organizaton.get(title), parent_org)
 
         raw_text_labels += [
-            'Organization 1',  # We have a duplicate title here, using set for count now
-            'the relief web',
-            'the relief web2',
+            "Organization 1",  # We have a duplicate title here, using set for count now
+            "the relief web",
+            "the relief web2",
         ]
 
         # Fetch/Create using raw_text_labels
@@ -108,8 +109,8 @@ class TestUnifiedConnectorResponse(GraphQLTestCase):
         self.assertEqual(qs.count(), len(set(raw_text_labels)))
 
         # Update newly created child relif web2 parent
-        Organization.objects.filter(title='the relief web2').update(parent=parent_org)
+        Organization.objects.filter(title="the relief web2").update(parent=parent_org)
 
         # Fetch latest
         search_organizaton = OrganizationSearch(raw_text_labels, None, None)
-        self.assertEqual(search_organizaton.get('the relief web2'), parent_org)
+        self.assertEqual(search_organizaton.get("the relief web2"), parent_org)

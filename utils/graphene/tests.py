@@ -1,42 +1,42 @@
-import os
-import json
-import pytz
-import inspect
 import datetime
+import inspect
+import json
+import os
 from enum import Enum
-from unittest.mock import patch
 from typing import Union
+from unittest.mock import patch
 
-from factory import random as factory_random
-from snapshottest.django import TestCase as SnapShotTextCase
-from django.utils import timezone
-from django.core import management
+import pytz
+from analysis_framework.models import AnalysisFramework, AnalysisFrameworkRole
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.test import TestCase, override_settings
+from django.core import management
 from django.db import models
+from django.test import TestCase, override_settings
+from django.utils import timezone
+from factory import random as factory_random
+
 # dramatiq test case: setupclass is not properly called
 # from django_dramatiq.test import DramatiqTestCase
 from graphene_django.utils import GraphQLTestCase as BaseGraphQLTestCase
+from project.models import ProjectRole
+from project.permissions import get_project_permissions_value
 from rest_framework import status
+from snapshottest.django import TestCase as SnapShotTextCase
 
 from deep.middleware import _set_current_request
 from deep.tests.test_case import (
-    TEST_CACHES,
     TEST_AUTH_PASSWORD_VALIDATORS,
+    TEST_CACHES,
     TEST_EMAIL_BACKEND,
     TEST_FILE_STORAGE,
     clean_up_test_media_files,
 )
 
-from analysis_framework.models import AnalysisFramework, AnalysisFrameworkRole
-from project.permissions import get_project_permissions_value
-from project.models import ProjectRole
-
 User = get_user_model()
-TEST_MEDIA_ROOT = 'media-temp'
+TEST_MEDIA_ROOT = "media-temp"
 if settings.PYTEST_XDIST_WORKER:
-    TEST_MEDIA_ROOT = f'media-temp/{settings.PYTEST_XDIST_WORKER}'
+    TEST_MEDIA_ROOT = f"media-temp/{settings.PYTEST_XDIST_WORKER}"
 
 
 @override_settings(
@@ -46,14 +46,14 @@ if settings.PYTEST_XDIST_WORKER:
     CACHES=TEST_CACHES,
     AUTH_PASSWORD_VALIDATORS=TEST_AUTH_PASSWORD_VALIDATORS,
     CELERY_TASK_ALWAYS_EAGER=True,
-    DEEPL_SERVER_CALLBACK_DOMAIN='http://testserver',
+    DEEPL_SERVER_CALLBACK_DOMAIN="http://testserver",
 )
 class GraphQLTestCase(BaseGraphQLTestCase):
     """
     GraphQLTestCase with custom helper methods
     """
 
-    GRAPHQL_SCHEMA = 'deep.schema.schema'
+    GRAPHQL_SCHEMA = "deep.schema.schema"
     ENABLE_NOW_PATCHER = False
     PATCHER_NOW_VALUE = datetime.datetime(2021, 1, 1, 0, 0, 0, 123456, tzinfo=pytz.UTC)
 
@@ -64,24 +64,24 @@ class GraphQLTestCase(BaseGraphQLTestCase):
         super().tearDownClass()
 
     def _setup_premailer_patcher(self, mock):
-        mock.get.return_value.text = ''
-        mock.post.return_value.text = ''
+        mock.get.return_value.text = ""
+        mock.post.return_value.text = ""
 
     def setUp(self):
         super().setUp()
         self.create_project_roles()
         self.create_af_roles()
-        self.premailer_patcher_requests = patch('premailer.premailer.requests')
+        self.premailer_patcher_requests = patch("premailer.premailer.requests")
         self._setup_premailer_patcher(self.premailer_patcher_requests.start())
         if self.ENABLE_NOW_PATCHER:
-            self.now_patcher = patch('django.utils.timezone.now')
+            self.now_patcher = patch("django.utils.timezone.now")
             self.now_datetime = self.PATCHER_NOW_VALUE
             self.now_datetime_str = lambda: self.now_datetime.isoformat()
             self.now_patcher.start().side_effect = lambda: self.now_datetime
 
     def tearDown(self):
         _set_current_request()  # Clear request
-        if hasattr(self, 'now_patcher'):
+        if hasattr(self, "now_patcher"):
             self.now_patcher.stop()
         self.premailer_patcher_requests.stop()
         super().tearDown()
@@ -121,14 +121,14 @@ class GraphQLTestCase(BaseGraphQLTestCase):
         else:
             self.assertResponseNoErrors(response)
             if okay is not None:
-                _content = content['data']
+                _content = content["data"]
                 if mnested:
                     for key in mnested:
                         _content = _content[key]
                 for key, datum in _content.items():
-                    if key == '__typename':
+                    if key == "__typename":
                         continue
-                    okay_response = datum.get('ok')
+                    okay_response = datum.get("ok")
                     if okay:
                         self.assertTrue(okay_response, content)
                     else:
@@ -144,11 +144,11 @@ class GraphQLTestCase(BaseGraphQLTestCase):
             # TODO: Migrate current dynamic permission to static ones.
             return ProjectRole.objects.create(
                 title=title,
-                lead_permissions=get_project_permissions_value('lead', '__all__'),
-                entry_permissions=get_project_permissions_value('entry', '__all__'),
-                setup_permissions=get_project_permissions_value('setup', '__all__'),
-                export_permissions=get_project_permissions_value('export', '__all__'),
-                assessment_permissions=get_project_permissions_value('assessment', '__all__'),
+                lead_permissions=get_project_permissions_value("lead", "__all__"),
+                entry_permissions=get_project_permissions_value("entry", "__all__"),
+                setup_permissions=get_project_permissions_value("setup", "__all__"),
+                export_permissions=get_project_permissions_value("export", "__all__"),
+                assessment_permissions=get_project_permissions_value("assessment", "__all__"),
                 is_creator_role=False,
                 level=level,
                 is_default_role=is_default_role,
@@ -158,33 +158,33 @@ class GraphQLTestCase(BaseGraphQLTestCase):
         # TODO: Make sure merge roles have all the permissions
         # Follow deep.permissions.py PERMISSION_MAP for permitted actions.
         self.project_role_reader_non_confidential = _create_role(
-            'Reader (Non Confidential)',
+            "Reader (Non Confidential)",
             ProjectRole.Type.READER_NON_CONFIDENTIAL,
             level=800,
         )
         self.project_role_reader = _create_role(
-            'Reader',
+            "Reader",
             ProjectRole.Type.READER,
             level=400,
         )
         self.project_role_member = _create_role(
-            'Member',
+            "Member",
             ProjectRole.Type.MEMBER,
             level=200,
             is_default_role=True,
         )
         self.project_role_admin = _create_role(
-            'Admin',
+            "Admin",
             ProjectRole.Type.ADMIN,
             level=100,
         )
         self.project_role_owner = _create_role(
-            'Project Owner',
+            "Project Owner",
             ProjectRole.Type.PROJECT_OWNER,
             level=1,
         )
         self.project_base_access = _create_role(
-            'Base Access',
+            "Base Access",
             ProjectRole.Type.UNKNOWN,
             level=999999,
         )
@@ -209,35 +209,33 @@ class GraphQLTestCase(BaseGraphQLTestCase):
         private_temp_af = AnalysisFramework(is_private=True)
 
         self.af_editor = _create_role(
-            'Editor',
-            AnalysisFrameworkRole.Type.EDITOR,
-            permissions=public_temp_af.get_editor_permissions()
+            "Editor", AnalysisFrameworkRole.Type.EDITOR, permissions=public_temp_af.get_editor_permissions()
         )
         self.af_owner = _create_role(
-            'Owner',
+            "Owner",
             AnalysisFrameworkRole.Type.OWNER,
             permissions=public_temp_af.get_owner_permissions(),
         )
         self.af_default = _create_role(
-            'Default',
+            "Default",
             AnalysisFrameworkRole.Type.DEFAULT,
             permissions=public_temp_af.get_default_permissions(),
             is_default_role=True,
         )
         self.af_private_editor = _create_role(
-            'Private Editor',
+            "Private Editor",
             AnalysisFrameworkRole.Type.PRIVATE_EDITOR,
             permissions=private_temp_af.get_editor_permissions(),
             is_private_role=True,
         )
         self.af_private_owner = _create_role(
-            'Private Owner',
+            "Private Owner",
             AnalysisFrameworkRole.Type.PRIVATE_OWNER,
             permissions=private_temp_af.get_owner_permissions(),
             is_private_role=True,
         )
         self.af_private_viewer = _create_role(
-            'Private Viewer',
+            "Private Viewer",
             AnalysisFrameworkRole.Type.PRIVATE_VIEWER,
             permissions=private_temp_af.get_default_permissions(),
             is_private_role=True,
@@ -246,8 +244,10 @@ class GraphQLTestCase(BaseGraphQLTestCase):
 
     def assertListIds(
         self,
-        current_list, excepted_list, message=None,
-        get_current_list_id=lambda x: str(x['id']),
+        current_list,
+        excepted_list,
+        message=None,
+        get_current_list_id=lambda x: str(x["id"]),
         get_excepted_list_id=lambda x: str(x.id),
     ):
         self.assertEqual(
@@ -258,8 +258,10 @@ class GraphQLTestCase(BaseGraphQLTestCase):
 
     def assertNotListIds(
         self,
-        current_list, excepted_list, message=None,
-        get_current_list_id=lambda x: str(x['id']),
+        current_list,
+        excepted_list,
+        message=None,
+        get_current_list_id=lambda x: str(x["id"]),
         get_not_excepted_list_id=lambda x: str(x.id),
     ):
         self.assertNotEqual(
@@ -277,18 +279,15 @@ class GraphQLTestCase(BaseGraphQLTestCase):
                 if exclude:
                     return key not in keys
                 return key in keys
-            return {
-                key: value
-                for key, value in _dict.items()
-                if _include(key)
-            }
+
+            return {key: value for key, value in _dict.items() if _include(key)}
 
         if only_keys:
             assert _filter_by_keys(excepted, keys=only_keys) == _filter_by_keys(real, keys=only_keys), message
         elif ignore_keys:
-            assert _filter_by_keys(excepted, keys=ignore_keys, exclude=True) \
-                == _filter_by_keys(real, keys=ignore_keys, exclude=True), \
-                message
+            assert _filter_by_keys(excepted, keys=ignore_keys, exclude=True) == _filter_by_keys(
+                real, keys=ignore_keys, exclude=True
+            ), message
         else:
             assert excepted == real, message
 
@@ -299,13 +298,13 @@ class GraphQLTestCase(BaseGraphQLTestCase):
         )
 
     def get_media_url(self, file):
-        return f'http://testserver/media/{file}'
+        return f"http://testserver/media/{file}"
 
-    def get_media_file(self, file, mode='rb') -> bytes:
+    def get_media_file(self, file, mode="rb") -> bytes:
         with open(os.path.join(TEST_MEDIA_ROOT, file), mode) as fp:
             return fp.read()
 
-    def get_json_media_file(self, file, mode='rb') -> dict:
+    def get_json_media_file(self, file, mode="rb") -> dict:
         return json.loads(self.get_media_file(file, mode=mode))
 
     def update_obj(self, obj, **fields):
@@ -318,7 +317,7 @@ class GraphQLTestCase(BaseGraphQLTestCase):
         return _datetime.isoformat()
 
     def get_date_str(self, _datetime):
-        return _datetime.strftime('%Y-%m-%d')
+        return _datetime.strftime("%Y-%m-%d")
 
     def get_aware_datetime(self, *args, **kwargs):
         return timezone.make_aware(datetime.datetime(*args, **kwargs))
@@ -328,10 +327,10 @@ class GraphQLTestCase(BaseGraphQLTestCase):
 
     # Some Rest helper functions
     def assert_http_code(self, response, status_code):
-        error_resp = getattr(response, 'data', None)
+        error_resp = getattr(response, "data", None)
         mesg = error_resp
-        if isinstance(error_resp, dict) and 'errors' in error_resp:
-            mesg = error_resp['errors']
+        if isinstance(error_resp, dict) and "errors" in error_resp:
+            mesg = error_resp["errors"]
         return self.assertEqual(response.status_code, status_code, mesg)
 
     def assert_400(self, response):
@@ -361,6 +360,7 @@ class GraphQLSnapShotTestCase(GraphQLTestCase, SnapShotTextCase):
     This TestCase can be used with `self.assertMatchSnapshot`.
     Make sure to only include snapshottests as we are using database flush.
     """
+
     maxDiff = None
     factories_used = []
 
@@ -373,9 +373,9 @@ class GraphQLSnapShotTestCase(GraphQLTestCase, SnapShotTextCase):
             factory.reset_sequence()
         # XXX: Quick hack to make sure _snapshot_file is always defined. Which seems to be missing when running in CI
         # https://github.com/syrusakbary/snapshottest/blob/770b8f14cd965d923a0183a0e531e9ec0ba20192/snapshottest/unittest.py#L86
-        if not hasattr(self, '_snapshot_file'):
+        if not hasattr(self, "_snapshot_file"):
             self._snapshot_file = inspect.getfile(type(self))
-        if not hasattr(self, '_snapshot_tests'):
+        if not hasattr(self, "_snapshot_tests"):
             self._snapshot_tests = []
         super().setUp()
 

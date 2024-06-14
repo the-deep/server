@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.db import models
-
 from user_resource.models import UserResource
 
 
@@ -8,17 +7,21 @@ class UserGroup(UserResource):
     """
     User group model
     """
+
     title = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True)
     display_picture = models.ForeignKey(
-        'gallery.File',
+        "gallery.File",
         on_delete=models.SET_NULL,
-        null=True, blank=True, default=None,
+        null=True,
+        blank=True,
+        default=None,
     )
     members = models.ManyToManyField(
-        User, blank=True,
-        through_fields=('group', 'member'),
-        through='GroupMembership',
+        User,
+        blank=True,
+        through_fields=("group", "member"),
+        through="GroupMembership",
     )
     global_crisis_monitoring = models.BooleanField(default=False)
 
@@ -33,17 +36,18 @@ class UserGroup(UserResource):
 
     @classmethod
     def get_for_gq(cls, user, only_member=False):
-        qs = cls.objects\
-            .annotate(
-                # NOTE: This is used by permission module
-                current_user_role=models.Subquery(
-                    GroupMembership.objects.filter(
-                        group=models.OuterRef('pk'),
-                        member=user,
-                    ).order_by('role').values('role')[:1],
-                    output_field=models.CharField()
+        qs = cls.objects.annotate(
+            # NOTE: This is used by permission module
+            current_user_role=models.Subquery(
+                GroupMembership.objects.filter(
+                    group=models.OuterRef("pk"),
+                    member=user,
                 )
+                .order_by("role")
+                .values("role")[:1],
+                output_field=models.CharField(),
             )
+        )
         if only_member:
             return qs.exclude(current_user_role__isnull=True)
         return qs
@@ -86,40 +90,41 @@ class UserGroup(UserResource):
             role=_role,
             group=self,
             defaults={
-                'added_by': added_by or user,
+                "added_by": added_by or user,
             },
         )
 
     def get_current_user_role(self, user):
-        return GroupMembership.objects\
-            .filter(group=self, member=user)\
-            .values_list('role', flat=True).first()
+        return GroupMembership.objects.filter(group=self, member=user).values_list("role", flat=True).first()
 
 
 class GroupMembership(models.Model):
     """
     User group-Member relationship attributes
     """
+
     class Role(models.TextChoices):
-        NORMAL = 'normal', 'Normal'
-        ADMIN = 'admin', 'Admin'
+        NORMAL = "normal", "Normal"
+        ADMIN = "admin", "Admin"
 
     member = models.ForeignKey(User, on_delete=models.CASCADE)
     group = models.ForeignKey(UserGroup, on_delete=models.CASCADE)
     role = models.CharField(max_length=96, choices=Role.choices, default=Role.NORMAL)
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(
-        User, on_delete=models.CASCADE,
-        null=True, blank=True, default=None,
-        related_name='added_group_memberships',
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        default=None,
+        related_name="added_group_memberships",
     )
 
     def __str__(self):
-        return '{} @ {}'.format(str(self.member),
-                                self.group.title)
+        return "{} @ {}".format(str(self.member), self.group.title)
 
     class Meta:
-        unique_together = ('member', 'group')
+        unique_together = ("member", "group")
 
     @staticmethod
     def get_for(user):
@@ -133,6 +138,4 @@ class GroupMembership(models.Model):
 
     @staticmethod
     def get_member_for_user_group(user_group):
-        return GroupMembership.objects.filter(
-            group=user_group
-        ).distinct()
+        return GroupMembership.objects.filter(group=user_group).distinct()

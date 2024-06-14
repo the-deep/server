@@ -1,4 +1,4 @@
-from rest_framework import generics, status, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
 from . import serializers
@@ -11,10 +11,7 @@ class TokenViewBase(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        return Response(
-            serializer.validated_data,
-            status=status.HTTP_200_OK
-        )
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
 class TokenObtainPairView(TokenViewBase):

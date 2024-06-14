@@ -1,19 +1,10 @@
 import json
 
-from deep_migration.utils import (
-    MigrationCommand,
-    get_source_url,
-    request_with_auth,
-)
-from deep_migration.models import (
-    CountryMigration,
-    ProjectMigration,
-    UserMigration,
-)
-from project.models import Project, ProjectMembership, ProjectRole
-
-from django.utils.dateparse import parse_date
 import reversion
+from deep_migration.models import CountryMigration, ProjectMigration, UserMigration
+from deep_migration.utils import MigrationCommand, get_source_url, request_with_auth
+from django.utils.dateparse import parse_date
+from project.models import Project, ProjectMembership, ProjectRole
 
 
 def get_user(old_user_id):
@@ -28,27 +19,27 @@ def get_region(reference_code):
 
 class Command(MigrationCommand):
     def run(self):
-        if self.kwargs.get('data_file'):
-            with open(self.kwargs['data_file']) as f:
+        if self.kwargs.get("data_file"):
+            with open(self.kwargs["data_file"]) as f:
                 projects = json.load(f)
         else:
-            projects = request_with_auth(get_source_url('events2', 'v1'))
+            projects = request_with_auth(get_source_url("events2", "v1"))
 
         if not projects:
-            print('Couldn\'t find projects data')
+            print("Couldn't find projects data")
 
         with reversion.create_revision():
             for project in projects:
                 self.import_project(project)
 
     def import_project(self, data):
-        print('------------')
-        print('Migrating project')
+        print("------------")
+        print("Migrating project")
 
-        old_id = data['id']
-        title = data['name']
+        old_id = data["id"]
+        title = data["name"]
 
-        print('{} - {}'.format(old_id, title))
+        print("{} - {}".format(old_id, title))
 
         migration, _ = ProjectMigration.objects.get_or_create(
             old_id=old_id,
@@ -63,31 +54,29 @@ class Command(MigrationCommand):
             return migration.project
 
         project = migration.project
-        project.start_date = data['start_date'] and \
-            parse_date(data['start_date'])
-        project.end_date = data['end_date'] and \
-            parse_date(data['end_date'])
+        project.start_date = data["start_date"] and parse_date(data["start_date"])
+        project.end_date = data["end_date"] and parse_date(data["end_date"])
         project.save()
 
-        for user_id in data['admins']:
+        for user_id in data["admins"]:
             user = get_user(user_id)
             if user:
                 ProjectMembership.objects.get_or_create(
                     project=project,
                     member=user,
-                    defaults={'role': ProjectRole.get_admin_roles().first()},
+                    defaults={"role": ProjectRole.get_admin_roles().first()},
                 )
 
-        for user_id in data['members']:
+        for user_id in data["members"]:
             user = get_user(user_id)
             if user:
                 ProjectMembership.objects.get_or_create(
                     project=project,
                     member=user,
-                    defaults={'role': ProjectRole.get_default_role()},
+                    defaults={"role": ProjectRole.get_default_role()},
                 )
 
-        for region_code in data['countries']:
+        for region_code in data["countries"]:
             region = get_region(region_code)
             if region and region not in project.regions.all():
                 project.regions.add(region)

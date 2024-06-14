@@ -1,34 +1,33 @@
 import django_filters
-
-from django.contrib import admin
-from django.utils.translation import gettext_lazy as _
-from django.db.models.functions import Length
-from django.db import models
-
-from utils.graphene.filters import MultipleInputFilter, IDFilter
-
 from assessment_registry.models import AssessmentRegistry
+from django.contrib import admin
+from django.db import models
+from django.db.models.functions import Length
+from django.utils.translation import gettext_lazy as _
 from lead.models import Lead
 from project.models import Project
-from .models import Organization
+
+from utils.graphene.filters import IDFilter, MultipleInputFilter
+
 from .enums import OrganizationOrderingEnum
+from .models import Organization
 
 
 class IsFromReliefWeb(admin.SimpleListFilter):
-    YES = 'yes'
-    NO = 'no'
+    YES = "yes"
+    NO = "no"
 
     # Human-readable title which will be displayed in the
     # right admin sidebar just above the filter options.
-    title = _('Is from Relief Web')
+    title = _("Is from Relief Web")
 
     # Parameter for the filter that will be used in the URL query.
-    parameter_name = 'is_from_relief_web'
+    parameter_name = "is_from_relief_web"
 
     def lookups(self, request, model_admin):
         return (
-            (self.YES, 'Yes'),
-            (self.NO, 'No'),
+            (self.YES, "Yes"),
+            (self.NO, "No"),
         )
 
     def queryset(self, request, queryset):
@@ -41,33 +40,33 @@ class IsFromReliefWeb(admin.SimpleListFilter):
 
 
 class OrganizationFilterSet(django_filters.FilterSet):
-    search = django_filters.CharFilter(method='search_filter')
-    used_in_project_by_lead = IDFilter(method='filter_used_in_project_by_lead')
-    used_in_project_by_assesment = IDFilter(method='filter_used_in_project_by_assesment')
+    search = django_filters.CharFilter(method="search_filter")
+    used_in_project_by_lead = IDFilter(method="filter_used_in_project_by_lead")
+    used_in_project_by_assesment = IDFilter(method="filter_used_in_project_by_assesment")
     ordering = MultipleInputFilter(
         OrganizationOrderingEnum,
-        method='ordering_filter',
+        method="ordering_filter",
     )
 
     class Meta:
         model = Organization
-        fields = ['id', 'verified']
+        fields = ["id", "verified"]
 
     def search_filter(self, qs, _, value):
         if value:
             return qs.filter(
-                models.Q(title__unaccent__icontains=value) |
-                models.Q(short_name__unaccent__icontains=value) |
-                models.Q(long_name__unaccent__icontains=value) |
-                models.Q(related_childs__title__unaccent__icontains=value) |
-                models.Q(related_childs__short_name__unaccent__icontains=value) |
-                models.Q(related_childs__long_name__unaccent__icontains=value)
+                models.Q(title__unaccent__icontains=value)
+                | models.Q(short_name__unaccent__icontains=value)
+                | models.Q(long_name__unaccent__icontains=value)
+                | models.Q(related_childs__title__unaccent__icontains=value)
+                | models.Q(related_childs__short_name__unaccent__icontains=value)
+                | models.Q(related_childs__long_name__unaccent__icontains=value)
             ).distinct()
         return qs
 
     def filter_used_in_project_by_lead(self, qs, _, value):
         if value:
-            user = getattr(self.request, 'user', None)
+            user = getattr(self.request, "user", None)
             if user is None:
                 return qs
             project = Project.get_for_gq(user, only_member=True).filter(id=value).first()
@@ -77,44 +76,46 @@ class OrganizationFilterSet(django_filters.FilterSet):
             lead_organizations_queryset = Lead.objects.filter(project=project)
             return qs.filter(
                 # Publishers
-                models.Q(id__in=lead_organizations_queryset.values('source')) |
+                models.Q(id__in=lead_organizations_queryset.values("source"))
+                |
                 # Authors
-                models.Q(id__in=lead_organizations_queryset.values('authors__id')) |
+                models.Q(id__in=lead_organizations_queryset.values("authors__id"))
+                |
                 # Project stakeholders
-                models.Q(id__in=project.organizations.values('id'))
+                models.Q(id__in=project.organizations.values("id"))
             )
         return qs
 
     def filter_used_in_project_by_assesment(self, qs, _, value):
         if value:
-            user = getattr(self.request, 'user', None)
+            user = getattr(self.request, "user", None)
             if user is None:
                 return qs
             project = Project.get_for_gq(user, only_member=True).filter(id=value).first()
             if project is None:
                 return qs
             assessment_organizations_queryset = AssessmentRegistry.objects.filter(project=project)
-            return qs.filter(
-                models.Q(id__in=assessment_organizations_queryset.values('stakeholders'))
-            )
+            return qs.filter(models.Q(id__in=assessment_organizations_queryset.values("stakeholders")))
         return qs
 
     def ordering_filter(self, qs, _, value):
         if value:
             if (
-                OrganizationOrderingEnum.ASC_TITLE_LENGTH.value in value or
-                OrganizationOrderingEnum.DESC_TITLE_LENGTH.value in value
+                OrganizationOrderingEnum.ASC_TITLE_LENGTH.value in value
+                or OrganizationOrderingEnum.DESC_TITLE_LENGTH.value in value
             ):
-                qs = qs.annotate(**{
-                    OrganizationOrderingEnum.ASC_TITLE_LENGTH.value: Length('title'),
-                })
+                qs = qs.annotate(
+                    **{
+                        OrganizationOrderingEnum.ASC_TITLE_LENGTH.value: Length("title"),
+                    }
+                )
             return qs.order_by(*value)
         return qs
 
     @property
     def qs(self):
         qs = super().qs
-        if 'ordering' not in self.data:
+        if "ordering" not in self.data:
             # Default is Title Length
             qs = self.ordering_filter(
                 qs,

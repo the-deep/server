@@ -4,79 +4,88 @@ from utils.graphene.enums import (
 )
 
 from .models import (
+    AnalysisReportContainer,
+    AnalysisReportUpload,
+    AnalyticalStatementGeoTask,
+    AnalyticalStatementNGram,
+    AutomaticSummary,
     DiscardedEntry,
     TopicModel,
-    AutomaticSummary,
-    AnalyticalStatementNGram,
-    AnalyticalStatementGeoTask,
-    AnalysisReportUpload,
-    AnalysisReportContainer,
 )
 from .serializers import (
-    ReportEnum,
-    AnalysisReportVariableSerializer,
-    AnalysisReportTextStyleSerializer,
+    AnalysisReportBarChartConfigurationSerializer,
     AnalysisReportBorderStyleSerializer,
-    AnalysisReportImageContentStyleSerializer,
+    AnalysisReportCategoricalLegendStyleSerializer,
     AnalysisReportHeadingConfigurationSerializer,
     AnalysisReportHorizontalAxisSerializer,
-    AnalysisReportVerticalAxisSerializer,
-    AnalysisReportBarChartConfigurationSerializer,
-    AnalysisReportCategoricalLegendStyleSerializer,
+    AnalysisReportImageContentStyleSerializer,
+    AnalysisReportLineLayerStyleSerializer,
     AnalysisReportMapLayerConfigurationSerializer,
     AnalysisReportSymbolLayerConfigurationSerializer,
-    AnalysisReportLineLayerStyleSerializer,
+    AnalysisReportTextStyleSerializer,
+    AnalysisReportVariableSerializer,
+    AnalysisReportVerticalAxisSerializer,
+    ReportEnum,
 )
 
+DiscardedEntryTagTypeEnum = convert_enum_to_graphene_enum(DiscardedEntry.TagType, name="DiscardedEntryTagTypeEnum")
 
-DiscardedEntryTagTypeEnum = convert_enum_to_graphene_enum(DiscardedEntry.TagType, name='DiscardedEntryTagTypeEnum')
+TopicModelStatusEnum = convert_enum_to_graphene_enum(TopicModel.Status, name="TopicModelStatusEnum")
 
-TopicModelStatusEnum = convert_enum_to_graphene_enum(TopicModel.Status, name='TopicModelStatusEnum')
-
-AutomaticSummaryStatusEnum = convert_enum_to_graphene_enum(AutomaticSummary.Status, name='AutomaticSummaryStatusEnum')
+AutomaticSummaryStatusEnum = convert_enum_to_graphene_enum(AutomaticSummary.Status, name="AutomaticSummaryStatusEnum")
 AnalyticalStatementNGramStatusEnum = convert_enum_to_graphene_enum(
-    AnalyticalStatementNGram.Status, name='AnalyticalStatementNGramStatusEnum')
+    AnalyticalStatementNGram.Status, name="AnalyticalStatementNGramStatusEnum"
+)
 AnalyticalStatementGeoTaskStatusEnum = convert_enum_to_graphene_enum(
-    AnalyticalStatementGeoTask.Status, name='AnalyticalStatementGeoTaskStatusEnum')
+    AnalyticalStatementGeoTask.Status, name="AnalyticalStatementGeoTaskStatusEnum"
+)
 
 # Analysis Report
-AnalysisReportUploadTypeEnum = convert_enum_to_graphene_enum(AnalysisReportUpload.Type, name='AnalysisReportUploadTypeEnum')
+AnalysisReportUploadTypeEnum = convert_enum_to_graphene_enum(AnalysisReportUpload.Type, name="AnalysisReportUploadTypeEnum")
 AnalysisReportContainerContentTypeEnum = convert_enum_to_graphene_enum(
-    AnalysisReportContainer.ContentType, name='AnalysisReportContainerContentTypeEnum')
+    AnalysisReportContainer.ContentType, name="AnalysisReportContainerContentTypeEnum"
+)
 
 
 # Client Side Enums
 
-AnalysisReportVariableTypeEnum = convert_enum_to_graphene_enum(
-    ReportEnum.VariableType, name='AnalysisReportVariableTypeEnum')
+AnalysisReportVariableTypeEnum = convert_enum_to_graphene_enum(ReportEnum.VariableType, name="AnalysisReportVariableTypeEnum")
 AnalysisReportTextStyleAlignEnum = convert_enum_to_graphene_enum(
-    ReportEnum.TextStyleAlign, name='AnalysisReportTextStyleAlignEnum')
+    ReportEnum.TextStyleAlign, name="AnalysisReportTextStyleAlignEnum"
+)
 AnalysisReportBorderStyleStyleEnum = convert_enum_to_graphene_enum(
-    ReportEnum.BorderStyleStyle, name='AnalysisReportBorderStyleStyleEnum')
+    ReportEnum.BorderStyleStyle, name="AnalysisReportBorderStyleStyleEnum"
+)
 AnalysisReportImageContentStyleFitEnum = convert_enum_to_graphene_enum(
-    ReportEnum.ImageContentStyleFit, name='AnalysisReportImageContentStyleFitEnum')
+    ReportEnum.ImageContentStyleFit, name="AnalysisReportImageContentStyleFitEnum"
+)
 AnalysisReportHeadingConfigurationVariantEnum = convert_enum_to_graphene_enum(
-    ReportEnum.HeadingConfigurationVariant, name='AnalysisReportHeadingConfigurationVariantEnum')
+    ReportEnum.HeadingConfigurationVariant, name="AnalysisReportHeadingConfigurationVariantEnum"
+)
 AnalysisReportHorizontalAxisTypeEnum = convert_enum_to_graphene_enum(
-    ReportEnum.HorizontalAxisType, name='AnalysisReportHorizontalAxisTypeEnum')
-AnalysisReportBarChartTypeEnum = convert_enum_to_graphene_enum(
-    ReportEnum.BarChartType, name='AnalysisReportBarChartTypeEnum')
+    ReportEnum.HorizontalAxisType, name="AnalysisReportHorizontalAxisTypeEnum"
+)
+AnalysisReportBarChartTypeEnum = convert_enum_to_graphene_enum(ReportEnum.BarChartType, name="AnalysisReportBarChartTypeEnum")
 AnalysisReportBarChartDirectionEnum = convert_enum_to_graphene_enum(
-    ReportEnum.BarChartDirection, name='AnalysisReportBarChartDirectionEnum')
+    ReportEnum.BarChartDirection, name="AnalysisReportBarChartDirectionEnum"
+)
 AnalysisReportLegendPositionEnum = convert_enum_to_graphene_enum(
-    ReportEnum.LegendPosition, name='AnalysisReportLegendPositionEnum')
+    ReportEnum.LegendPosition, name="AnalysisReportLegendPositionEnum"
+)
 AnalysisReportLegendDotShapeEnum = convert_enum_to_graphene_enum(
-    ReportEnum.LegendDotShape, name='AnalysisReportLegendDotShapeEnum')
+    ReportEnum.LegendDotShape, name="AnalysisReportLegendDotShapeEnum"
+)
 AnalysisReportAggregationTypeEnum = convert_enum_to_graphene_enum(
-    ReportEnum.AggregationType, name='AnalysisReportAggregationTypeEnum')
-AnalysisReportMapLayerTypeEnum = convert_enum_to_graphene_enum(
-    ReportEnum.MapLayerType, name='AnalysisReportMapLayerTypeEnum')
-AnalysisReportScaleTypeEnum = convert_enum_to_graphene_enum(
-    ReportEnum.ScaleType, name='AnalysisReportScaleTypeEnum')
+    ReportEnum.AggregationType, name="AnalysisReportAggregationTypeEnum"
+)
+AnalysisReportMapLayerTypeEnum = convert_enum_to_graphene_enum(ReportEnum.MapLayerType, name="AnalysisReportMapLayerTypeEnum")
+AnalysisReportScaleTypeEnum = convert_enum_to_graphene_enum(ReportEnum.ScaleType, name="AnalysisReportScaleTypeEnum")
 AnalysisReportScalingTechniqueEnum = convert_enum_to_graphene_enum(
-    ReportEnum.ScalingTechnique, name='AnalysisReportScalingTechniqueEnum')
+    ReportEnum.ScalingTechnique, name="AnalysisReportScalingTechniqueEnum"
+)
 AnalysisReportLineLayerStrokeTypeEnum = convert_enum_to_graphene_enum(
-    ReportEnum.LineLayerStrokeType, name='AnalysisReportLineLayerStrokeTypeEnum')
+    ReportEnum.LineLayerStrokeType, name="AnalysisReportLineLayerStrokeTypeEnum"
+)
 
 # Model field mapping
 enum_map = {
@@ -94,23 +103,25 @@ enum_map = {
 }
 
 # Serializers field mapping
-enum_map.update({
-    get_enum_name_from_django_field(serializer().fields[field]): enum
-    for serializer, field, enum in [
-        (AnalysisReportVariableSerializer, 'type', AnalysisReportVariableTypeEnum),
-        (AnalysisReportTextStyleSerializer, 'align', AnalysisReportTextStyleAlignEnum),
-        (AnalysisReportBorderStyleSerializer, 'style', AnalysisReportBorderStyleStyleEnum),
-        (AnalysisReportImageContentStyleSerializer, 'fit', AnalysisReportImageContentStyleFitEnum),
-        (AnalysisReportHeadingConfigurationSerializer, 'variant', AnalysisReportHeadingConfigurationVariantEnum),
-        (AnalysisReportHorizontalAxisSerializer, 'type', AnalysisReportHorizontalAxisTypeEnum),
-        (AnalysisReportBarChartConfigurationSerializer, 'type', AnalysisReportBarChartTypeEnum),
-        (AnalysisReportBarChartConfigurationSerializer, 'direction', AnalysisReportBarChartDirectionEnum),
-        (AnalysisReportCategoricalLegendStyleSerializer, 'position', AnalysisReportLegendPositionEnum),
-        (AnalysisReportCategoricalLegendStyleSerializer, 'shape', AnalysisReportLegendDotShapeEnum),
-        (AnalysisReportVerticalAxisSerializer, 'aggregation_type', AnalysisReportAggregationTypeEnum),
-        (AnalysisReportMapLayerConfigurationSerializer, 'type', AnalysisReportMapLayerTypeEnum),
-        (AnalysisReportSymbolLayerConfigurationSerializer, 'scale_type', AnalysisReportScaleTypeEnum),
-        (AnalysisReportSymbolLayerConfigurationSerializer, 'scaling_technique', AnalysisReportScalingTechniqueEnum),
-        (AnalysisReportLineLayerStyleSerializer, 'stroke_type', AnalysisReportLineLayerStrokeTypeEnum),
-    ]
-})
+enum_map.update(
+    {
+        get_enum_name_from_django_field(serializer().fields[field]): enum
+        for serializer, field, enum in [
+            (AnalysisReportVariableSerializer, "type", AnalysisReportVariableTypeEnum),
+            (AnalysisReportTextStyleSerializer, "align", AnalysisReportTextStyleAlignEnum),
+            (AnalysisReportBorderStyleSerializer, "style", AnalysisReportBorderStyleStyleEnum),
+            (AnalysisReportImageContentStyleSerializer, "fit", AnalysisReportImageContentStyleFitEnum),
+            (AnalysisReportHeadingConfigurationSerializer, "variant", AnalysisReportHeadingConfigurationVariantEnum),
+            (AnalysisReportHorizontalAxisSerializer, "type", AnalysisReportHorizontalAxisTypeEnum),
+            (AnalysisReportBarChartConfigurationSerializer, "type", AnalysisReportBarChartTypeEnum),
+            (AnalysisReportBarChartConfigurationSerializer, "direction", AnalysisReportBarChartDirectionEnum),
+            (AnalysisReportCategoricalLegendStyleSerializer, "position", AnalysisReportLegendPositionEnum),
+            (AnalysisReportCategoricalLegendStyleSerializer, "shape", AnalysisReportLegendDotShapeEnum),
+            (AnalysisReportVerticalAxisSerializer, "aggregation_type", AnalysisReportAggregationTypeEnum),
+            (AnalysisReportMapLayerConfigurationSerializer, "type", AnalysisReportMapLayerTypeEnum),
+            (AnalysisReportSymbolLayerConfigurationSerializer, "scale_type", AnalysisReportScaleTypeEnum),
+            (AnalysisReportSymbolLayerConfigurationSerializer, "scaling_technique", AnalysisReportScalingTechniqueEnum),
+            (AnalysisReportLineLayerStyleSerializer, "stroke_type", AnalysisReportLineLayerStrokeTypeEnum),
+        ]
+    }
+)

@@ -1,25 +1,27 @@
-import requests
 import logging
 from unittest.mock import patch
 
+import requests
+
 # from rest_framework import status
 from django.test import TestCase
-from utils.hid import hid
+
 from utils.common import DEFAULT_HEADERS
+from utils.hid import hid
 
 # from urllib.parse import urlparse
 # from requests.exceptions import ConnectionError
 # import traceback
 
 # MOCK Data
-HID_EMAIL = 'dev@togglecorp.com'
-HID_PASSWORD = 'XXXXXXXXXXXXXXXX'
-HID_FIRSTNAME = 'Togglecorp'
-HID_LASTNAME = 'Dev'
+HID_EMAIL = "dev@togglecorp.com"
+HID_PASSWORD = "XXXXXXXXXXXXXXXX"
+HID_FIRSTNAME = "Togglecorp"
+HID_LASTNAME = "Dev"
 
 HID_LOGIN_URL = (
-    f'{hid.config.auth_uri}/oauth/authorize?'
-    f'response_type=token&client_id={hid.config.client_id}&scope=profile&state=12345&redirect_uri={hid.config.redirect_url}'
+    f"{hid.config.auth_uri}/oauth/authorize?"
+    f"response_type=token&client_id={hid.config.client_id}&scope=profile&state=12345&redirect_uri={hid.config.redirect_url}"
 )
 
 logger = logging.getLogger(__name__)
@@ -29,6 +31,7 @@ class HIDIntegrationTest(TestCase):
     """
     Test HID Integration
     """
+
     def setUp(self):
         self.requests = requests.session()
         self.headers = DEFAULT_HEADERS
@@ -56,7 +59,7 @@ class HIDIntegrationTest(TestCase):
         Get access token from HID
         """
         # Mocking
-        return 'XXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+        return "XXXXXXXXXXXXXXXXXXXXXXXXXXXX"
         """
         # NOTE: LIVE API IS NOT USED FOR TESTING. LEAVING IT HERE FOR REFERENCE ONLY #####
 
@@ -102,8 +105,8 @@ class HIDIntegrationTest(TestCase):
         mock_requests.post.return_value.status_code = 200
         mock_requests.post.return_value.json.return_value = {
             # Also returns other value, but we don't require it for now
-            'id': 'xxxxxxx1234xxxxxxxxxxxx',
-            'sub': 'xxxxxxx1234xxxxxxxxxxxx',
+            "id": "xxxxxxx1234xxxxxxxxxxxx",
+            "sub": "xxxxxxx1234xxxxxxxxxxxx",
             # Also returns other value, but we don't require it for now
             "email_verified": True,
             "email": HID_EMAIL,
@@ -114,7 +117,7 @@ class HIDIntegrationTest(TestCase):
         }
         return mock_requests.post.return_value
 
-    @patch('utils.hid.hid.requests')
+    @patch("utils.hid.hid.requests")
     def test_new_user(self, mock_requests):
         """
         Test for new user
@@ -122,7 +125,7 @@ class HIDIntegrationTest(TestCase):
         mock_return_value = self._setup_mock_hid_requests(mock_requests)
         access_token = self.get_access_token()
         user = hid.HumanitarianId(access_token).get_user()
-        self.assertEqual(getattr(user, 'email', None), HID_EMAIL)
+        self.assertEqual(getattr(user, "email", None), HID_EMAIL)
         user.delete()
 
         mock_return_value.status_code = 400
@@ -130,43 +133,43 @@ class HIDIntegrationTest(TestCase):
             user = hid.HumanitarianId(access_token).get_user()
         mock_return_value.status_code = 200
 
-        mock_return_value.json.return_value['email_verified'] = False
+        mock_return_value.json.return_value["email_verified"] = False
         with self.assertRaises(hid.HIDEmailNotVerifiedException):
             user = hid.HumanitarianId(access_token).get_user()
-        mock_return_value.json.return_value['email_verified'] = True
+        mock_return_value.json.return_value["email_verified"] = True
 
-        mock_return_value.json.return_value.pop('name')
+        mock_return_value.json.return_value.pop("name")
         with self.assertRaises(KeyError):
             user = hid.HumanitarianId(access_token).get_user()
 
         # ----------- Name attribute change test
-        sample_first_name = 'Xxxxxx'
-        sample_last_name = 'Yyyyyy'
+        sample_first_name = "Xxxxxx"
+        sample_last_name = "Yyyyyy"
         # Just FN in name
-        mock_return_value.json.return_value['name'] = sample_first_name
+        mock_return_value.json.return_value["name"] = sample_first_name
         user = hid.HumanitarianId(access_token).get_user()
-        self.assertEqual(getattr(user, 'first_name'), sample_first_name)
-        self.assertEqual(getattr(user, 'last_name'), '')
+        self.assertEqual(getattr(user, "first_name"), sample_first_name)
+        self.assertEqual(getattr(user, "last_name"), "")
         user.delete()
 
         # Both FN+LN in name
-        mock_return_value.json.return_value['name'] = f'{sample_first_name} {sample_last_name}'
+        mock_return_value.json.return_value["name"] = f"{sample_first_name} {sample_last_name}"
         user = hid.HumanitarianId(access_token).get_user()
-        self.assertEqual(getattr(user, 'first_name'), sample_first_name)
-        self.assertEqual(getattr(user, 'last_name'), sample_last_name)
+        self.assertEqual(getattr(user, "first_name"), sample_first_name)
+        self.assertEqual(getattr(user, "last_name"), sample_last_name)
         user.delete()
 
         # Name = None
-        for sample_name in [None, '']:
-            mock_return_value.json.return_value['name'] = sample_name
+        for sample_name in [None, ""]:
+            mock_return_value.json.return_value["name"] = sample_name
             user = hid.HumanitarianId(access_token).get_user()
-            self.assertEqual(getattr(user, 'first_name'), '')
-            self.assertEqual(getattr(user, 'last_name'), '')
+            self.assertEqual(getattr(user, "first_name"), "")
+            self.assertEqual(getattr(user, "last_name"), "")
             user.delete()
 
-        mock_return_value.json.return_value['name'] = 'Xxxxxx Xxxxxx'
+        mock_return_value.json.return_value["name"] = "Xxxxxx Xxxxxx"
 
-    @patch('utils.hid.hid.requests')
+    @patch("utils.hid.hid.requests")
     def test_link_user(self, mock_requests):
         """
         Test for old user
@@ -176,11 +179,7 @@ class HIDIntegrationTest(TestCase):
         access_token = self.get_access_token()
 
         user = hid.User.objects.create_user(
-            first_name=HID_FIRSTNAME,
-            last_name=HID_LASTNAME,
-            email=HID_EMAIL,
-            username=HID_EMAIL,
-            password=HID_PASSWORD
+            first_name=HID_FIRSTNAME, last_name=HID_LASTNAME, email=HID_EMAIL, username=HID_EMAIL, password=HID_PASSWORD
         )
 
         hid_user = hid.HumanitarianId(access_token).get_user()

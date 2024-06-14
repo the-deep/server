@@ -1,15 +1,12 @@
-import typing
 import datetime
+import typing
 
-from django.db import models
-from django.core.cache import cache
+from analysis.models import Analysis
 from django.contrib.auth.models import User
+from django.core.cache import cache
+from django.db import models
 from django.utils import timezone
 from django.utils.crypto import get_random_string
-
-from deep.caches import CacheKey
-from deep.celery import app as celery_app
-from project.models import Project
 from export.mime_types import (
     CSV_MIME_TYPE,
     DOCX_MIME_TYPE,
@@ -17,31 +14,34 @@ from export.mime_types import (
     JSON_MIME_TYPE,
     PDF_MIME_TYPE,
 )
-from analysis.models import Analysis
+from project.models import Project
+
+from deep.caches import CacheKey
+from deep.celery import app as celery_app
 
 
 def export_upload_to(instance, filename: str) -> str:
     random_string = get_random_string(length=10)
-    prefix = 'export'
+    prefix = "export"
     if isinstance(instance, GenericExport):
-        prefix = 'global-export'
-    return f'{prefix}/{random_string}/{filename}'
+        prefix = "global-export"
+    return f"{prefix}/{random_string}/{filename}"
 
 
 class ExportBaseModel(models.Model):
     class Status(models.TextChoices):
-        PENDING = 'pending', 'Pending'
-        STARTED = 'started', 'Started'
-        SUCCESS = 'success', 'Success'
-        FAILURE = 'failure', 'Failure'
-        CANCELED = 'canceled', 'Canceled'
+        PENDING = "pending", "Pending"
+        STARTED = "started", "Started"
+        SUCCESS = "success", "Success"
+        FAILURE = "failure", "Failure"
+        CANCELED = "canceled", "Canceled"
 
     class Format(models.TextChoices):
-        CSV = 'csv', 'csv'
-        XLSX = 'xlsx', 'xlsx'
-        DOCX = 'docx', 'docx'
-        PDF = 'pdf', 'pdf'
-        JSON = 'json', 'json'
+        CSV = "csv", "csv"
+        XLSX = "xlsx", "xlsx"
+        DOCX = "docx", "docx"
+        PDF = "pdf", "pdf"
+        JSON = "json", "json"
 
     # Mime types
     MIME_TYPE_MAP = {
@@ -51,12 +51,12 @@ class ExportBaseModel(models.Model):
         Format.PDF: PDF_MIME_TYPE,
         Format.JSON: JSON_MIME_TYPE,
     }
-    DEFAULT_MIME_TYPE = 'application/octet-stream'
+    DEFAULT_MIME_TYPE = "application/octet-stream"
 
     # Used to validate which combination is supported and provide default title
     DEFAULT_TITLE_LABEL = {}
 
-    CELERY_TASK_CACHE_KEY = 'N/A'
+    CELERY_TASK_CACHE_KEY = "N/A"
 
     title = models.CharField(max_length=255)
 
@@ -79,10 +79,7 @@ class ExportBaseModel(models.Model):
 
     @classmethod
     def get_for(cls, user):
-        return cls.objects.filter(
-            exported_by=user,
-            is_deleted=False
-        ).distinct()
+        return cls.objects.filter(exported_by=user, is_deleted=False).distinct()
 
     def set_task_id(self, async_id):
         # Defined timeout is arbitrary now.
@@ -105,7 +102,7 @@ class ExportBaseModel(models.Model):
         celery_app.control.revoke(self.get_task_id(clear=True), terminate=True)
         self.status = self.Status.CANCELED
         if commit:
-            self.save(update_fields=('status',))
+            self.save(update_fields=("status",))
 
 
 class Export(ExportBaseModel):
@@ -115,46 +112,47 @@ class Export(ExportBaseModel):
     Represents an exported file along with few other attributes
     Scoped by a project
     """
+
     Format = ExportBaseModel.Format
 
     class DataType(models.TextChoices):
-        ENTRIES = 'entries', 'Entries'
-        ASSESSMENTS = 'assessments', 'Assessments'
-        PLANNED_ASSESSMENTS = 'planned_assessments', 'Planned Assessments'
-        ANALYSES = 'analyses', 'Analysis'
+        ENTRIES = "entries", "Entries"
+        ASSESSMENTS = "assessments", "Assessments"
+        PLANNED_ASSESSMENTS = "planned_assessments", "Planned Assessments"
+        ANALYSES = "analyses", "Analysis"
 
     class ExportType(models.TextChoices):
-        EXCEL = 'excel', 'Excel'
-        REPORT = 'report', 'Report'
-        JSON = 'json', 'Json'
+        EXCEL = "excel", "Excel"
+        REPORT = "report", "Report"
+        JSON = "json", "Json"
 
     # Used by extra options
     class StaticColumn(models.TextChoices):
-        LEAD_PUBLISHED_ON = 'lead_published_on', 'Date of Source Publication'
-        ENTRY_CREATED_BY = 'entry_created_by', 'Imported By'
-        ENTRY_CREATED_AT = 'entry_created_at', 'Date Imported'
-        ENTRY_CONTROL_STATUS = 'entry_control_status', 'Verification Status'
-        LEAD_ID = 'lead_id', 'Source Id'
-        LEAD_TITLE = 'lead_title', 'Source Title'
-        LEAD_URL = 'lead_url', 'Source URL'
-        LEAD_PAGE_COUNT = 'lead_page_count', 'Page Count'
-        LEAD_ORGANIZATION_TYPE_AUTHOR = 'lead_organization_type_author', 'Authoring Organizations Type'
-        LEAD_ORGANIZATION_AUTHOR = 'lead_organization_author', 'Author'
-        LEAD_ORGANIZATION_SOURCE = 'lead_organization_source', 'Publisher'
-        LEAD_PRIORITY = 'lead_priority', 'Source Priority'
-        LEAD_ASSIGNEE = 'lead_assignee', 'Assignee'
-        ENTRY_ID = 'entry_id', 'Entry Id'
-        LEAD_ENTRY_ID = 'lead_entry_id', 'Source-Entry Id'
-        ENTRY_EXCERPT = 'entry_excerpt', 'Modified Excerpt, Original Excerpt'
+        LEAD_PUBLISHED_ON = "lead_published_on", "Date of Source Publication"
+        ENTRY_CREATED_BY = "entry_created_by", "Imported By"
+        ENTRY_CREATED_AT = "entry_created_at", "Date Imported"
+        ENTRY_CONTROL_STATUS = "entry_control_status", "Verification Status"
+        LEAD_ID = "lead_id", "Source Id"
+        LEAD_TITLE = "lead_title", "Source Title"
+        LEAD_URL = "lead_url", "Source URL"
+        LEAD_PAGE_COUNT = "lead_page_count", "Page Count"
+        LEAD_ORGANIZATION_TYPE_AUTHOR = "lead_organization_type_author", "Authoring Organizations Type"
+        LEAD_ORGANIZATION_AUTHOR = "lead_organization_author", "Author"
+        LEAD_ORGANIZATION_SOURCE = "lead_organization_source", "Publisher"
+        LEAD_PRIORITY = "lead_priority", "Source Priority"
+        LEAD_ASSIGNEE = "lead_assignee", "Assignee"
+        ENTRY_ID = "entry_id", "Entry Id"
+        LEAD_ENTRY_ID = "lead_entry_id", "Source-Entry Id"
+        ENTRY_EXCERPT = "entry_excerpt", "Modified Excerpt, Original Excerpt"
 
     # Used by extra options for Report
     class CitationStyle(models.IntegerChoices):
-        DEFAULT = 1, 'Default'
-        STYLE_1 = 2, 'Sample 1'  # TODO: Update naming
+        DEFAULT = 1, "Default"
+        STYLE_1 = 2, "Sample 1"  # TODO: Update naming
 
         __description__ = {
-            DEFAULT: 'Entry excerpt. (Author[link], Publisher, Published Date)',
-            STYLE_1: 'Entry excerpt (Author[link] Published Date).',
+            DEFAULT: "Entry excerpt. (Author[link], Publisher, Published Date)",
+            STYLE_1: "Entry excerpt (Author[link] Published Date).",
         }
 
     # Used by extra options
@@ -163,25 +161,25 @@ class Export(ExportBaseModel):
     # https://github.com/toggle-corp/fujs/blob/3b1b64199dad249c81d57fc4d26ed800bdccca13/src/date.ts#L77
     # TODO: Add a unit test to make sure all label are valid
     class DateFormat(models.TextChoices):
-        DEFAULT = '%d-%m-%Y', 'dd-MM-yyyy'
-        FORMAT_1 = '%d/%m/%Y', 'dd/MM/yyyy'
+        DEFAULT = "%d-%m-%Y", "dd-MM-yyyy"
+        FORMAT_1 = "%d/%m/%Y", "dd/MM/yyyy"
 
         __description__ = {
-            DEFAULT: '23-11-2021',
-            FORMAT_1: '23/11/2021',
+            DEFAULT: "23-11-2021",
+            FORMAT_1: "23/11/2021",
         }
 
     # NOTE: Also used to validate which combination is supported
     DEFAULT_TITLE_LABEL = {
-        (DataType.ENTRIES, ExportType.EXCEL, Format.XLSX): 'Entries Excel Export',
-        (DataType.ENTRIES, ExportType.REPORT, Format.DOCX): 'Entries General Export',
-        (DataType.ENTRIES, ExportType.REPORT, Format.PDF): 'Entries General Export',
-        (DataType.ENTRIES, ExportType.JSON, Format.JSON): 'Entries JSON Export',
-        (DataType.ASSESSMENTS, ExportType.EXCEL, Format.XLSX): 'Assessments Excel Export',
-        (DataType.ASSESSMENTS, ExportType.JSON, Format.JSON): 'Assessments JSON Export',
-        (DataType.PLANNED_ASSESSMENTS, ExportType.EXCEL, Format.XLSX): 'Planned Assessments Excel Export',
-        (DataType.PLANNED_ASSESSMENTS, ExportType.JSON, Format.JSON): 'Planned Assessments JSON Export',
-        (DataType.ANALYSES, ExportType.EXCEL, Format.XLSX): 'Analysis Excel Export',
+        (DataType.ENTRIES, ExportType.EXCEL, Format.XLSX): "Entries Excel Export",
+        (DataType.ENTRIES, ExportType.REPORT, Format.DOCX): "Entries General Export",
+        (DataType.ENTRIES, ExportType.REPORT, Format.PDF): "Entries General Export",
+        (DataType.ENTRIES, ExportType.JSON, Format.JSON): "Entries JSON Export",
+        (DataType.ASSESSMENTS, ExportType.EXCEL, Format.XLSX): "Assessments Excel Export",
+        (DataType.ASSESSMENTS, ExportType.JSON, Format.JSON): "Assessments JSON Export",
+        (DataType.PLANNED_ASSESSMENTS, ExportType.EXCEL, Format.XLSX): "Planned Assessments Excel Export",
+        (DataType.PLANNED_ASSESSMENTS, ExportType.JSON, Format.JSON): "Planned Assessments JSON Export",
+        (DataType.ANALYSES, ExportType.EXCEL, Format.XLSX): "Analysis Excel Export",
     }
 
     CELERY_TASK_CACHE_KEY = CacheKey.EXPORT_TASK_CACHE_KEY_FORMAT
@@ -206,7 +204,9 @@ class Export(ExportBaseModel):
 
     # used for analysis export
     analysis = models.ForeignKey(
-        Analysis, null=True, blank=True,
+        Analysis,
+        null=True,
+        blank=True,
         verbose_name="analysis",
         on_delete=models.SET_NULL,
     )
@@ -214,16 +214,13 @@ class Export(ExportBaseModel):
     @classmethod
     def generate_title(cls, data_type, export_type, export_format):
         file_label = cls.DEFAULT_TITLE_LABEL[(data_type, export_type, export_format)]
-        time_str = timezone.now().strftime('%Y%m%d')
-        return f'{time_str} DEEP {file_label}'
+        time_str = timezone.now().strftime("%Y%m%d")
+        return f"{time_str} DEEP {file_label}"
 
     @classmethod
     def get_date_renderer(cls, date_format: DateFormat) -> typing.Callable:
-        def custom_format(d, fallback: typing.Optional[str] = ''):
-            if d and (
-                isinstance(d, datetime.datetime) or
-                isinstance(d, datetime.date)
-            ):
+        def custom_format(d, fallback: typing.Optional[str] = ""):
+            if d and (isinstance(d, datetime.datetime) or isinstance(d, datetime.date)):
                 return d.strftime(date_format) if date_format else fallback
             return fallback
 
@@ -238,15 +235,16 @@ class GenericExport(ExportBaseModel):
     """
     Async export tasks not scoped by a project
     """
+
     Format = ExportBaseModel.Format
 
     class DataType(models.TextChoices):
-        PROJECTS_STATS = 'projects_stats', 'Projects Stats'
+        PROJECTS_STATS = "projects_stats", "Projects Stats"
 
     CELERY_TASK_CACHE_KEY = CacheKey.GENERIC_EXPORT_TASK_CACHE_KEY_FORMAT
 
     DEFAULT_TITLE_LABEL = {
-        (DataType.PROJECTS_STATS, Format.CSV): 'Projects Stats',
+        (DataType.PROJECTS_STATS, Format.CSV): "Projects Stats",
     }
 
     type = models.CharField(max_length=99, choices=DataType.choices)
@@ -257,8 +255,8 @@ class GenericExport(ExportBaseModel):
     @classmethod
     def generate_title(cls, data_type, export_format):
         file_label = cls.DEFAULT_TITLE_LABEL[(data_type, export_format)]
-        time_str = timezone.now().strftime('%Y%m%d')
-        return f'{time_str} Generic DEEP {file_label}'
+        time_str = timezone.now().strftime("%Y%m%d")
+        return f"{time_str} Generic DEEP {file_label}"
 
     def save(self, *args, **kwargs):
         self.title = self.title or self.generate_title(self.type, self.format)

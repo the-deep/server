@@ -1,6 +1,6 @@
 import re
-from datasketch import MinHash, LeanMinHash
 
+from datasketch import LeanMinHash, MinHash
 from deduplication.models import LSHIndex
 
 

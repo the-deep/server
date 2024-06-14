@@ -1,13 +1,14 @@
+from typing import Tuple
+
 import django_filters
 import graphene
-from typing import Tuple
 from django import forms
 from django.db import models
-
 from graphene_django.filter.utils import get_filtering_args_from_filterset
+
 from utils.graphene.fields import (
-    generate_object_field_from_input_type,
     compare_input_output_type_fields,
+    generate_object_field_from_input_type,
 )
 
 
@@ -16,20 +17,20 @@ class DjangoFilterCSVWidget(django_filters.widgets.CSVWidget):
         value = forms.Widget.value_from_datadict(self, data, files, name)
 
         if value is not None:
-            if value == '':  # parse empty value as an empty list
+            if value == "":  # parse empty value as an empty list
                 return []
             # if value is already list(by POST)
             elif isinstance(value, list):
                 return value
-            return [x.strip() for x in value.strip().split(',') if x.strip()]
+            return [x.strip() for x in value.strip().split(",") if x.strip()]
         return None
 
 
-class OrderEnumMixin():
+class OrderEnumMixin:
     def ordering_filter(self, qs, _, value):
         for ordering in value:
             if isinstance(ordering, str):
-                if ordering.startswith('-'):
+                if ordering.startswith("-"):
                     _ordering = models.F(ordering[1:]).desc()
                 else:
                     _ordering = models.F(ordering).asc()
@@ -43,7 +44,8 @@ class OrderEnumMixin():
 
 def get_dummy_request(**kwargs):
     return type(
-        'DummyRequest', (object,),
+        "DummyRequest",
+        (object,),
         kwargs,
     )()
 
@@ -61,6 +63,7 @@ def generate_type_for_filter_set(
         - LeadGqlFilterSetInputType
         - LeadGqlFilterSetType
     """
+
     def generate_type_from_input_type(input_type):
         new_fields_map = generate_object_field_from_input_type(input_type)
         if custom_new_fields_map:
@@ -69,10 +72,6 @@ def generate_type_for_filter_set(
         compare_input_output_type_fields(input_type, new_type)
         return new_type
 
-    input_type = type(
-        input_type_name,
-        (graphene.InputObjectType,),
-        get_filtering_args_from_filterset(filter_set, used_node)
-    )
+    input_type = type(input_type_name, (graphene.InputObjectType,), get_filtering_args_from_filterset(filter_set, used_node))
     _type = generate_type_from_input_type(input_type)
     return _type, input_type

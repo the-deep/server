@@ -1,16 +1,17 @@
 import pickle
-from django.db import transaction
-from django.db.models import F
-from django.utils import timezone
+
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from datasketch import LeanMinHash, MinHashLSH
-
-from utils.common import batched
-from lead.models import Lead
-from project.models import Project
 from deduplication.models import LSHIndex
 from deduplication.utils import get_minhash, insert_to_index
+from django.db import transaction
+from django.db.models import F
+from django.utils import timezone
+from lead.models import Lead
+from project.models import Project
+
+from utils.common import batched
 
 logger = get_task_logger(__name__)
 
@@ -21,14 +22,13 @@ def find_and_set_duplicate_leads(index: MinHashLSH, lead: Lead, minhash: LeanMin
     duplicate_leads_count = duplicate_leads_qs.count()
     if duplicate_leads_count > 0:
         lead.duplicate_leads_count += duplicate_leads_count
-        duplicate_leads_qs\
-            .update(duplicate_leads_count=F('duplicate_leads_count') + 1)
+        duplicate_leads_qs.update(duplicate_leads_count=F("duplicate_leads_count") + 1)
     lead.duplicate_leads.set(duplicate_leads_qs)
-    lead.save(update_fields=['duplicate_leads_count'])
+    lead.save(update_fields=["duplicate_leads_count"])
 
 
 def process_and_index_lead(lead: Lead, index: MinHashLSH):
-    text = lead.leadpreview.text_extract if hasattr(lead, 'leadpreview') else lead.text
+    text = lead.leadpreview.text_extract if hasattr(lead, "leadpreview") else lead.text
     if not text:
         return index
     minhash = get_minhash(text)
@@ -37,7 +37,7 @@ def process_and_index_lead(lead: Lead, index: MinHashLSH):
     insert_to_index(index, lead.id, minhash)
     lead.is_indexed = True
     lead.indexed_at = timezone.now()
-    lead.save(update_fields=['is_indexed', 'indexed_at'])
+    lead.save(update_fields=["is_indexed", "indexed_at"])
     return index
 
 
@@ -61,16 +61,13 @@ def process_and_index_leads(
                 index_obj.index = index
                 index_obj.save()
     except Exception:
-        logger.error(
-            f"Error creating index for project {project.title}({project.id})",
-            exc_info=True
-        )
+        logger.error(f"Error creating index for project {project.title}({project.id})", exc_info=True)
 
         index_obj.has_errored = True
-        index_obj.save(update_fields=['has_errored'])
+        index_obj.save(update_fields=["has_errored"])
     else:
         index_obj.status = LSHIndex.IndexStatus.CREATED
-        index_obj.save(update_fields=['status'])
+        index_obj.save(update_fields=["status"])
 
 
 def create_project_index(project: Project):
@@ -119,7 +116,7 @@ def index_lead_and_calculate_duplicates(lead_id: int):
         logger.error(f"Cannot index inexistent lead(id={lead_id})")
         return
 
-    text = lead.leadpreview.text_extract if hasattr(lead, 'leadpreview') else lead.text
+    text = lead.leadpreview.text_extract if hasattr(lead, "leadpreview") else lead.text
     if not text:
         return
 
@@ -132,7 +129,7 @@ def index_lead_and_calculate_duplicates(lead_id: int):
     index = process_and_index_lead(lead, index_obj.index)
     index_obj.index = index
 
-    index_obj.save(update_fields=['index_pickle'])
+    index_obj.save(update_fields=["index_pickle"])
 
 
 @shared_task
@@ -152,4 +149,4 @@ def remove_lead_from_index(lead_id: int):
         return
     index.remove(lead.id)
     index_obj.index = index
-    index_obj.save(update_fields=['index_pickle'])
+    index_obj.save(update_fields=["index_pickle"])

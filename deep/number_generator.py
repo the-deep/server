@@ -1,6 +1,6 @@
-import string
 import random
+import string
 
 
 def client_id_generator(size=16, chars=string.ascii_uppercase + string.digits):
-    return ''.join(random.choice(chars) for _ in range(size))
+    return "".join(random.choice(chars) for _ in range(size))

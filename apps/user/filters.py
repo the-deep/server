@@ -1,8 +1,8 @@
 import django_filters
 from django.db import models
 from django.db.models.functions import Concat
-from utils.graphene.filters import IDFilter
 
+from utils.graphene.filters import IDFilter
 
 from .models import User
 
@@ -10,39 +10,33 @@ from .models import User
 class UserFilterSet(django_filters.FilterSet):
     class Meta:
         model = User
-        fields = ['id']
+        fields = ["id"]
 
 
 # -------------------- Graphql Filter ---------------------------------
 class UserGqlFilterSet(django_filters.FilterSet):
-    search = django_filters.CharFilter(method='filter_search')
-    members_exclude_project = IDFilter(method='filter_exclude_project')
-    members_exclude_framework = IDFilter(method='filter_exclude_framework')
-    members_exclude_usergroup = IDFilter(method='filter_exclude_usergroup')
+    search = django_filters.CharFilter(method="filter_search")
+    members_exclude_project = IDFilter(method="filter_exclude_project")
+    members_exclude_framework = IDFilter(method="filter_exclude_framework")
+    members_exclude_usergroup = IDFilter(method="filter_exclude_usergroup")
 
     class Meta:
         model = User
-        fields = ('id',)
+        fields = ("id",)
 
     def filter_exclude_project(self, qs, name, value):
         if value:
-            qs = qs.filter(
-                ~models.Q(projectmembership__project_id=value)
-            ).distinct()
+            qs = qs.filter(~models.Q(projectmembership__project_id=value)).distinct()
         return qs
 
     def filter_exclude_framework(self, qs, name, value):
         if value:
-            qs = qs.filter(
-                ~models.Q(framework_membership__framework_id=value)
-            )
+            qs = qs.filter(~models.Q(framework_membership__framework_id=value))
         return qs
 
     def filter_exclude_usergroup(self, qs, name, value):
         if value:
-            qs = qs.filter(
-                ~models.Q(groupmembership__group_id=value)
-            )
+            qs = qs.filter(~models.Q(groupmembership__group_id=value))
         return qs
 
     def filter_search(self, qs, name, value):
@@ -55,11 +49,11 @@ class UserGqlFilterSet(django_filters.FilterSet):
                     output_field=models.CharField(),
                 )
             ).filter(
-                models.Q(full_name__icontains=value) |
-                models.Q(first_name__icontains=value) |
-                models.Q(last_name__icontains=value) |
-                models.Q(email__icontains=value) |
-                models.Q(username__icontains=value)
+                models.Q(full_name__icontains=value)
+                | models.Q(first_name__icontains=value)
+                | models.Q(last_name__icontains=value)
+                | models.Q(email__icontains=value)
+                | models.Q(username__icontains=value)
             )
         return qs
 

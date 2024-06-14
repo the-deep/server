@@ -1,45 +1,38 @@
 from django.contrib import admin
-from django.urls import path
 from django.http import HttpResponse
+from django.urls import path
 
-from deep.admin import linkify, ModelAdmin, VersionAdmin
+from deep.admin import ModelAdmin, VersionAdmin, linkify
 
 from .management.commands.export_ary_template import export_ary_fixture
 from .models import (
+    AffectedGroup,
+    AffectedLocation,
+    Assessment,
     AssessmentTemplate,
-
+    Focus,
     MetadataField,
     MetadataGroup,
     MetadataOption,
-
     MethodologyField,
     MethodologyGroup,
     MethodologyOption,
-
-    Sector,
-    Focus,
-    AffectedGroup,
-    UnderlyingFactor,
-
-    PrioritySector,
     PriorityIssue,
-    SpecificNeedGroup,
-    AffectedLocation,
-
+    PrioritySector,
     ScoreBucket,
-    ScorePillar,
-    ScoreQuestion,
-    ScoreScale,
+    ScoreMatrixColumn,
     ScoreMatrixPillar,
     ScoreMatrixRow,
-    ScoreMatrixColumn,
     ScoreMatrixScale,
-
+    ScorePillar,
+    ScoreQuestion,
+    ScoreQuestionnaire,
     ScoreQuestionnaireSector,
     ScoreQuestionnaireSubSector,
-    ScoreQuestionnaire,
-
-    Assessment,
+    ScoreScale,
+    Sector,
+    SpecificNeedGroup,
+    UnderlyingFactor,
 )
 
 
@@ -50,23 +43,23 @@ class ScoreBucketInline(admin.TabularInline):
 
 @admin.register(AssessmentTemplate)
 class AnalysisFrameworkTemplateAdmin(VersionAdmin):
-    change_list_template = 'ary/ary_change_list.html'
-    search_fields = ('title',)
+    change_list_template = "ary/ary_change_list.html"
+    search_fields = ("title",)
     inlines = [ScoreBucketInline]
-    autocomplete_fields = ('created_by', 'modified_by',)
+    autocomplete_fields = (
+        "created_by",
+        "modified_by",
+    )
 
     def get_urls(self):
         info = self.model._meta.app_label, self.model._meta.model_name
         return [
-            path(
-                'export/', self.admin_site.admin_view(self.export_ary),
-                name='{}_{}_export'.format(*info)
-            ),
+            path("export/", self.admin_site.admin_view(self.export_ary), name="{}_{}_export".format(*info)),
         ] + super().get_urls()
 
     def export_ary(self, request):
         content = export_ary_fixture()
-        return HttpResponse(content, content_type='application/json')
+        return HttpResponse(content, content_type="application/json")
 
 
 class MetadataOptionInline(admin.TabularInline):
@@ -102,13 +95,13 @@ class ScoreMatrixScaleInline(admin.TabularInline):
 @admin.register(ScorePillar)
 class ScorePillarAdmin(ModelAdmin):
     inlines = [ScoreQuestionInline]
-    list_display = ('title', linkify('template'), 'order', 'weight')
+    list_display = ("title", linkify("template"), "order", "weight")
 
 
 @admin.register(ScoreMatrixPillar)
 class ScoreMatrixPillarAdmin(ModelAdmin):
     inlines = [ScoreMatrixRowInline, ScoreMatrixColumnInline, ScoreMatrixScaleInline]
-    list_display = ('title', linkify('template'), 'order', 'weight')
+    list_display = ("title", linkify("template"), "order", "weight")
 
 
 class ScoreQuestionnaireSubSectorInline(admin.TabularInline):
@@ -123,23 +116,32 @@ class ScoreQuestionnaireInline(admin.TabularInline):
 
 @admin.register(ScoreQuestionnaireSector)
 class ScoreQuestionnaireSectorAdmin(ModelAdmin):
-    list_display = ('title', 'order', 'method', 'sub_method', linkify('template'))
+    list_display = ("title", "order", "method", "sub_method", linkify("template"))
     inlines = [ScoreQuestionnaireSubSectorInline]
 
 
 @admin.register(ScoreQuestionnaireSubSector)
 class ScoreQuestionnaireSubSectorAdmin(ModelAdmin):
-    list_display = ('title', 'order', linkify('sector'), linkify('sector.template'))
+    list_display = ("title", "order", linkify("sector"), linkify("sector.template"))
     inlines = [ScoreQuestionnaireInline]
 
 
 @admin.register(AffectedGroup)
 class AffectedGroupAdmin(ModelAdmin):
-    list_display = ('title', 'order', linkify('template'),)
+    list_display = (
+        "title",
+        "order",
+        linkify("template"),
+    )
 
 
-class FieldAdminMixin():
-    list_display = ('title', 'id', 'order', linkify('group'),)
+class FieldAdminMixin:
+    list_display = (
+        "title",
+        "id",
+        "order",
+        linkify("group"),
+    )
 
 
 @admin.register(MetadataField)
@@ -152,10 +154,13 @@ class MethodologyFieldAdmin(FieldAdminMixin, ModelAdmin):
     inlines = [MethodologyOptionInline]
 
 
-class TemplateGroupAdminMixin():
-    search_fields = ('title', 'template__title')
-    list_display = ('title', linkify('template'),)
-    list_filter = ('template',)
+class TemplateGroupAdminMixin:
+    search_fields = ("title", "template__title")
+    list_display = (
+        "title",
+        linkify("template"),
+    )
+    list_filter = ("template",)
 
 
 @admin.register(Focus)
@@ -210,6 +215,9 @@ class ScoreScaleAdmin(TemplateGroupAdminMixin, ModelAdmin):
 
 @admin.register(Assessment)
 class AssessmentAdmin(VersionAdmin):
-    search_fields = ('lead__title',)
-    list_display = ('lead', linkify('project'),)
-    autocomplete_fields = ('lead', 'project', 'created_by', 'modified_by', 'lead_group')
+    search_fields = ("lead__title",)
+    list_display = (
+        "lead",
+        linkify("project"),
+    )
+    autocomplete_fields = ("lead", "project", "created_by", "modified_by", "lead_group")

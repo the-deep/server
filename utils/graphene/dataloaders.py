@@ -1,9 +1,9 @@
 from promise.dataloader import DataLoader
 
 
-class WithContextMixin():
+class WithContextMixin:
     def __init__(self, *args, **kwargs):
-        self.context = kwargs.pop('context')
+        self.context = kwargs.pop("context")
         super().__init__(*args, **kwargs)
 
 

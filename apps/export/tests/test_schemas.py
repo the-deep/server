@@ -1,10 +1,9 @@
-from utils.graphene.tests import GraphQLTestCase
-
-from user.factories import UserFactory
-from project.factories import ProjectFactory
-
-from export.models import Export
 from export.factories import ExportFactory
+from export.models import Export
+from project.factories import ProjectFactory
+from user.factories import UserFactory
+
+from utils.graphene.tests import GraphQLTestCase
 
 
 class TestExportQuerySchema(GraphQLTestCase):
@@ -12,7 +11,7 @@ class TestExportQuerySchema(GraphQLTestCase):
         """
         Test export for project
         """
-        query = '''
+        query = """
             query MyQuery ($projectId: ID! $exportId: ID!) {
               project(id: $projectId) {
                 export (id: $exportId) {
@@ -21,7 +20,7 @@ class TestExportQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
 
         project = ProjectFactory.create()
         project2 = ProjectFactory.create()
@@ -33,7 +32,7 @@ class TestExportQuerySchema(GraphQLTestCase):
         other_export = ExportFactory.create(project=project2, exported_by=user2)
 
         def _query_check(export, **kwargs):
-            return self.query_check(query, variables={'projectId': project.id, 'exportId': export.id}, **kwargs)
+            return self.query_check(query, variables={"projectId": project.id, "exportId": export.id}, **kwargs)
 
         # -- Without login
         _query_check(export, assert_for_error=True)
@@ -41,15 +40,15 @@ class TestExportQuerySchema(GraphQLTestCase):
         # --- With login
         self.force_login(user)
         content = _query_check(export)
-        self.assertNotEqual(content['data']['project']['export'], None, content)
-        self.assertEqual(content['data']['project']['export']['id'], str(export.id))
+        self.assertNotEqual(content["data"]["project"]["export"], None, content)
+        self.assertEqual(content["data"]["project"]["export"]["id"], str(export.id))
 
         self.force_login(user)
         content = _query_check(other_export)
-        self.assertEqual(content['data']['project']['export'], None, content)
+        self.assertEqual(content["data"]["project"]["export"], None, content)
 
     def test_exports_query(self):
-        query = '''
+        query = """
             query MyQuery ($id: ID!) {
               project(id: $id) {
                 exports {
@@ -63,7 +62,7 @@ class TestExportQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
         project = ProjectFactory.create()
         project2 = ProjectFactory.create()
         user = UserFactory.create()
@@ -74,7 +73,7 @@ class TestExportQuerySchema(GraphQLTestCase):
         ExportFactory.create_batch(8, project=project2, exported_by=user2)
 
         def _query_check(**kwargs):
-            return self.query_check(query, variables={'id': project.id}, **kwargs)
+            return self.query_check(query, variables={"id": project.id}, **kwargs)
 
         # --- Without login
         _query_check(assert_for_error=True)
@@ -82,17 +81,17 @@ class TestExportQuerySchema(GraphQLTestCase):
         # --- With login
         self.force_login(user)
         content = _query_check()
-        self.assertEqual(content['data']['project']['exports']['totalCount'], 6, content)
-        self.assertEqual(len(content['data']['project']['exports']['results']), 6, content)
+        self.assertEqual(content["data"]["project"]["exports"]["totalCount"], 6, content)
+        self.assertEqual(len(content["data"]["project"]["exports"]["results"]), 6, content)
 
         # --- With login by user whose has not exported the export
         self.force_login(user2)
         content = _query_check()
-        self.assertEqual(content['data']['project']['exports']['totalCount'], 0, content)
-        self.assertEqual(len(content['data']['project']['exports']['results']), 0, content)
+        self.assertEqual(content["data"]["project"]["exports"]["totalCount"], 0, content)
+        self.assertEqual(len(content["data"]["project"]["exports"]["results"]), 0, content)
 
     def test_exports_type_filter(self):
-        query = '''
+        query = """
             query MyQuery ($id: ID!, $type: [ExportDataTypeEnum!]) {
               project(id: $id) {
                 exports(type: $type){
@@ -106,7 +105,7 @@ class TestExportQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
         project = ProjectFactory.create()
         user = UserFactory.create()
         project.add_member(user, role=self.project_role_reader_non_confidential)
@@ -114,13 +113,7 @@ class TestExportQuerySchema(GraphQLTestCase):
         ExportFactory.create_batch(2, project=project, exported_by=user, type=Export.DataType.ASSESSMENTS)
 
         def _query_check(**kwargs):
-            return self.query_check(
-                query,
-                variables={
-                    'id': project.id,
-                    'type': [self.genum(Export.DataType.ENTRIES)]
-                },
-                **kwargs)
+            return self.query_check(query, variables={"id": project.id, "type": [self.genum(Export.DataType.ENTRIES)]}, **kwargs)
 
         # --- Without login
         _query_check(assert_for_error=True)
@@ -128,11 +121,11 @@ class TestExportQuerySchema(GraphQLTestCase):
         # --- With login
         self.force_login(user)
         content = _query_check()
-        self.assertEqual(content['data']['project']['exports']['totalCount'], 6, content)
-        self.assertEqual(len(content['data']['project']['exports']['results']), 6, content)
+        self.assertEqual(content["data"]["project"]["exports"]["totalCount"], 6, content)
+        self.assertEqual(len(content["data"]["project"]["exports"]["results"]), 6, content)
 
     def test_exports_status_filter(self):
-        query = '''
+        query = """
             query MyQuery ($id: ID!, $status: [ExportStatusEnum!]) {
               project(id: $id) {
                 exports(status: $status){
@@ -146,7 +139,7 @@ class TestExportQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
         project = ProjectFactory.create()
         user = UserFactory.create()
         project.add_member(user, role=self.project_role_reader_non_confidential)
@@ -155,13 +148,7 @@ class TestExportQuerySchema(GraphQLTestCase):
         ExportFactory.create_batch(3, project=project, exported_by=user, status=Export.Status.SUCCESS)
 
         def _query_check(**kwargs):
-            return self.query_check(
-                query,
-                variables={
-                    'id': project.id,
-                    'status': [self.genum(Export.Status.PENDING)]
-                },
-                **kwargs)
+            return self.query_check(query, variables={"id": project.id, "status": [self.genum(Export.Status.PENDING)]}, **kwargs)
 
         # --- Without login
         _query_check(assert_for_error=True)
@@ -169,19 +156,17 @@ class TestExportQuerySchema(GraphQLTestCase):
         # --- With login
         self.force_login(user)
         content = _query_check()
-        self.assertEqual(content['data']['project']['exports']['totalCount'], 4, content)
-        self.assertEqual(len(content['data']['project']['exports']['results']), 4, content)
+        self.assertEqual(content["data"]["project"]["exports"]["totalCount"], 4, content)
+        self.assertEqual(len(content["data"]["project"]["exports"]["results"]), 4, content)
 
         def _query_check(**kwargs):
             return self.query_check(
                 query,
-                variables={
-                    'id': project.id,
-                    'status': [self.genum(Export.Status.PENDING), self.genum(Export.Status.STARTED)]
-                },
-                **kwargs)
+                variables={"id": project.id, "status": [self.genum(Export.Status.PENDING), self.genum(Export.Status.STARTED)]},
+                **kwargs,
+            )
 
         self.force_login(user)
         content = _query_check()
-        self.assertEqual(content['data']['project']['exports']['totalCount'], 6, content)
-        self.assertEqual(len(content['data']['project']['exports']['results']), 6, content)
+        self.assertEqual(content["data"]["project"]["exports"]["totalCount"], 6, content)
+        self.assertEqual(len(content["data"]["project"]["exports"]["results"]), 6, content)

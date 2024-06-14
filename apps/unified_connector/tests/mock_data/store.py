@@ -1,61 +1,43 @@
 from unified_connector.models import ConnectorSource
+
+from .atom_feed_mock_data import (
+    ATOM_FEED_MOCK_DATA_RAW,
+    ATOM_FEED_MOCK_EXCEPTED_LEADS,
+    ATOM_FEED_PARAMS,
+)
+from .emm_mock_data import EMM_MOCK_DATA_RAW, EMM_MOCK_EXCEPTED_LEADS, EMM_PARAMS
+from .humanitarian_response_mock_data import (
+    HUMANITARIAN_RESPONSE_MOCK_DATA_RAW,
+    HUMANITARIAN_RESPONSE_MOCK_EXCEPTED_LEADS,
+)
+from .pdna_mock_data import PDNA_MOCK_DATA_RAW, PDNA_MOCK_EXCEPTED_LEADS, PDNA_PARAMS
 from .relief_web_mock_data import (
     RELIEF_WEB_MOCK_DATA_PAGE_1_RAW,
     RELIEF_WEB_MOCK_DATA_PAGE_2_RAW,
     RELIEF_WEB_MOCK_EXCEPTED_LEADS,
+)
+from .rss_feed_mock_data import (
+    RSS_FEED_MOCK_DATA_RAW,
+    RSS_FEED_MOCK_EXCEPTED_LEADS,
+    RSS_PARAMS,
 )
 from .unhcr_mock_data import (
     UNHCR_MOCK_DATA_PAGE_1_RAW,
     UNHCR_MOCK_DATA_PAGE_2_RAW,
     UNHCR_WEB_MOCK_EXCEPTED_LEADS,
 )
-from .rss_feed_mock_data import (
-    RSS_FEED_MOCK_DATA_RAW,
-    RSS_PARAMS,
-    RSS_FEED_MOCK_EXCEPTED_LEADS,
-)
-from .atom_feed_mock_data import (
-    ATOM_FEED_MOCK_DATA_RAW,
-    ATOM_FEED_PARAMS,
-    ATOM_FEED_MOCK_EXCEPTED_LEADS,
-)
-from .humanitarian_response_mock_data import (
-    HUMANITARIAN_RESPONSE_MOCK_DATA_RAW,
-    HUMANITARIAN_RESPONSE_MOCK_EXCEPTED_LEADS,
-)
-from .pdna_mock_data import (
-    PDNA_MOCK_DATA_RAW,
-    PDNA_MOCK_EXCEPTED_LEADS,
-    PDNA_PARAMS,
-)
-from .emm_mock_data import (
-    EMM_MOCK_DATA_RAW,
-    EMM_MOCK_EXCEPTED_LEADS,
-    EMM_PARAMS,
-)
 
 CONNECTOR_SOURCE_MOCK_DATA = {
-    ConnectorSource.Source.UNHCR: (
-        (UNHCR_MOCK_DATA_PAGE_1_RAW, UNHCR_MOCK_DATA_PAGE_2_RAW), UNHCR_WEB_MOCK_EXCEPTED_LEADS
-    ),
+    ConnectorSource.Source.UNHCR: ((UNHCR_MOCK_DATA_PAGE_1_RAW, UNHCR_MOCK_DATA_PAGE_2_RAW), UNHCR_WEB_MOCK_EXCEPTED_LEADS),
     ConnectorSource.Source.RELIEF_WEB: (
-        (RELIEF_WEB_MOCK_DATA_PAGE_1_RAW, RELIEF_WEB_MOCK_DATA_PAGE_2_RAW), RELIEF_WEB_MOCK_EXCEPTED_LEADS
+        (RELIEF_WEB_MOCK_DATA_PAGE_1_RAW, RELIEF_WEB_MOCK_DATA_PAGE_2_RAW),
+        RELIEF_WEB_MOCK_EXCEPTED_LEADS,
     ),
-    ConnectorSource.Source.RSS_FEED: (
-        (RSS_FEED_MOCK_DATA_RAW,), RSS_FEED_MOCK_EXCEPTED_LEADS
-    ),
-    ConnectorSource.Source.ATOM_FEED: (
-        (ATOM_FEED_MOCK_DATA_RAW,), ATOM_FEED_MOCK_EXCEPTED_LEADS
-    ),
-    ConnectorSource.Source.HUMANITARIAN_RESP: (
-        (HUMANITARIAN_RESPONSE_MOCK_DATA_RAW,), HUMANITARIAN_RESPONSE_MOCK_EXCEPTED_LEADS
-    ),
-    ConnectorSource.Source.PDNA: (
-        (PDNA_MOCK_DATA_RAW,), PDNA_MOCK_EXCEPTED_LEADS
-    ),
-    ConnectorSource.Source.EMM: (
-        (EMM_MOCK_DATA_RAW,), EMM_MOCK_EXCEPTED_LEADS
-    ),
+    ConnectorSource.Source.RSS_FEED: ((RSS_FEED_MOCK_DATA_RAW,), RSS_FEED_MOCK_EXCEPTED_LEADS),
+    ConnectorSource.Source.ATOM_FEED: ((ATOM_FEED_MOCK_DATA_RAW,), ATOM_FEED_MOCK_EXCEPTED_LEADS),
+    ConnectorSource.Source.HUMANITARIAN_RESP: ((HUMANITARIAN_RESPONSE_MOCK_DATA_RAW,), HUMANITARIAN_RESPONSE_MOCK_EXCEPTED_LEADS),
+    ConnectorSource.Source.PDNA: ((PDNA_MOCK_DATA_RAW,), PDNA_MOCK_EXCEPTED_LEADS),
+    ConnectorSource.Source.EMM: ((EMM_MOCK_DATA_RAW,), EMM_MOCK_EXCEPTED_LEADS),
 }
 
 CONNECTOR_SOURCE_MOCK_PARAMS = {
@@ -66,7 +48,7 @@ CONNECTOR_SOURCE_MOCK_PARAMS = {
 }
 
 
-class ConnectorSourceResponseMock():
+class ConnectorSourceResponseMock:
     def __init__(self, source_type):
         self.raw_pages_data, self.expected_data = CONNECTOR_SOURCE_MOCK_DATA[source_type]
         self.params = CONNECTOR_SOURCE_MOCK_PARAMS.get(source_type, {})

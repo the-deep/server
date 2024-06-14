@@ -1,17 +1,18 @@
-from deep.tests import TestCase
-
 from analysis_framework.models import (
-    AnalysisFramework, Widget,
+    AnalysisFramework,
     AnalysisFrameworkMembership,
+    Widget,
 )
 from project.models import Project
 from user.models import User
+
+from deep.tests import TestCase
 
 
 class TestAnalysisFrameworkRoles(TestCase):
     """Test cases for analysis framework roles"""
 
-    fixtures = ['apps/analysis_framework/fixtures/af_roles.json']
+    fixtures = ["apps/analysis_framework/fixtures/af_roles.json"]
 
     def setUp(self):
         super().setUp()
@@ -19,72 +20,68 @@ class TestAnalysisFrameworkRoles(TestCase):
         self.project = self.create(Project, role=self.admin_role)
         # Create private and public frameworks
         self.private_framework = AnalysisFramework.objects.create(
-            title='Private Framework',
+            title="Private Framework",
             project=self.project,
             is_private=True,
         )
         self.public_framework = AnalysisFramework.objects.create(
-            title='Public Framework',
+            title="Public Framework",
             project=self.project,
             is_private=False,
             created_by=self.user,
         )
         # Add widgets
         self.private_widget = self.create(
-            Widget, analysis_framework=self.private_framework,
+            Widget,
+            analysis_framework=self.private_framework,
             widget_id=Widget.WidgetType.TEXT,
-            key='text-widget-001',
+            key="text-widget-001",
         )
         self.public_widget = self.create(
-            Widget, analysis_framework=self.public_framework,
+            Widget,
+            analysis_framework=self.public_framework,
             widget_id=Widget.WidgetType.TEXT,
-            key='text-widget-002',
+            key="text-widget-002",
         )
 
     def test_get_private_roles(self):
-        url = '/api/v1/private-framework-roles/'
+        url = "/api/v1/private-framework-roles/"
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
 
         data = response.data
-        for role in data['results']:
-            assert role['is_private_role'] is True, "Must be a private role"
+        for role in data["results"]:
+            assert role["is_private_role"] is True, "Must be a private role"
 
     def test_get_public_roles_all(self):
-        url = '/api/v1/public-framework-roles/'
+        url = "/api/v1/public-framework-roles/"
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
 
         data = response.data
-        for role in data['results']:
-            assert role['is_private_role'] is not True, "Must be a public role"
+        for role in data["results"]:
+            assert role["is_private_role"] is not True, "Must be a public role"
 
-        assert any(x['is_default_role'] for x in data['results']), "A default role should be present"
+        assert any(x["is_default_role"] for x in data["results"]), "A default role should be present"
 
     def test_get_public_roles_no_default(self):
-        url = '/api/v1/public-framework-roles/?is_default_role=false'
+        url = "/api/v1/public-framework-roles/?is_default_role=false"
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
 
         data = response.data
-        for role in data['results']:
-            assert role['is_private_role'] is not True, "Must be a public role"
+        for role in data["results"]:
+            assert role["is_private_role"] is not True, "Must be a public role"
 
-        print([x['is_default_role'] for x in data['results']])
-        assert not any(x['is_default_role'] for x in data['results']), "No default role should be present"
+        print([x["is_default_role"] for x in data["results"]])
+        assert not any(x["is_default_role"] for x in data["results"]), "No default role should be present"
 
     def test_owner_role(self):
-        self.private_framework.add_member(
-            self.user,
-            self.private_framework.get_or_create_owner_role()
-        )
-        self.public_framework.add_member(
-            self.user,
-            self.public_framework.get_or_create_owner_role()
-        )
+        self.private_framework.add_member(self.user, self.private_framework.get_or_create_owner_role())
+        self.public_framework.add_member(self.user, self.public_framework.get_or_create_owner_role())
         # CLONING THE FRAMEWORK
         response = self._clone_framework_test(self.private_framework)
         self.assert_403(response)
@@ -110,10 +107,10 @@ class TestAnalysisFrameworkRoles(TestCase):
         user = self.create(User)
         membership, _ = self.private_framework.add_member(user)
 
-        url = f'/api/v1/framework-memberships/{membership.id}/'
+        url = f"/api/v1/framework-memberships/{membership.id}/"
 
         patch_data = {
-            'role': editor.id,
+            "role": editor.id,
         }
 
         self.authenticate()
@@ -129,7 +126,7 @@ class TestAnalysisFrameworkRoles(TestCase):
         user = self.create(User)
         membership, _ = self.private_framework.add_member(user)
 
-        url = f'/api/v1/framework-memberships/{membership.id}/'
+        url = f"/api/v1/framework-memberships/{membership.id}/"
 
         self.authenticate()
         resp = self.client.get(url)
@@ -138,14 +135,8 @@ class TestAnalysisFrameworkRoles(TestCase):
 
     def test_editor_role(self):
         editor_user = self.create(User)
-        self.private_framework.add_member(
-            editor_user,
-            self.private_framework.get_or_create_editor_role()
-        )
-        self.public_framework.add_member(
-            editor_user,
-            self.public_framework.get_or_create_editor_role()
-        )
+        self.private_framework.add_member(editor_user, self.private_framework.get_or_create_editor_role())
+        self.public_framework.add_member(editor_user, self.public_framework.get_or_create_editor_role())
 
         # CLONING  FRAMEWORK
         response = self._clone_framework_test(self.private_framework, editor_user)
@@ -185,12 +176,8 @@ class TestAnalysisFrameworkRoles(TestCase):
         public_role = public_framework.get_or_create_editor_role()
         private_framework.add_member(self.user, private_framework.get_or_create_owner_role())
 
-        url = '/api/v1/framework-memberships/'
-        post_data = {
-            'framework': private_framework.id,
-            'member': user.id,
-            'role': public_role.id
-        }
+        url = "/api/v1/framework-memberships/"
+        post_data = {"framework": private_framework.id, "member": user.id, "role": public_role.id}
         self.authenticate()
         resp = self.client.post(url, post_data)
         self.assert_403(resp)
@@ -203,12 +190,8 @@ class TestAnalysisFrameworkRoles(TestCase):
         private_role = private_framework.get_or_create_editor_role()
         public_framework.add_member(self.user, public_framework.get_or_create_owner_role())
 
-        url = '/api/v1/framework-memberships/'
-        post_data = {
-            'framework': public_framework.id,
-            'member': user.id,
-            'role': private_role.id
-        }
+        url = "/api/v1/framework-memberships/"
+        post_data = {"framework": public_framework.id, "member": user.id, "role": private_role.id}
         self.authenticate()
         resp = self.client.post(url, post_data)
         self.assert_403(resp)
@@ -219,10 +202,10 @@ class TestAnalysisFrameworkRoles(TestCase):
         user = self.create(User)
         private_framework.add_member(self.user, private_framework.get_or_create_owner_role())
 
-        url = '/api/v1/framework-memberships/'
+        url = "/api/v1/framework-memberships/"
         post_data = {
-            'framework': private_framework.id,
-            'member': user.id,
+            "framework": private_framework.id,
+            "member": user.id,
         }
         self.authenticate()
         resp = self.client.post(url, post_data)
@@ -230,13 +213,13 @@ class TestAnalysisFrameworkRoles(TestCase):
 
         # Now check if user has default_role
         memship = AnalysisFrameworkMembership.objects.filter(
-            member=user, framework=private_framework,
+            member=user,
+            framework=private_framework,
         ).first()
 
         assert memship is not None, "Membership should be created"
         permissions = memship.role.permissions
-        assert permissions == private_framework.get_default_permissions(), \
-            "The permissions should be the default permissions"
+        assert permissions == private_framework.get_default_permissions(), "The permissions should be the default permissions"
 
     def test_default_role_public_framework(self):
         """When not sent role field, default role will be added"""
@@ -244,10 +227,10 @@ class TestAnalysisFrameworkRoles(TestCase):
         user = self.create(User)
         public_framework.add_member(self.user, public_framework.get_or_create_owner_role())
 
-        url = '/api/v1/framework-memberships/'
+        url = "/api/v1/framework-memberships/"
         post_data = {
-            'framework': public_framework.id,
-            'member': user.id,
+            "framework": public_framework.id,
+            "member": user.id,
         }
         self.authenticate()
         resp = self.client.post(url, post_data)
@@ -255,20 +238,22 @@ class TestAnalysisFrameworkRoles(TestCase):
 
         # Now check if user has default_role
         memship = AnalysisFrameworkMembership.objects.filter(
-            member=user, framework=public_framework,
+            member=user,
+            framework=public_framework,
         ).first()
 
         assert memship is not None, "Membership should be created"
         permissions = memship.role.permissions
-        assert permissions == public_framework.get_editor_permissions(), \
-            "The default member permissions should be the editor permissions"
+        assert (
+            permissions == public_framework.get_editor_permissions()
+        ), "The default member permissions should be the editor permissions"
 
     def test_owner_cannot_delete_himself(self):
         framework = self.create(AnalysisFramework)
         owner_role = framework.get_or_create_owner_role()
         membership, _ = framework.add_member(self.user, owner_role)
 
-        url = f'/api/v1/framework-memberships/{membership.id}/'
+        url = f"/api/v1/framework-memberships/{membership.id}/"
 
         self.authenticate()
         resp = self.client.delete(url)
@@ -276,30 +261,26 @@ class TestAnalysisFrameworkRoles(TestCase):
 
     def _edit_framework_test(self, framework, user=None, status=200):
         # Private framework
-        edit_data = {
-            'title': framework.title + '-edited',
-            'is_private': framework.is_private,
-            'widgets': []
-        }
+        edit_data = {"title": framework.title + "-edited", "is_private": framework.is_private, "widgets": []}
         self.authenticate(user)
-        url = f'/api/v1/analysis-frameworks/{framework.id}/'
+        url = f"/api/v1/analysis-frameworks/{framework.id}/"
         response = self.client.put(url, edit_data)
         self.assertEqual(response.status_code, status)
 
     def _clone_framework_test(self, framework, user=None):
-        clone_url = f'/api/v1/clone-analysis-framework/{framework.id}/'
+        clone_url = f"/api/v1/clone-analysis-framework/{framework.id}/"
         self.authenticate(user)
-        data = {'title': 'Cloned'}
+        data = {"title": "Cloned"}
         return self.client.post(clone_url, data=data)
 
     def _add_user_test(self, framework, user, status=201, role=None):
-        add_user_url = '/api/v1/framework-memberships/'
-        role = (role and role.id) or framework.get_or_create_editor_role().id,
+        add_user_url = "/api/v1/framework-memberships/"
+        role = ((role and role.id) or framework.get_or_create_editor_role().id,)
         new_user = self.create(User)
         add_member_data = {
-            'framework': framework.id,
-            'member': new_user.id,
-            'role': framework.get_or_create_editor_role().id,  # Just an arbritrary role
+            "framework": framework.id,
+            "member": new_user.id,
+            "role": framework.get_or_create_editor_role().id,  # Just an arbritrary role
         }
         self.authenticate(user)
         response = self.client.post(add_user_url, add_member_data)

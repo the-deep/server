@@ -1,10 +1,10 @@
 from utils.extractor import extractors
 
-HTML = 'html'
-PDF = 'pdf'
-DOCX = 'docx'
-PPTX = 'pptx'
-MSWORD = 'doc'
+HTML = "html"
+PDF = "pdf"
+DOCX = "docx"
+PPTX = "pptx"
+MSWORD = "doc"
 
 EXTRACTORS = {
     HTML: extractors.HtmlExtractor,
@@ -36,4 +36,4 @@ class Document:
         extractor = EXTRACTORS.get(self.type)
         if extractor:
             return extractor(self.doc, self.params).extract()
-        return '', [], 1
+        return "", [], 1

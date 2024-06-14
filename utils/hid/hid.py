@@ -1,8 +1,8 @@
+import logging
+
+import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
-import logging
-import requests
-
 from user.models import Profile
 
 logger = logging.getLogger(__name__)
@@ -13,6 +13,7 @@ class HidConfig:
     """
     HID Configs
     """
+
     def __init__(self):
         self.client_id = settings.HID_CLIENT_ID
         self.redirect_url = settings.HID_CLIENT_REDIRECT_URL
@@ -29,34 +30,33 @@ class HIDBaseException(Exception):
 
 
 class InvalidHIDConfigurationException(HIDBaseException):
-    message = 'Invalid HID Configuration'
+    message = "Invalid HID Configuration"
 
 
 class HIDFetchFailedException(HIDBaseException):
-    message = 'HID User data fetch failed'
+    message = "HID User data fetch failed"
 
 
 class HIDEmailNotVerifiedException(HIDBaseException):
-    message = 'Email is not verified in HID'
+    message = "Email is not verified in HID"
 
 
 class HumanitarianId:
     """
     Handles HID Token
     """
+
     def __init__(self, access_token):
-        self.data = self._process_hid_user_data(
-            self.get_user_information_from_access_token(access_token)
-        )
-        self.user_id = self.data['hid']
+        self.data = self._process_hid_user_data(self.get_user_information_from_access_token(access_token))
+        self.user_id = self.data["hid"]
 
     @staticmethod
     def _process_hid_user_data(data):
-        first_name, *last_name = (data['name'] or '').split(' ')
-        last_name = ' '.join(last_name)
+        first_name, *last_name = (data["name"] or "").split(" ")
+        last_name = " ".join(last_name)
         return dict(
-            hid=data['sub'],
-            email=data['email'],
+            hid=data["sub"],
+            email=data["email"],
             first_name=first_name,
             last_name=last_name,
         )
@@ -64,7 +64,7 @@ class HumanitarianId:
     def get_user(self):
         profile = Profile.objects.filter(hid=self.user_id).first()
         if profile is None:
-            user = User.objects.filter(email=self.data['email']).first()
+            user = User.objects.filter(email=self.data["email"]).first()
             if user:
                 self._save_user(user)
                 return user
@@ -76,9 +76,9 @@ class HumanitarianId:
         """
         Sync data from HID to user
         """
-        user.first_name = self.data['first_name']
-        user.last_name = self.data['last_name']
-        user.email = self.data['email']
+        user.first_name = self.data["first_name"]
+        user.last_name = self.data["last_name"]
+        user.email = self.data["email"]
         user.profile.hid = self.user_id
         user.save()
 
@@ -86,12 +86,12 @@ class HumanitarianId:
         """
         Create User with HID data
         """
-        username = self.data['email']
+        username = self.data["email"]
 
         user = User.objects.create_user(
-            first_name=self.data['first_name'],
-            last_name=self.data['last_name'],
-            email=self.data['email'],
+            first_name=self.data["first_name"],
+            last_name=self.data["last_name"],
+            email=self.data["email"],
             username=username,
         )
 
@@ -102,14 +102,15 @@ class HumanitarianId:
     def get_user_information_from_access_token(self, access_token):
         if config.auth_uri:
             # https://github.com/UN-OCHA/hid_api/blob/363f5a06fe25360515494bce050a6d2987058a2a/api/controllers/UserController.js#L1536-L1546
-            url = config.auth_uri + '/account.json'
+            url = config.auth_uri + "/account.json"
             r = requests.post(
-                url, headers={'Authorization': 'Bearer ' + access_token},
+                url,
+                headers={"Authorization": "Bearer " + access_token},
             )
             if r.status_code == 200:
                 data = r.json()
-                if not data['email_verified']:
-                    raise HIDEmailNotVerifiedException('Email is not verified in HID')
+                if not data["email_verified"]:
+                    raise HIDEmailNotVerifiedException("Email is not verified in HID")
                 return data
-            raise HIDFetchFailedException('HID Get Token Failed!! \n{}'.format(r.json()))
-        raise InvalidHIDConfigurationException('Invalid HID Configuration')
+            raise HIDFetchFailedException("HID Get Token Failed!! \n{}".format(r.json()))
+        raise InvalidHIDConfigurationException("Invalid HID Configuration")

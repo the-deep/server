@@ -1,88 +1,77 @@
-from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from drf_dynamic_fields import DynamicFieldsMixin
-from rest_framework import serializers
-
-from deep.serializers import (
-    RemoveNullFieldsMixin,
-    RecursiveSerializer,
-)
-
-from project.models import Project
 from gallery.models import File
-from user_resource.serializers import UserResourceSerializer
-from lead.serializers import SimpleLeadSerializer
-from lead.models import Lead, LeadGroup
-from deep.models import Field
+from gallery.serializers import SimpleFileSerializer
 from geo.models import Region
+from lead.models import Lead, LeadGroup
+from lead.serializers import SimpleLeadSerializer
 from organization.models import Organization, OrganizationType
 from organization.serializers import (
     ArySourceOrganizationSerializer,
     OrganizationTypeSerializer,
 )
-from gallery.serializers import SimpleFileSerializer
+from project.models import Project
+from rest_framework import serializers
+from user_resource.serializers import UserResourceSerializer
+
+from deep.models import Field
+from deep.serializers import RecursiveSerializer, RemoveNullFieldsMixin
 
 from .models import (
-    AssessmentTemplate,
     Assessment,
+    AssessmentTemplate,
     PlannedAssessment,
+    ScoreQuestionnaire,
     ScoreQuestionnaireSector,
     ScoreQuestionnaireSubSector,
-    ScoreQuestionnaire,
 )
 
 
-class AssessmentSerializer(RemoveNullFieldsMixin,
-                           DynamicFieldsMixin, UserResourceSerializer):
-    lead_title = serializers.CharField(source='lead.title',
-                                       read_only=True)
-    lead_group_title = serializers.CharField(source='lead_group.title',
-                                             read_only=True)
-    project = serializers.PrimaryKeyRelatedField(
-        required=False,
-        queryset=Project.objects.all()
-    )
+class AssessmentSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceSerializer):
+    lead_title = serializers.CharField(source="lead.title", read_only=True)
+    lead_group_title = serializers.CharField(source="lead_group.title", read_only=True)
+    project = serializers.PrimaryKeyRelatedField(required=False, queryset=Project.objects.all())
 
     class Meta:
         model = Assessment
-        fields = ('__all__')
+        fields = "__all__"
 
     def create(self, data):
-        if data.get('project') is None:
-            if data.get('lead') is None:
-                data['project'] = data['lead_group'].project
+        if data.get("project") is None:
+            if data.get("lead") is None:
+                data["project"] = data["lead_group"].project
             else:
-                data['project'] = data['lead'].project
+                data["project"] = data["lead"].project
         return super().create(data)
 
 
-class PlannedAssessmentSerializer(
-        RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceSerializer):
+class PlannedAssessmentSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceSerializer):
 
     class Meta:
         model = PlannedAssessment
-        fields = '__all__'
+        fields = "__all__"
 
 
 class LeadAssessmentSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceSerializer):
-    lead_title = serializers.CharField(source='lead.title', read_only=True)
+    lead_title = serializers.CharField(source="lead.title", read_only=True)
     gallery_files_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Assessment
-        fields = ('__all__')
-        read_only_fields = ('lead', 'lead_group', 'project')
+        fields = "__all__"
+        read_only_fields = ("lead", "lead_group", "project")
 
     def get_gallery_files_details(self, assessment):
         # Right now gallery files are only used in additional_documents
-        additional_documents = (assessment.metadata or {}).get('additional_documents')
+        additional_documents = (assessment.metadata or {}).get("additional_documents")
         if not additional_documents:
             return
         files_id = []
         for items in additional_documents.values():
             for item in items or []:
-                if item.get('id') and item.get('type') == 'file':
-                    files_id.append(item['id'])
+                if item.get("id") and item.get("type") == "file":
+                    files_id.append(item["id"])
         # TODO:
         qs = File.objects.filter(id__in=files_id).all()
         return SimpleFileSerializer(qs, context=self.context, many=True).data
@@ -90,40 +79,36 @@ class LeadAssessmentSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserRe
     def create(self, validated_data):
         # If this assessment is being created for the first time,
         # we want to set lead to the one which has its id in the url
-        lead = get_object_or_404(Lead, pk=self.initial_data['lead'])
-        assessment = super().create({
-            **validated_data,
-            'lead': lead,
-            'project': lead.project,
-        })
+        lead = get_object_or_404(Lead, pk=self.initial_data["lead"])
+        assessment = super().create(
+            {
+                **validated_data,
+                "lead": lead,
+                "project": lead.project,
+            }
+        )
         assessment.save()
         return assessment
 
 
-class LeadGroupAssessmentSerializer(RemoveNullFieldsMixin,
-                                    DynamicFieldsMixin,
-                                    UserResourceSerializer):
-    lead_group_title = serializers.CharField(source='lead_group.title',
-                                             read_only=True)
-    leads = SimpleLeadSerializer(source='lead_group.lead_set',
-                                 many=True,
-                                 read_only=True)
+class LeadGroupAssessmentSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceSerializer):
+    lead_group_title = serializers.CharField(source="lead_group.title", read_only=True)
+    leads = SimpleLeadSerializer(source="lead_group.lead_set", many=True, read_only=True)
 
     class Meta:
         model = Assessment
-        fields = ('__all__')
-        read_only_fields = ('lead', 'lead_group')
+        fields = "__all__"
+        read_only_fields = ("lead", "lead_group")
 
     def create(self, validated_data):
         # If this assessment is being created for the first time,
         # we want to set lead group to the one which has its id in the url
-        assessment = super().create({
-            **validated_data,
-            'lead_group': get_object_or_404(
-                LeadGroup,
-                pk=self.initial_data['lead_group']
-            ),
-        })
+        assessment = super().create(
+            {
+                **validated_data,
+                "lead_group": get_object_or_404(LeadGroup, pk=self.initial_data["lead_group"]),
+            }
+        )
         assessment.save()
         return assessment
 
@@ -141,7 +126,7 @@ class TreeSerializer(serializers.Serializer):
 
 class OptionSerializer(serializers.Serializer):
     key = serializers.CharField()
-    label = serializers.CharField(source='title')
+    label = serializers.CharField(source="title")
 
 
 class FieldSerializer(serializers.Serializer):
@@ -151,12 +136,11 @@ class FieldSerializer(serializers.Serializer):
     tooltip = serializers.CharField()
     field_type = serializers.CharField()
     source_type = serializers.CharField()
-    options = OptionSerializer(source='get_options',
-                               many=True, read_only=True)
+    options = OptionSerializer(source="get_options", many=True, read_only=True)
     show_in_planned_assessment = serializers.BooleanField()
 
     class Meta:
-        ref_name = 'AryFieldSerializer'
+        ref_name = "AryFieldSerializer"
 
 
 class GroupSerializer(serializers.Serializer):
@@ -227,59 +211,50 @@ class ScoreMatrixPillarSerializer(serializers.Serializer):
 class ScoreQuestionnaireSerializer(serializers.ModelSerializer):
     class Meta:
         model = ScoreQuestionnaire
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ScoreQuestionnaireSubSectorSerializer(serializers.ModelSerializer):
     questions = ScoreQuestionnaireSerializer(
-        source='scorequestionnaire_set', many=True, read_only=True,
+        source="scorequestionnaire_set",
+        many=True,
+        read_only=True,
     )
 
     class Meta:
         model = ScoreQuestionnaireSubSector
-        fields = '__all__'
+        fields = "__all__"
 
 
 class ScoreQuestionnaireSectorSerializer(serializers.ModelSerializer):
     sub_sectors = ScoreQuestionnaireSubSectorSerializer(
-        source='scorequestionnairesubsector_set', many=True, read_only=True,
+        source="scorequestionnairesubsector_set",
+        many=True,
+        read_only=True,
     )
 
     class Meta:
         model = ScoreQuestionnaireSector
-        fields = '__all__'
+        fields = "__all__"
 
 
-class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
-                                   DynamicFieldsMixin, UserResourceSerializer):
-    metadata_groups = GroupSerializer(source='metadatagroup_set',
-                                      many=True, read_only=True)
-    methodology_groups = GroupSerializer(source='methodologygroup_set',
-                                         many=True, read_only=True)
-    sectors = ItemSerializer(source='sector_set',
-                             many=True, read_only=True)
-    focuses = ItemSerializer(source='focus_set',
-                             many=True, read_only=True)
-    underlying_factors = TreeSerializer(source='get_parent_underlying_factors',
-                                        many=True, read_only=True)
-    affected_groups = TreeSerializer(source='get_parent_affected_groups',
-                                     many=True, read_only=True)
+class AssessmentTemplateSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceSerializer):
+    metadata_groups = GroupSerializer(source="metadatagroup_set", many=True, read_only=True)
+    methodology_groups = GroupSerializer(source="methodologygroup_set", many=True, read_only=True)
+    sectors = ItemSerializer(source="sector_set", many=True, read_only=True)
+    focuses = ItemSerializer(source="focus_set", many=True, read_only=True)
+    underlying_factors = TreeSerializer(source="get_parent_underlying_factors", many=True, read_only=True)
+    affected_groups = TreeSerializer(source="get_parent_affected_groups", many=True, read_only=True)
 
-    priority_sectors = TreeSerializer(source='get_parent_priority_sectors',
-                                      many=True, read_only=True)
-    priority_issues = TreeSerializer(source='get_parent_priority_issues',
-                                     many=True, read_only=True)
-    specific_need_groups = ItemSerializer(source='specificneedgroup_set',
-                                          many=True, read_only=True)
-    affected_locations = ItemSerializer(source='affectedlocation_set',
-                                        many=True, read_only=True)
+    priority_sectors = TreeSerializer(source="get_parent_priority_sectors", many=True, read_only=True)
+    priority_issues = TreeSerializer(source="get_parent_priority_issues", many=True, read_only=True)
+    specific_need_groups = ItemSerializer(source="specificneedgroup_set", many=True, read_only=True)
+    affected_locations = ItemSerializer(source="affectedlocation_set", many=True, read_only=True)
 
-    score_scales = ScoreScaleSerializer(source='scorescale_set',
-                                        many=True, read_only=True)
-    score_pillars = ScorePillarSerializer(source='scorepillar_set',
-                                          many=True, read_only=True)
+    score_scales = ScoreScaleSerializer(source="scorescale_set", many=True, read_only=True)
+    score_pillars = ScorePillarSerializer(source="scorepillar_set", many=True, read_only=True)
     score_matrix_pillars = ScoreMatrixPillarSerializer(
-        source='scorematrixpillar_set',
+        source="scorematrixpillar_set",
         many=True,
         read_only=True,
     )
@@ -287,44 +262,54 @@ class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
     score_buckets = serializers.SerializerMethodField()
     sources = serializers.SerializerMethodField()
     questionnaire_sector = ScoreQuestionnaireSectorSerializer(
-        source='scorequestionnairesector_set', many=True, read_only=True,
+        source="scorequestionnairesector_set",
+        many=True,
+        read_only=True,
     )
 
     class Meta:
         model = AssessmentTemplate
-        fields = ('__all__')
+        fields = "__all__"
 
     def get_score_buckets(self, template):
         buckets = template.scorebucket_set.all()
-        return [
-            [b.min_value, b.max_value, b.score]
-            for b in buckets
-        ]
+        return [[b.min_value, b.max_value, b.score] for b in buckets]
 
     def get_sources(self, instance):
         def have_source(source_type):
             return AssessmentTemplate.objects.filter(
-                Q(metadatagroup__fields__source_type=source_type) |
-                Q(methodologygroup__fields__source_type=source_type),
+                Q(metadatagroup__fields__source_type=source_type) | Q(methodologygroup__fields__source_type=source_type),
                 pk=instance.pk,
             ).exists()
 
         return {
-            'countries': Region.objects.filter(public=True).extra(
-                select={
-                    'key': 'id',
-                    'label': 'title',
-                }
-            ).values('key', 'label') if have_source(Field.COUNTRIES) else [],
-            'organizations': ArySourceOrganizationSerializer(
-                Organization.objects.all(),
-                many=True,
-                context=self.context,
-            ).data
-            if have_source(Field.ORGANIZATIONS or Field.DONORS) else [],
-            'organization_type': OrganizationTypeSerializer(
-                OrganizationType.objects.all(),
-                many=True,
-            ).data
-            if have_source(Field.ORGANIZATIONS or Field.DONORS) else [],
+            "countries": (
+                Region.objects.filter(public=True)
+                .extra(
+                    select={
+                        "key": "id",
+                        "label": "title",
+                    }
+                )
+                .values("key", "label")
+                if have_source(Field.COUNTRIES)
+                else []
+            ),
+            "organizations": (
+                ArySourceOrganizationSerializer(
+                    Organization.objects.all(),
+                    many=True,
+                    context=self.context,
+                ).data
+                if have_source(Field.ORGANIZATIONS or Field.DONORS)
+                else []
+            ),
+            "organization_type": (
+                OrganizationTypeSerializer(
+                    OrganizationType.objects.all(),
+                    many=True,
+                ).data
+                if have_source(Field.ORGANIZATIONS or Field.DONORS)
+                else []
+            ),
         }

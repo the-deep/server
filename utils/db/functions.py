@@ -1,18 +1,18 @@
-from django.db.models import Func, Transform, BooleanField
 from django.contrib.gis.db.models.fields import BaseSpatialField
 from django.contrib.gis.db.models.functions import GeoFuncMixin
+from django.db.models import BooleanField, Func, Transform
 
 
 class StrPos(Func):
-    function = 'POSITION'   # MySQL method
+    function = "POSITION"  # MySQL method
 
     def as_sqlite(self, compiler, connection):
         #  SQLite method
-        return self.as_sql(compiler, connection, function='INSTR')
+        return self.as_sql(compiler, connection, function="INSTR")
 
     def as_postgresql(self, compiler, connection):
         # PostgreSQL method
-        return self.as_sql(compiler, connection, function='STRPOS')
+        return self.as_sql(compiler, connection, function="STRPOS")
 
 
 @BaseSpatialField.register_lookup

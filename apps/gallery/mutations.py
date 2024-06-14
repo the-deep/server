@@ -1,20 +1,15 @@
 import graphene
 
 from utils.graphene.mutation import (
-    generate_input_type_for_serializer,
     PsGrapheneMutation,
+    generate_input_type_for_serializer,
 )
 
 from .models import File
 from .schema import GalleryFileType
-from .serializers import (
-    FileSerializer
-)
+from .serializers import FileSerializer
 
-FileUploadInputType = generate_input_type_for_serializer(
-    'FileUploadInputType',
-    serializer_class=FileSerializer
-)
+FileUploadInputType = generate_input_type_for_serializer("FileUploadInputType", serializer_class=FileSerializer)
 
 
 class UploadFile(PsGrapheneMutation):
@@ -27,5 +22,5 @@ class UploadFile(PsGrapheneMutation):
     permissions = []
 
 
-class Mutation():
+class Mutation:
     file_upload = UploadFile.Field()

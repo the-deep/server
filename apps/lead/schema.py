@@ -1,50 +1,46 @@
-import graphene
 from functools import reduce
 from typing import Union
+
+import graphene
+from analysis_framework.models import Filter as AfFilter
+from analysis_framework.models import Widget
 from django.db import models
 from django.db.models import QuerySet
-from graphene_django import DjangoObjectType, DjangoListField
-from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
-
-from utils.graphene.pagination import NoOrderingPageGraphqlPagination
-from utils.graphene.enums import EnumDescription
-from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
-from utils.graphene.fields import DjangoPaginatedListObjectField
-
-from user.models import User
-from organization.models import Organization, OrganizationType as OrganizationTypeModel
 from geo.models import GeoArea
-from analysis_framework.models import Filter as AfFilter, Widget
-
-from user_resource.schema import UserResourceMixin
-from deep.permissions import ProjectPermissions as PP
-from deep.permalinks import Permalink
-from organization.schema import OrganizationType, OrganizationTypeType
-from user.schema import UserType
 from geo.schema import ProjectGeoAreaType
-
+from graphene_django import DjangoListField, DjangoObjectType
+from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from lead.filter_set import LeadsFilterDataType
+from organization.models import Organization
+from organization.models import OrganizationType as OrganizationTypeModel
+from organization.schema import OrganizationType, OrganizationTypeType
+from user.models import User
+from user.schema import UserType
+from user_resource.schema import UserResourceMixin
 
+from deep.permalinks import Permalink
+from deep.permissions import ProjectPermissions as PP
+from utils.graphene.enums import EnumDescription
+from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.pagination import NoOrderingPageGraphqlPagination
+from utils.graphene.types import ClientIdMixin, CustomDjangoListObjectType
 
-from .models import (
-    Lead,
-    LeadGroup,
-    LeadPreview,
-    LeadEMMTrigger,
-    EMMEntity,
-    UserSavedLeadFilter,
-)
 from .enums import (
+    LeadAutoEntryExtractionTypeEnum,
     LeadConfidentialityEnum,
-    LeadStatusEnum,
+    LeadExtractionStatusEnum,
     LeadPriorityEnum,
     LeadSourceTypeEnum,
-    LeadExtractionStatusEnum,
-    LeadAutoEntryExtractionTypeEnum,
+    LeadStatusEnum,
 )
-from .filter_set import (
-    LeadGQFilterSet,
-    LeadGroupGQFilterSet,
+from .filter_set import LeadGQFilterSet, LeadGroupGQFilterSet
+from .models import (
+    EMMEntity,
+    Lead,
+    LeadEMMTrigger,
+    LeadGroup,
+    LeadPreview,
+    UserSavedLeadFilter,
 )
 
 
@@ -86,53 +82,48 @@ def get_lead_emm_entities_qs(info):
 # Generates database level objects used in filters.
 def get_lead_filter_data(filters, context):
     def _filter_by_id(entity_list, entity_id_list):
-        return [
-            entity
-            for entity in entity_list
-            if entity.id in entity_id_list
-        ]
+        return [entity for entity in entity_list if entity.id in entity_id_list]
 
     def _id_to_int(ids):
-        return [
-            int(_id) for _id in ids
-        ]
+        return [int(_id) for _id in ids]
 
     if filters is None or not isinstance(filters, dict):
         return {}
 
-    entry_filter_data = filters.get('entries_filter_data') or {}
+    entry_filter_data = filters.get("entries_filter_data") or {}
     geo_widget_filter_keys = AfFilter.objects.filter(
         analysis_framework=context.active_project.analysis_framework_id,
         widget_key__in=Widget.objects.filter(
             analysis_framework=context.active_project.analysis_framework_id,
             widget_id=Widget.WidgetType.GEO,
-        ).values_list('key', flat=True)
-    ).values_list('key', flat=True)
+        ).values_list("key", flat=True),
+    ).values_list("key", flat=True)
 
     # Lead Filter Data
-    created_by_ids = _id_to_int(filters.get('created_by') or [])
-    modified_by_ids = _id_to_int(filters.get('modified_by') or [])
-    assignee_ids = _id_to_int(filters.get('assignees') or [])
-    author_organization_type_ids = _id_to_int(filters.get('authoring_organization_types') or [])
-    author_organization_ids = _id_to_int(filters.get('author_organizations') or [])
-    source_organization_ids = _id_to_int(filters.get('source_organizations') or [])
+    created_by_ids = _id_to_int(filters.get("created_by") or [])
+    modified_by_ids = _id_to_int(filters.get("modified_by") or [])
+    assignee_ids = _id_to_int(filters.get("assignees") or [])
+    author_organization_type_ids = _id_to_int(filters.get("authoring_organization_types") or [])
+    author_organization_ids = _id_to_int(filters.get("author_organizations") or [])
+    source_organization_ids = _id_to_int(filters.get("source_organizations") or [])
     # Entry Filter Data
-    ef_lead_assignee_ids = _id_to_int(entry_filter_data.get('lead_assignees') or [])
-    ef_lead_authoring_organizationtype_ids = _id_to_int(entry_filter_data.get('lead_authoring_organization_types') or [])
-    ef_lead_author_organization_ids = _id_to_int(entry_filter_data.get('lead_author_organizations') or [])
-    ef_lead_source_organization_ids = _id_to_int(entry_filter_data.get('lead_source_organizations') or [])
-    ef_lead_created_by_ids = _id_to_int(entry_filter_data.get('lead_created_by') or [])
-    ef_created_by_ids = _id_to_int(entry_filter_data.get('created_by') or [])
-    ef_modified_by_ids = _id_to_int(entry_filter_data.get('modified_by') or [])
+    ef_lead_assignee_ids = _id_to_int(entry_filter_data.get("lead_assignees") or [])
+    ef_lead_authoring_organizationtype_ids = _id_to_int(entry_filter_data.get("lead_authoring_organization_types") or [])
+    ef_lead_author_organization_ids = _id_to_int(entry_filter_data.get("lead_author_organizations") or [])
+    ef_lead_source_organization_ids = _id_to_int(entry_filter_data.get("lead_source_organizations") or [])
+    ef_lead_created_by_ids = _id_to_int(entry_filter_data.get("lead_created_by") or [])
+    ef_created_by_ids = _id_to_int(entry_filter_data.get("created_by") or [])
+    ef_modified_by_ids = _id_to_int(entry_filter_data.get("modified_by") or [])
     ef_geo_area_ids = set(
         _id_to_int(
             reduce(
                 lambda a, b: a + b,
                 [
-                    filterable_data['value_list'] or []
-                    for filterable_data in entry_filter_data.get('filterable_data') or []
-                    if filterable_data.get('filter_key') in geo_widget_filter_keys and filterable_data.get('value_list')
-                ], []
+                    filterable_data["value_list"] or []
+                    for filterable_data in entry_filter_data.get("filterable_data") or []
+                    if filterable_data.get("filter_key") in geo_widget_filter_keys and filterable_data.get("value_list")
+                ],
+                [],
             )
         )
     )
@@ -141,43 +132,46 @@ def get_lead_filter_data(filters, context):
     users = list(
         User.objects.filter(
             projectmembership__project=context.active_project,
-            id__in=set([
-                *created_by_ids,
-                *modified_by_ids,
-                *assignee_ids,
-                *ef_created_by_ids,
-                *ef_lead_assignee_ids,
-                *ef_lead_created_by_ids,
-                *ef_modified_by_ids,
-            ])
-        ).order_by('id')
+            id__in=set(
+                [
+                    *created_by_ids,
+                    *modified_by_ids,
+                    *assignee_ids,
+                    *ef_created_by_ids,
+                    *ef_lead_assignee_ids,
+                    *ef_lead_created_by_ids,
+                    *ef_modified_by_ids,
+                ]
+            ),
+        ).order_by("id")
     )
 
     organizations = list(
         Organization.objects.filter(
-            id__in=set([
-                *author_organization_ids,
-                *source_organization_ids,
-                *ef_lead_author_organization_ids,
-                *ef_lead_source_organization_ids,
-            ])
-        ).order_by('id')
+            id__in=set(
+                [
+                    *author_organization_ids,
+                    *source_organization_ids,
+                    *ef_lead_author_organization_ids,
+                    *ef_lead_source_organization_ids,
+                ]
+            )
+        ).order_by("id")
     )
 
     organization_types = list(
         OrganizationTypeModel.objects.filter(
-            id__in=set([
-                *author_organization_type_ids,
-                *ef_lead_authoring_organizationtype_ids,
-            ])
-        ).order_by('id')
+            id__in=set(
+                [
+                    *author_organization_type_ids,
+                    *ef_lead_authoring_organizationtype_ids,
+                ]
+            )
+        ).order_by("id")
     )
 
     geoareas = list(
-        GeoArea.objects.filter(
-            admin_level__region__project=context.active_project,
-            id__in=ef_geo_area_ids
-        ).order_by('id')
+        GeoArea.objects.filter(admin_level__region__project=context.active_project, id__in=ef_geo_area_ids).order_by("id")
     )
 
     return dict(
@@ -204,13 +198,13 @@ class LeadPreviewType(DjangoObjectType):
     class Meta:
         model = LeadPreview
         only_fields = (
-            'text_extract',
-            'thumbnail',
-            'thumbnail_height',
-            'thumbnail_width',
-            'word_count',
-            'page_count',
-            'text_extraction_id'
+            "text_extract",
+            "thumbnail",
+            "thumbnail_height",
+            "thumbnail_width",
+            "word_count",
+            "page_count",
+            "text_extraction_id",
             # 'classified_doc_id',
             # 'classification_status',
         )
@@ -219,7 +213,7 @@ class LeadPreviewType(DjangoObjectType):
 class LeadEmmTriggerType(DjangoObjectType):
     class Meta:
         model = LeadEMMTrigger
-        only_fields = ('id', 'emm_keyword', 'emm_risk_factor', 'count')
+        only_fields = ("id", "emm_keyword", "emm_risk_factor", "count")
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -235,7 +229,7 @@ class LeadEmmTriggerListType(CustomDjangoListObjectType):
 class EmmEntityType(DjangoObjectType):
     class Meta:
         model = EMMEntity
-        only_fields = ('id', 'name')
+        only_fields = ("id", "name")
 
     @staticmethod
     def get_custom_queryset(queryset, info, **kwargs):
@@ -273,7 +267,8 @@ class LeadFilterDataType(graphene.ObjectType):
     entry_filter_lead_assignee_options = graphene.List(graphene.NonNull(UserType), required=True)
     entry_filter_lead_author_organization_options = graphene.List(graphene.NonNull(OrganizationType), required=True)
     entry_filter_lead_authoring_organization_type_options = graphene.List(
-        graphene.NonNull(OrganizationTypeType), required=True,
+        graphene.NonNull(OrganizationTypeType),
+        required=True,
     )
     entry_filter_lead_created_by_options = graphene.List(graphene.NonNull(UserType), required=True)
     entry_filter_lead_source_organization_options = graphene.List(graphene.NonNull(OrganizationType), required=True)
@@ -288,10 +283,10 @@ class UserSavedLeadFilterType(DjangoObjectType):
     class Meta:
         model = UserSavedLeadFilter
         only_fields = (
-            'id',
-            'title',
-            'created_at',
-            'modified_at',
+            "id",
+            "title",
+            "created_at",
+            "modified_at",
         )
 
     @staticmethod
@@ -303,10 +298,11 @@ class LeadGroupType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = LeadGroup
         only_fields = (
-            'id',
-            'title',
-            'project',
+            "id",
+            "title",
+            "project",
         )
+
     lead_counts = graphene.Int(required=True)
 
     @staticmethod
@@ -329,21 +325,28 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Lead
         only_fields = (
-            'id', 'title', 'is_assessment_lead', 'lead_group', 'assignee', 'published_on',
-            'text', 'url', 'attachment',
-            'client_id',
+            "id",
+            "title",
+            "is_assessment_lead",
+            "lead_group",
+            "assignee",
+            "published_on",
+            "text",
+            "url",
+            "attachment",
+            "client_id",
         )
 
-    project = graphene.ID(source='project_id', required=True)
+    project = graphene.ID(source="project_id", required=True)
     # Enums
     source_type = graphene.Field(LeadSourceTypeEnum, required=True)
-    source_type_display = EnumDescription(source='get_source_type_display', required=True)
+    source_type_display = EnumDescription(source="get_source_type_display", required=True)
     priority = graphene.Field(LeadPriorityEnum, required=True)
-    priority_display = EnumDescription(source='get_priority_display', required=True)
+    priority_display = EnumDescription(source="get_priority_display", required=True)
     confidentiality = graphene.Field(LeadConfidentialityEnum, required=True)
-    confidentiality_display = EnumDescription(source='get_confidentiality_display', required=True)
+    confidentiality_display = EnumDescription(source="get_confidentiality_display", required=True)
     status = graphene.Field(LeadStatusEnum, required=True)
-    status_display = EnumDescription(source='get_status_display', required=True)
+    status_display = EnumDescription(source="get_status_display", required=True)
 
     extraction_status = graphene.Field(LeadExtractionStatusEnum)
     lead_preview = graphene.Field(LeadPreviewType)
@@ -355,13 +358,12 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     emm_entities = DjangoListField(EmmEntityType)
     emm_triggers = DjangoListField(LeadEmmTriggerType)
     assessment_id = graphene.ID()
-    connector_lead = graphene.ID(source='connector_lead_id', required=False)
+    connector_lead = graphene.ID(source="connector_lead_id", required=False)
     # Entries count
     entries_count = graphene.Field(EntriesCountType)
     filtered_entries_count = graphene.Int(
         description=(
-            'Count used to order or filter-out leads'
-            '. Can be =null or =entries_count->total or !=entries_count->total.'
+            "Count used to order or filter-out leads" ". Can be =null or =entries_count->total or !=entries_count->total."
         )
     )
     # Duplicate leads
@@ -402,7 +404,7 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     @staticmethod
     def resolve_filtered_entries_count(root, info, **kwargs):
         # filtered_entry_count is from LeadFilterSet
-        return getattr(root, 'filtered_entry_count', None)
+        return getattr(root, "filtered_entry_count", None)
 
     @staticmethod
     def resolve_share_view_url(root: Lead, info, **kwargs):
@@ -423,12 +425,19 @@ class LeadDetailType(LeadType):
         model = Lead
         skip_registry = True
         only_fields = (
-            'id', 'title', 'is_assessment_lead', 'lead_group', 'assignee', 'published_on',
-            'text', 'url', 'attachment',
-            'client_id',
+            "id",
+            "title",
+            "is_assessment_lead",
+            "lead_group",
+            "assignee",
+            "published_on",
+            "text",
+            "url",
+            "attachment",
+            "client_id",
         )
 
-    entries = graphene.List(graphene.NonNull('entry.schema.EntryType'))
+    entries = graphene.List(graphene.NonNull("entry.schema.EntryType"))
     draft_entry_stat = graphene.Field(DraftEntryCountByLead)
 
     @staticmethod
@@ -458,27 +467,18 @@ class Query:
     leads = DjangoPaginatedListObjectField(
         LeadListType,
         pagination=NoOrderingPageGraphqlPagination(
-            page_size_query_param='pageSize',
-        )
+            page_size_query_param="pageSize",
+        ),
     )
     lead_group = DjangoObjectField(LeadGroupType)
     lead_groups = DjangoPaginatedListObjectField(
-        LeadGroupListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        LeadGroupListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
     emm_entities = DjangoPaginatedListObjectField(
-        EmmEntityListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        EmmEntityListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
     lead_emm_triggers = DjangoPaginatedListObjectField(
-        LeadEmmTriggerListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        LeadEmmTriggerListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
     # TODO: Add Pagination
     emm_keywords = graphene.List(graphene.NonNull(EmmKeyWordType))
@@ -504,25 +504,29 @@ class Query:
 
     @staticmethod
     def resolve_emm_keywords(root, info, **kwargs):
-        return LeadEMMTrigger.objects.filter(
-            lead__project=info.context.active_project
-        ).values('emm_keyword').annotate(
-            total_count=models.Sum('count'),
-            key=models.F('emm_keyword'),
-            label=models.F('emm_keyword')
-        ).order_by('emm_keyword')
+        return (
+            LeadEMMTrigger.objects.filter(lead__project=info.context.active_project)
+            .values("emm_keyword")
+            .annotate(total_count=models.Sum("count"), key=models.F("emm_keyword"), label=models.F("emm_keyword"))
+            .order_by("emm_keyword")
+        )
 
     @staticmethod
     def resolve_emm_risk_factors(root, info, **kwargs):
-        return LeadEMMTrigger.objects.filter(
-            ~models.Q(emm_risk_factor=''),
-            ~models.Q(emm_risk_factor=None),
-            lead__project=info.context.active_project,
-        ).values('emm_risk_factor').annotate(
-            total_count=models.Sum('count'),
-            key=models.F('emm_risk_factor'),
-            label=models.F('emm_risk_factor'),
-        ).order_by('emm_risk_factor')
+        return (
+            LeadEMMTrigger.objects.filter(
+                ~models.Q(emm_risk_factor=""),
+                ~models.Q(emm_risk_factor=None),
+                lead__project=info.context.active_project,
+            )
+            .values("emm_risk_factor")
+            .annotate(
+                total_count=models.Sum("count"),
+                key=models.F("emm_risk_factor"),
+                label=models.F("emm_risk_factor"),
+            )
+            .order_by("emm_risk_factor")
+        )
 
     @staticmethod
     def resolve_user_saved_lead_filter(root, info, **kwargs):

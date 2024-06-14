@@ -1,19 +1,16 @@
 import logging
-from rest_framework import serializers
-from django.db import transaction
 
-from deep.serializers import (
-    TempClientIdMixin,
-    ProjectPropertySerializerMixin,
-    IntegerIDField,
-)
+from django.db import transaction
+from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
 
-from .models import (
-    UnifiedConnector,
-    ConnectorSource,
-    ConnectorSourceLead,
+from deep.serializers import (
+    IntegerIDField,
+    ProjectPropertySerializerMixin,
+    TempClientIdMixin,
 )
+
+from .models import ConnectorSource, ConnectorSourceLead, UnifiedConnector
 from .tasks import process_unified_connector
 
 logger = logging.getLogger(__name__)
@@ -22,16 +19,16 @@ logger = logging.getLogger(__name__)
 # ------------------- Graphql Serializers ------------------------------------
 class ConnectorSourceGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserResourceSerializer):
     id = IntegerIDField(required=False)
-    project_property_attribute = 'unified_connector'
+    project_property_attribute = "unified_connector"
 
     class Meta:
         model = ConnectorSource
         fields = (
-            'id',
-            'title',
-            'source',
-            'params',
-            'client_id',  # From TempClientIdMixin
+            "id",
+            "title",
+            "source",
+            "params",
+            "client_id",  # From TempClientIdMixin
         )
 
 
@@ -39,20 +36,18 @@ class UnifiedConnectorGqSerializer(ProjectPropertySerializerMixin, TempClientIdM
     class Meta:
         model = UnifiedConnector
         fields = (
-            'title',
-            'is_active',
-            'client_id',  # From TempClientIdMixin
+            "title",
+            "is_active",
+            "client_id",  # From TempClientIdMixin
         )
 
     def validate(self, data):
-        data['project'] = self.project
+        data["project"] = self.project
         return data
 
     def create(self, data):
         instance = super().create(data)
-        transaction.on_commit(
-            lambda: process_unified_connector.delay(instance.pk)
-        )
+        transaction.on_commit(lambda: process_unified_connector.delay(instance.pk))
         return instance
 
 
@@ -63,7 +58,7 @@ class UnifiedConnectorWithSourceGqSerializer(UnifiedConnectorGqSerializer):
         model = UnifiedConnector
         fields = [
             *UnifiedConnectorGqSerializer.Meta.fields,
-            'sources',
+            "sources",
         ]
 
     # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
@@ -77,9 +72,9 @@ class UnifiedConnectorWithSourceGqSerializer(UnifiedConnectorGqSerializer):
         source_found = set()
         # Only allow unique source per unified connectors
         for source in sources:
-            source_type = source['source']
+            source_type = source["source"]
             if source_type in source_found:
-                raise serializers.ValidationError(f'Multiple connector found for {source_type}')
+                raise serializers.ValidationError(f"Multiple connector found for {source_type}")
             source_found.add(source_type)
         return sources
 
@@ -87,6 +82,4 @@ class UnifiedConnectorWithSourceGqSerializer(UnifiedConnectorGqSerializer):
 class ConnectorSourceLeadGqSerializer(serializers.ModelSerializer):
     class Meta:
         model = ConnectorSourceLead
-        fields = (
-            'blocked',
-        )
+        fields = ("blocked",)

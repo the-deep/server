@@ -1,19 +1,17 @@
-from user.models import User
-from django.conf import settings
 import datetime
-import jwt
 
-from .errors import (
-    UnknownTokenError,
-    UserNotFoundError,
-    UserInactiveError,
-)
+import jwt
+from django.conf import settings
+from user.models import User
+
+from .errors import UnknownTokenError, UserInactiveError, UserNotFoundError
 
 
 class TokenError(Exception):
     """
     Token encode/decode error
     """
+
     code = 0x70531  # Trying and failing to hex-speak TOKEN
 
     def __init__(self, message):
@@ -31,6 +29,7 @@ class Token:
     """
     Wrapper for jwt token
     """
+
     def __init__(self, token=None, verify=True):
         """
         Initialize with given jwt string to decode or create a new one
@@ -45,25 +44,24 @@ class Token:
                 self.payload = jwt.decode(
                     self.token,
                     SECRET,
-                    algorithms=['HS256'],
+                    algorithms=["HS256"],
                     verify=verify,
                 )
             except (jwt.ExpiredSignatureError, jwt.InvalidSignatureError):
-                raise TokenError('Token is invalid or expired')
+                raise TokenError("Token is invalid or expired")
         else:
             # Not token was given, so create a new one
             # Also set proper lifetime starting now
             if self.lifetime:
-                self.payload['exp'] = \
-                    datetime.datetime.utcnow() + self.lifetime
+                self.payload["exp"] = datetime.datetime.utcnow() + self.lifetime
 
         # Finally set the proper token type
-        self.payload['tokenType'] = self.token_type
+        self.payload["tokenType"] = self.token_type
 
         # Leave rest of the payload to be set by inherited classes
 
     def encode(self):
-        return jwt.encode(self.payload, SECRET, algorithm='HS256')
+        return jwt.encode(self.payload, SECRET, algorithm="HS256")
 
     def __repr__(self):
         return repr(self.payload)
@@ -88,7 +86,8 @@ class AccessToken(Token):
     """
     Access token
     """
-    token_type = 'access'
+
+    token_type = "access"
     lifetime = ACCESS_TOKEN_LIFETIME
 
     @staticmethod
@@ -98,14 +97,14 @@ class AccessToken(Token):
         """
         token = AccessToken()
 
-        token['userId'] = user.id
+        token["userId"] = user.id
         return token
 
     def get_user(self):
         """
         Get user from the access token
         """
-        user_id = self.payload.get('userId')
+        user_id = self.payload.get("userId")
         if not user_id:
             raise UnknownTokenError()
 
@@ -124,7 +123,8 @@ class RefreshToken(Token):
     """
     Refresh token
     """
-    token_type = 'refresh'
+
+    token_type = "refresh"
     lifetime = None
 
     @staticmethod
@@ -135,6 +135,6 @@ class RefreshToken(Token):
         token = RefreshToken()
 
         # For now just set same user id
-        token['userId'] = access_token['userId']
+        token["userId"] = access_token["userId"]
 
         return token

@@ -1,8 +1,6 @@
 import os
-from .document import (
-    Document,
-    HTML, PDF, DOCX, PPTX, MSWORD,
-)
+
+from .document import DOCX, HTML, MSWORD, PDF, PPTX, Document
 
 
 class FileDocument(Document):
@@ -11,11 +9,20 @@ class FileDocument(Document):
     Takes file
     Gives document and type
     """
-    HTML_TYPES = ['.html', '.htm', '.txt']
-    PDF_TYPES = ['.pdf', ]
-    DOCX_TYPES = ['.docx', ]
-    MSWORD_TYPES = ['.doc', ]
-    PPTX_TYPES = ['.pptx', ]
+
+    HTML_TYPES = [".html", ".htm", ".txt"]
+    PDF_TYPES = [
+        ".pdf",
+    ]
+    DOCX_TYPES = [
+        ".docx",
+    ]
+    MSWORD_TYPES = [
+        ".doc",
+    ]
+    PPTX_TYPES = [
+        ".pptx",
+    ]
 
     def __init__(self, file, name):
 

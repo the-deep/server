@@ -1,9 +1,10 @@
-import io
 import csv
+import io
 from itertools import chain
-from ..models import Sheet, Field
 
 from utils.common import LogTime
+
+from ..models import Field, Sheet
 
 
 @LogTime()
@@ -16,13 +17,13 @@ def extract(book):
             book=book,
         )
         reader = csv.reader(
-            io.StringIO(csv_file.read().decode('utf-8')),
-            delimiter=options.get('delimiter', ','),
-            quotechar=options.get('quotechar', '"'),
+            io.StringIO(csv_file.read().decode("utf-8")),
+            delimiter=options.get("delimiter", ","),
+            quotechar=options.get("quotechar", '"'),
             skipinitialspace=True,
         )
 
-        no_headers = options.get('no_headers', False)
+        no_headers = options.get("no_headers", False)
         data_index = 0 if no_headers else 1
 
         fields = []
@@ -33,8 +34,7 @@ def extract(book):
         for header in first_row:
             fields.append(
                 Field(
-                    title=(header if not no_headers
-                           else 'Column ' + str(ordering)),
+                    title=(header if not no_headers else "Column " + str(ordering)),
                     sheet=sheet,
                     ordering=ordering,
                 )
@@ -50,18 +50,20 @@ def extract(book):
             try:
                 for index, field in enumerate(fields):
                     field_data = fields_data.get(field.id, [])
-                    field_data.append({
-                        'value': _row[index],
-                        'invalid': False,
-                        'empty': False,
-                    })
+                    field_data.append(
+                        {
+                            "value": _row[index],
+                            "invalid": False,
+                            "empty": False,
+                        }
+                    )
                     fields_data[field.id] = field_data
             except Exception:
                 pass
 
         for field in sheet.field_set.all():
             field.data = fields_data.get(field.id, [])
-            block_name = 'Field Save csv extract {}'.format(field.title)
+            block_name = "Field Save csv extract {}".format(field.title)
             with LogTime(block_name=block_name):
                 field.save()
 

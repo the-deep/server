@@ -4,9 +4,9 @@ DATA_VERSION = 2
 
 
 def update_attribute(widget, data, widget_properties):
-    data = (data or {}).get('value', {})
-    rows = widget_properties.get('rows', [])
-    columns = widget_properties.get('columns', [])
+    data = (data or {}).get("value", {})
+    rows = widget_properties.get("rows", [])
+    columns = widget_properties.get("columns", [])
 
     filter1_values = []
     filter2_values = []
@@ -17,11 +17,8 @@ def update_attribute(widget, data, widget_properties):
     for key, row in data.items():
         dim_exists = False
 
-        row_data = next((
-            d for d in rows
-            if d.get('key') == key
-        ), {})
-        sub_rows = row_data.get('subRows', [])
+        row_data = next((d for d in rows if d.get("key") == key), {})
+        sub_rows = row_data.get("subRows", [])
 
         if row is None:
             continue
@@ -29,10 +26,7 @@ def update_attribute(widget, data, widget_properties):
         for sub_key, sub_row in row.items():
             subdim_exists = False
 
-            sub_row_data = next((
-                s for s in sub_rows
-                if s.get('key') == sub_key
-            ), {})
+            sub_row_data = next((s for s in sub_rows if s.get("key") == sub_key), {})
 
             if row is None:
                 continue
@@ -49,36 +43,24 @@ def update_attribute(widget, data, widget_properties):
                         filter2_values.append(column_key)
                     filter2_values.extend(sub_columns)
 
-                    column_data = next((
-                        s for s in columns
-                        if s.get('key') == column_key
-                    ), {})
+                    column_data = next((s for s in columns if s.get("key") == column_key), {})
 
                     def get_ss_title(ss):
-                        return next((
-                            ssd.get('label') for ssd
-                            in column_data.get('subColumns', [])
-                            if ssd.get('key') == ss
-                        ), '')
+                        return next((ssd.get("label") for ssd in column_data.get("subColumns", []) if ssd.get("key") == ss), "")
 
-                    excel_values.append([
-                        row.get('label'),
-                        sub_row_data.get('label'),
-                        column_data.get('label'),
-                        [get_ss_title(ss) for ss in sub_columns],
-                    ])
-
-                    # Without sub_columns {column}-{row}-{sub-row}
-                    report_values.append(
-                        '{}-{}-{}'.format(column_key, key, sub_key)
-                    )
-                    # With sub_columns {column}-{sub-column}-{row}-{sub-row}
-                    report_values.extend(
+                    excel_values.append(
                         [
-                            '{}-{}-{}-{}'.format(column_key, ss, key, sub_key)
-                            for ss in sub_columns
+                            row.get("label"),
+                            sub_row_data.get("label"),
+                            column_data.get("label"),
+                            [get_ss_title(ss) for ss in sub_columns],
                         ]
                     )
+
+                    # Without sub_columns {column}-{row}-{sub-row}
+                    report_values.append("{}-{}-{}".format(column_key, key, sub_key))
+                    # With sub_columns {column}-{sub-column}-{row}-{sub-row}
+                    report_values.extend(["{}-{}-{}-{}".format(column_key, ss, key, sub_key) for ss in sub_columns])
 
             if subdim_exists:
                 filter1_values.append(sub_key)
@@ -86,33 +68,32 @@ def update_attribute(widget, data, widget_properties):
             filter1_values.append(key)
 
     return {
-        'filter_data': [
+        "filter_data": [
             {
-                'key': '{}-rows'.format(widget.key),
-                'values': filter1_values,
+                "key": "{}-rows".format(widget.key),
+                "values": filter1_values,
             },
             {
-                'key': '{}-columns'.format(widget.key),
-                'values': filter2_values,
+                "key": "{}-columns".format(widget.key),
+                "values": filter2_values,
             },
         ],
-
-        'export_data': {
-            'data': {
-                'common': {
-                    'widget_id': WIDGET_ID,
-                    'widget_key': widget.key,
-                    'version': DATA_VERSION,
+        "export_data": {
+            "data": {
+                "common": {
+                    "widget_id": WIDGET_ID,
+                    "widget_key": widget.key,
+                    "version": DATA_VERSION,
                 },
-                'excel': {
-                    'type': 'lists',
-                    'values': excel_values,
+                "excel": {
+                    "type": "lists",
+                    "values": excel_values,
                 },
-                'report': {
-                    'keys': report_values,
+                "report": {
+                    "keys": report_values,
                 },
             },
-        }
+        },
     }
 
 
@@ -120,38 +101,38 @@ def _get_headers(widgets_meta, widget, widget_properties):
     if widgets_meta.get(widget.pk) is not None:
         widget_meta = widgets_meta[widget.pk]
         return (
-            widget_meta['dimension_header_map'],
-            widget_meta['subdimension_header_map'],
-            widget_meta['sector_header_map'],
-            widget_meta['subsector_header_map'],
+            widget_meta["dimension_header_map"],
+            widget_meta["subdimension_header_map"],
+            widget_meta["sector_header_map"],
+            widget_meta["subsector_header_map"],
         )
 
     dimension_header_map = {}
     subdimension_header_map = {}
 
-    for dimension in widget_properties.get('rows', []):
+    for dimension in widget_properties.get("rows", []):
         subdimension_keys = []
-        dimension_header_map[dimension['key']] = dimension
-        for subdimension in dimension['subRows']:
-            subdimension_header_map[subdimension['key']] = subdimension
-            subdimension_keys.append(subdimension['key'])
-        dimension_header_map[dimension['key']]['subdimension_keys'] = subdimension_keys
+        dimension_header_map[dimension["key"]] = dimension
+        for subdimension in dimension["subRows"]:
+            subdimension_header_map[subdimension["key"]] = subdimension
+            subdimension_keys.append(subdimension["key"])
+        dimension_header_map[dimension["key"]]["subdimension_keys"] = subdimension_keys
 
     sector_header_map = {}
     subsector_header_map = {}
 
-    for sector in widget_properties.get('columns', []):
+    for sector in widget_properties.get("columns", []):
         subsector_keys = []
-        sector_header_map[sector['key']] = sector
-        for subsector in sector['subColumns']:
-            subsector_header_map[subsector['key']] = subsector
-            subsector_keys.append(subsector['key'])
-        sector_header_map[sector['key']]['subsector_keys'] = subsector_keys
+        sector_header_map[sector["key"]] = sector
+        for subsector in sector["subColumns"]:
+            subsector_header_map[subsector["key"]] = subsector
+            subsector_keys.append(subsector["key"])
+        sector_header_map[sector["key"]]["subsector_keys"] = subsector_keys
     widgets_meta[widget.pk] = {
-        'dimension_header_map': dimension_header_map,
-        'subdimension_header_map': subdimension_header_map,
-        'sector_header_map': sector_header_map,
-        'subsector_header_map': subsector_header_map,
+        "dimension_header_map": dimension_header_map,
+        "subdimension_header_map": subdimension_header_map,
+        "sector_header_map": sector_header_map,
+        "subsector_header_map": subsector_header_map,
     }
     return (
         dimension_header_map,
@@ -165,20 +146,20 @@ def _get_subsectors(subsector_header_map, sector_header, subsectors):
     subsectors_header = []
     for subsector_key in subsectors:
         subsector_header = subsector_header_map.get(subsector_key)
-        if subsector_header and subsector_key in sector_header['subsector_keys']:
-            subsectors_header.append(
-                {'id': subsector_header['key'], 'title': subsector_header['label']}
-            )
+        if subsector_header and subsector_key in sector_header["subsector_keys"]:
+            subsectors_header.append({"id": subsector_header["key"], "title": subsector_header["label"]})
     return subsectors_header
 
 
 def get_comprehensive_data(widgets_meta, widget, data, widget_properties):
-    data = (data or {}).get('value') or {}
+    data = (data or {}).get("value") or {}
 
     values = []
     (
-        dimension_header_map, subdimension_header_map,
-        sector_header_map, subsector_header_map,
+        dimension_header_map,
+        subdimension_header_map,
+        sector_header_map,
+        subsector_header_map,
     ) = _get_headers(widgets_meta, widget, widget_properties)
 
     for dimension_key, dimension_value in data.items():
@@ -188,18 +169,22 @@ def get_comprehensive_data(widgets_meta, widget, data, widget_properties):
                 subdimension_header = subdimension_header_map.get(subdimension_key)
                 sector_header = sector_header_map.get(sector_key)
                 if (
-                        dimension_header is None or
-                        subdimension_header is None or
-                        sector_header is None or
-                        subdimension_key not in dimension_header['subdimension_keys']
+                    dimension_header is None
+                    or subdimension_header is None
+                    or sector_header is None
+                    or subdimension_key not in dimension_header["subdimension_keys"]
                 ):
                     continue
-                values.append({
-                    'dimension': {'id': dimension_header['key'], 'title': dimension_header['label']},
-                    'subdimension': {'id': subdimension_header['key'], 'title': subdimension_header['label']},
-                    'sector': {'id': sector_header['key'], 'title': sector_header['label']},
-                    'subsectors': _get_subsectors(
-                        subsector_header_map, sector_header, selected_subsectors,
-                    ),
-                })
+                values.append(
+                    {
+                        "dimension": {"id": dimension_header["key"], "title": dimension_header["label"]},
+                        "subdimension": {"id": subdimension_header["key"], "title": subdimension_header["label"]},
+                        "sector": {"id": sector_header["key"], "title": sector_header["label"]},
+                        "subsectors": _get_subsectors(
+                            subsector_header_map,
+                            sector_header,
+                            selected_subsectors,
+                        ),
+                    }
+                )
     return values

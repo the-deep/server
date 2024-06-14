@@ -1,21 +1,20 @@
-from utils.graphene.tests import GraphQLTestCase
-
-from user.factories import UserFactory
-from project.factories import ProjectFactory
-from lead.factories import LeadFactory
-from entry.factories import EntryFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
+from entry.factories import EntryFactory
+from lead.factories import LeadFactory
 from lead.models import Lead
-
+from project.factories import ProjectFactory
 from quality_assurance.factories import (
     EntryReviewCommentFactory,
-    EntryReviewCommentTextFactory
+    EntryReviewCommentTextFactory,
 )
+from user.factories import UserFactory
+
+from utils.graphene.tests import GraphQLTestCase
 
 
 class TestReviewCommentQuery(GraphQLTestCase):
     def test_review_comments_query(self):
-        query = '''
+        query = """
             query MyQuery ($projectId: ID! $entryId: ID!) {
                 project(id: $projectId) {
                     entry (id: $entryId) {
@@ -46,7 +45,7 @@ class TestReviewCommentQuery(GraphQLTestCase):
                     }
                 }
             }
-        '''
+        """
 
         user = UserFactory.create()
         user2, user3 = UserFactory.create_batch(2)
@@ -54,13 +53,16 @@ class TestReviewCommentQuery(GraphQLTestCase):
         project = ProjectFactory.create(analysis_framework=analysis_framework)
         lead = LeadFactory.create(project=project)
         entry = EntryFactory.create(
-            project=project, analysis_framework=analysis_framework,
-            lead=lead, controlled=True,
+            project=project,
+            analysis_framework=analysis_framework,
+            lead=lead,
+            controlled=True,
             controlled_changed_by=user2,
-            verified_by=[user2, user3]
+            verified_by=[user2, user3],
         )
         entry1 = EntryFactory.create(
-            project=project, analysis_framework=analysis_framework,
+            project=project,
+            analysis_framework=analysis_framework,
             lead=lead,
         )
 
@@ -69,56 +71,48 @@ class TestReviewCommentQuery(GraphQLTestCase):
         review_text1 = EntryReviewCommentTextFactory.create(comment=review_comment1)
 
         # -- Without login
-        self.query_check(query, assert_for_error=True, variables={'projectId': project.id, 'entryId': entry.id})
+        self.query_check(query, assert_for_error=True, variables={"projectId": project.id, "entryId": entry.id})
 
         # -- With login
         self.force_login(user)
 
         # --- non-member user
-        content = self.query_check(query, variables={'projectId': project.id, 'entryId': entry.id})
-        self.assertEqual(content['data']['project']['entry'], None, content)
+        content = self.query_check(query, variables={"projectId": project.id, "entryId": entry.id})
+        self.assertEqual(content["data"]["project"]["entry"], None, content)
 
         # --- add-member in project
         project.add_member(user)
-        content = self.query_check(query, variables={'projectId': project.id, 'entryId': entry.id})
-        self.assertEqual(content['data']['project']['entry']['reviewCommentsCount'], 2, content)
-        self.assertEqual(content['data']['project']['reviewComments']['totalCount'], 2, content)
-        self.assertListIds(
-            content['data']['project']['reviewComments']['results'],
-            [review_comment1, review_comment2],
-            content
-        )
-        self.assertEqual(
-            content['data']['project']['reviewComments']['results'][1]['text'],
-            review_text1.text,
-            content
-        )
+        content = self.query_check(query, variables={"projectId": project.id, "entryId": entry.id})
+        self.assertEqual(content["data"]["project"]["entry"]["reviewCommentsCount"], 2, content)
+        self.assertEqual(content["data"]["project"]["reviewComments"]["totalCount"], 2, content)
+        self.assertListIds(content["data"]["project"]["reviewComments"]["results"], [review_comment1, review_comment2], content)
+        self.assertEqual(content["data"]["project"]["reviewComments"]["results"][1]["text"], review_text1.text, content)
 
         # add another review_text for same review_comment
         review_text2 = EntryReviewCommentTextFactory.create(comment=review_comment1)
-        content = self.query_check(query, variables={'projectId': project.id, 'entryId': entry.id})
-        self.assertEqual(content['data']['project']['entry']['reviewCommentsCount'], 2, content)
+        content = self.query_check(query, variables={"projectId": project.id, "entryId": entry.id})
+        self.assertEqual(content["data"]["project"]["entry"]["reviewCommentsCount"], 2, content)
         self.assertEqual(
-            content['data']['project']['reviewComments']['results'][1]['text'],
+            content["data"]["project"]["reviewComments"]["results"][1]["text"],
             review_text2.text,  # here latest text should be present
-            content
+            content,
         )
 
         # lets check for the contolled in entry
-        self.assertEqual(content['data']['project']['entry']['controlled'], True, content)
-        self.assertEqual(content['data']['project']['entry']['controlledChangedBy']['id'], str(user2.id), content)
-        self.assertEqual(len(content['data']['project']['entry']['verifiedBy']), 2, content)
+        self.assertEqual(content["data"]["project"]["entry"]["controlled"], True, content)
+        self.assertEqual(content["data"]["project"]["entry"]["controlledChangedBy"]["id"], str(user2.id), content)
+        self.assertEqual(len(content["data"]["project"]["entry"]["verifiedBy"]), 2, content)
 
         # lets query for another entry
-        content = self.query_check(query, variables={'projectId': project.id, 'entryId': entry1.id})
-        self.assertEqual(content['data']['project']['entry']['reviewCommentsCount'], 1, content)
-        self.assertEqual(content['data']['project']['reviewComments']['totalCount'], 1, content)
+        content = self.query_check(query, variables={"projectId": project.id, "entryId": entry1.id})
+        self.assertEqual(content["data"]["project"]["entry"]["reviewCommentsCount"], 1, content)
+        self.assertEqual(content["data"]["project"]["reviewComments"]["totalCount"], 1, content)
 
     def test_review_comments_project_scope_query(self):
         """
         Include permission check
         """
-        query = '''
+        query = """
             query MyQuery ($projectId: ID! $reviewId: ID!) {
                 project(id: $projectId) {
                     reviewComment(id: $reviewId) {
@@ -143,7 +137,7 @@ class TestReviewCommentQuery(GraphQLTestCase):
                     }
                 }
             }
-        '''
+        """
 
         user = UserFactory.create()
         analysis_framework = AnalysisFrameworkFactory.create()
@@ -159,7 +153,7 @@ class TestReviewCommentQuery(GraphQLTestCase):
         review_text_conf1, review_text_conf2 = EntryReviewCommentTextFactory.create_batch(2, comment=conf_review_comment)
 
         def _query_check(review_comment, **kwargs):
-            return self.query_check(query, variables={'projectId': project.id, 'reviewId': review_comment.id}, **kwargs)
+            return self.query_check(query, variables={"projectId": project.id, "reviewId": review_comment.id}, **kwargs)
 
         # Without login
         _query_check(review_comment, assert_for_error=True)
@@ -168,29 +162,23 @@ class TestReviewCommentQuery(GraphQLTestCase):
         self.force_login(user)
         # -- Without membership
         content = _query_check(review_comment)
-        self.assertEqual(content['data']['project']['reviewComment'], None, content)
+        self.assertEqual(content["data"]["project"]["reviewComment"], None, content)
         # -- Without membership (confidential only)
         current_membership = project.add_member(user, role=self.project_role_reader_non_confidential)
         content = _query_check(review_comment)
-        self.assertNotEqual(content['data']['project']['reviewComment'], None, content)
-        self.assertEqual(len(content['data']['project']['reviewComment']['textHistory']), 2, content)
-        self.assertListIds(
-            content['data']['project']['reviewComment']['textHistory'],
-            [review_text1, review_text2],
-            content
-        )
+        self.assertNotEqual(content["data"]["project"]["reviewComment"], None, content)
+        self.assertEqual(len(content["data"]["project"]["reviewComment"]["textHistory"]), 2, content)
+        self.assertListIds(content["data"]["project"]["reviewComment"]["textHistory"], [review_text1, review_text2], content)
         content = _query_check(conf_review_comment)
-        self.assertEqual(content['data']['project']['reviewComment'], None, content)
+        self.assertEqual(content["data"]["project"]["reviewComment"], None, content)
         # -- With membership (non-confidential only)
         current_membership.delete()
         project.add_member(user, role=self.project_role_reader)
         content = _query_check(review_comment)
-        self.assertNotEqual(content['data']['project']['reviewComment'], None, content)
+        self.assertNotEqual(content["data"]["project"]["reviewComment"], None, content)
         content = _query_check(conf_review_comment)
-        self.assertNotEqual(content['data']['project']['reviewComment'], None, content)
-        self.assertEqual(len(content['data']['project']['reviewComment']['textHistory']), 2, content)
+        self.assertNotEqual(content["data"]["project"]["reviewComment"], None, content)
+        self.assertEqual(len(content["data"]["project"]["reviewComment"]["textHistory"]), 2, content)
         self.assertListIds(
-            content['data']['project']['reviewComment']['textHistory'],
-            [review_text_conf1, review_text_conf2],
-            content
+            content["data"]["project"]["reviewComment"]["textHistory"], [review_text_conf1, review_text_conf2], content
         )

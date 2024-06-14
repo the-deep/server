@@ -1,7 +1,8 @@
 import datetime
+
 from lead.models import Lead
 
-ATOM_FEED_MOCK_DATA_RAW = '''
+ATOM_FEED_MOCK_DATA_RAW = """
 <?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
    <category term="Python" label="r/Python" />
@@ -74,7 +75,7 @@ ATOM_FEED_MOCK_DATA_RAW = '''
       <title>Time Series Modelling</title>
    </entry>
 </feed>
-'''
+"""
 
 ATOM_FEED_PARAMS = {
     "feed-url": "test-url",
@@ -82,7 +83,7 @@ ATOM_FEED_PARAMS = {
     "author-field": "author",
     "source-field": "source",
     "date-field": "published",
-    "title-field": "title"
+    "title-field": "title",
 }
 
 ATOM_FEED_MOCK_EXCEPTED_LEADS = [
@@ -91,34 +92,34 @@ ATOM_FEED_MOCK_EXCEPTED_LEADS = [
         "author_raw": "/u/Im__Joseph",
         "published_on": datetime.date(2022, 5, 15),
         "title": "Sunday Daily Thread: What's everyone working on this week?",
-        "source_type": Lead.SourceType.RSS
+        "source_type": Lead.SourceType.RSS,
     },
     {
         "url": "https://www.reddit.com/r/Python/comments/usqy75/best_methods_to_run_a_continuous_python_script_on/",
         "author_raw": "/u/BigdadEdge",
         "published_on": datetime.date(2022, 5, 19),
         "title": "Best methods to run a continuous Python script on a server",
-        "source_type": Lead.SourceType.RSS
+        "source_type": Lead.SourceType.RSS,
     },
     {
         "url": "https://www.reddit.com/r/Python/comments/usjg8k/arcade_2614_has_been_released_2d_game_library/",
         "author_raw": "/u/pvc",
         "published_on": datetime.date(2022, 5, 18),
         "title": "Arcade 2.6.14 has been released (2D game library)",
-        "source_type": Lead.SourceType.RSS
+        "source_type": Lead.SourceType.RSS,
     },
     {
         "url": "https://www.reddit.com/r/Python/comments/usdhpf/i_made_a_browser_extension_for_quick_nested/",
         "author_raw": "/u/jabza_",
         "published_on": datetime.date(2022, 5, 18),
         "title": "I made a browser extension for quick nested browsing of the Python docs (and others)",
-        "source_type": Lead.SourceType.RSS
+        "source_type": Lead.SourceType.RSS,
     },
     {
         "url": "https://www.reddit.com/r/Python/comments/usqwnc/time_series_modelling/",
         "author_raw": "/u/badassbilla",
         "published_on": datetime.date(2022, 5, 19),
         "title": "Time Series Modelling",
-        "source_type": Lead.SourceType.RSS
+        "source_type": Lead.SourceType.RSS,
     },
 ]

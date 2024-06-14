@@ -1,9 +1,10 @@
 from entry.models import Attribute
 from gallery.models import File
+
 from utils.image import decode_base64_if_possible
 
-from .widgets.utils import set_filter_data, set_export_data
 from .widgets.store import widget_store
+from .widgets.utils import set_export_data, set_filter_data
 
 
 def update_entry_attribute(attribute):
@@ -21,8 +22,8 @@ def update_entry_attribute(attribute):
             widget.properties or {},
         )
 
-        filter_data_list = update_info.get('filter_data')
-        export_data = update_info.get('export_data')
+        filter_data_list = update_info.get("filter_data")
+        export_data = update_info.get("export_data")
 
         if filter_data_list:
             for filter_data in filter_data_list:
@@ -55,9 +56,9 @@ def base64_to_deep_image(image, lead, user):
     if isinstance(decoded_file, str):
         return image
 
-    mime_type = ''
+    mime_type = ""
     if header:
-        mime_type = header[len('data:'):]
+        mime_type = header[len("data:") :]
 
     file = File.objects.create(
         title=decoded_file.name,

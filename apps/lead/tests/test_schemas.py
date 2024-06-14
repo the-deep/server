@@ -1,40 +1,33 @@
 import json
 
-from djangorestframework_camel_case.render import CamelCaseJSONRenderer
-from utils.graphene.tests import GraphQLTestCase
-
-from organization.factories import OrganizationTypeFactory, OrganizationFactory
-from user.factories import UserFactory
-from project.factories import ProjectFactory
-
-from lead.models import Lead
-from analysis_framework.models import Widget
-
-from entry.factories import EntryFactory
-from ary.factories import AssessmentFactory
-from geo.factories import (
-    RegionFactory,
-    GeoAreaFactory,
-    AdminLevelFactory,
-)
 from analysis_framework.factories import (
+    AfFilterFactory,
     AnalysisFrameworkFactory,
     WidgetFactory,
-    AfFilterFactory,
 )
+from analysis_framework.models import Widget
+from ary.factories import AssessmentFactory
+from djangorestframework_camel_case.render import CamelCaseJSONRenderer
+from entry.factories import EntryFactory
+from geo.factories import AdminLevelFactory, GeoAreaFactory, RegionFactory
+from lead.enums import LeadOrderingEnum
 from lead.factories import (
+    EmmEntityFactory,
     LeadEMMTriggerFactory,
     LeadFactory,
-    EmmEntityFactory,
     LeadGroupFactory,
     UserSavedLeadFilterFactory,
 )
+from lead.models import Lead
+from organization.factories import OrganizationFactory, OrganizationTypeFactory
+from project.factories import ProjectFactory
+from user.factories import UserFactory
 
-from lead.enums import LeadOrderingEnum
+from utils.graphene.tests import GraphQLTestCase
 
 
 class TestLeadQuerySchema(GraphQLTestCase):
-    lead_filter_query = '''
+    lead_filter_query = """
         query MyQuery (
             $projectId: ID!
             # lead Arguments
@@ -98,13 +91,13 @@ class TestLeadQuerySchema(GraphQLTestCase):
             }
           }
         }
-    '''
+    """
 
     def test_lead_query(self):
         """
         Test private + non-private project behaviour
         """
-        query = '''
+        query = """
             query MyQuery ($projectId: ID! $leadId: ID!) {
               project(id: $projectId) {
                 lead (id: $leadId) {
@@ -114,7 +107,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
 
         project = ProjectFactory.create()
         # User with role
@@ -127,7 +120,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         confidential_lead = LeadFactory.create(project=project, confidentiality=Lead.Confidentiality.CONFIDENTIAL)
 
         def _query_check(lead, **kwargs):
-            return self.query_check(query, variables={'projectId': project.id, 'leadId': lead.id}, **kwargs)
+            return self.query_check(query, variables={"projectId": project.id, "leadId": lead.id}, **kwargs)
 
         # -- Without login
         _query_check(confidential_lead, assert_for_error=True)
@@ -138,23 +131,23 @@ class TestLeadQuerySchema(GraphQLTestCase):
 
         # --- non-member user
         content = _query_check(normal_lead)
-        self.assertEqual(content['data']['project']['lead'], None, content)
+        self.assertEqual(content["data"]["project"]["lead"], None, content)
         content = _query_check(confidential_lead)
-        self.assertEqual(content['data']['project']['lead'], None, content)
+        self.assertEqual(content["data"]["project"]["lead"], None, content)
 
         # --- member user
         self.force_login(member_user)
         content = _query_check(normal_lead)
-        self.assertNotEqual(content['data']['project']['lead'], None, content)
+        self.assertNotEqual(content["data"]["project"]["lead"], None, content)
         content = _query_check(confidential_lead)
-        self.assertEqual(content['data']['project']['lead'], None, content)
+        self.assertEqual(content["data"]["project"]["lead"], None, content)
 
         # --- confidential member user
         self.force_login(confidential_member_user)
         content = _query_check(normal_lead)
-        self.assertNotEqual(content['data']['project']['lead'], None, content)
+        self.assertNotEqual(content["data"]["project"]["lead"], None, content)
         content = _query_check(confidential_lead)
-        self.assertNotEqual(content['data']['project']['lead'], None, content)
+        self.assertNotEqual(content["data"]["project"]["lead"], None, content)
 
     def test_lead_query_filter(self):
         af = AnalysisFrameworkFactory.create()
@@ -173,7 +166,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         project.add_member(member2, role=self.project_role_reader)
         lead1 = LeadFactory.create(
             project=project,
-            title='Test 1',
+            title="Test 1",
             source_type=Lead.SourceType.TEXT,
             confidentiality=Lead.Confidentiality.CONFIDENTIAL,
             source=org1_child,
@@ -185,7 +178,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         lead2 = LeadFactory.create(
             project=project,
             source_type=Lead.SourceType.TEXT,
-            title='Test 2',
+            title="Test 2",
             assignee=[member2],
             authors=[org2, org3],
             priority=Lead.Priority.HIGH,
@@ -193,8 +186,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         lead3 = LeadFactory.create(
             project=project,
             source_type=Lead.SourceType.WEBSITE,
-            url='https://wwwexample.com/sample-1',
-            title='Sample 1',
+            url="https://wwwexample.com/sample-1",
+            title="Sample 1",
             confidentiality=Lead.Confidentiality.CONFIDENTIAL,
             source=org2,
             authors=[org1, org3],
@@ -202,7 +195,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         )
         lead4 = LeadFactory.create(
             project=project,
-            title='Sample 2',
+            title="Sample 2",
             source=org3,
             authors=[org1],
             priority=Lead.Priority.MEDIUM,
@@ -210,7 +203,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         )
         lead5 = LeadFactory.create(
             project=project,
-            title='Sample 3',
+            title="Sample 3",
             status=Lead.Status.TAGGED,
             assignee=[member2],
             source=org3,
@@ -228,50 +221,47 @@ class TestLeadQuerySchema(GraphQLTestCase):
 
         # TODO: Add direct test for filter_set as well (is used within export)
         for filter_data, expected_leads in [
-            ({'search': 'test'}, [lead1, lead2]),
-            ({'confidentiality': self.genum(Lead.Confidentiality.CONFIDENTIAL)}, [lead1, lead3]),
-            ({'assignees': [member2.pk]}, [lead2, lead5]),
-            ({'assignees': [member1.pk, member2.pk]}, [lead1, lead2, lead5]),
-            ({'authoringOrganizationTypes': [org_type2.pk]}, [lead1, lead2, lead3]),
-            ({'authoringOrganizationTypes': [org_type1.pk, org_type2.pk]}, [lead1, lead2, lead3, lead4]),
-            ({'authorOrganizations': [org1.pk, org2.pk]}, [lead1, lead2, lead3, lead4]),
-            ({'authorOrganizations': [org3.pk]}, [lead2, lead3]),
-            ({'sourceOrganizations': [org1.pk, org2.pk]}, [lead1, lead3]),
-            ({'sourceOrganizations': [org3.pk]}, [lead4, lead5]),
-            ({'priorities': [self.genum(Lead.Priority.HIGH)]}, [lead1, lead2]),
-            ({'priorities': [self.genum(Lead.Priority.LOW), self.genum(Lead.Priority.HIGH)]}, [lead1, lead2, lead3, lead5]),
-            ({'sourceTypes': [self.genum(Lead.SourceType.WEBSITE)]}, [lead3]),
-            (
-                {'sourceTypes': [self.genum(Lead.SourceType.TEXT), self.genum(Lead.SourceType.WEBSITE)]},
-                [lead1, lead2, lead3]
-            ),
-            ({'statuses': [self.genum(Lead.Status.NOT_TAGGED)]}, [lead2, lead3]),
-            ({'statuses': [self.genum(Lead.Status.IN_PROGRESS), self.genum(Lead.Status.TAGGED)]}, [lead1, lead4, lead5]),
-            ({'hasEntries': True}, [lead4, lead5]),
-            ({'hasEntries': False}, [lead1, lead2, lead3]),
+            ({"search": "test"}, [lead1, lead2]),
+            ({"confidentiality": self.genum(Lead.Confidentiality.CONFIDENTIAL)}, [lead1, lead3]),
+            ({"assignees": [member2.pk]}, [lead2, lead5]),
+            ({"assignees": [member1.pk, member2.pk]}, [lead1, lead2, lead5]),
+            ({"authoringOrganizationTypes": [org_type2.pk]}, [lead1, lead2, lead3]),
+            ({"authoringOrganizationTypes": [org_type1.pk, org_type2.pk]}, [lead1, lead2, lead3, lead4]),
+            ({"authorOrganizations": [org1.pk, org2.pk]}, [lead1, lead2, lead3, lead4]),
+            ({"authorOrganizations": [org3.pk]}, [lead2, lead3]),
+            ({"sourceOrganizations": [org1.pk, org2.pk]}, [lead1, lead3]),
+            ({"sourceOrganizations": [org3.pk]}, [lead4, lead5]),
+            ({"priorities": [self.genum(Lead.Priority.HIGH)]}, [lead1, lead2]),
+            ({"priorities": [self.genum(Lead.Priority.LOW), self.genum(Lead.Priority.HIGH)]}, [lead1, lead2, lead3, lead5]),
+            ({"sourceTypes": [self.genum(Lead.SourceType.WEBSITE)]}, [lead3]),
+            ({"sourceTypes": [self.genum(Lead.SourceType.TEXT), self.genum(Lead.SourceType.WEBSITE)]}, [lead1, lead2, lead3]),
+            ({"statuses": [self.genum(Lead.Status.NOT_TAGGED)]}, [lead2, lead3]),
+            ({"statuses": [self.genum(Lead.Status.IN_PROGRESS), self.genum(Lead.Status.TAGGED)]}, [lead1, lead4, lead5]),
+            ({"hasEntries": True}, [lead4, lead5]),
+            ({"hasEntries": False}, [lead1, lead2, lead3]),
             (
                 {
-                    'hasEntries': True,
-                    'ordering': [self.genum(LeadOrderingEnum.DESC_ENTRIES_COUNT), self.genum(LeadOrderingEnum.ASC_ID)],
+                    "hasEntries": True,
+                    "ordering": [self.genum(LeadOrderingEnum.DESC_ENTRIES_COUNT), self.genum(LeadOrderingEnum.ASC_ID)],
                 },
-                [lead5, lead4]
+                [lead5, lead4],
             ),
             (
                 {
-                    'hasEntries': True,
-                    'entriesFilterData': {},
-                    'ordering': [self.genum(LeadOrderingEnum.DESC_ENTRIES_COUNT), self.genum(LeadOrderingEnum.ASC_ID)],
+                    "hasEntries": True,
+                    "entriesFilterData": {},
+                    "ordering": [self.genum(LeadOrderingEnum.DESC_ENTRIES_COUNT), self.genum(LeadOrderingEnum.ASC_ID)],
                 },
-                [lead5, lead4]
+                [lead5, lead4],
             ),
             (
                 {
-                    'entriesFilterData': {'controlled': True},
-                    'ordering': [self.genum(LeadOrderingEnum.DESC_ENTRIES_COUNT), self.genum(LeadOrderingEnum.ASC_ID)],
+                    "entriesFilterData": {"controlled": True},
+                    "ordering": [self.genum(LeadOrderingEnum.DESC_ENTRIES_COUNT), self.genum(LeadOrderingEnum.ASC_ID)],
                 },
-                [lead5]
+                [lead5],
             ),
-            ({'isAssessment': True}, [lead4, lead5]),
+            ({"isAssessment": True}, [lead4, lead5]),
             # TODO:
             # ({'emmEntities': []}, []),
             # ({'emmKeywords': []}, []),
@@ -286,17 +276,16 @@ class TestLeadQuerySchema(GraphQLTestCase):
             # ({'createdAtGte': []}, []),
             # ({'createdAtLte': []}, []),
         ]:
-            content = self.query_check(self.lead_filter_query, variables={'projectId': project.id, **filter_data})
+            content = self.query_check(self.lead_filter_query, variables={"projectId": project.id, **filter_data})
             self.assertListIds(
-                content['data']['project']['leads']['results'], expected_leads,
-                {'response': content, 'filter': filter_data}
+                content["data"]["project"]["leads"]["results"], expected_leads, {"response": content, "filter": filter_data}
             )
 
     def test_leads_query(self):
         """
         Test private + non-private project behaviour
         """
-        query = '''
+        query = """
             query MyQuery ($id: ID!) {
               project(id: $id) {
                 leads {
@@ -311,7 +300,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
 
         project = ProjectFactory.create()
         # User with role
@@ -325,7 +314,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         confidential_leads = LeadFactory.create_batch(6, project=project, confidentiality=Lead.Confidentiality.CONFIDENTIAL)
 
         def _query_check(**kwargs):
-            return self.query_check(query, variables={'id': project.id}, **kwargs)
+            return self.query_check(query, variables={"id": project.id}, **kwargs)
 
         # -- Without login
         _query_check(assert_for_error=True)
@@ -336,23 +325,23 @@ class TestLeadQuerySchema(GraphQLTestCase):
         # --- non-member user (zero leads)
         content = _query_check()
 
-        self.assertEqual(content['data']['project']['leads']['totalCount'], 0, content)
-        self.assertEqual(len(content['data']['project']['leads']['results']), 0, content)
+        self.assertEqual(content["data"]["project"]["leads"]["totalCount"], 0, content)
+        self.assertEqual(len(content["data"]["project"]["leads"]["results"]), 0, content)
 
         # --- member user (only unprotected leads)
         self.force_login(member_user)
         content = _query_check()
-        self.assertEqual(content['data']['project']['leads']['totalCount'], 5, content)
-        self.assertListIds(content['data']['project']['leads']['results'], normal_leads, content)
+        self.assertEqual(content["data"]["project"]["leads"]["totalCount"], 5, content)
+        self.assertListIds(content["data"]["project"]["leads"]["results"], normal_leads, content)
 
         # --- confidential member user (all leads)
         self.force_login(confidential_member_user)
         content = _query_check()
-        self.assertEqual(content['data']['project']['leads']['totalCount'], 11, content)
-        self.assertListIds(content['data']['project']['leads']['results'], confidential_leads + normal_leads, content)
+        self.assertEqual(content["data"]["project"]["leads"]["totalCount"], 11, content)
+        self.assertListIds(content["data"]["project"]["leads"]["results"], confidential_leads + normal_leads, content)
 
     def test_lead_query_with_duplicates_true(self):
-        query = '''
+        query = """
             query MyQuery ($projectId: ID!) {
               project(id: $projectId) {
                 leads (hasDuplicates: true) {
@@ -365,7 +354,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
         project = ProjectFactory.create()
         member_user = UserFactory.create()
         project.add_member(member_user, role=self.project_role_reader_non_confidential)
@@ -384,11 +373,11 @@ class TestLeadQuerySchema(GraphQLTestCase):
         """
 
         def _query_check(lead, **kwargs):
-            return self.query_check(query, variables={'projectId': project.id}, **kwargs)
+            return self.query_check(query, variables={"projectId": project.id}, **kwargs)
 
         self.force_login(member_user)
         content = _query_check(lead)
-        leads_resp = content['data']['project']['leads']['results']
+        leads_resp = content["data"]["project"]["leads"]["results"]
         self.assertEqual(len(leads_resp), 6, "There are 6 leads which have/are duplicates.")
 
         for lead_resp in leads_resp:
@@ -398,7 +387,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 self.assertEqual(lead_resp["duplicateLeadsCount"], 1)
 
     def test_lead_query_with_duplicates_false(self):
-        query = '''
+        query = """
             query MyQuery ($projectId: ID!) {
               project(id: $projectId) {
                 leads (hasDuplicates: false) {
@@ -411,7 +400,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
         project = ProjectFactory.create()
         member_user = UserFactory.create()
         project.add_member(member_user, role=self.project_role_reader_non_confidential)
@@ -421,18 +410,18 @@ class TestLeadQuerySchema(GraphQLTestCase):
         another_lead = LeadFactory.create(project=project)  # noqa
 
         def _query_check(lead, **kwargs):
-            return self.query_check(query, variables={'projectId': project.id}, **kwargs)
+            return self.query_check(query, variables={"projectId": project.id}, **kwargs)
 
         self.force_login(member_user)
         content = _query_check(lead)
-        leads_resp = content['data']['project']['leads']['results']
+        leads_resp = content["data"]["project"]["leads"]["results"]
         self.assertEqual(len(leads_resp), 1)
         lead_resp = leads_resp[0]
         self.assertEqual(lead_resp["id"], str(another_lead.id))
         self.assertEqual(lead_resp["duplicateLeadsCount"], 0)
 
     def test_lead_query_with_duplicates(self):
-        query = '''
+        query = """
             query MyQuery ($projectId: ID! $duplicatesOf: ID!) {
               project(id: $projectId) {
                 leads (duplicatesOf: $duplicatesOf) {
@@ -443,7 +432,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
         project = ProjectFactory.create()
         member_user = UserFactory.create()
         project.add_member(member_user, role=self.project_role_reader_non_confidential)
@@ -452,7 +441,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         lead.duplicate_leads.set(duplicate_leads)
 
         def _query_check(lead, **kwargs):
-            return self.query_check(query, variables={'projectId': project.id, 'duplicatesOf': lead.id}, **kwargs)
+            return self.query_check(query, variables={"projectId": project.id, "duplicatesOf": lead.id}, **kwargs)
 
         self.force_login(member_user)
         content = _query_check(lead)
@@ -465,7 +454,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         If lead A has duplicate_leads = [B, C, D] then
         querying duplicate leads of either B, C or D should return A.
         """
-        query = '''
+        query = """
             query MyQuery ($projectId: ID! $duplicatesOf: ID!) {
               project(id: $projectId) {
                 leads (duplicatesOf: $duplicatesOf) {
@@ -476,7 +465,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
         project = ProjectFactory.create()
         member_user = UserFactory.create()
         project.add_member(member_user, role=self.project_role_reader_non_confidential)
@@ -485,7 +474,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         lead.duplicate_leads.set(duplicate_leads)
 
         def _query_check(lead, **kwargs):
-            return self.query_check(query, variables={'projectId': project.id, 'duplicatesOf': lead.id}, **kwargs)
+            return self.query_check(query, variables={"projectId": project.id, "duplicatesOf": lead.id}, **kwargs)
 
         self.force_login(member_user)
         for d_lead in duplicate_leads:
@@ -499,7 +488,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
         """
         Test leads field value
         """
-        query = '''
+        query = """
             query MyQuery ($id: ID!) {
               project(id: $id) {
                 analysisFramework {
@@ -552,7 +541,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
 
         af, af_new = AnalysisFrameworkFactory.create_batch(2)
         project = ProjectFactory.create(analysis_framework=af)
@@ -578,49 +567,53 @@ class TestLeadQuerySchema(GraphQLTestCase):
 
         # --- member user (only unprotected leads)
         self.force_login(user)
-        content = self.query_check(query, variables={'id': project.id})
-        self.assertIdEqual(content['data']['project']['analysisFramework']['id'], af.pk)
-        results = content['data']['project']['leads']['results']
+        content = self.query_check(query, variables={"id": project.id})
+        self.assertIdEqual(content["data"]["project"]["analysisFramework"]["id"], af.pk)
+        results = content["data"]["project"]["leads"]["results"]
         # Count check
-        self.assertEqual(content['data']['project']['leads']['totalCount'], 3, content)
+        self.assertEqual(content["data"]["project"]["leads"]["totalCount"], 3, content)
         self.assertListIds(results, [lead1, lead2, lead3], content)
-        self.assertEqual(len(results[0]['authors']), 0, content)
+        self.assertEqual(len(results[0]["authors"]), 0, content)
         # Source check
-        self.assertIdEqual(results[0]['source']['id'], org1.id, content)
-        self.assertEqual(results[0]['source']['logo']['file']['name'], str(org1.logo.file.name), content)
-        self.assertEqual(results[0]['source']['logo']['file']['url'], self.get_media_url(org1.logo.file.name), content)
+        self.assertIdEqual(results[0]["source"]["id"], org1.id, content)
+        self.assertEqual(results[0]["source"]["logo"]["file"]["name"], str(org1.logo.file.name), content)
+        self.assertEqual(results[0]["source"]["logo"]["file"]["url"], self.get_media_url(org1.logo.file.name), content)
         # Authors check
-        self.assertListIds(results[1]['authors'], [org1, org3], content)
-        self.assertIdEqual(results[1]['source']['mergedAs']['id'], org1.id, content)
+        self.assertListIds(results[1]["authors"], [org1, org3], content)
+        self.assertIdEqual(results[1]["source"]["mergedAs"]["id"], org1.id, content)
         # Entries Count check
-        for index, (total_count, controlled_count) in enumerate([
-            [7, 2],
-            [10, 0],
-            [0, 0],
-        ]):
-            self.assertEqual(results[index]['entriesCount']['total'], total_count, content)
-            self.assertEqual(results[index]['entriesCount']['controlled'], controlled_count, content)
+        for index, (total_count, controlled_count) in enumerate(
+            [
+                [7, 2],
+                [10, 0],
+                [0, 0],
+            ]
+        ):
+            self.assertEqual(results[index]["entriesCount"]["total"], total_count, content)
+            self.assertEqual(results[index]["entriesCount"]["controlled"], controlled_count, content)
 
         # Change AF, this will now not show old entries
-        content = self.query_check(query, variables={'id': project.id})
+        content = self.query_check(query, variables={"id": project.id})
         project.analysis_framework = af_new
-        project.save(update_fields=('analysis_framework',))
+        project.save(update_fields=("analysis_framework",))
         EntryFactory.create_batch(2, lead=lead1, controlled=True)
         EntryFactory.create_batch(1, lead=lead2, controlled=False)
-        content = self.query_check(query, variables={'id': project.id})
-        self.assertIdEqual(content['data']['project']['analysisFramework']['id'], af_new.pk)
-        results = content['data']['project']['leads']['results']
+        content = self.query_check(query, variables={"id": project.id})
+        self.assertIdEqual(content["data"]["project"]["analysisFramework"]["id"], af_new.pk)
+        results = content["data"]["project"]["leads"]["results"]
         # Entries Count check (After AF change)
-        for index, (total_count, controlled_count) in enumerate([
-            [2, 2],
-            [1, 0],
-            [0, 0],
-        ]):
-            self.assertEqual(results[index]['entriesCount']['total'], total_count, content)
-            self.assertEqual(results[index]['entriesCount']['controlled'], controlled_count, content)
+        for index, (total_count, controlled_count) in enumerate(
+            [
+                [2, 2],
+                [1, 0],
+                [0, 0],
+            ]
+        ):
+            self.assertEqual(results[index]["entriesCount"]["total"], total_count, content)
+            self.assertEqual(results[index]["entriesCount"]["controlled"], controlled_count, content)
 
     def test_leads_entries_query(self):
-        query = '''
+        query = """
             query MyQuery ($id: ID!, $leadId: ID!) {
               project(id: $id) {
                 analysisFramework {
@@ -638,7 +631,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                   }
                 }
               }
-        '''
+        """
         af, af_new = AnalysisFrameworkFactory.create_batch(2)
         user = UserFactory.create()
         project = ProjectFactory.create(analysis_framework=af)
@@ -649,38 +642,38 @@ class TestLeadQuerySchema(GraphQLTestCase):
         not_controlled_entries = EntryFactory.create_batch(3, lead=lead, controlled=False)
 
         def _query_check():
-            return self.query_check(query, variables={'id': project.id, 'leadId': lead.id})
+            return self.query_check(query, variables={"id": project.id, "leadId": lead.id})
 
         # -- With login
         self.force_login(user)
         response = _query_check()
-        self.assertIdEqual(response['data']['project']['analysisFramework']['id'], af.pk)
-        content = response['data']['project']['lead']
-        self.assertIdEqual(content['id'], lead.pk, content)
-        self.assertEqual(content['entriesCount']['total'], 5, content)
-        self.assertEqual(content['entriesCount']['controlled'], 2, content)
-        self.assertListIds(content['entries'], [*controlled_entries, *not_controlled_entries], content)
+        self.assertIdEqual(response["data"]["project"]["analysisFramework"]["id"], af.pk)
+        content = response["data"]["project"]["lead"]
+        self.assertIdEqual(content["id"], lead.pk, content)
+        self.assertEqual(content["entriesCount"]["total"], 5, content)
+        self.assertEqual(content["entriesCount"]["controlled"], 2, content)
+        self.assertListIds(content["entries"], [*controlled_entries, *not_controlled_entries], content)
 
         # Now change AF
         project.analysis_framework = af_new
-        project.save(update_fields=('analysis_framework',))
+        project.save(update_fields=("analysis_framework",))
 
         new_controlled_entries = EntryFactory.create_batch(4, lead=lead, controlled=True)
         new_not_controlled_entries = EntryFactory.create_batch(2, lead=lead, controlled=False)
 
         response = _query_check()
-        self.assertIdEqual(response['data']['project']['analysisFramework']['id'], af_new.pk)
-        content = response['data']['project']['lead']
-        self.assertIdEqual(content['id'], lead.pk, content)
-        self.assertEqual(content['entriesCount']['total'], 6, content)
-        self.assertEqual(content['entriesCount']['controlled'], 4, content)
-        self.assertListIds(content['entries'], [*new_controlled_entries, *new_not_controlled_entries], content)
+        self.assertIdEqual(response["data"]["project"]["analysisFramework"]["id"], af_new.pk)
+        content = response["data"]["project"]["lead"]
+        self.assertIdEqual(content["id"], lead.pk, content)
+        self.assertEqual(content["entriesCount"]["total"], 6, content)
+        self.assertEqual(content["entriesCount"]["controlled"], 4, content)
+        self.assertListIds(content["entries"], [*new_controlled_entries, *new_not_controlled_entries], content)
 
     def test_lead_options_query(self):
         """
         Test leads field value
         """
-        query = '''
+        query = """
             query MyQuery ($id: ID!) {
               project(id: $id) {
                 leadGroups {
@@ -708,7 +701,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
         project = ProjectFactory.create()
         project2 = ProjectFactory.create()
         member_user = UserFactory.create()
@@ -725,8 +718,8 @@ class TestLeadQuerySchema(GraphQLTestCase):
         emm_entity_3 = EmmEntityFactory.create()
 
         lead1 = LeadFactory.create(
-            project=project, emm_entities=[emm_entity_1, emm_entity_2],
-            confidentiality=Lead.Confidentiality.CONFIDENTIAL)
+            project=project, emm_entities=[emm_entity_1, emm_entity_2], confidentiality=Lead.Confidentiality.CONFIDENTIAL
+        )
         lead2 = LeadFactory.create(project=project, emm_entities=[emm_entity_1])
         lead3 = LeadFactory.create(project=project, emm_entities=[emm_entity_3])
         lead4 = LeadFactory.create(project=project2, emm_entities=[emm_entity_3])
@@ -738,38 +731,38 @@ class TestLeadQuerySchema(GraphQLTestCase):
 
         self.force_login(member_user)
         # test for lead group
-        content = self.query_check(query, variables={'id': project.id})
-        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 2)
+        content = self.query_check(query, variables={"id": project.id})
+        self.assertEqual(content["data"]["project"]["leadGroups"]["totalCount"], 2)
         self.assertEqual(
-            set(result['id'] for result in content['data']['project']['leadGroups']['results']),
-            set([str(lead_group1.id), str(lead_group2.id)])
+            set(result["id"] for result in content["data"]["project"]["leadGroups"]["results"]),
+            set([str(lead_group1.id), str(lead_group2.id)]),
         )
 
         # with different project
-        content = self.query_check(query, variables={'id': project2.id})
-        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 0)
+        content = self.query_check(query, variables={"id": project2.id})
+        self.assertEqual(content["data"]["project"]["leadGroups"]["totalCount"], 0)
 
         # test for emm_entities
         # login with member_user
-        content = self.query_check(query, variables={'id': project.id})
-        self.assertEqual(content['data']['project']['emmEntities']['totalCount'], 3)
+        content = self.query_check(query, variables={"id": project.id})
+        self.assertEqual(content["data"]["project"]["emmEntities"]["totalCount"], 3)
 
         # login with confidential_member_user
         self.force_login(confidential_member_user)
-        content = self.query_check(query, variables={'id': project.id})
-        self.assertEqual(content['data']['project']['emmEntities']['totalCount'], 3)
+        content = self.query_check(query, variables={"id": project.id})
+        self.assertEqual(content["data"]["project"]["emmEntities"]["totalCount"], 3)
 
         # test for lead_emm_trigger
         # login with confidential_member_user
-        content = self.query_check(query, variables={'id': project.id})
-        self.assertEqual(content['data']['project']['leadEmmTriggers']['totalCount'], 3)
+        content = self.query_check(query, variables={"id": project.id})
+        self.assertEqual(content["data"]["project"]["leadEmmTriggers"]["totalCount"], 3)
 
         # test for project that user is not member
-        content = self.query_check(query, variables={'id': project2.id})
-        self.assertEqual(content['data']['project']['leadEmmTriggers']['totalCount'], 0)
+        content = self.query_check(query, variables={"id": project2.id})
+        self.assertEqual(content["data"]["project"]["leadEmmTriggers"]["totalCount"], 0)
 
     def test_leads_status(self):
-        query = '''
+        query = """
             query MyQuery ($id: ID!) {
               project(id: $id) {
                 leads(ordering: ASC_ID) {
@@ -781,45 +774,46 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
         user = UserFactory.create()
         project = ProjectFactory.create(analysis_framework=AnalysisFrameworkFactory.create())
         project.add_member(user)
         lead1, _ = LeadFactory.create_batch(2, project=project)
 
         def _query_check():
-            return self.query_check(query, variables={'id': project.id})
+            return self.query_check(query, variables={"id": project.id})
 
         self.force_login(user)
-        content = _query_check()['data']['project']['leads']['results']
+        content = _query_check()["data"]["project"]["leads"]["results"]
         self.assertEqual(len(content), 2, content)
         self.assertEqual(
-            set([lead['status'] for lead in content]), {self.genum(Lead.Status.NOT_TAGGED)},
+            set([lead["status"] for lead in content]),
+            {self.genum(Lead.Status.NOT_TAGGED)},
             content,
         )
         # Add entry to lead1
         entry1 = EntryFactory.create(lead=lead1)
-        content = _query_check()['data']['project']['leads']['results']
+        content = _query_check()["data"]["project"]["leads"]["results"]
         self.assertEqual(len(content), 2, content)
-        self.assertEqual(content[0]['status'], self.genum(Lead.Status.IN_PROGRESS), content)
-        self.assertEqual(content[1]['status'], self.genum(Lead.Status.NOT_TAGGED), content)
+        self.assertEqual(content[0]["status"], self.genum(Lead.Status.IN_PROGRESS), content)
+        self.assertEqual(content[1]["status"], self.genum(Lead.Status.NOT_TAGGED), content)
         # Update lead1 status to TAGGED
         lead1.status = Lead.Status.TAGGED
-        lead1.save(update_fields=['status'])
-        content = _query_check()['data']['project']['leads']['results']
+        lead1.save(update_fields=["status"])
+        content = _query_check()["data"]["project"]["leads"]["results"]
         self.assertEqual(len(content), 2, content)
-        self.assertEqual(content[0]['status'], self.genum(Lead.Status.TAGGED), content)
-        self.assertEqual(content[1]['status'], self.genum(Lead.Status.NOT_TAGGED), content)
+        self.assertEqual(content[0]["status"], self.genum(Lead.Status.TAGGED), content)
+        self.assertEqual(content[1]["status"], self.genum(Lead.Status.NOT_TAGGED), content)
         # Now update entry1
         entry1.save()
-        content = _query_check()['data']['project']['leads']['results']
+        content = _query_check()["data"]["project"]["leads"]["results"]
         self.assertEqual(len(content), 2, content)
         # -- We don't change TAGGED -> IN_PROGRESS
-        self.assertEqual(content[0]['status'], self.genum(Lead.Status.TAGGED), content)
-        self.assertEqual(content[1]['status'], self.genum(Lead.Status.NOT_TAGGED), content)
+        self.assertEqual(content[0]["status"], self.genum(Lead.Status.TAGGED), content)
+        self.assertEqual(content[1]["status"], self.genum(Lead.Status.NOT_TAGGED), content)
 
     def test_lead_group_query(self):
-        query = '''
+        query = """
               query MyQuery ($id: ID!) {
                 project(id: $id) {
                   leadGroups(ordering: "id") {
@@ -835,7 +829,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                   }
                 }
               }
-          '''
+          """
         project = ProjectFactory.create()
         project2 = ProjectFactory.create()
         member_user = UserFactory.create()
@@ -851,28 +845,28 @@ class TestLeadQuerySchema(GraphQLTestCase):
         LeadFactory.create_batch(2, project=project, lead_group=lead_group3)
 
         self.force_login(member_user)
-        content = self.query_check(query, variables={'id': project.id})
-        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 2)
+        content = self.query_check(query, variables={"id": project.id})
+        self.assertEqual(content["data"]["project"]["leadGroups"]["totalCount"], 2)
         self.assertEqual(
-            set(result['id'] for result in content['data']['project']['leadGroups']['results']),
-            set([str(lead_group1.id), str(lead_group2.id)])
+            set(result["id"] for result in content["data"]["project"]["leadGroups"]["results"]),
+            set([str(lead_group1.id), str(lead_group2.id)]),
         )
-        self.assertListIds(content['data']['project']['leadGroups']['results'], [lead_group1, lead_group2], content)
+        self.assertListIds(content["data"]["project"]["leadGroups"]["results"], [lead_group1, lead_group2], content)
 
         # login with non_member_user
         self.force_login(non_member_user)
-        content = self.query_check(query, variables={'id': project.id})
-        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 0)
+        content = self.query_check(query, variables={"id": project.id})
+        self.assertEqual(content["data"]["project"]["leadGroups"]["totalCount"], 0)
 
         # with different project
         self.force_login(member_user)
-        content = self.query_check(query, variables={'id': project2.id})
-        self.assertEqual(content['data']['project']['leadGroups']['totalCount'], 1)
-        self.assertEqual(content['data']['project']['leadGroups']['results'][0]['id'], str(lead_group3.id))
-        self.assertEqual(content['data']['project']['leadGroups']['results'][0]['leadCounts'], 2)
+        content = self.query_check(query, variables={"id": project2.id})
+        self.assertEqual(content["data"]["project"]["leadGroups"]["totalCount"], 1)
+        self.assertEqual(content["data"]["project"]["leadGroups"]["results"][0]["id"], str(lead_group3.id))
+        self.assertEqual(content["data"]["project"]["leadGroups"]["results"][0]["leadCounts"], 2)
 
     def test_public_lead_query(self):
-        query = '''
+        query = """
             query MyQuery ($uuid: UUID!) {
               publicLead(uuid: $uuid) {
                 project {
@@ -900,44 +894,47 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 }
               }
             }
-          '''
+          """
 
         project = ProjectFactory.create()
         # User with role
-        non_member_user = UserFactory.create(email='non-member@x.y')
-        member_user = UserFactory.create(email='member@x.y')
-        confidential_member_user = UserFactory.create(email='confidential-member@x.y')
+        non_member_user = UserFactory.create(email="non-member@x.y")
+        member_user = UserFactory.create(email="member@x.y")
+        confidential_member_user = UserFactory.create(email="confidential-member@x.y")
         project.add_member(member_user, role=self.project_role_reader_non_confidential)
         project.add_member(confidential_member_user, role=self.project_role_reader)
         # Public project
         unprotected_lead = LeadFactory.create(
             project=project,
             confidentiality=Lead.Confidentiality.UNPROTECTED,
-            title='unprotected_lead',
+            title="unprotected_lead",
         )
         restricted_lead = LeadFactory.create(
             project=project,
             confidentiality=Lead.Confidentiality.RESTRICTED,
-            title='restricted_lead',
+            title="restricted_lead",
         )
         confidential_lead = LeadFactory.create(
             project=project,
             confidentiality=Lead.Confidentiality.CONFIDENTIAL,
-            title='confidential_lead',
+            title="confidential_lead",
         )
 
         def _query_check(lead):
-            return self.query_check(query, variables={'uuid': str(lead.uuid)})
+            return self.query_check(query, variables={"uuid": str(lead.uuid)})
 
         cases = [
             # Public Project
             #  is_private, (public_lead, restricted_lead, confidential_lead)
             #   : [Lead, show_project, show_lead, show_project_title]
             (
-                False, (False, False, False), [  # Project view public leads
+                False,
+                (False, False, False),
+                [  # Project view public leads
                     (
                         # Without login
-                        None, [
+                        None,
+                        [
                             [unprotected_lead, False, False, None],
                             [restricted_lead, False, False, None],
                             [confidential_lead, False, False, None],
@@ -945,35 +942,41 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     ),
                     (
                         # Non member user
-                        non_member_user, [
+                        non_member_user,
+                        [
                             [unprotected_lead, True, False, None],
                             [restricted_lead, True, False, None],
                             [confidential_lead, True, False, None],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with non-confidential access
-                        member_user, [
+                        member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, False, None],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with confidential access
-                        confidential_member_user, [
+                        confidential_member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, True, True],
-                        ]
+                        ],
                     ),
-                ]
+                ],
             ),
             (
-                False, (True, False, False), [  # Project view public leads
+                False,
+                (True, False, False),
+                [  # Project view public leads
                     (
                         # Without login
-                        None, [
+                        None,
+                        [
                             [unprotected_lead, False, True, True],
                             [restricted_lead, False, False, None],
                             [confidential_lead, False, False, None],
@@ -981,35 +984,41 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     ),
                     (
                         # Non member user
-                        non_member_user, [
+                        non_member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, False, None],
                             [confidential_lead, True, False, None],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with non-confidential access
-                        member_user, [
+                        member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, False, None],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with confidential access
-                        confidential_member_user, [
+                        confidential_member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, True, True],
-                        ]
+                        ],
                     ),
-                ]
+                ],
             ),
             (
-                False, (False, True, False), [  # Project view public leads
+                False,
+                (False, True, False),
+                [  # Project view public leads
                     (
                         # Without login
-                        None, [
+                        None,
+                        [
                             [unprotected_lead, False, False, None],
                             [restricted_lead, False, True, True],
                             [confidential_lead, False, False, None],
@@ -1017,35 +1026,41 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     ),
                     (
                         # Non member user
-                        non_member_user, [
+                        non_member_user,
+                        [
                             [unprotected_lead, True, False, None],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, False, None],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with non-confidential access
-                        member_user, [
+                        member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, False, None],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with confidential access
-                        confidential_member_user, [
+                        confidential_member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, True, True],
-                        ]
+                        ],
                     ),
-                ]
+                ],
             ),
             (
-                False, (False, False, True), [  # Project view public leads
+                False,
+                (False, False, True),
+                [  # Project view public leads
                     (
                         # Without login
-                        None, [
+                        None,
+                        [
                             [unprotected_lead, False, False, None],
                             [restricted_lead, False, False, None],
                             [confidential_lead, False, True, True],
@@ -1053,36 +1068,42 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     ),
                     (
                         # Non member user
-                        non_member_user, [
+                        non_member_user,
+                        [
                             [unprotected_lead, True, False, None],
                             [restricted_lead, True, False, None],
                             [confidential_lead, True, True, True],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with non-confidential access
-                        member_user, [
+                        member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, True, True],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with confidential access
-                        confidential_member_user, [
+                        confidential_member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, True, True],
-                        ]
+                        ],
                     ),
-                ]
+                ],
             ),
             # Private Project
             (
-                True, (False, False, False), [  # Project view public leads
+                True,
+                (False, False, False),
+                [  # Project view public leads
                     (
                         # Without login
-                        None, [
+                        None,
+                        [
                             [unprotected_lead, False, False, None],
                             [restricted_lead, False, False, None],
                             [confidential_lead, False, False, None],
@@ -1090,35 +1111,41 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     ),
                     (
                         # Non member user
-                        non_member_user, [
+                        non_member_user,
+                        [
                             [unprotected_lead, False, False, None],
                             [restricted_lead, False, False, None],
                             [confidential_lead, False, False, None],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with non-confidential access
-                        member_user, [
+                        member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, False, None],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with confidential access
-                        confidential_member_user, [
+                        confidential_member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, True, True],
-                        ]
+                        ],
                     ),
-                ]
+                ],
             ),
             (
-                True, (True, False, False), [  # Project view public leads
+                True,
+                (True, False, False),
+                [  # Project view public leads
                     (
                         # Without login
-                        None, [
+                        None,
+                        [
                             [unprotected_lead, False, True, False],
                             [restricted_lead, False, False, None],
                             [confidential_lead, False, False, None],
@@ -1126,35 +1153,41 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     ),
                     (
                         # Non member user
-                        non_member_user, [
+                        non_member_user,
+                        [
                             [unprotected_lead, False, True, False],
                             [restricted_lead, False, False, None],
                             [confidential_lead, False, False, None],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with non-confidential access
-                        member_user, [
+                        member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, False, None],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with confidential access
-                        confidential_member_user, [
+                        confidential_member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, True, True],
-                        ]
+                        ],
                     ),
-                ]
+                ],
             ),
             (
-                True, (False, True, False), [  # Project view public leads
+                True,
+                (False, True, False),
+                [  # Project view public leads
                     (
                         # Without login
-                        None, [
+                        None,
+                        [
                             [unprotected_lead, False, False, None],
                             [restricted_lead, False, True, False],
                             [confidential_lead, False, False, None],
@@ -1162,35 +1195,41 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     ),
                     (
                         # Non member user
-                        non_member_user, [
+                        non_member_user,
+                        [
                             [unprotected_lead, False, False, None],
                             [restricted_lead, False, True, False],
                             [confidential_lead, False, False, None],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with non-confidential access
-                        member_user, [
+                        member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, False, None],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with confidential access
-                        confidential_member_user, [
+                        confidential_member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, True, True],
-                        ]
+                        ],
                     ),
-                ]
+                ],
             ),
             (
-                True, (False, False, True), [  # Project view public leads
+                True,
+                (False, False, True),
+                [  # Project view public leads
                     (
                         # Without login
-                        None, [
+                        None,
+                        [
                             [unprotected_lead, False, False, None],
                             [restricted_lead, False, False, None],
                             [confidential_lead, False, True, False],
@@ -1198,29 +1237,32 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     ),
                     (
                         # Non member user
-                        non_member_user, [
+                        non_member_user,
+                        [
                             [unprotected_lead, False, False, None],
                             [restricted_lead, False, False, None],
                             [confidential_lead, False, True, False],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with non-confidential access
-                        member_user, [
+                        member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, True, True],
-                        ]
+                        ],
                     ),
                     (
                         # Member user with confidential access
-                        confidential_member_user, [
+                        confidential_member_user,
+                        [
                             [unprotected_lead, True, True, True],
                             [restricted_lead, True, True, True],
                             [confidential_lead, True, True, True],
-                        ]
+                        ],
                     ),
-                ]
+                ],
             ),
         ]
 
@@ -1239,10 +1281,10 @@ class TestLeadQuerySchema(GraphQLTestCase):
             project.has_publicly_viewable_confidential_leads = project_show_confidential_leads
             project.save(
                 update_fields=(
-                    'is_private',
-                    'has_publicly_viewable_unprotected_leads',
-                    'has_publicly_viewable_restricted_leads',
-                    'has_publicly_viewable_confidential_leads',
+                    "is_private",
+                    "has_publicly_viewable_unprotected_leads",
+                    "has_publicly_viewable_restricted_leads",
+                    "has_publicly_viewable_confidential_leads",
                 )
             )
             for user, conditions in user_and_conditions:
@@ -1251,7 +1293,7 @@ class TestLeadQuerySchema(GraphQLTestCase):
                 else:
                     self.logout()
                 for used_lead, expect_project_membership_data, expect_lead, show_project_title in conditions:
-                    content = _query_check(used_lead)['data']['publicLead']
+                    content = _query_check(used_lead)["data"]["publicLead"]
                     check_meta = dict(
                         project_private=is_private,
                         project_show=dict(
@@ -1264,25 +1306,25 @@ class TestLeadQuerySchema(GraphQLTestCase):
                     )
                     # Excepted Lead
                     if expect_lead:
-                        self.assertIsNotNone(content['lead'], check_meta)
-                        self.assertEqual(content['lead']['uuid'], str(used_lead.uuid))
+                        self.assertIsNotNone(content["lead"], check_meta)
+                        self.assertEqual(content["lead"]["uuid"], str(used_lead.uuid))
                         # Show project title in Lead data.
                         if show_project_title:
-                            self.assertIsNotNone(content['lead']['projectTitle'], check_meta)
+                            self.assertIsNotNone(content["lead"]["projectTitle"], check_meta)
                         else:
-                            self.assertIsNone(content['lead']['projectTitle'], check_meta)
+                            self.assertIsNone(content["lead"]["projectTitle"], check_meta)
                     else:
-                        self.assertIsNone(content['lead'], check_meta)
+                        self.assertIsNone(content["lead"], check_meta)
                     # Show project with membership data
                     if expect_project_membership_data:
-                        self.assertIsNotNone(content['project'], check_meta)
-                        self.assertEqual(content['project']['id'], str(used_lead.project_id))
+                        self.assertIsNotNone(content["project"], check_meta)
+                        self.assertEqual(content["project"]["id"], str(used_lead.project_id))
                     else:
-                        self.assertIsNone(content['project'], check_meta)
+                        self.assertIsNone(content["project"], check_meta)
 
 
 class TestUserSavedLeadFilters(GraphQLTestCase):
-    LEAD_FILTER_SAVE_QUERY = '''
+    LEAD_FILTER_SAVE_QUERY = """
         query MyQuery ($id: ID!) {
           project(id: $id) {
             userSavedLeadFilter {
@@ -1324,9 +1366,9 @@ class TestUserSavedLeadFilters(GraphQLTestCase):
             }
           }
         }
-    '''
+    """
 
-    LEAD_FILTER_SAVE_MUTATION = '''
+    LEAD_FILTER_SAVE_MUTATION = """
         mutation MyMutation ($id: ID!, $input: UserSavedLeadFilterInputType!) {
           project(id: $id) {
             leadFilterSave(data: $input) {
@@ -1358,7 +1400,7 @@ class TestUserSavedLeadFilters(GraphQLTestCase):
             }
           }
         }
-    '''
+    """
 
     def setUp(self):
         super().setUp()
@@ -1366,8 +1408,8 @@ class TestUserSavedLeadFilters(GraphQLTestCase):
         self.region1, self.region2 = RegionFactory.create_batch(2)
         self.project = ProjectFactory.create(analysis_framework=self.af)
         self.project.regions.add(self.region1)
-        self.non_member_user = UserFactory.create(email='non-member@x.y')
-        self.member_user = UserFactory.create(email='member@x.y')
+        self.non_member_user = UserFactory.create(email="non-member@x.y")
+        self.member_user = UserFactory.create(email="member@x.y")
         self.project.add_member(self.member_user)
 
         # Create entities used for entryFilterdData
@@ -1393,9 +1435,7 @@ class TestUserSavedLeadFilters(GraphQLTestCase):
             return [str(_int) for _int in int_list]
 
         def get_id_obj(objs):
-            return [
-                dict(id=str(obj.pk)) for obj in objs
-            ]
+            return [dict(id=str(obj.pk)) for obj in objs]
 
         self.custom_filters = dict(
             assignees=_str_list([m_user1.pk, m_user2.pk]),
@@ -1412,11 +1452,13 @@ class TestUserSavedLeadFilters(GraphQLTestCase):
                 lead_created_by=_str_list([m_user2.pk, m_user3.pk]),
                 lead_source_organizations=_str_list([org2.pk, org3.pk]),
                 modified_by=_str_list([m_user1.pk, m_user3.pk]),
-                filterable_data=[dict(
-                    filter_key=geo_widget_filter.key,
-                    value_list=_str_list([geoarea1_1_1.pk, geoarea1_2_1.pk, geoarea2_2.pk]),
-                )],
-            )
+                filterable_data=[
+                    dict(
+                        filter_key=geo_widget_filter.key,
+                        value_list=_str_list([geoarea1_1_1.pk, geoarea1_2_1.pk, geoarea2_2.pk]),
+                    )
+                ],
+            ),
         )
         self.custom_filters_camel_case = json.loads(CamelCaseJSONRenderer().render(self.custom_filters))
 
@@ -1439,7 +1481,7 @@ class TestUserSavedLeadFilters(GraphQLTestCase):
 
     def test_user_saved_lead_filter_query(self):
         def _query_check(**kwargs):
-            return self.query_check(self.LEAD_FILTER_SAVE_QUERY, variables={'id': str(self.project.id)}, **kwargs)
+            return self.query_check(self.LEAD_FILTER_SAVE_QUERY, variables={"id": str(self.project.id)}, **kwargs)
 
         # Without login
         _query_check(assert_for_error=True)
@@ -1447,17 +1489,17 @@ class TestUserSavedLeadFilters(GraphQLTestCase):
         # login with non-member-user
         self.force_login(self.non_member_user)
         content = _query_check()
-        self.assertIsNone(content['data']['project']['userSavedLeadFilter'], content)
+        self.assertIsNone(content["data"]["project"]["userSavedLeadFilter"], content)
         UserSavedLeadFilterFactory.create(user=self.non_member_user, project=self.project)
 
         # Same here as well even with saved filter in backend
         content = _query_check()
-        self.assertIsNone(content['data']['project']['userSavedLeadFilter'], content)
+        self.assertIsNone(content["data"]["project"]["userSavedLeadFilter"], content)
 
         # login with member-user
         self.force_login(self.member_user)
         content = _query_check()
-        self.assertIsNone(content['data']['project']['userSavedLeadFilter'], content)
+        self.assertIsNone(content["data"]["project"]["userSavedLeadFilter"], content)
 
         UserSavedLeadFilterFactory.create(
             user=self.member_user,
@@ -1465,26 +1507,26 @@ class TestUserSavedLeadFilters(GraphQLTestCase):
             filters=self.custom_filters,
         )
         content = _query_check()
-        self.assertIsNotNone(content['data']['project']['userSavedLeadFilter'], content)
+        self.assertIsNotNone(content["data"]["project"]["userSavedLeadFilter"], content)
         self.maxDiff = None
         self.assertEqual(
-            content['data']['project']['userSavedLeadFilter']['filtersData'],
+            content["data"]["project"]["userSavedLeadFilter"]["filtersData"],
             self.expected_filter_data_options,
             content,
         )
 
     def test_user_saved_lead_filter_mutation(self):
         minput = {
-            'title': 'First Filter',
-            'filters': {},
+            "title": "First Filter",
+            "filters": {},
         }
 
         def _query_check(**kwargs):
             return self.query_check(
                 self.LEAD_FILTER_SAVE_MUTATION,
                 minput=minput,
-                mnested=['project'],
-                variables={'id': str(self.project.id)},
+                mnested=["project"],
+                variables={"id": str(self.project.id)},
                 **kwargs,
             )
 
@@ -1498,13 +1540,13 @@ class TestUserSavedLeadFilters(GraphQLTestCase):
         # login with member-user
         self.force_login(self.member_user)
         content = _query_check(okay=True)
-        self.assertIsNotNone(content['data']['project']['leadFilterSave']['result'], content)
+        self.assertIsNotNone(content["data"]["project"]["leadFilterSave"]["result"], content)
 
         # With some valid data
-        minput['filters'] = self.custom_filters_camel_case
+        minput["filters"] = self.custom_filters_camel_case
         content = _query_check(okay=True)
         self.assertEqual(
-            content['data']['project']['leadFilterSave']['result']['filtersData'],
+            content["data"]["project"]["leadFilterSave"]["result"]["filtersData"],
             self.expected_filter_data_options,
             content,
         )

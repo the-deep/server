@@ -1,12 +1,11 @@
 from django.db import models
 from django.dispatch import receiver
-
-from user.models import User
 from project.models import (
+    ProjectJoinRequest,
     ProjectMembership,
     ProjectUserGroupMembership,
-    ProjectJoinRequest,
 )
+from user.models import User
 
 
 @receiver(models.signals.post_save, sender=ProjectUserGroupMembership)
@@ -37,9 +36,7 @@ def refresh_project_memberships_usergroup_removed(sender, instance, **kwargs):
     )
 
     for membership in remove_memberships:
-        other_user_groups = membership.get_user_group_options().exclude(
-            id=user_group.id
-        )
+        other_user_groups = membership.get_user_group_options().exclude(id=user_group.id)
         if other_user_groups.count() > 0:
             membership.linked_group = other_user_groups.first()
             membership.save()
@@ -52,13 +49,13 @@ def refresh_project_memberships_usergroup_removed(sender, instance, **kwargs):
 @receiver(models.signals.post_save, sender=ProjectMembership)
 def on_membership_saved(sender, **kwargs):
     # if kwargs.get('created'):
-    instance = kwargs.get('instance')
+    instance = kwargs.get("instance")
     ProjectJoinRequest.objects.filter(
         project=instance.project,
         requested_by=instance.member,
-        status='pending',
+        status="pending",
     ).update(
-        status='accepted',
+        status="accepted",
         responded_by=instance.added_by,
         responded_at=instance.joined_at,
     )

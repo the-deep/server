@@ -1,5 +1,5 @@
-from typing import Type, List
 from collections import OrderedDict
+from typing import List, Type
 
 import graphene
 import graphene_django
@@ -8,20 +8,19 @@ from graphene_django.registry import get_global_registry
 from graphene_django.rest_framework.serializer_converter import (
     get_graphene_type_from_serializer_field,
 )
-from rest_framework import serializers
 from graphene_file_upload.scalars import Upload
+from rest_framework import serializers
 
-from utils.graphene.error_types import mutation_is_not_valid
-from utils.graphene.enums import get_enum_name_from_django_field
+from deep.enums import ENUM_TO_GRAPHENE_ENUM_MAP
+
 # from utils.common import to_camelcase
 from deep.exceptions import PermissionDeniedException
-from deep.enums import ENUM_TO_GRAPHENE_ENUM_MAP
+from deep.permissions import AnalysisFrameworkPermissions as AfP
+from deep.permissions import ProjectPermissions as PP
+from deep.permissions import UserGroupPermissions as UgP
 from deep.serializers import IntegerIDField, StringIDField
-from deep.permissions import (
-    ProjectPermissions as PP,
-    AnalysisFrameworkPermissions as AfP,
-    UserGroupPermissions as UgP,
-)
+from utils.graphene.enums import get_enum_name_from_django_field
+from utils.graphene.error_types import mutation_is_not_valid
 
 
 @get_graphene_type_from_serializer_field.register(serializers.ListSerializer)
@@ -69,7 +68,7 @@ def convert_serializer_field_to_enum(field):
         # Try django_enumfield (NOTE: Let's try to avoid this)
         custom_name = type(list(field.choices.values())[-1]).__name__
     if custom_name is None:
-        raise Exception(f'Enum name generation failed for {field=}')
+        raise Exception(f"Enum name generation failed for {field=}")
     return ENUM_TO_GRAPHENE_ENUM_MAP[custom_name]
 
 
@@ -88,10 +87,7 @@ def convert_serializer_field(field, is_input=True, convert_choices_to_enum=True,
         graphql_type = get_graphene_type_from_serializer_field(field)
 
     args = []
-    kwargs = {
-        "description": field.help_text,
-        "required": is_input and field.required and not force_optional
-    }
+    kwargs = {"description": field.help_text, "required": is_input and field.required and not force_optional}
 
     # if it is a tuple or a list it means that we are returning
     # the graphql type and the child type
@@ -127,21 +123,16 @@ def convert_serializer_to_input_type(serializer_class):
     """
     graphene_django.rest_framework.serializer_converter.convert_serializer_to_input_type
     """
-    cached_type = convert_serializer_to_input_type.cache.get(
-        serializer_class.__name__, None
-    )
+    cached_type = convert_serializer_to_input_type.cache.get(serializer_class.__name__, None)
     if cached_type:
         return cached_type
     serializer = serializer_class()
 
-    items = {
-        name: convert_serializer_field(field)
-        for name, field in serializer.fields.items()
-    }
+    items = {name: convert_serializer_field(field) for name, field in serializer.fields.items()}
     # Alter naming
     serializer_name = serializer.__class__.__name__
-    serializer_name = ''.join(''.join(serializer_name.split('ModelSerializer')).split('Serializer'))
-    ref_name = f'{serializer_name}InputType'
+    serializer_name = "".join("".join(serializer_name.split("ModelSerializer")).split("Serializer"))
+    ref_name = f"{serializer_name}InputType"
 
     base_classes = (graphene.InputObjectType,)
 
@@ -176,10 +167,8 @@ def fields_for_serializer(
         is_excluded = any(
             [
                 name in exclude_fields,
-                field.write_only and
-                not is_input,  # don't show write_only fields in Query
-                field.read_only and is_input \
-                and lookup_field != name,  # don't show read_only fields in Input
+                field.write_only and not is_input,  # don't show write_only fields in Query
+                field.read_only and is_input and lookup_field != name,  # don't show read_only fields in Input
             ]
         )
 
@@ -232,17 +221,17 @@ class BaseGrapheneMutation(graphene.Mutation):
     @classmethod
     def get_object(cls, info, **kwargs):
         try:
-            return cls.get_queryset(info).get(id=kwargs['id']), None
+            return cls.get_queryset(info).get(id=kwargs["id"]), None
         except cls.model.DoesNotExist:
-            return None, [dict(field='nonFieldErrors', messages=f'{cls.model.__name__} does not exist.')]
+            return None, [dict(field="nonFieldErrors", messages=f"{cls.model.__name__} does not exist.")]
 
     @classmethod
     def check_permissions(cls, info, **kwargs):
-        raise Exception('This needs to be implemented in inheritances class')
+        raise Exception("This needs to be implemented in inheritances class")
 
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
-        raise Exception('This needs to be implemented in inheritances class')
+        raise Exception("This needs to be implemented in inheritances class")
 
     @classmethod
     def get_serializer_context(cls, instance, context):
@@ -250,10 +239,10 @@ class BaseGrapheneMutation(graphene.Mutation):
 
     @classmethod
     def _save_item(cls, item, info, **kwargs):
-        id = kwargs.pop('id', None)
+        id = kwargs.pop("id", None)
         base_context = {
-            'gql_info': info,
-            'request': info.context,
+            "gql_info": info,
+            "request": info.context,
         }
         if id:
             instance, errors = cls.get_object(info, id=id, **kwargs)
@@ -288,7 +277,7 @@ class GrapheneMutation(BaseGrapheneMutation):
 
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
-        data = kwargs['data']
+        data = kwargs["data"]
         instance, errors = cls._save_item(data, info, **kwargs)
         return cls(result=instance, errors=errors, ok=not errors)
 
@@ -306,8 +295,8 @@ class BulkGrapheneMutation(BaseGrapheneMutation):
 
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
-        items = kwargs.get('items') or []
-        delete_ids = kwargs.get('delete_ids')
+        items = kwargs.get("items") or []
+        delete_ids = kwargs.get("delete_ids")
         all_errors = []
         all_instances = []
         all_deleted_instances = []
@@ -323,7 +312,7 @@ class BulkGrapheneMutation(BaseGrapheneMutation):
             # cls.model.filter(pk__in=validated_delete_ids).delete()
         # Bulk Create/Update
         for item in items:
-            id = item.get('id')
+            id = item.get("id")
             instance, errors = cls._save_item(item, info, id=id, **kwargs)
             all_errors.append(errors)
             all_instances.append(instance)
@@ -348,12 +337,12 @@ class DeleteMutation(GrapheneMutation):
             result=None,
             ok=False,
             errors=[
-                dict(field='nonFieldErrors', message='You are not allowed to delete!!'),
+                dict(field="nonFieldErrors", message="You are not allowed to delete!!"),
             ],
         )
 
 
-class ProjectScopeMixin():
+class ProjectScopeMixin:
     permissions: List[PP.Permission]
 
     @classmethod
@@ -375,7 +364,7 @@ class PsDeleteMutation(ProjectScopeMixin, DeleteMutation):
     pass
 
 
-class AfScopeMixin():
+class AfScopeMixin:
     permissions: List[AfP.Permission]
 
     @classmethod
@@ -393,7 +382,7 @@ class AfBulkGrapheneMutation(AfScopeMixin, BulkGrapheneMutation):
     pass
 
 
-class UgScopeMixin():
+class UgScopeMixin:
     permissions: List[UgP.Permission]
 
     @classmethod

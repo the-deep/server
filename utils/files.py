@@ -1,5 +1,5 @@
-from typing import Dict, List, Tuple, Union, IO
 import json
+from typing import IO, Dict, List, Tuple, Union
 
 from django.core.files.base import ContentFile
 from django.core.serializers.json import DjangoJSONEncoder
@@ -7,9 +7,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 def generate_file_for_upload(file: IO):
     file.seek(0)
-    return ContentFile(
-        file.read().encode('utf-8')
-    )
+    return ContentFile(file.read().encode("utf-8"))
 
 
 def generate_json_file_for_upload(data: Union[Dict, List, Tuple], **kwargs) -> ContentFile:
@@ -18,5 +16,5 @@ def generate_json_file_for_upload(data: Union[Dict, List, Tuple], **kwargs) -> C
             data,
             cls=DjangoJSONEncoder,
             **kwargs,
-        ).encode('utf-8'),
+        ).encode("utf-8"),
     )

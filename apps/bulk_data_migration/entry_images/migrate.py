@@ -1,4 +1,5 @@
 from urllib.parse import urljoin
+
 import reversion
 from entry.models import Entry
 from entry.utils import base64_to_deep_image
@@ -27,15 +28,11 @@ def migrate_entry(entry, root_url):
     if new_image == image:
         return
 
-    Entry.objects.filter(
-        id=entry.id
-    ).update(
-        image=new_image
-    )
+    Entry.objects.filter(id=entry.id).update(image=new_image)
 
 
 def migrate(*args):
-    print('This should be already migrated')
+    print("This should be already migrated")
     return
     root_url = args[0]
     with reversion.create_revision():

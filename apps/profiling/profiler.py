@@ -1,12 +1,10 @@
+import cProfile
+import os
+import pstats
+
 from django import test
 from django.conf import settings
-
-import cProfile
-import pstats
-import os
-
 from jwt_auth.token import AccessToken
-
 
 TEST_SETUP_VERBOSITY = 1
 
@@ -31,7 +29,7 @@ class Profiler:
             False,
         )
         self.client = test.Client()
-        self.client.get('/')
+        self.client.get("/")
 
         self.created = True
 
@@ -54,7 +52,7 @@ class Profiler:
 
     def authorise_with(self, user):
         self.access = AccessToken.for_user(user).encode()
-        self.auth = 'Bearer {0}'.format(self.access)
+        self.auth = "Bearer {0}".format(self.access)
 
     def start_profiling(self):
         self.pr = cProfile.Profile(builtins=False)
@@ -66,14 +64,13 @@ class Profiler:
 
         self.pr.disable()
         self.stats = pstats.Stats(self.pr)
-        self.stats.sort_stats('cumulative')
+        self.stats.sort_stats("cumulative")
         self.pr = None
 
     def print_stats(self):
-        regex = '({})|(/db/models.*(fetch|execute_sql))'\
-            .format(os.getcwd())
+        regex = "({})|(/db/models.*(fetch|execute_sql))".format(os.getcwd())
 
-        print('Stats')
+        print("Stats")
         self.stats.print_stats(regex)
 
         # print('Callers')
@@ -82,7 +79,7 @@ class Profiler:
         # print('Callees')
         # self.stats.print_callees(regex)
 
-        print('End')
+        print("End")
 
     def profile_get(self, *args, **kwargs):
         self.start_profiling()

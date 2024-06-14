@@ -5,18 +5,13 @@ from utils.graphene.enums import (
     get_enum_name_from_django_field,
 )
 
-from .models import (
-    DraftEntry,
-    AssistedTaggingPrediction,
-)
+from .models import AssistedTaggingPrediction, DraftEntry
 
-DraftEntryPredictionStatusEnum = convert_enum_to_graphene_enum(
-    DraftEntry.PredictionStatus, name='DraftEntryPredictionStatusEnum')
+DraftEntryPredictionStatusEnum = convert_enum_to_graphene_enum(DraftEntry.PredictionStatus, name="DraftEntryPredictionStatusEnum")
 AssistedTaggingPredictionDataTypeEnum = convert_enum_to_graphene_enum(
-    AssistedTaggingPrediction.DataType, name='AssistedTaggingPredictionDataTypeEnum')
-DraftEntryTypeEnum = convert_enum_to_graphene_enum(
-    DraftEntry.Type, name="DraftEntryTypeEnum"
+    AssistedTaggingPrediction.DataType, name="AssistedTaggingPredictionDataTypeEnum"
 )
+DraftEntryTypeEnum = convert_enum_to_graphene_enum(DraftEntry.Type, name="DraftEntryTypeEnum")
 
 enum_map = {
     get_enum_name_from_django_field(field): enum
@@ -30,13 +25,13 @@ enum_map = {
 
 class AssistedTaggingModelOrderingEnum(graphene.Enum):
     # ASC
-    ASC_ID = 'id'
+    ASC_ID = "id"
     # DESC
-    DESC_ID = f'-{ASC_ID}'
+    DESC_ID = f"-{ASC_ID}"
 
 
 class AssistedTaggingModelPredictionTagOrderingEnum(graphene.Enum):
     # ASC
-    ASC_ID = 'id'
+    ASC_ID = "id"
     # DESC
-    DESC_ID = f'-{ASC_ID}'
+    DESC_ID = f"-{ASC_ID}"

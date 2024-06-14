@@ -1,8 +1,8 @@
-import requests
 import json
 from dataclasses import dataclass, field
-from typing import Union, Dict, Callable
+from typing import Callable, Dict, Union
 
+import requests
 from django.core.files.base import ContentFile
 
 from utils.common import sanitize_text
@@ -13,6 +13,7 @@ def requesthelper_ignore_error(func):
         if self.ignore_error and self.error_on_response:
             return
         return func(self, *args, **kwargs)
+
     return wrapper
 
 

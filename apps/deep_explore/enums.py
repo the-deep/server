@@ -5,10 +5,10 @@ from utils.graphene.enums import (
 
 from .models import PublicExploreSnapshot
 
-PublicExploreSnapshotTypeEnum = convert_enum_to_graphene_enum(
-    PublicExploreSnapshot.Type, name='PublicExploreSnapshotTypeEnum')
+PublicExploreSnapshotTypeEnum = convert_enum_to_graphene_enum(PublicExploreSnapshot.Type, name="PublicExploreSnapshotTypeEnum")
 PublicExploreSnapshotGlobalTypeEnum = convert_enum_to_graphene_enum(
-    PublicExploreSnapshot.GlobalType, name='PublicExploreSnapshotGlobalTypeEnum')
+    PublicExploreSnapshot.GlobalType, name="PublicExploreSnapshotGlobalTypeEnum"
+)
 
 
 enum_map = {

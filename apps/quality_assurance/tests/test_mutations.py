@@ -1,25 +1,22 @@
-from utils.graphene.tests import GraphQLTestCase
-
-from quality_assurance.models import EntryReviewComment
-from project.models import ProjectMembership
-from notification.models import Notification
-from entry.models import Entry
-
-from user.factories import UserFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
-from project.factories import ProjectFactory
-from lead.factories import LeadFactory
 from entry.factories import EntryFactory
-
+from entry.models import Entry
+from lead.factories import LeadFactory
+from notification.models import Notification
+from project.factories import ProjectFactory
+from project.models import ProjectMembership
 from quality_assurance.factories import EntryReviewCommentFactory
+from quality_assurance.models import EntryReviewComment
+from user.factories import UserFactory
 
+from utils.graphene.tests import GraphQLTestCase
 
 VerifiedByQs = Entry.verified_by.through.objects
 
 
 class TestQualityAssuranceMutation(GraphQLTestCase):
 
-    CREATE_ENTRY_REVIEW_COMMENT_QUERY = '''
+    CREATE_ENTRY_REVIEW_COMMENT_QUERY = """
         mutation MyMutation ($projectId: ID!, $input: EntryReviewCommentInputType!) {
           project(id: $projectId) {
             entryReviewCommentCreate(data: $input) {
@@ -47,9 +44,9 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
             }
           }
         }
-    '''
+    """
 
-    UPDATE_ENTRY_REVIEW_COMMENT_QUERY = '''
+    UPDATE_ENTRY_REVIEW_COMMENT_QUERY = """
         mutation MyMutation ($projectId: ID!, $reviewCommentId: ID!, $input: EntryReviewCommentInputType!) {
           project(id: $projectId) {
             entryReviewCommentUpdate(id: $reviewCommentId data: $input) {
@@ -77,9 +74,9 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
             }
           }
         }
-    '''
+    """
 
-    DELETE_ENTRY_REVIEW_COMMENT_QUERY = '''
+    DELETE_ENTRY_REVIEW_COMMENT_QUERY = """
         mutation MyMutation ($projectId: ID!, $commentId: ID!) {
           project(id: $projectId) {
             entryReviewCommentDelete(id: $commentId) {
@@ -107,7 +104,7 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
             }
           }
         }
-    '''
+    """
 
     def setUp(self):
         super().setUp()
@@ -125,31 +122,23 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         self.project.add_member(self.qa_member_user, role=self.project_role_member, badges=[ProjectMembership.BadgeType.QA])
 
     def _query_check(self, mutation_input, review_comment_id=None, **kwargs):
-        variables = {'projectId': self.project.id}
+        variables = {"projectId": self.project.id}
         query = self.CREATE_ENTRY_REVIEW_COMMENT_QUERY
         if review_comment_id:
             query = self.UPDATE_ENTRY_REVIEW_COMMENT_QUERY
-            variables['reviewCommentId'] = review_comment_id
-        return self.query_check(
-            query,
-            minput=mutation_input,
-            mnested=['project'],
-            variables=variables,
-            **kwargs
-        )
+            variables["reviewCommentId"] = review_comment_id
+        return self.query_check(query, minput=mutation_input, mnested=["project"], variables=variables, **kwargs)
 
     def test_entry_review_comment_create(self):
         minput = {
-            'entry': self.entry.id,
-            'commentType': self.genum(EntryReviewComment.CommentType.COMMENT),
+            "entry": self.entry.id,
+            "commentType": self.genum(EntryReviewComment.CommentType.COMMENT),
             # 'mentionedUsers': [self.readonly_member_user.pk, self.qa_member_user.pk],
         }
 
         def _get_notifications_receivers():
-            return set(
-                Notification.objects.values_list('receiver', flat=True)
-            ), set(
-                Notification.objects.values_list('notification_type', flat=True).distinct()
+            return set(Notification.objects.values_list("receiver", flat=True)), set(
+                Notification.objects.values_list("notification_type", flat=True).distinct()
             )
 
         # -- Without login
@@ -168,44 +157,44 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
 
         # Invalid input (Comment without text)
         self.entry.controlled = True
-        self.entry.save(update_fields=('controlled',))
+        self.entry.save(update_fields=("controlled",))
         minput = {
-            'entry': self.entry.id,
-            'commentType': self.genum(EntryReviewComment.CommentType.CONTROL),
+            "entry": self.entry.id,
+            "commentType": self.genum(EntryReviewComment.CommentType.CONTROL),
         }
 
         self._query_check(minput, okay=False)
 
         # Control
         self.entry.controlled = False
-        self.entry.save(update_fields=('controlled',))
+        self.entry.save(update_fields=("controlled",))
         self._query_check(minput, okay=False)
         self.force_login(self.qa_member_user)
-        minput['commentType'] = self.genum(EntryReviewComment.CommentType.UNCONTROL)
+        minput["commentType"] = self.genum(EntryReviewComment.CommentType.UNCONTROL)
         self._query_check(minput, okay=False)
-        minput['commentType'] = self.genum(EntryReviewComment.CommentType.CONTROL)
+        minput["commentType"] = self.genum(EntryReviewComment.CommentType.CONTROL)
         self._query_check(minput, okay=True)  # If request by a QA User
 
-        minput['commentType'] = self.genum(EntryReviewComment.CommentType.UNCONTROL)
+        minput["commentType"] = self.genum(EntryReviewComment.CommentType.UNCONTROL)
         self.force_login(self.member_user)
         self._query_check(minput, okay=False)
         self.force_login(self.qa_member_user)
         self._query_check(minput, okay=False)  # Text is required
-        minput['text'] = 'sample text'
+        minput["text"] = "sample text"
         self._query_check(minput, okay=True)  # If request by a QA User
 
         # Verify
         self.force_login(self.member_user)
-        minput.pop('text')
-        minput['commentType'] = self.genum(EntryReviewComment.CommentType.VERIFY)
+        minput.pop("text")
+        minput["commentType"] = self.genum(EntryReviewComment.CommentType.VERIFY)
         self._query_check(minput, okay=True)
-        minput['commentType'] = self.genum(EntryReviewComment.CommentType.VERIFY)
+        minput["commentType"] = self.genum(EntryReviewComment.CommentType.VERIFY)
         self._query_check(minput, okay=False)
-        minput['commentType'] = self.genum(EntryReviewComment.CommentType.UNVERIFY)
+        minput["commentType"] = self.genum(EntryReviewComment.CommentType.UNVERIFY)
         self._query_check(minput, okay=False)
-        minput['text'] = 'sample text'
+        minput["text"] = "sample text"
         self._query_check(minput, okay=True)
-        minput['commentType'] = self.genum(EntryReviewComment.CommentType.UNVERIFY)
+        minput["commentType"] = self.genum(EntryReviewComment.CommentType.UNVERIFY)
         self._query_check(minput, okay=False)
 
     def test_entry_review_comment_basic_api(self):
@@ -219,30 +208,29 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
 
         self.force_login(user1)
         data = {
-            'entry': self.entry.pk,
-            'text': 'This is a test comment',
-            'commentType': self.genum(EntryReviewComment.CommentType.COMMENT),
-            'mentionedUsers': [user1.pk, user2.pk, user3.pk],
+            "entry": self.entry.pk,
+            "text": "This is a test comment",
+            "commentType": self.genum(EntryReviewComment.CommentType.COMMENT),
+            "mentionedUsers": [user1.pk, user2.pk, user3.pk],
         }
-        comment_pk = self._query_check(data, okay=True)['data']['project']['entryReviewCommentCreate']['result']['id']
+        comment_pk = self._query_check(data, okay=True)["data"]["project"]["entryReviewCommentCreate"]["result"]["id"]
 
         assert self.entry.review_comments.count() == 1
 
         # Update only allowd by comment creater
-        data['text'] = 'This is updated text comment'
-        content = self._query_check(
-            data, review_comment_id=comment_pk, okay=True)['data']['project']['entryReviewCommentUpdate']
-        self.assertEqual(content['result']['textHistory'][0]['text'], data['text'])
-        self.assertEqual(content['result']['text'], data['text'])
+        data["text"] = "This is updated text comment"
+        content = self._query_check(data, review_comment_id=comment_pk, okay=True)["data"]["project"]["entryReviewCommentUpdate"]
+        self.assertEqual(content["result"]["textHistory"][0]["text"], data["text"])
+        self.assertEqual(content["result"]["text"], data["text"])
         self.force_login(user2)
         self._query_check(data, review_comment_id=comment_pk, okay=False)
 
         self.force_login(user2)
         data = {
-            'entry': self.entry.pk,
-            'text': 'This is a test comment',
-            'commentType': self.genum(EntryReviewComment.CommentType.COMMENT),
-            'mentionedUsers': [user1.pk, user2.pk, user3.pk],
+            "entry": self.entry.pk,
+            "text": "This is a test comment",
+            "commentType": self.genum(EntryReviewComment.CommentType.COMMENT),
+            "mentionedUsers": [user1.pk, user2.pk, user3.pk],
         }
         self._query_check(data, okay=True)
 
@@ -250,10 +238,10 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
 
         self.force_login(user4)
         data = {
-            'entry': self.entry.pk,
-            'text': 'This is a test comment',
-            'commentType': self.genum(EntryReviewComment.CommentType.COMMENT),
-            'mentionedUsers': [user1.pk, user2.pk, user3.pk],
+            "entry": self.entry.pk,
+            "text": "This is a test comment",
+            "commentType": self.genum(EntryReviewComment.CommentType.COMMENT),
+            "mentionedUsers": [user1.pk, user2.pk, user3.pk],
         }
         self._query_check(data, assert_for_error=True)
 
@@ -267,36 +255,36 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
 
         self.force_login(user1)
         data = {
-            'entry': self.entry.pk,
-            'text': 'This is a test comment',
-            'commentType': self.genum(EntryReviewComment.CommentType.COMMENT),
+            "entry": self.entry.pk,
+            "text": "This is a test comment",
+            "commentType": self.genum(EntryReviewComment.CommentType.COMMENT),
         }
         self._query_check(data, okay=True)
         assert VerifiedByQs.filter(entry=self.entry).count() == 0
 
         # Verify
         data = {
-            'entry': self.entry.pk,
-            'text': 'This is a test comment for approvable',
-            'commentType': self.genum(EntryReviewComment.CommentType.VERIFY),
+            "entry": self.entry.pk,
+            "text": "This is a test comment for approvable",
+            "commentType": self.genum(EntryReviewComment.CommentType.VERIFY),
         }
         self._query_check(data, okay=True)
         assert VerifiedByQs.filter(entry=self.entry).count() == 1
 
         self.force_login(user2)
         data = {
-            'entry': self.entry.pk,
-            'text': 'This is a test comment',
-            'commentType': self.genum(EntryReviewComment.CommentType.VERIFY),
+            "entry": self.entry.pk,
+            "text": "This is a test comment",
+            "commentType": self.genum(EntryReviewComment.CommentType.VERIFY),
         }
         self._query_check(data, okay=True)
         assert VerifiedByQs.filter(entry=self.entry).count() == 2
 
         # Unverify
         data = {
-            'entry': self.entry.pk,
-            'text': 'This is a test comment for unapprovable',
-            'commentType': self.genum(EntryReviewComment.CommentType.UNVERIFY),
+            "entry": self.entry.pk,
+            "text": "This is a test comment for unapprovable",
+            "commentType": self.genum(EntryReviewComment.CommentType.UNVERIFY),
         }
         self._query_check(data, okay=True)
 
@@ -305,9 +293,9 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         # Can't verify already verify
         self.force_login(user1)
         data = {
-            'entry': self.entry.pk,
-            'text': 'This is a test comment',
-            'commentType': self.genum(EntryReviewComment.CommentType.VERIFY),
+            "entry": self.entry.pk,
+            "text": "This is a test comment",
+            "commentType": self.genum(EntryReviewComment.CommentType.VERIFY),
         }
         self._query_check(data, okay=False)
 
@@ -316,17 +304,17 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         # Can't unverify not verify
         self.force_login(user2)
         data = {
-            'entry': self.entry.pk,
-            'text': 'This is a test comment',
-            'commentType': self.genum(EntryReviewComment.CommentType.UNVERIFY),
+            "entry": self.entry.pk,
+            "text": "This is a test comment",
+            "commentType": self.genum(EntryReviewComment.CommentType.UNVERIFY),
         }
         self._query_check(data, okay=False)
 
         self.force_login(user3)
         data = {
-            'entry': self.entry.pk,
-            'text': 'This is a test comment',
-            'commentType': self.genum(EntryReviewComment.CommentType.UNVERIFY),
+            "entry": self.entry.pk,
+            "text": "This is a test comment",
+            "commentType": self.genum(EntryReviewComment.CommentType.UNVERIFY),
         }
         self._query_check(data, okay=False)
 
@@ -345,9 +333,9 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
             user1_membership.save()
 
             data = {
-                'entry': self.entry.pk,
-                'text': 'This is a test comment',
-                'commentType': self.genum(comment_type),
+                "entry": self.entry.pk,
+                "text": "This is a test comment",
+                "commentType": self.genum(comment_type),
             }
             self._query_check(data, okay=False)
 
@@ -366,17 +354,17 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
 
         self.force_login(user1)
         data = {
-            'entry': self.entry.pk,
-            'text': 'This is a test comment',
-            'commentType': self.genum(EntryReviewComment.CommentType.COMMENT),
+            "entry": self.entry.pk,
+            "text": "This is a test comment",
+            "commentType": self.genum(EntryReviewComment.CommentType.COMMENT),
         }
         self._query_check(data, okay=True)
 
         # Control
         data = {
-            'entry': self.entry.pk,
-            'text': 'This is a test comment for control/verify',
-            'commentType': self.genum(EntryReviewComment.CommentType.CONTROL),
+            "entry": self.entry.pk,
+            "text": "This is a test comment for control/verify",
+            "commentType": self.genum(EntryReviewComment.CommentType.CONTROL),
         }
         self._query_check(data, okay=True)
         self.entry.refresh_from_db()
@@ -385,9 +373,9 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
 
         # Control using same user again
         data = {
-            'entry': self.entry.pk,
-            'text': 'This is a test comment to again control already verified',
-            'commentType': self.genum(EntryReviewComment.CommentType.CONTROL),
+            "entry": self.entry.pk,
+            "text": "This is a test comment to again control already verified",
+            "commentType": self.genum(EntryReviewComment.CommentType.CONTROL),
         }
         self._query_check(data, okay=False)
         self.entry.refresh_from_db()
@@ -397,9 +385,9 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         # Control using another user again
         self.force_login(user2)
         data = {
-            'entry': self.entry.pk,
-            'text': 'This is a test comment to again control already verified',
-            'commentType': self.genum(EntryReviewComment.CommentType.CONTROL),
+            "entry": self.entry.pk,
+            "text": "This is a test comment to again control already verified",
+            "commentType": self.genum(EntryReviewComment.CommentType.CONTROL),
         }
         self._query_check(data, okay=False)
         self.entry.refresh_from_db()
@@ -409,9 +397,9 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         # Uncontrol (any users can also uncontrol)
         self.force_login(user2)
         data = {
-            'entry': self.entry.pk,
-            'text': 'This is a test comment for uncontrol',
-            'commentType': self.genum(EntryReviewComment.CommentType.UNCONTROL),
+            "entry": self.entry.pk,
+            "text": "This is a test comment for uncontrol",
+            "commentType": self.genum(EntryReviewComment.CommentType.UNCONTROL),
         }
         self._query_check(data, okay=True)
         self.entry.refresh_from_db()
@@ -422,9 +410,9 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
             self.force_login(user)
             # Can't uncontrol already uncontrol
             data = {
-                'entry': self.entry.pk,
-                'text': 'This is a test comment',
-                'commentType': self.genum(EntryReviewComment.CommentType.UNVERIFY),
+                "entry": self.entry.pk,
+                "text": "This is a test comment",
+                "commentType": self.genum(EntryReviewComment.CommentType.UNVERIFY),
             }
             self._query_check(data, okay=False)
             self.entry.refresh_from_db()
@@ -436,28 +424,26 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
 
         # Text required
         for comment_type, text_required in [
-                (None, True),  # Default is CommentType.COMMENT
-                (EntryReviewComment.CommentType.COMMENT, True),
-                (EntryReviewComment.CommentType.VERIFY, False),
-                (EntryReviewComment.CommentType.UNVERIFY, True),
-                (EntryReviewComment.CommentType.CONTROL, False),
-                (EntryReviewComment.CommentType.UNCONTROL, True),
+            (None, True),  # Default is CommentType.COMMENT
+            (EntryReviewComment.CommentType.COMMENT, True),
+            (EntryReviewComment.CommentType.VERIFY, False),
+            (EntryReviewComment.CommentType.UNVERIFY, True),
+            (EntryReviewComment.CommentType.CONTROL, False),
+            (EntryReviewComment.CommentType.UNCONTROL, True),
         ]:
-            _minput = {'entry': self.entry.pk}
+            _minput = {"entry": self.entry.pk}
             if comment_type:
-                _minput['commentType'] = self.genum(comment_type)
+                _minput["commentType"] = self.genum(comment_type)
             if text_required:
                 self._query_check(_minput, okay=False)
-                _minput['text'] = 'This is a comment'
+                _minput["text"] = "This is a comment"
                 self._query_check(_minput, okay=True)
             else:
                 self._query_check(_minput, okay=True)
 
     def test_entry_review_comment_notification(self):
         def _get_comment_users_pk(pk):
-            return set(
-                EntryReviewComment.objects.get(pk=pk).get_related_users().values_list('pk', flat=True)
-            )
+            return set(EntryReviewComment.objects.get(pk=pk).get_related_users().values_list("pk", flat=True))
 
         def _clean_comments(project):
             return EntryReviewComment.objects.filter(entry__project=project).delete()
@@ -466,10 +452,8 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
             return Notification.objects.all().delete()
 
         def _get_notifications_receivers():
-            return set(
-                Notification.objects.values_list('receiver', flat=True)
-            ), set(
-                Notification.objects.values_list('notification_type', flat=True).distinct()
+            return set(Notification.objects.values_list("receiver", flat=True)), set(
+                Notification.objects.values_list("notification_type", flat=True).distinct()
             )
 
         user1 = UserFactory.create()
@@ -486,14 +470,14 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         # Create a commit
         _clear_notifications()
         minput = {
-            'entry': self.entry.id,
-            'text': 'This is a comment',
-            'commentType': self.genum(EntryReviewComment.CommentType.COMMENT),
-            'mentionedUsers': [user2.pk],
+            "entry": self.entry.id,
+            "text": "This is a comment",
+            "commentType": self.genum(EntryReviewComment.CommentType.COMMENT),
+            "mentionedUsers": [user2.pk],
         }
         # Need self.captureOnCommitCallbacks as this API uses transation.on_commit
         with self.captureOnCommitCallbacks(execute=True):
-            comment_id = self._query_check(minput, okay=True)['data']['project']['entryReviewCommentCreate']['result']['id']
+            comment_id = self._query_check(minput, okay=True)["data"]["project"]["entryReviewCommentCreate"]["result"]["id"]
         assert _get_comment_users_pk(comment_id) == set([user2.pk])
         assert _get_notifications_receivers() == (
             set([user2.pk]),
@@ -503,14 +487,14 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         # Create a commit (multiple mentionedUsers)
         _clear_notifications()
         minput = {
-            'entry': self.entry.id,
-            'text': 'This is a comment',
-            'commentType': self.genum(EntryReviewComment.CommentType.COMMENT),
-            'mentionedUsers': [user2.pk, user3.pk, self.qa_member_user.pk],
+            "entry": self.entry.id,
+            "text": "This is a comment",
+            "commentType": self.genum(EntryReviewComment.CommentType.COMMENT),
+            "mentionedUsers": [user2.pk, user3.pk, self.qa_member_user.pk],
         }
         # Need self.captureOnCommitCallbacks as this API uses transation.on_commit
         with self.captureOnCommitCallbacks(execute=True):
-            comment_id = self._query_check(minput, okay=True)['data']['project']['entryReviewCommentCreate']['result']['id']
+            comment_id = self._query_check(minput, okay=True)["data"]["project"]["entryReviewCommentCreate"]["result"]["id"]
         assert _get_comment_users_pk(comment_id) == set([user2.pk, user3.pk])
         assert _get_notifications_receivers() == (
             set([user2.pk, user3.pk]),
@@ -519,21 +503,22 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
 
         # Create a commit different comment_type
         for comment_type in [
-            EntryReviewComment.CommentType.VERIFY, EntryReviewComment.CommentType.UNVERIFY,
-            EntryReviewComment.CommentType.CONTROL, EntryReviewComment.CommentType.UNCONTROL,
+            EntryReviewComment.CommentType.VERIFY,
+            EntryReviewComment.CommentType.UNVERIFY,
+            EntryReviewComment.CommentType.CONTROL,
+            EntryReviewComment.CommentType.UNCONTROL,
         ]:
             _clean_comments(self.project)
             _clear_notifications()
             minput = {
-                'entry': self.entry.id,
-                'text': 'This is a comment',
-                'commentType': self.genum(comment_type),
-                'mentionedUsers': [self.qa_member_user.pk, user2.pk, user3.pk],
+                "entry": self.entry.id,
+                "text": "This is a comment",
+                "commentType": self.genum(comment_type),
+                "mentionedUsers": [self.qa_member_user.pk, user2.pk, user3.pk],
             }
             # Need self.captureOnCommitCallbacks as this API uses transation.on_commit
             with self.captureOnCommitCallbacks(execute=True):
-                comment_id = self._query_check(
-                    minput, okay=True)['data']['project']['entryReviewCommentCreate']['result']['id']
+                comment_id = self._query_check(minput, okay=True)["data"]["project"]["entryReviewCommentCreate"]["result"]["id"]
             assert _get_comment_users_pk(comment_id) == set([user2.pk, user3.pk])
             assert _get_notifications_receivers() == (
                 set([user2.pk, user3.pk]),
@@ -548,7 +533,7 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
             assert _get_notifications_receivers() == (set(), set())  # No new notifications are created
 
             _clear_notifications()
-            minput['text'] = 'this is a new comment text'
+            minput["text"] = "this is a new comment text"
             # Need self.captureOnCommitCallbacks as this API uses transation.on_commit
             with self.captureOnCommitCallbacks(execute=True):
                 self._query_check(minput, review_comment_id=comment_id, okay=True)
@@ -559,7 +544,7 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
             )  # New notifications are created
 
             _clear_notifications()
-            minput['mentionedUsers'].append(user4.pk)
+            minput["mentionedUsers"].append(user4.pk)
             # Need self.captureOnCommitCallbacks as this API uses transation.on_commit
             with self.captureOnCommitCallbacks(execute=True):
                 self._query_check(minput, review_comment_id=comment_id, okay=True)
@@ -571,13 +556,8 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
 
     def test_entry_review_comment_delete(self):
         def _query_check(review_comment_id, **kwargs):
-            variables = {'projectId': self.project.id, 'commentId': review_comment_id}
-            return self.query_check(
-                self.DELETE_ENTRY_REVIEW_COMMENT_QUERY,
-                mnested=['project'],
-                variables=variables,
-                **kwargs
-            )
+            variables = {"projectId": self.project.id, "commentId": review_comment_id}
+            return self.query_check(self.DELETE_ENTRY_REVIEW_COMMENT_QUERY, mnested=["project"], variables=variables, **kwargs)
 
         member_user2 = UserFactory.create()
         self.project.add_member(member_user2, role=self.project_role_member)
@@ -608,7 +588,9 @@ class TestQualityAssuranceMutation(GraphQLTestCase):
         self.force_login(member_user2)
         [
             (
-                _query_check(comment.pk, okay=True) if comment.comment_type == EntryReviewComment.CommentType.COMMENT
+                _query_check(comment.pk, okay=True)
+                if comment.comment_type == EntryReviewComment.CommentType.COMMENT
                 else _query_check(comment.pk, okay=False)
-            )for index, comment in enumerate(comments)
+            )
+            for index, comment in enumerate(comments)
         ]

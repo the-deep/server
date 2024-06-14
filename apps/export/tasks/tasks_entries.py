@@ -1,19 +1,19 @@
 import copy
 
-from django.db import models
-
-from deep.permissions import ProjectPermissions as PP
-from deep.filter_set import get_dummy_request
 from analysis_framework.models import Exportable
-from entry.models import Entry
-from export.models import Export
-from export.entries.excel_exporter import ExcelExporter
-from export.entries.report_exporter import ReportExporter
-from export.entries.json_exporter import JsonExporter
-from geo.models import Region
-from lead.models import Lead
-from lead.filter_set import LeadGQFilterSet
+from django.db import models
 from entry.filter_set import EntryGQFilterSet
+from entry.models import Entry
+from export.entries.excel_exporter import ExcelExporter
+from export.entries.json_exporter import JsonExporter
+from export.entries.report_exporter import ReportExporter
+from export.models import Export
+from geo.models import Region
+from lead.filter_set import LeadGQFilterSet
+from lead.models import Lead
+
+from deep.filter_set import get_dummy_request
+from deep.permissions import ProjectPermissions as PP
 
 
 def export_entries(export):
@@ -35,35 +35,35 @@ def export_entries(export):
     # Lead and Entry FilterSet needs request to work with active_project
     dummy_request = get_dummy_request(active_project=project)
     leads_qs = LeadGQFilterSet(data=filters, queryset=leads_qs, request=dummy_request).qs.prefetch_related(
-        'authors',
-        'authors__organization_type',
+        "authors",
+        "authors__organization_type",
         # Also organization parents
-        'authors__parent',
-        'authors__parent__organization_type',
+        "authors__parent",
+        "authors__parent__organization_type",
     )
     entries_qs = EntryGQFilterSet(
-        data=filters.get('entries_filter_data'),
+        data=filters.get("entries_filter_data"),
         request=dummy_request,
         queryset=Entry.objects.filter(
             project=export.project,
             analysis_framework=export.project.analysis_framework_id,
             lead__in=leads_qs,
-        )
+        ),
     ).qs
 
     # Prefetches
     entries_qs = entries_qs.prefetch_related(
-        'entrygrouplabel_set',
+        "entrygrouplabel_set",
         models.Prefetch(
-            'lead',
+            "lead",
             queryset=Lead.objects.annotate(
-                page_count=models.F('leadpreview__page_count'),
+                page_count=models.F("leadpreview__page_count"),
             ).prefetch_related(
-                'authors',
-                'authors__organization_type',
+                "authors",
+                "authors__organization_type",
                 # Also organization parents
-                'authors__parent',
-                'authors__parent__organization_type',
+                "authors__parent",
+                "authors__parent__organization_type",
             ),
         ),
     )
@@ -73,38 +73,40 @@ def export_entries(export):
     ).distinct()
     regions = Region.objects.filter(project=project).distinct()
 
-    date_format = extra_options.get('date_format')
+    date_format = extra_options.get("date_format")
 
     if export_type == Export.ExportType.EXCEL:
-        decoupled = extra_options.get('excel_decoupled', False)
-        columns = extra_options.get('excel_columns')
-        export_data = ExcelExporter(
-            export,
-            entries_qs,
-            project,
-            date_format,
-            columns=columns,
-            decoupled=decoupled,
-            is_preview=is_preview,
-        )\
-            .load_exportables(exportables, regions)\
-            .add_entries(entries_qs)\
+        decoupled = extra_options.get("excel_decoupled", False)
+        columns = extra_options.get("excel_columns")
+        export_data = (
+            ExcelExporter(
+                export,
+                entries_qs,
+                project,
+                date_format,
+                columns=columns,
+                decoupled=decoupled,
+                is_preview=is_preview,
+            )
+            .load_exportables(exportables, regions)
+            .add_entries(entries_qs)
             .export(leads_qs)
+        )
 
     elif export_type == Export.ExportType.REPORT:
         # which widget data needs to be exported along with
-        exporting_widgets = extra_options.get('report_exporting_widgets', [])
+        exporting_widgets = extra_options.get("report_exporting_widgets", [])
         report_show_attributes = dict(
-            show_lead_entry_id=extra_options.get('report_show_lead_entry_id', True),
-            show_assessment_data=extra_options.get('report_show_assessment_data', True),
-            show_entry_widget_data=extra_options.get('report_show_entry_widget_data', True),
+            show_lead_entry_id=extra_options.get("report_show_lead_entry_id", True),
+            show_assessment_data=extra_options.get("report_show_assessment_data", True),
+            show_entry_widget_data=extra_options.get("report_show_entry_widget_data", True),
         )
 
-        citation_style = extra_options.get('report_citation_style')
-        report_structure = extra_options.get('report_structure')
-        report_levels = extra_options.get('report_levels')
-        text_widget_ids = extra_options.get('report_text_widget_ids') or []
-        show_groups = extra_options.get('report_show_groups')
+        citation_style = extra_options.get("report_citation_style")
+        report_structure = extra_options.get("report_structure")
+        report_levels = extra_options.get("report_levels")
+        text_widget_ids = extra_options.get("report_text_widget_ids") or []
+        show_groups = extra_options.get("report_show_groups")
         export_data = (
             ReportExporter(
                 date_format,
@@ -112,7 +114,8 @@ def export_entries(export):
                 exporting_widgets=exporting_widgets,
                 is_preview=is_preview,
                 **report_show_attributes,
-            ).load_exportables(exportables, regions)
+            )
+            .load_exportables(exportables, regions)
             .load_levels(report_levels)
             .load_structure(report_structure)
             .load_group_lables(entries_qs, show_groups)
@@ -122,14 +125,9 @@ def export_entries(export):
         )
 
     elif export_type == Export.ExportType.JSON:
-        export_data = JsonExporter(is_preview=is_preview)\
-            .load_exportables(exportables)\
-            .add_entries(entries_qs)\
-            .export()
+        export_data = JsonExporter(is_preview=is_preview).load_exportables(exportables).add_entries(entries_qs).export()
 
     else:
-        raise Exception(
-            '(Entries Export) Unkown Export Type Provided: {export_type} for Export: {export.id}'
-        )
+        raise Exception("(Entries Export) Unkown Export Type Provided: {export_type} for Export: {export.id}")
 
     return export_data

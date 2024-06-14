@@ -1,52 +1,41 @@
 from django.db import models
-
-from rest_framework import (
-    permissions,
-    viewsets,
-)
+from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 
-from deep.permissions import (
-    ModifyPermission,
-    IsUserGroupMember
-)
+from deep.permissions import IsUserGroupMember, ModifyPermission
 from utils.db.functions import StrPos
-from .models import (
-    GroupMembership,
-    UserGroup,
-)
-from .serializers import (
-    GroupMembershipSerializer,
-    UserGroupSerializer,
-)
+
+from .models import GroupMembership, UserGroup
+from .serializers import GroupMembershipSerializer, UserGroupSerializer
 
 
 class UserGroupViewSet(viewsets.ModelViewSet):
     serializer_class = UserGroupSerializer
-    permission_classes = [permissions.IsAuthenticated,
-                          ModifyPermission]
+    permission_classes = [permissions.IsAuthenticated, ModifyPermission]
 
     def get_queryset(self):
         return UserGroup.get_for(self.request.user)
 
     @action(
-        detail=False, permission_classes=[permissions.IsAuthenticated],
+        detail=False,
+        permission_classes=[permissions.IsAuthenticated],
         serializer_class=UserGroupSerializer,
-        url_path='member-of',
+        url_path="member-of",
     )
     def get_for_member(self, request, version=None):
-        user = self.request.GET.get('user', self.request.user)
+        user = self.request.GET.get("user", self.request.user)
         user_groups = UserGroup.get_for_member(user).annotate(
             members_count=models.functions.Coalesce(
                 models.Subquery(
-                    GroupMembership.objects.filter(
-                        group=models.OuterRef('pk')
-                    ).order_by().values('group').annotate(count=models.Count(
-                        'member',
-                        distinct=True))
-                    .values('count')[:1],
+                    GroupMembership.objects.filter(group=models.OuterRef("pk"))
+                    .order_by()
+                    .values("group")
+                    .annotate(count=models.Count("member", distinct=True))
+                    .values("count")[:1],
                     output_field=models.IntegerField(),
-                ), 0)
+                ),
+                0,
+            )
         )
         self.page = self.paginate_queryset(user_groups)
         serializer = self.get_serializer(self.page, many=True)
@@ -56,7 +45,7 @@ class UserGroupViewSet(viewsets.ModelViewSet):
         detail=True,
         permission_classes=[permissions.IsAuthenticated, IsUserGroupMember],
         serializer_class=GroupMembershipSerializer,
-        url_path='memberships',
+        url_path="memberships",
     )
     def get_usergroup_member(self, request, pk, version=None):
         user_group = self.get_object()
@@ -69,36 +58,33 @@ class UserGroupViewSet(viewsets.ModelViewSet):
         queryset = super().filter_queryset(queryset)
 
         # Check if project exclusion query is present
-        exclude_project = self.request.query_params.get(
-            'members_exclude_project')
+        exclude_project = self.request.query_params.get("members_exclude_project")
         if exclude_project:
-            queryset = queryset.filter(
-                ~models.Q(projectusergroupmembership__project=exclude_project)
-            ).distinct()
+            queryset = queryset.filter(~models.Q(projectusergroupmembership__project=exclude_project)).distinct()
 
-        search_str = self.request.query_params.get('search')
+        search_str = self.request.query_params.get("search")
         if search_str is None or not search_str.strip():
             return queryset
 
-        return queryset.annotate(
-            strpos=StrPos(
-                models.functions.Lower('title'),
-                models.Value(search_str.lower(), models.CharField())
+        return (
+            queryset.annotate(
+                strpos=StrPos(models.functions.Lower("title"), models.Value(search_str.lower(), models.CharField()))
             )
-        ).filter(strpos__gte=1).order_by('strpos')
+            .filter(strpos__gte=1)
+            .order_by("strpos")
+        )
 
 
 class GroupMembershipViewSet(viewsets.ModelViewSet):
     serializer_class = GroupMembershipSerializer
-    permission_classes = [permissions.IsAuthenticated,
-                          ModifyPermission]
+    permission_classes = [permissions.IsAuthenticated, ModifyPermission]
 
     def get_serializer(self, *args, **kwargs):
-        data = kwargs.get('data')
-        list = data and data.get('list')
+        data = kwargs.get("data")
+        list = data and data.get("list")
         if list:
-            kwargs.pop('data')
-            kwargs.pop('many', None)
+            kwargs.pop("data")
+            kwargs.pop("many", None)
             return super().get_serializer(
                 data=list,
                 many=True,
@@ -111,13 +97,15 @@ class GroupMembershipViewSet(viewsets.ModelViewSet):
         )
 
     def finalize_response(self, request, response, *args, **kwargs):
-        if request.method == 'POST' and isinstance(response.data, list):
+        if request.method == "POST" and isinstance(response.data, list):
             response.data = {
-                'results': response.data,
+                "results": response.data,
             }
         return super().finalize_response(
-            request, response,
-            *args, **kwargs,
+            request,
+            response,
+            *args,
+            **kwargs,
         )
 
     def get_queryset(self):

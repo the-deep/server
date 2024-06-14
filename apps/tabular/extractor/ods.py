@@ -1,10 +1,11 @@
-import pyexcel_ods
-from datetime import datetime
 import logging
+from datetime import datetime
 
-from ..models import Sheet, Field
+import pyexcel_ods
 
 from utils.common import LogTime
+
+from ..models import Field, Sheet
 
 logger = logging.getLogger(__name__)
 
@@ -19,15 +20,15 @@ def extract(book):
         workbook = pyexcel_ods.get_data(ods_file)
         for sheet_key in workbook:
             wb_sheet = workbook[sheet_key]
-            sheet_options = options.get('sheets', {}).get(str(sheet_key), {})
-            if sheet_options.get('skip', False):
+            sheet_options = options.get("sheets", {}).get(str(sheet_key), {})
+            if sheet_options.get("skip", False):
                 continue
             sheet = Sheet.objects.create(
                 title=sheet_key,
                 book=book,
             )
-            header_index = sheet_options.get('header_row', 1) - 1
-            no_headers = sheet_options.get('no_headers', False)
+            header_index = sheet_options.get("header_row", 1) - 1
+            no_headers = sheet_options.get("no_headers", False)
             data_index = header_index + 1
 
             if no_headers:
@@ -41,15 +42,10 @@ def extract(book):
             for value in header_row:
                 fields.append(
                     Field(
-                        title=(value if not no_headers
-                               else 'Column ' + str(ordering)),
+                        title=(value if not no_headers else "Column " + str(ordering)),
                         sheet=sheet,
                         ordering=ordering,
-                        data=[{
-                            'value': value,
-                            'empty': False,
-                            'invalid': False
-                        }]
+                        data=[{"value": value, "empty": False, "invalid": False}],
                     )
                 )
                 ordering += 1
@@ -64,11 +60,7 @@ def extract(book):
                         value = _row[index]
                         if isinstance(value, (datetime, date_type)):
                             value = _row[index].isoformat()
-                        field_data.append({
-                            'value': value,
-                            'empty': False,
-                            'invalid': False
-                        })
+                        field_data.append({"value": value, "empty": False, "invalid": False})
                         fields_data[field.id] = field_data
                 except Exception:
                     pass
@@ -76,7 +68,7 @@ def extract(book):
             # Save field
             for field in sheet.field_set.all():
                 field.data.extend(fields_data.get(field.id, []))
-                block_name = 'Field Save ods extract {}'.format(field.title)
+                block_name = "Field Save ods extract {}".format(field.title)
                 with LogTime(block_name=block_name):
                     field.save()
 

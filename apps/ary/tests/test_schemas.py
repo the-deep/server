@@ -1,16 +1,15 @@
-from utils.graphene.tests import GraphQLTestCase
-
-from lead.models import Lead
-
 from ary.factories import AssessmentFactory
-from project.factories import ProjectFactory
 from lead.factories import LeadFactory
+from lead.models import Lead
+from project.factories import ProjectFactory
 from user.factories import UserFactory
+
+from utils.graphene.tests import GraphQLTestCase
 
 
 class TestAssessmentQuery(GraphQLTestCase):
     def test_assessment_query(self):
-        query = '''
+        query = """
               query MyQuery ($id: ID!) {
                 project(id: $id) {
                   assessments(ordering: "id") {
@@ -34,7 +33,7 @@ class TestAssessmentQuery(GraphQLTestCase):
                   }
                 }
               }
-        '''
+        """
         project1 = ProjectFactory.create()
         project2 = ProjectFactory.create()
         member_user = UserFactory.create()
@@ -54,23 +53,23 @@ class TestAssessmentQuery(GraphQLTestCase):
 
         # -- non member user (Project 1)
         self.force_login(non_member_user)
-        content = self.query_check(query, variables={'id': project1.id})
-        self.assertEqual(content['data']['project']['assessments']['totalCount'], 0)
-        self.assertListIds(content['data']['project']['assessments']['results'], [], content)
+        content = self.query_check(query, variables={"id": project1.id})
+        self.assertEqual(content["data"]["project"]["assessments"]["totalCount"], 0)
+        self.assertListIds(content["data"]["project"]["assessments"]["results"], [], content)
 
         # -- non confidential member user (Project 1)
         self.force_login(non_confidential_member_user)
-        content = self.query_check(query, variables={'id': project1.id})
-        self.assertEqual(content['data']['project']['assessments']['totalCount'], 1)
-        self.assertListIds(content['data']['project']['assessments']['results'], [ary2], content)
+        content = self.query_check(query, variables={"id": project1.id})
+        self.assertEqual(content["data"]["project"]["assessments"]["totalCount"], 1)
+        self.assertListIds(content["data"]["project"]["assessments"]["results"], [ary2], content)
 
         # -- member user (Project 1)
         self.force_login(member_user)
-        content = self.query_check(query, variables={'id': project1.id})
-        self.assertEqual(content['data']['project']['assessments']['totalCount'], 2)
-        self.assertListIds(content['data']['project']['assessments']['results'], [ary1, ary2], content)
+        content = self.query_check(query, variables={"id": project1.id})
+        self.assertEqual(content["data"]["project"]["assessments"]["totalCount"], 2)
+        self.assertListIds(content["data"]["project"]["assessments"]["results"], [ary1, ary2], content)
 
         # -- member user (Project 2)
-        content = self.query_check(query, variables={'id': project2.id})
-        self.assertEqual(content['data']['project']['assessments']['totalCount'], 1)
-        self.assertEqual(content['data']['project']['assessments']['results'][0]['id'], str(ary3.id))
+        content = self.query_check(query, variables={"id": project2.id})
+        self.assertEqual(content["data"]["project"]["assessments"]["totalCount"], 1)
+        self.assertEqual(content["data"]["project"]["assessments"]["results"][0]["id"], str(ary3.id))

@@ -1,38 +1,30 @@
 import graphene
+from django.core.exceptions import PermissionDenied
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
-from django.core.exceptions import PermissionDenied
 
 from deep.permissions import AnalysisFrameworkPermissions as AfP
-
 from utils.graphene.mutation import (
-    generate_input_type_for_serializer,
-    GrapheneMutation,
-    AfGrapheneMutation,
     AfBulkGrapheneMutation,
+    AfGrapheneMutation,
+    GrapheneMutation,
+    generate_input_type_for_serializer,
 )
 
-from .models import (
-    AnalysisFramework,
-    AnalysisFrameworkMembership,
-)
+from .models import AnalysisFramework, AnalysisFrameworkMembership
+from .schema import AnalysisFrameworkDetailType, AnalysisFrameworkMembershipType
+from .serializers import AnalysisFrameworkGqlSerializer as AnalysisFrameworkSerializer
 from .serializers import (
-    AnalysisFrameworkGqlSerializer as AnalysisFrameworkSerializer,
     AnalysisFrameworkMembershipGqlSerializer as AnalysisFrameworkMembershipSerializer,
 )
-from .schema import (
-    AnalysisFrameworkDetailType,
-    AnalysisFrameworkMembershipType,
-)
-
 
 AnalysisFrameworkInputType = generate_input_type_for_serializer(
-    'AnalysisFrameworkInputType',
+    "AnalysisFrameworkInputType",
     serializer_class=AnalysisFrameworkSerializer,
 )
 
 AnalysisFrameworkMembershipInputType = generate_input_type_for_serializer(
-    'AnalysisFrameworkMembershipInputType',
+    "AnalysisFrameworkMembershipInputType",
     serializer_class=AnalysisFrameworkMembershipSerializer,
 )
 
@@ -64,7 +56,7 @@ class UpdateAnalysisFramework(AfGrapheneMutation):
 
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
-        kwargs['id'] = info.context.active_af.id
+        kwargs["id"] = info.context.active_af.id
         return super().perform_mutate(root, info, **kwargs)
 
 
@@ -100,13 +92,14 @@ class AnalysisFrameworkMutationType(DjangoObjectType):
     """
     This mutation is for other scoped objects
     """
+
     analysis_framework_update = UpdateAnalysisFramework.Field()
     analysis_framework_membership_bulk = BulkUpdateAnalysisFrameworkMembership.Field()
 
     class Meta:
         model = AnalysisFramework
         skip_registry = True
-        fields = ('id', 'title')
+        fields = ("id", "title")
 
     @staticmethod
     def get_custom_node(_, info, id):

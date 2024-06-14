@@ -1,11 +1,6 @@
-from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_delete
-
-from project.models import (
-    Project,
-    ProjectMembership,
-    ProjectUserGroupMembership,
-)
+from django.dispatch import receiver
+from project.models import Project, ProjectMembership, ProjectUserGroupMembership
 from user_group.models import GroupMembership
 
 
@@ -25,7 +20,7 @@ def refresh_group_membership_updated(sender, instance, **kwargs):
         )
 
         # Create memberships, only if this is not signal from delete
-        if kwargs.get('delete', False) is False:
+        if kwargs.get("delete", False) is False:
             project_members = project.get_all_members()
             new_users = user_group_members.difference(project_members)
             for user in new_users:
@@ -42,9 +37,7 @@ def refresh_group_membership_updated(sender, instance, **kwargs):
         ).exclude(member__in=user_group_members)
 
         for membership in remove_memberships:
-            other_user_groups = membership.get_user_group_options().exclude(
-                id=user_group.id
-            )
+            other_user_groups = membership.get_user_group_options().exclude(id=user_group.id)
             if other_user_groups.count() > 0:
                 membership.linked_group = other_user_groups.first()
                 membership.save()
@@ -70,9 +63,7 @@ def refresh_group_membership_deleted(sender, instance, **kwargs):
         if not membership:
             continue
 
-        other_user_groups = membership.get_user_group_options().exclude(
-            id=user_group.id
-        )
+        other_user_groups = membership.get_user_group_options().exclude(id=user_group.id)
         if other_user_groups.count() > 0:
             membership.linked_group = other_user_groups.first()
             membership.save()

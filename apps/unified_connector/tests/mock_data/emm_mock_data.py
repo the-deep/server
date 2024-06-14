@@ -1,6 +1,6 @@
 import datetime
 
-EMM_MOCK_DATA_RAW = '''<?xml version="1.0" encoding="utf-8" ?>
+EMM_MOCK_DATA_RAW = """<?xml version="1.0" encoding="utf-8" ?>
 <rss xmlns:emm="http://emm.jrc.it" xmlns:iso="http://www.iso.org/3166" xmlns:georss="http://www.georss.org/georss" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0">
 <channel>
 <title>Latest news clusters for en</title>
@@ -83,15 +83,17 @@ EMM_MOCK_DATA_RAW = '''<?xml version="1.0" encoding="utf-8" ?>
 </item>
 </channel>
 </rss>
-'''.encode('utf-8')
+""".encode(
+    "utf-8"
+)
 
 EMM_PARAMS = {
-    'feed-url': "test-url",
-    'url-field': 'link',
-    'date-field': 'pubDate',
-    'source-field': 'source',
-    'author-field': 'source',
-    'title-field': 'title',
+    "feed-url": "test-url",
+    "url-field": "link",
+    "date-field": "pubDate",
+    "source-field": "source",
+    "author-field": "source",
+    "title-field": "title",
 }
 
 EMM_MOCK_EXCEPTED_LEADS = [
@@ -99,24 +101,24 @@ EMM_MOCK_EXCEPTED_LEADS = [
         "url": "https://www.heraldsun.com.au/business/rba-governor-says-he-doesnt-see-a-recession-on-the-horizon/video/56f4558c345418ad2964232cdbd06ca7?nk=0ad220a3bbd23f948b26d2da2bb5ac09-1655775162",
         "published_on": datetime.date(2022, 6, 21),
         "title": "RBA Governor says he ‘doesn’t see a recession on the horizon’",
-        "source_type": 'emm',
-        'author_raw': 'heraldsun',
-        'source_raw': 'heraldsun',
+        "source_type": "emm",
+        "author_raw": "heraldsun",
+        "source_raw": "heraldsun",
     },
     {
         "url": "https://www.business-standard.com/article/current-affairs/goyal-calls-for-digital-media-use-for-speedy-consumer-complaint-redressal-122062100114_1.html",
         "published_on": datetime.date(2022, 6, 21),
         "title": "Goyal calls for digital media use for speedy consumer complaint redressal",
-        "source_type": 'emm',
-        'author_raw': 'business-standard',
-        'source_raw': 'business-standard',
+        "source_type": "emm",
+        "author_raw": "business-standard",
+        "source_raw": "business-standard",
     },
     {
         "url": "https://www.longbeachstar.com/news/272592709/top-saints-laud-pm-modi-in-karnataka-mysuru",
         "published_on": datetime.date(2022, 6, 21),
         "title": "Top saints laud PM Modi in Karnataka's Mysuru",
-        "source_type": 'emm',
-        'author_raw': 'longbeachstar',
-        'source_raw': 'longbeachstar',
-    }
+        "source_type": "emm",
+        "author_raw": "longbeachstar",
+        "source_raw": "longbeachstar",
+    },
 ]

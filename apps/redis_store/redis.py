@@ -2,16 +2,15 @@ import redis
 
 from deep.celery import app as celery_app
 
-
 """
 Redis connection pool
 """
 pool = None
 
 SSL_REQ_MAP = {
-    'CERT_NONE': 'none',
-    'CERT_OPTIONAL': 'optional',
-    'CERT_REQUIRED': 'required',
+    "CERT_NONE": "none",
+    "CERT_OPTIONAL": "optional",
+    "CERT_REQUIRED": "required",
 }
 
 
@@ -25,7 +24,7 @@ def init():
     kconn = celery_app.connection()
     url = kconn.as_uri(include_password=True)
     ssl = kconn.ssl
-    if ssl is not False and 'ssl_cert_reqs' in ssl:
+    if ssl is not False and "ssl_cert_reqs" in ssl:
         url += f"?ssl_cert_reqs:{SSL_REQ_MAP.get(ssl['ssl_cert_reqs'].name, 'optional')}"
     pool = redis.ConnectionPool.from_url(url=url)
 

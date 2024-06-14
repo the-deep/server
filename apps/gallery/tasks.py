@@ -1,14 +1,12 @@
-import reversion
 import logging
-from redis_store import redis
-from celery import shared_task
 
-from utils.extractor.file_document import FileDocument
+import reversion
+from celery import shared_task
+from gallery.models import File, FilePreview
+from redis_store import redis
+
 from utils.common import sanitize_text
-from gallery.models import (
-    File,
-    FilePreview,
-)
+from utils.extractor.file_document import FileDocument
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +18,7 @@ def _extract_from_file_core(file_preview_id):
     files = File.objects.filter(id__in=file_preview.file_ids)
 
     with reversion.create_revision():
-        all_text = ''
+        all_text = ""
 
         for i, file in enumerate(files):
             try:
@@ -32,10 +30,10 @@ def _extract_from_file_core(file_preview_id):
                 text = sanitize_text(text)
 
                 if i != 0:
-                    all_text += '\n\n'
+                    all_text += "\n\n"
                 all_text += text
             except Exception:
-                logger.error('gallery._extract_from_file_core', exc_info=True)
+                logger.error("gallery._extract_from_file_core", exc_info=True)
                 continue
         if all_text:
             file_preview.text = all_text
@@ -47,7 +45,7 @@ def _extract_from_file_core(file_preview_id):
 
 @shared_task
 def extract_from_file(file_preview_id):
-    key = 'file_extraction_{}'.format(file_preview_id)
+    key = "file_extraction_{}".format(file_preview_id)
     lock = redis.get_lock(key, 60 * 60 * 24)  # Lock lifetime 24 hours
     have_lock = lock.acquire(blocking=False)
     if not have_lock:
@@ -56,7 +54,7 @@ def extract_from_file(file_preview_id):
     try:
         return_value = _extract_from_file_core(file_preview_id)
     except Exception:
-        logger.error('gallery.extract_from_file', exc_info=True)
+        logger.error("gallery.extract_from_file", exc_info=True)
         return_value = False
 
     lock.release()

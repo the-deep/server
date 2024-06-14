@@ -1,11 +1,11 @@
-import requests
 import json
 
-from lead.models import Lead
-from .base import Source
+import requests
 from connector.utils import ConnectorWrapper
-
 from django.conf import settings
+from lead.models import Lead
+
+from .base import Source
 
 # NOTE: Generated using scripts/list_relief_web_countries.sh
 COUNTRIES_LIST = [
@@ -271,43 +271,35 @@ COUNTRIES = [
 
 
 def _format_date(datestr):
-    return datestr + 'T00:00:00+00:00'
+    return datestr + "T00:00:00+00:00"
 
 
 @ConnectorWrapper
 class ReliefWeb(Source):
-    URL = f'https://api.reliefweb.int/v1/reports?appname={settings.RELIEFWEB_APPNAME}'
-    title = 'ReliefWeb Reports'
-    key = 'relief-web'
+    URL = f"https://api.reliefweb.int/v1/reports?appname={settings.RELIEFWEB_APPNAME}"
+    title = "ReliefWeb Reports"
+    key = "relief-web"
     options = [
         {
-            'key': 'primary-country',
-            'field_type': 'select',
-            'title': 'Primary Country',
-            'options': COUNTRIES,
+            "key": "primary-country",
+            "field_type": "select",
+            "title": "Primary Country",
+            "options": COUNTRIES,
         },
         {
-            'key': 'country',
-            'field_type': 'select',
-            'title': 'Country',
-            'options': COUNTRIES,
+            "key": "country",
+            "field_type": "select",
+            "title": "Country",
+            "options": COUNTRIES,
         },
-        {
-            'key': 'from',
-            'field_type': 'date',
-            'title': 'Reports since'
-        },
-        {
-            'key': 'to',
-            'field_type': 'date',
-            'title': 'Reports until'
-        }
+        {"key": "from", "field_type": "date", "title": "Reports since"},
+        {"key": "to", "field_type": "date", "title": "Reports until"},
     ]
     filters = [
         {
-            'key': 'search',
-            'field_type': 'string',
-            'title': 'Search',
+            "key": "search",
+            "field_type": "string",
+            "title": "Search",
         },
     ]
 
@@ -318,46 +310,42 @@ class ReliefWeb(Source):
     def parse_filter_params(self, params):
         filters = []
 
-        if params.get('country'):
-            filters.append({'field': 'country.iso3', 'value': params['country']})
-        if params.get('primary-country'):
-            filters.append({'field': 'primary_country.iso3', 'value': params['primary-country']})
+        if params.get("country"):
+            filters.append({"field": "country.iso3", "value": params["country"]})
+        if params.get("primary-country"):
+            filters.append({"field": "primary_country.iso3", "value": params["primary-country"]})
 
         date_filter = {}
         # If date is obtained, it must be formatted to the ISO string with timezone info
         # the _format_date just appends 00:00:00 Time and +00:00 tz info
-        if params.get('from'):
-            date_filter['from'] = _format_date(params['from'])
-        if params.get('to'):
-            date_filter["to"] = _format_date(params['to'])
+        if params.get("from"):
+            date_filter["from"] = _format_date(params["from"])
+        if params.get("to"):
+            date_filter["to"] = _format_date(params["to"])
         if date_filter:
-            filters.append({'field': 'date.original', 'value': date_filter})
+            filters.append({"field": "date.original", "value": date_filter})
 
         if filters:
-            return {'operator': 'AND', 'conditions': filters}
+            return {"operator": "AND", "conditions": filters}
         return {}
 
     def fetch(self, params):
         results = []
 
         post_params = {}
-        post_params['fields'] = {
-            'include': [
-                'url_alias', 'title', 'date.original', 'file', 'source', 'source.homepage'
-            ]
-        }
+        post_params["fields"] = {"include": ["url_alias", "title", "date.original", "file", "source", "source.homepage"]}
 
-        post_params['filter'] = self.parse_filter_params(params)
+        post_params["filter"] = self.parse_filter_params(params)
 
-        if params.get('search'):
-            post_params['query'] = {
-                'value': params['search'],
-                'fields': ['title'],
-                'operator': 'AND',
+        if params.get("search"):
+            post_params["query"] = {
+                "value": params["search"],
+                "fields": ["title"],
+                "operator": "AND",
             }
 
-        post_params['limit'] = 1000
-        post_params['sort'] = ['date.original:desc', 'title:asc']
+        post_params["limit"] = 1000
+        post_params["sort"] = ["date.original:desc", "title:asc"]
 
         relief_url = self.URL
         total_count = 0
@@ -365,23 +353,23 @@ class ReliefWeb(Source):
         while relief_url is not None:
             content = self.get_content(relief_url, post_params)
             resp = json.loads(content)
-            total_count += resp['totalCount']
+            total_count += resp["totalCount"]
 
-            for datum in resp['data']:
-                fields = datum['fields']
-                url = fields['file'][0]['url'] if fields.get('file') else fields['url_alias']
-                title = fields['title']
-                published_on = (fields.get('date') or {}).get('original')
-                author = ((fields.get('source') or [{}])[0] or {}).get('name')
+            for datum in resp["data"]:
+                fields = datum["fields"]
+                url = fields["file"][0]["url"] if fields.get("file") else fields["url_alias"]
+                title = fields["title"]
+                published_on = (fields.get("date") or {}).get("original")
+                author = ((fields.get("source") or [{}])[0] or {}).get("name")
                 lead = {
-                    'id': str(datum['id']),
-                    'title': title,
-                    'published_on': published_on,
-                    'url': url,
-                    'source': 'reliefweb',
-                    'source_type': Lead.SourceType.WEBSITE.value,
-                    'author': author,
+                    "id": str(datum["id"]),
+                    "title": title,
+                    "published_on": published_on,
+                    "url": url,
+                    "source": "reliefweb",
+                    "source_type": Lead.SourceType.WEBSITE.value,
+                    "author": author,
                 }
                 results.append(lead)
-            relief_url = ((resp.get('links') or {}).get('next') or {}).get('href')
+            relief_url = ((resp.get("links") or {}).get("next") or {}).get("href")
         return results, total_count

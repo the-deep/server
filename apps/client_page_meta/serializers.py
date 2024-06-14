@@ -6,4 +6,4 @@ from .models import Page
 class PageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Page
-        fields = ('__all__')
+        fields = "__all__"

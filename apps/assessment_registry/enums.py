@@ -4,118 +4,113 @@ from utils.graphene.enums import (
 )
 
 from .models import (
-    AssessmentRegistry,
-    MethodologyAttribute,
     AdditionalDocument,
-    Summary,
-    SummaryIssue,
-    SummaryFocus,
-    ScoreRating,
-    ScoreAnalyticalDensity,
-    Question,
-    SummarySubDimensionIssue,
+    AssessmentRegistry,
     AssessmentRegistryOrganization,
+    MethodologyAttribute,
+    Question,
+    ScoreAnalyticalDensity,
+    ScoreRating,
+    Summary,
+    SummaryFocus,
+    SummaryIssue,
+    SummarySubDimensionIssue,
 )
-
 
 AssessmentRegistryCrisisTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.CrisisType, name='AssessmentRegistryCrisisTypeEnum'
+    AssessmentRegistry.CrisisType, name="AssessmentRegistryCrisisTypeEnum"
 )
 AssessmentRegistryPreparednessTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.PreparednessType, name='AssessmentRegistryPreparednessTypeEnum'
+    AssessmentRegistry.PreparednessType, name="AssessmentRegistryPreparednessTypeEnum"
 )
 AssessmentRegistryExternalSupportTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.ExternalSupportType, name='AssessmentRegistryExternalTypeEnum'
+    AssessmentRegistry.ExternalSupportType, name="AssessmentRegistryExternalTypeEnum"
 )
 AssessmentRegistryCoordinationTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.CoordinationType, name='AssessmentRegistryCoordinationTypeEnum'
+    AssessmentRegistry.CoordinationType, name="AssessmentRegistryCoordinationTypeEnum"
 )
-AssessmentRegistryDetailTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.Type, name='AssessmentRegistryDetailTypeEnum'
-)
+AssessmentRegistryDetailTypeEnum = convert_enum_to_graphene_enum(AssessmentRegistry.Type, name="AssessmentRegistryDetailTypeEnum")
 AssessmentRegistryFamilyTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.FamilyType, name='AssessmentRegistryFamilyTypeEnum'
+    AssessmentRegistry.FamilyType, name="AssessmentRegistryFamilyTypeEnum"
 )
 AssessmentRegistryFrequencyTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.FrequencyType, name='AssessmentRegistryFrequencyTypeEnum'
+    AssessmentRegistry.FrequencyType, name="AssessmentRegistryFrequencyTypeEnum"
 )
 AssessmentRegistryConfidentialityTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.ConfidentialityType, name='AssessmentRegistryConfidentialityTypeEnum'
+    AssessmentRegistry.ConfidentialityType, name="AssessmentRegistryConfidentialityTypeEnum"
 )
 AssessmentRegistryLanguageTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.Language, name='AssessmentRegistryLanguageTypeEnum'
+    AssessmentRegistry.Language, name="AssessmentRegistryLanguageTypeEnum"
 )
 AssessmentRegistryFocusTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.FocusType, name='AssessmentRegistryFocusTypeEnum'
+    AssessmentRegistry.FocusType, name="AssessmentRegistryFocusTypeEnum"
 )
 AssessmentRegistrySectorTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.SectorType, name='AssessmentRegistrySectorTypeEnum'
+    AssessmentRegistry.SectorType, name="AssessmentRegistrySectorTypeEnum"
 )
 AssessmentRegistryProtectionInfoTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.ProtectionInfoType, name='AssessmentRegistryProtectionInfoTypeEnum'
+    AssessmentRegistry.ProtectionInfoType, name="AssessmentRegistryProtectionInfoTypeEnum"
 )
 AssessmentRegistryProtectionRiskTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.ProtectionRiskType, name='AssessmentRegistryProtectionRiskTypeEnum'
+    AssessmentRegistry.ProtectionRiskType, name="AssessmentRegistryProtectionRiskTypeEnum"
 )
 AssessmentRegistryStatusTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.StatusType, name='AssessmentRegistryStatusTypeEnum'
+    AssessmentRegistry.StatusType, name="AssessmentRegistryStatusTypeEnum"
 )
 AssessmentRegistryAffectedGroupTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistry.AffectedGroupType, name='AssessmentRegistryAffectedGroupTypeEnum'
+    AssessmentRegistry.AffectedGroupType, name="AssessmentRegistryAffectedGroupTypeEnum"
 )
 AssessmentRegistryDataCollectionTechniqueTypeEnum = convert_enum_to_graphene_enum(
-    MethodologyAttribute.CollectionTechniqueType, name='AssessmentRegistryDataCollectionTechniqueTypeEnum'
+    MethodologyAttribute.CollectionTechniqueType, name="AssessmentRegistryDataCollectionTechniqueTypeEnum"
 )
 AssessmentRegistrySamplingApproachTypeEnum = convert_enum_to_graphene_enum(
-    MethodologyAttribute.SamplingApproachType, name='AssessmentRegistrySamplingApproachTypeEnum'
+    MethodologyAttribute.SamplingApproachType, name="AssessmentRegistrySamplingApproachTypeEnum"
 )
 AssessmentRegistryProximityTypeEnum = convert_enum_to_graphene_enum(
-    MethodologyAttribute.ProximityType, name='AssessmentRegistryProximityTypeEnum'
+    MethodologyAttribute.ProximityType, name="AssessmentRegistryProximityTypeEnum"
 )
 AssessmentRegistryUnitOfAnalysisTypeEnum = convert_enum_to_graphene_enum(
-    MethodologyAttribute.UnitOfAnalysisType, name='AssessmentRegistryUnitOfAnalysisTypeEnum'
+    MethodologyAttribute.UnitOfAnalysisType, name="AssessmentRegistryUnitOfAnalysisTypeEnum"
 )
 AssessmentRegistryUnitOfReportingTypeEnum = convert_enum_to_graphene_enum(
-    MethodologyAttribute.UnitOfReportingType, name='AssessmentRegistryUnitOfReportingTypeEnum'
+    MethodologyAttribute.UnitOfReportingType, name="AssessmentRegistryUnitOfReportingTypeEnum"
 )
 AssessmentRegistryDocumentTypeEnum = convert_enum_to_graphene_enum(
-    AdditionalDocument.DocumentType, name='AssessmentRegistryDocumentTypeEnum'
+    AdditionalDocument.DocumentType, name="AssessmentRegistryDocumentTypeEnum"
 )
 AssessmentRegistryScoreCriteriaTypeEnum = convert_enum_to_graphene_enum(
-    ScoreRating.ScoreCriteria, name='AssessmentRegistryScoreCriteriaTypeEnum'
+    ScoreRating.ScoreCriteria, name="AssessmentRegistryScoreCriteriaTypeEnum"
 )
 AssessmentRegistryScoreAnalyticalStatementTypeEnum = convert_enum_to_graphene_enum(
-    ScoreRating.AnalyticalStatement, name='AssessmentRegistryScoreAnalyticalStatementTypeEnum'
+    ScoreRating.AnalyticalStatement, name="AssessmentRegistryScoreAnalyticalStatementTypeEnum"
 )
 AssessmentRegistryAnalysisLevelTypeEnum = convert_enum_to_graphene_enum(
-    ScoreAnalyticalDensity.AnalysisLevelCovered, name='AssessmentRegistryAnalysisLevelTypeEnum'
+    ScoreAnalyticalDensity.AnalysisLevelCovered, name="AssessmentRegistryAnalysisLevelTypeEnum"
 )
 AssessmentRegistryAnalysisFigureTypeEnum = convert_enum_to_graphene_enum(
-    ScoreAnalyticalDensity.FigureProvidedByAssessment, name='AssessmentRegistryAnalysisFigureTypeEnum'
+    ScoreAnalyticalDensity.FigureProvidedByAssessment, name="AssessmentRegistryAnalysisFigureTypeEnum"
 )
-AssessmentRegistryRatingTypeEnum = convert_enum_to_graphene_enum(
-    ScoreRating.RatingType, name='AssessmentRegistryRatingType'
-)
+AssessmentRegistryRatingTypeEnum = convert_enum_to_graphene_enum(ScoreRating.RatingType, name="AssessmentRegistryRatingType")
 AssessmentRegistryCNAQuestionSectorTypeEnum = convert_enum_to_graphene_enum(
-    Question.QuestionSector, name='AssessmentRegistryCNAQuestionSectorTypeEnum'
+    Question.QuestionSector, name="AssessmentRegistryCNAQuestionSectorTypeEnum"
 )
 AssessmentRegistryCNAQuestionSubSectorTypeEnum = convert_enum_to_graphene_enum(
-    Question.QuestionSubSector, name='AssessmentRegistryCNAQuestionSubSectorTypeEnum'
+    Question.QuestionSubSector, name="AssessmentRegistryCNAQuestionSubSectorTypeEnum"
 )
 AssessmentRegistrySummaryPillarTypeEnum = convert_enum_to_graphene_enum(
-    Summary.Pillar, name='AssessmentRegistrySummaryPillarTypeEnum'
+    Summary.Pillar, name="AssessmentRegistrySummaryPillarTypeEnum"
 )
 AssessmentRegistrySummaryFocusDimensionTypeEnum = convert_enum_to_graphene_enum(
-    SummaryFocus.Dimension, name='AssessmentRegistrySummaryFocusDimensionTypeEnum'
+    SummaryFocus.Dimension, name="AssessmentRegistrySummaryFocusDimensionTypeEnum"
 )
 AssessmentRegistrySummarySubDimensionTypeEnum = convert_enum_to_graphene_enum(
-    SummaryIssue.SubDimension, name='AssessmentRegistrySummarySubDimensionTypeEnum'
+    SummaryIssue.SubDimension, name="AssessmentRegistrySummarySubDimensionTypeEnum"
 )
 AssessmentRegistrySummarySubPillarTypeEnum = convert_enum_to_graphene_enum(
-    SummaryIssue.SubPillar, name='AssessmentRegistrySummarySubPillarTypeEnum'
+    SummaryIssue.SubPillar, name="AssessmentRegistrySummarySubPillarTypeEnum"
 )
 AssessmentRegistryOrganizationTypeEnum = convert_enum_to_graphene_enum(
-    AssessmentRegistryOrganization.Type, name='AssessmentRegistryOrganizationTypeEnum'
+    AssessmentRegistryOrganization.Type, name="AssessmentRegistryOrganizationTypeEnum"
 )
 enum_map = {
     get_enum_name_from_django_field(field): enum
