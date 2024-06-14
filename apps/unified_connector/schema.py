@@ -1,33 +1,34 @@
-import graphene
 import datetime
-from django.db.models import QuerySet, Q
+
+import graphene
+from django.db.models import Q, QuerySet
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
-
-from utils.graphene.enums import EnumDescription
-from utils.graphene.pagination import NoOrderingPageGraphqlPagination
-from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
-from utils.graphene.fields import DjangoPaginatedListObjectField
-from user_resource.schema import UserResourceMixin
-from deep.permissions import ProjectPermissions as PP
-from unified_connector.sources.rss_feed import RssFeed
 from unified_connector.sources.atom_feed import AtomFeed
+from unified_connector.sources.rss_feed import RssFeed
+from user_resource.schema import UserResourceMixin
 
+from deep.permissions import ProjectPermissions as PP
+from utils.graphene.enums import EnumDescription
+from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.pagination import NoOrderingPageGraphqlPagination
+from utils.graphene.types import ClientIdMixin, CustomDjangoListObjectType
+
+from .enums import (
+    ConnectorLeadExtractionStatusEnum,
+    ConnectorSourceSourceEnum,
+    ConnectorSourceStatusEnum,
+)
 from .filters import (
     ConnectorSourceGQFilterSet,
     ConnectorSourceLeadGQFilterSet,
     UnifiedConnectorGQFilterSet,
 )
 from .models import (
-    UnifiedConnector,
     ConnectorLead,
     ConnectorSource,
     ConnectorSourceLead,
-)
-from .enums import (
-    ConnectorSourceSourceEnum,
-    ConnectorSourceStatusEnum,
-    ConnectorLeadExtractionStatusEnum,
+    UnifiedConnector,
 )
 
 
@@ -55,20 +56,20 @@ def get_connector_source_lead_qs(info):
 # NOTE: This is not used directly
 class ConnectorLeadType(DjangoObjectType):
     extraction_status = graphene.Field(ConnectorLeadExtractionStatusEnum, required=True)
-    extraction_status_display = EnumDescription(source='get_extraction_status_display', required=True)
+    extraction_status_display = EnumDescription(source="get_extraction_status_display", required=True)
 
     class Meta:
         model = ConnectorLead
         only_fields = (
-            'id',
-            'url',
-            'website',
-            'title',
-            'published_on',
-            'source_raw',
-            'author_raw',
-            'source',
-            'authors',
+            "id",
+            "url",
+            "website",
+            "title",
+            "published_on",
+            "source_raw",
+            "author_raw",
+            "source",
+            "authors",
         )
 
     @staticmethod
@@ -82,14 +83,14 @@ class ConnectorLeadType(DjangoObjectType):
 
 class ConnectorSourceLeadType(DjangoObjectType):
     connector_lead = graphene.Field(ConnectorLeadType, required=True)
-    source = graphene.ID(required=True, source='source_id')
+    source = graphene.ID(required=True, source="source_id")
 
     class Meta:
         model = ConnectorSourceLead
         only_fields = (
-            'id',
-            'blocked',
-            'already_added',
+            "id",
+            "blocked",
+            "already_added",
         )
 
     @staticmethod
@@ -113,7 +114,7 @@ class ConnectorSourceStatsType(graphene.ObjectType):
 
     @staticmethod
     def resolve_date(root, info, **kwargs):
-        return datetime.datetime.strptime(root['date'], '%Y-%m-%d')
+        return datetime.datetime.strptime(root["date"], "%Y-%m-%d")
 
 
 class ConnectorSourceLeadCountType(graphene.ObjectType):
@@ -124,21 +125,21 @@ class ConnectorSourceLeadCountType(graphene.ObjectType):
 
 class ConnectorSourceType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     source = graphene.Field(ConnectorSourceSourceEnum, required=True)
-    source_display = EnumDescription(source='get_source_display', required=True)
-    unified_connector = graphene.ID(required=True, source='unified_connector_id')
+    source_display = EnumDescription(source="get_source_display", required=True)
+    unified_connector = graphene.ID(required=True, source="unified_connector_id")
     stats = graphene.List(ConnectorSourceStatsType)
     leads_count = graphene.NonNull(ConnectorSourceLeadCountType)
     status = graphene.Field(ConnectorSourceStatusEnum, required=True)
-    status_display = EnumDescription(source='get_status_display', required=True)
+    status_display = EnumDescription(source="get_status_display", required=True)
 
     class Meta:
         model = ConnectorSource
         only_fields = (
-            'id',
-            'title',
-            'unified_connector',
-            'last_fetched_at',
-            'params',
+            "id",
+            "title",
+            "unified_connector",
+            "last_fetched_at",
+            "params",
         )
 
     @staticmethod
@@ -147,7 +148,7 @@ class ConnectorSourceType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
 
     @staticmethod
     def resolve_stats(root, info, **_):
-        return (root.stats or {}).get('published_dates') or []
+        return (root.stats or {}).get("published_dates") or []
 
     @staticmethod
     def resolve_leads_count(root, info, **_):
@@ -161,16 +162,16 @@ class ConnectorSourceListType(CustomDjangoListObjectType):
 
 
 class UnifiedConnectorType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
-    project = graphene.ID(required=True, source='project_id')
+    project = graphene.ID(required=True, source="project_id")
     sources = graphene.List(graphene.NonNull(ConnectorSourceType))
     leads_count = graphene.NonNull(ConnectorSourceLeadCountType)
 
     class Meta:
         model = UnifiedConnector
         only_fields = (
-            'id',
-            'title',
-            'is_active',
+            "id",
+            "title",
+            "is_active",
         )
 
     @staticmethod
@@ -198,22 +199,22 @@ class UnifiedConnectorQueryType(graphene.ObjectType):
     unified_connectors = DjangoPaginatedListObjectField(
         UnifiedConnectorListType,
         pagination=NoOrderingPageGraphqlPagination(
-            page_size_query_param='pageSize',
-        )
+            page_size_query_param="pageSize",
+        ),
     )
     connector_source = DjangoObjectField(ConnectorSourceType)
     connector_sources = DjangoPaginatedListObjectField(
         ConnectorSourceListType,
         pagination=NoOrderingPageGraphqlPagination(
-            page_size_query_param='pageSize',
-        )
+            page_size_query_param="pageSize",
+        ),
     )
     connector_source_lead = DjangoObjectField(ConnectorSourceLeadType)
     connector_source_leads = DjangoPaginatedListObjectField(
         ConnectorSourceLeadListType,
         pagination=NoOrderingPageGraphqlPagination(
-            page_size_query_param='pageSize',
-        )
+            page_size_query_param="pageSize",
+        ),
     )
     source_count_without_ingnored_and_added = graphene.Field(graphene.Int)
 
@@ -222,10 +223,7 @@ class UnifiedConnectorQueryType(graphene.ObjectType):
         qs = ConnectorSourceLead.objects.filter(
             source__unified_connector__project=info.context.active_project,
             source__unified_connector__is_active=True,
-        ).exclude(
-            Q(blocked=True) |
-            Q(already_added=True)
-        )
+        ).exclude(Q(blocked=True) | Q(already_added=True))
         if PP.check_permission(info, PP.Permission.VIEW_UNIFIED_CONNECTOR):
             return qs.count()
         return

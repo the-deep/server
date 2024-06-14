@@ -1,26 +1,22 @@
-import time
 import logging
+import time
 
 from celery import shared_task
-from redis_store import redis
-from django.db import transaction
 from django.contrib.postgres import search
+from django.db import transaction
+from geo.models import GeoArea, models
+from redis_store import redis
 
-from geo.models import models, GeoArea
+from utils.common import LogTime, redis_lock
 
-from utils.common import redis_lock, LogTime
-
-from .models import Book, Geodata, Field
-from .extractor import csv, xls, xlsx, ods
-from .viz.renderer import (
-    calc_preprocessed_data,
-    render_field_chart,
-)
+from .extractor import csv, ods, xls, xlsx
+from .models import Book, Field, Geodata
 from .utils import (
+    get_geos_codes_from_geos_names,
     get_geos_dict,
     sample_and_detect_type_and_options,
-    get_geos_codes_from_geos_names,
 )
+from .viz.renderer import calc_preprocessed_data, render_field_chart
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +45,7 @@ def auto_detect_and_update_fields(book):
     geos_codes = get_geos_codes_from_geos_names(geos_names)
 
     def isValueNotEmpty(v):
-        return v.get('value')
+        return v.get("value")
 
     generate_column_columns = []
 
@@ -62,20 +58,18 @@ def auto_detect_and_update_fields(book):
             for field in fields:
                 data = field.data[row_index:]
                 emptyFiltered = list(filter(isValueNotEmpty, data))
-                detected_info = sample_and_detect_type_and_options(
-                    emptyFiltered, geos_names, geos_codes
-                )
-                field.type = detected_info['type']
-                field.options = detected_info['options']
+                detected_info = sample_and_detect_type_and_options(emptyFiltered, geos_names, geos_codes)
+                field.type = detected_info["type"]
+                field.options = detected_info["options"]
 
                 cast_info = field.cast_data(geos_names, geos_codes)
-                field.data = cast_info['values']
-                field.options = cast_info['options']
+                field.data = cast_info["values"]
+                field.options = cast_info["options"]
 
                 field.cache = {
-                    'status': Field.CACHE_PENDING,
-                    'image_status': Field.CACHE_PENDING,
-                    'time': time.time(),
+                    "status": Field.CACHE_PENDING,
+                    "image_status": Field.CACHE_PENDING,
+                    "time": time.time(),
                 }
                 field.save()
 
@@ -88,17 +82,13 @@ def auto_detect_and_update_fields(book):
 def _tabular_meta_extract_geo(geodata):
     field = geodata.field
     project = field.sheet.book.project
-    project_geoareas = GeoArea.objects.filter(
-        admin_level__region__project=project
-    )
+    project_geoareas = GeoArea.objects.filter(admin_level__region__project=project)
     geodata_data = []
 
-    is_code = field.get_option('geo_type', 'name') == 'code'
-    admin_level = field.get_option('admin_level')
+    is_code = field.get_option("geo_type", "name") == "code"
+    admin_level = field.get_option("admin_level")
     if admin_level:
-        project_geoareas = project_geoareas.filter(
-            admin_level__level=admin_level
-        )
+        project_geoareas = project_geoareas.filter(admin_level__level=admin_level)
 
     for row in geodata.field.sheet.data:
         similar_areas = []
@@ -109,30 +99,38 @@ def _tabular_meta_extract_geo(geodata):
                 similarity=models.Value(1, models.FloatField()),
             )
         else:
-            geoareas = project_geoareas.annotate(
-                similarity=search.TrigramSimilarity('title', query),
-            ).filter(similarity__gt=0.2).order_by('-similarity')
+            geoareas = (
+                project_geoareas.annotate(
+                    similarity=search.TrigramSimilarity("title", query),
+                )
+                .filter(similarity__gt=0.2)
+                .order_by("-similarity")
+            )
 
         for geoarea in geoareas:
-            similar_areas.append({
-                'id': geoarea.pk,
-                'similarity': geoarea.similarity,
-            })
-        geodata_data.append({
-            'similar_areas': similar_areas,
-            'selected_id': geoareas.first().pk if geoareas.exists() else None,
-        })
+            similar_areas.append(
+                {
+                    "id": geoarea.pk,
+                    "similarity": geoarea.similarity,
+                }
+            )
+        geodata_data.append(
+            {
+                "similar_areas": similar_areas,
+                "selected_id": geoareas.first().pk if geoareas.exists() else None,
+            }
+        )
     geodata.data = geodata_data
     geodata.save()
     return True
 
 
 @shared_task
-@redis_lock('tabular_generate_column_image__{0}')
+@redis_lock("tabular_generate_column_image__{0}")
 def tabular_generate_column_image(field_id):
     field = Field.objects.filter(pk=field_id).first()
     if field is None:
-        logger.warning('Field ({}) doesn\'t exists'.format(field_id))
+        logger.warning("Field ({}) doesn't exists".format(field_id))
 
     calc_preprocessed_data(field)
     return render_field_chart(field)
@@ -149,7 +147,7 @@ def tabular_generate_columns_image(fields_id):
 @shared_task
 @LogTime()
 def tabular_extract_book(book_pk):
-    key = 'tabular_extract_book_{}'.format(book_pk)
+    key = "tabular_extract_book_{}".format(book_pk)
     lock = redis.get_lock(key, 60 * 60 * 24)  # Lock lifetime 24 hours
     have_lock = lock.acquire(blocking=False)
     if not have_lock:
@@ -161,7 +159,7 @@ def tabular_extract_book(book_pk):
             return_value = _tabular_extract_book(book)
         book.status = Book.SUCCESS
     except Exception:
-        logger.error('Tabular Extract Book Failed!!', exc_info=True)
+        logger.error("Tabular Extract Book Failed!!", exc_info=True)
         book.status = Book.FAILED
         book.error = Book.UNKNOWN_ERROR  # TODO: handle all type of error
         return_value = False
@@ -174,7 +172,7 @@ def tabular_extract_book(book_pk):
 
 @shared_task
 def tabular_extract_geo(geodata_pk):
-    key = 'tabular_meta_extract_geo_{}'.format(geodata_pk)
+    key = "tabular_meta_extract_geo_{}".format(geodata_pk)
     lock = redis.get_lock(key, 60 * 60 * 24)  # Lock lifetime 24 hours
     have_lock = lock.acquire(blocking=False)
     if not have_lock:
@@ -186,7 +184,7 @@ def tabular_extract_geo(geodata_pk):
             return_value = _tabular_meta_extract_geo(geodata)
         geodata.status = Geodata.SUCCESS
     except Exception:
-        logger.error('Tabular Extract Geo Failed!!', exc_info=True)
+        logger.error("Tabular Extract Geo Failed!!", exc_info=True)
         geodata.status = Geodata.FAILED
         return_value = False
 
@@ -202,15 +200,18 @@ def remaining_tabular_generate_columns_image():
     Scheduled task
     NOTE: Only use it through schedular
     """
-    key = 'remaining_tabular_generate_columns_image'
+    key = "remaining_tabular_generate_columns_image"
     lock = redis.get_lock(key, 60 * 60 * 2)  # Lock lifetime 2 hours
     have_lock = lock.acquire(blocking=False)
     if not have_lock:
-        return '{} Locked'.format(key)
+        return "{} Locked".format(key)
     tabular_generate_columns_image(
         Field.objects.filter(
             cache__status=Field.CACHE_PENDING,
-        ).distinct().order_by('id').values_list('id', flat=True)[:300]
+        )
+        .distinct()
+        .order_by("id")
+        .values_list("id", flat=True)[:300]
     )
     lock.release()
     return True

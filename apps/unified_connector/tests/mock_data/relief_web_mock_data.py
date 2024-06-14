@@ -1,6 +1,6 @@
 import datetime
 
-RELIEF_WEB_MOCK_DATA_PAGE_1_RAW = '''
+RELIEF_WEB_MOCK_DATA_PAGE_1_RAW = """
     {
       "time": 11,
       "href": "https://api.reliefweb.int/v1/reports?appname=thedeep.io",
@@ -124,9 +124,9 @@ RELIEF_WEB_MOCK_DATA_PAGE_1_RAW = '''
         }
       ]
     }
-'''
+"""
 
-RELIEF_WEB_MOCK_DATA_PAGE_2_RAW = '''
+RELIEF_WEB_MOCK_DATA_PAGE_2_RAW = """
     {
       "time": 11,
       "href": "https://api.reliefweb.int/v1/reports?appname=thedeep.io",
@@ -247,7 +247,7 @@ RELIEF_WEB_MOCK_DATA_PAGE_2_RAW = '''
         }
       ]
     }
-'''
+"""
 
 RELIEF_WEB_MOCK_EXCEPTED_LEADS = [
     {
@@ -256,8 +256,8 @@ RELIEF_WEB_MOCK_EXCEPTED_LEADS = [
         "published_on": datetime.date(2020, 9, 17),
         "url": "https://reliefweb.int/report/nepal/nepal-makes-progress-human-capital-development",
         "source_raw": "reliefweb",
-        "source_type": 'website',
-        "author_raw": "World Bank"
+        "source_type": "website",
+        "author_raw": "World Bank",
     },
     {
         "id": "3670541",
@@ -265,8 +265,8 @@ RELIEF_WEB_MOCK_EXCEPTED_LEADS = [
         "published_on": datetime.date(2020, 9, 16),
         "url": "https://reliefweb.int/sites/reliefweb.int/files/resources/roap_covid_response_sitrep_18.pdf",
         "source_raw": "reliefweb",
-        "source_type": 'website',
-        "author_raw": "International Organization for Migration"
+        "source_type": "website",
+        "author_raw": "International Organization for Migration",
     },
     {
         "id": "3670672",
@@ -274,8 +274,8 @@ RELIEF_WEB_MOCK_EXCEPTED_LEADS = [
         "published_on": datetime.date(2020, 9, 16),
         "url": "https://reliefweb.int/report/nepal/nepal-earthquake-national-seismological",
         "source_raw": "reliefweb",
-        "source_type": 'website',
-        "author_raw": "European Commission's Directorate-General for European Civil Protection"
+        "source_type": "website",
+        "author_raw": "European Commission's Directorate-General for European Civil Protection",
     },
     {
         "id": "3670318",
@@ -283,8 +283,8 @@ RELIEF_WEB_MOCK_EXCEPTED_LEADS = [
         "published_on": datetime.date(2020, 9, 15),
         "url": "https://reliefweb.int/sites/reliefweb.int/files/resources/ROAP_Snapshot_200915.pdf",
         "source_raw": "reliefweb",
-        "source_type": 'website',
-        "author_raw": "UN Office for the Coordination of Humanitarian Affairs"
+        "source_type": "website",
+        "author_raw": "UN Office for the Coordination of Humanitarian Affairs",
     },
     {
         "id": "3670885",
@@ -292,8 +292,8 @@ RELIEF_WEB_MOCK_EXCEPTED_LEADS = [
         "published_on": datetime.date(2020, 9, 17),
         "url": "https://reliefweb.int/report/nepal/nepal-makes-progress-human-capital-development",
         "source_raw": "reliefweb",
-        "source_type": 'website',
-        "author_raw": "World Bank"
+        "source_type": "website",
+        "author_raw": "World Bank",
     },
     {
         "id": "3670541",
@@ -301,8 +301,8 @@ RELIEF_WEB_MOCK_EXCEPTED_LEADS = [
         "published_on": datetime.date(2020, 9, 16),
         "url": "https://reliefweb.int/sites/reliefweb.int/files/resources/roap_covid_response_sitrep_18.pdf",
         "source_raw": "reliefweb",
-        "source_type": 'website',
-        "author_raw": "International Organization for Migration"
+        "source_type": "website",
+        "author_raw": "International Organization for Migration",
     },
     {
         "id": "3670672",
@@ -310,8 +310,8 @@ RELIEF_WEB_MOCK_EXCEPTED_LEADS = [
         "published_on": datetime.date(2020, 9, 16),
         "url": "https://reliefweb.int/report/nepal/nepal-earthquake-national-seismological",
         "source_raw": "reliefweb",
-        "source_type": 'website',
-        "author_raw": "European Commission's Directorate-General for European Civil Protection"
+        "source_type": "website",
+        "author_raw": "European Commission's Directorate-General for European Civil Protection",
     },
     {
         "id": "3670318",
@@ -319,7 +319,7 @@ RELIEF_WEB_MOCK_EXCEPTED_LEADS = [
         "published_on": datetime.date(2020, 9, 15),
         "url": "https://reliefweb.int/sites/reliefweb.int/files/resources/ROAP_Snapshot_200915.pdf",
         "source_raw": "reliefweb",
-        "source_type": 'website',
-        "author_raw": "UN Office for the Coordination of Humanitarian Affairs"
-    }
+        "source_type": "website",
+        "author_raw": "UN Office for the Coordination of Humanitarian Affairs",
+    },
 ]

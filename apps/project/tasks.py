@@ -2,32 +2,27 @@ import logging
 from collections import defaultdict
 from datetime import timedelta
 
+from ary.stats import get_project_ary_entry_stats
 from celery import shared_task
-from django.core.files.base import ContentFile
-from django.utils import timezone
-from django.db import models
-from redis_store import redis
-from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from django.conf import settings
+from django.core.files.base import ContentFile
+from django.db import models
+from django.utils import timezone
+from djangorestframework_camel_case.render import CamelCaseJSONRenderer
+from entry.filter_set import EntryGQFilterSet
+from entry.models import Entry
+from lead.filter_set import LeadGQFilterSet
+from lead.models import Lead
+from redis_store import redis
 
 from utils.files import generate_json_file_for_upload
-from ary.stats import get_project_ary_entry_stats
-from lead.models import Lead
-from entry.models import Entry
 
-from lead.filter_set import LeadGQFilterSet
-from entry.filter_set import EntryGQFilterSet
-
-from .models import (
-    Project,
-    ProjectStats,
-    ProjectMembership,
-)
+from .models import Project, ProjectMembership, ProjectStats
 
 logger = logging.getLogger(__name__)
 
-VIZ_STATS_WAIT_LOCK_KEY = 'generate_project_viz_stats__wait_lock__{0}'
-STATS_WAIT_LOCK_KEY = 'generate_project_stats__wait_lock'
+VIZ_STATS_WAIT_LOCK_KEY = "generate_project_viz_stats__wait_lock__{0}"
+STATS_WAIT_LOCK_KEY = "generate_project_stats__wait_lock"
 STATS_WAIT_TIMEOUT = ProjectStats.THRESHOLD_SECONDS
 
 
@@ -46,25 +41,22 @@ def _generate_project_viz_stats(project_id):
         project_stats.file.delete()
         project_stats.confidential_file.delete()
         # Save new file
-        project_stats.file.save(f'project-stats-{project_id}.json', stats_content)
-        project_stats.confidential_file.save(f'project-stats-confidential-{project_id}.json', confidential_stats_content)
+        project_stats.file.save(f"project-stats-{project_id}.json", stats_content)
+        project_stats.confidential_file.save(f"project-stats-confidential-{project_id}.json", confidential_stats_content)
         project_stats.save()
     except Exception:
-        logger.warning(f'Ary Stats Generation Failed ({project_id})!!', exc_info=True)
+        logger.warning(f"Ary Stats Generation Failed ({project_id})!!", exc_info=True)
         project_stats.status = ProjectStats.Status.FAILURE
         project_stats.save()
 
 
 def get_project_stats(project, info, filters):
     # XXX: Circular dependency
-    from lead.schema import get_lead_qs
     from entry.schema import get_entry_qs
+    from lead.schema import get_lead_qs
 
     def _count_by_project(qs):
-        return qs\
-            .filter(project=project)\
-            .order_by().values('project')\
-            .aggregate(count=models.Count('id', distinct=True))['count']
+        return qs.filter(project=project).order_by().values("project").aggregate(count=models.Count("id", distinct=True))["count"]
 
     if info.context.active_project:
         lead_qs = get_lead_qs(info)
@@ -74,7 +66,7 @@ def get_project_stats(project, info, filters):
         entry_qs = Entry.objects.filter(project=project, analysis_framework=project.analysis_framework_id)
     filters_counts = {}
     if filters:
-        entry_filter_data = filters.get('entries_filter_data') or {}
+        entry_filter_data = filters.get("entries_filter_data") or {}
         filtered_lead_qs = LeadGQFilterSet(request=info.context.request, queryset=lead_qs, data=filters).qs
         filtered_entry_qs = EntryGQFilterSet(
             request=info.context.request,
@@ -110,52 +102,64 @@ def _generate_project_stats_cache():
     def _count_by_project_qs(qs):
         return {
             project: count
-            for project, count in qs.order_by().values('project').annotate(
-                count=models.Count('id', distinct=True)
-            ).values_list('project', 'count')
+            for project, count in qs.order_by()
+            .values("project")
+            .annotate(count=models.Count("id", distinct=True))
+            .values_list("project", "count")
         }
 
     def _count_by_project_date_qs(qs):
         data = defaultdict(list)
         for project, count, date in (
-            qs
-                .order_by('project', 'created_at__date')
-                .values('project', 'created_at__date')
-                .annotate(count=models.Count('id', distinct=True))
-                .values_list('project', 'count', models.Func(models.F('created_at__date'), function='DATE'))
+            qs.order_by("project", "created_at__date")
+            .values("project", "created_at__date")
+            .annotate(count=models.Count("id", distinct=True))
+            .values_list("project", "count", models.Func(models.F("created_at__date"), function="DATE"))
         ):
-            data[project].append({
-                'date': date and date.strftime('%Y-%m-%d'),
-                'count': count,
-            })
+            data[project].append(
+                {
+                    "date": date and date.strftime("%Y-%m-%d"),
+                    "count": count,
+                }
+            )
         return data
 
     current_time = timezone.now()
     threshold = ProjectStats.get_activity_timeframe(current_time)
 
     # Make sure to only look for entries which have same AF as Project's AF
-    all_entries_qs = Entry.objects.filter(analysis_framework=models.F('project__analysis_framework'))
+    all_entries_qs = Entry.objects.filter(analysis_framework=models.F("project__analysis_framework"))
     recent_leads = Lead.objects.filter(created_at__gte=threshold)
     recent_entries = all_entries_qs.filter(created_at__gte=threshold)
 
     # Calculate
     leads_count_map = _count_by_project_qs(Lead.objects.all())
     leads_tagged_and_controlled_count_map = _count_by_project_qs(
-        Lead.objects.filter(status=Lead.Status.TAGGED).annotate(
+        Lead.objects.filter(status=Lead.Status.TAGGED)
+        .annotate(
             entries_count=models.Subquery(
                 all_entries_qs.filter(
-                    lead=models.OuterRef('pk'),
-                ).order_by().values('lead').annotate(count=models.Count('id')).values('count')[:1],
-                output_field=models.IntegerField()
+                    lead=models.OuterRef("pk"),
+                )
+                .order_by()
+                .values("lead")
+                .annotate(count=models.Count("id"))
+                .values("count")[:1],
+                output_field=models.IntegerField(),
             ),
             entries_controlled_count=models.Subquery(
                 all_entries_qs.filter(
-                    lead=models.OuterRef('pk'),
+                    lead=models.OuterRef("pk"),
                     controlled=True,
-                ).order_by().values('lead').annotate(count=models.Count('id')).values('count')[:1],
-                output_field=models.IntegerField()
+                )
+                .order_by()
+                .values("lead")
+                .annotate(count=models.Count("id"))
+                .values("count")[:1],
+                output_field=models.IntegerField(),
             ),
-        ).filter(entries_count__gt=0, entries_count=models.F('entries_controlled_count'))
+        )
+        .filter(entries_count__gt=0, entries_count=models.F("entries_controlled_count"))
     )
     leads_not_tagged_count_map = _count_by_project_qs(Lead.objects.filter(status=Lead.Status.NOT_TAGGED))
     leads_in_progress_count_map = _count_by_project_qs(Lead.objects.filter(status=Lead.Status.IN_PROGRESS))
@@ -193,7 +197,7 @@ def _generate_project_stats_cache():
             leads_activities=leads_activity_map.get(pk, []),
             entries_activities=entries_activity_map.get(pk, []),
         )
-        project.save(update_fields=['stats_cache'])
+        project.save(update_fields=["stats_cache"])
 
 
 @shared_task
@@ -205,10 +209,10 @@ def generate_viz_stats(project_id, force=False):
     lock = redis.get_lock(key, STATS_WAIT_TIMEOUT)
     have_lock = lock.acquire(blocking=False)
     if not have_lock and not force:
-        logger.warning(f'GENERATE_PROJECT_VIZ_STATS:: Waiting for timeout {key}')
+        logger.warning(f"GENERATE_PROJECT_VIZ_STATS:: Waiting for timeout {key}")
         return False
 
-    logger.info(f'GENERATE_PROJECT_STATS:: Processing for {key}')
+    logger.info(f"GENERATE_PROJECT_STATS:: Processing for {key}")
     _generate_project_viz_stats(project_id)
     # NOTE: lock.release() is not called so that another process waits for timeout
     return True
@@ -223,17 +227,17 @@ def generate_project_stats_cache(force=False):
     lock = redis.get_lock(key, STATS_WAIT_TIMEOUT)
     have_lock = lock.acquire(blocking=False)
     if not have_lock and not force:
-        logger.warning(f'GENERATE_PROJECT_STATS:: Waiting for timeout {key}')
+        logger.warning(f"GENERATE_PROJECT_STATS:: Waiting for timeout {key}")
         return False
 
-    logger.info(f'GENERATE_PROJECT_STATS:: Processing for {key}')
+    logger.info(f"GENERATE_PROJECT_STATS:: Processing for {key}")
     _generate_project_stats_cache()
     lock.release()
     return True
 
 
 def generate_project_geo_region_cache(project):
-    region_qs = project.regions.defer('geo_options', 'centroid')
+    region_qs = project.regions.defer("geo_options", "centroid")
 
     geo_options = {}
     for region in region_qs:
@@ -242,30 +246,28 @@ def generate_project_geo_region_cache(project):
         geo_options[region.pk] = region.geo_options
 
     project.geo_cache_file.save(
-        f'project-geo-cache-{project.pk}.json',
+        f"project-geo-cache-{project.pk}.json",
         ContentFile(CamelCaseJSONRenderer().render(geo_options)),
         save=False,
     )
-    project.geo_cache_hash = hash(tuple(region_qs.order_by('id').values_list('cache_index', flat=True)))
-    project.save(update_fields=('geo_cache_hash', 'geo_cache_file'))
+    project.geo_cache_hash = hash(tuple(region_qs.order_by("id").values_list("cache_index", flat=True)))
+    project.save(update_fields=("geo_cache_hash", "geo_cache_file"))
 
 
 @shared_task
 def permanently_delete_projects():
     # check every project if there `is_deleted` is set True
     # if greater than settings.USER_AND_PROJECT_DELETE_IN_DAYS days delete those projects
-    logger.info('[Project Delete] Checking project to delete.')
-    threshold = (
-        timezone.now() - timedelta(days=settings.USER_AND_PROJECT_DELETE_IN_DAYS)
-    )
+    logger.info("[Project Delete] Checking project to delete.")
+    threshold = timezone.now() - timedelta(days=settings.USER_AND_PROJECT_DELETE_IN_DAYS)
     project_qs = Project.objects.filter(
         is_deleted=True,
         deleted_at__isnull=False,
         deleted_at__lt=threshold,
     )
-    logger.info(f'[Project Delete] Found {project_qs.count()} projects to delete.')
+    logger.info(f"[Project Delete] Found {project_qs.count()} projects to delete.")
     for project in project_qs:
-        _meta = f'{project.id}::{project.title}'
-        logger.info(f'[Project Delete] Deleting {_meta}')
+        _meta = f"{project.id}::{project.title}"
+        logger.info(f"[Project Delete] Deleting {_meta}")
         project_delete_response = project.delete()
-        logger.info(f'[Project Delete] Deleted {_meta}:: {project_delete_response}')
+        logger.info(f"[Project Delete] Deleted {_meta}:: {project_delete_response}")

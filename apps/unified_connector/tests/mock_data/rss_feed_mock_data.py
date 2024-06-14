@@ -1,6 +1,6 @@
 import datetime
 
-RSS_FEED_MOCK_DATA_RAW = '''<?xml version="1.0" encoding="utf-8" ?>
+RSS_FEED_MOCK_DATA_RAW = """<?xml version="1.0" encoding="utf-8" ?>
 <rss version="2.0"
     xmlns:atom="http://www.w3.org/2005/Atom"
     xmlns:media="http://search.yahoo.com/mrss/">
@@ -139,7 +139,9 @@ A batch of N95 respirators will soon be provided to medical institutions in Luha
         </item>
     </channel>
 </rss>
-'''.encode('utf-8')
+""".encode(
+    "utf-8"
+)
 
 
 RSS_PARAMS = {
@@ -148,7 +150,7 @@ RSS_PARAMS = {
     "author-field": "author",
     "source-field": "source",
     "date-field": "pubDate",
-    "title-field": "title"
+    "title-field": "title",
 }
 
 
@@ -159,7 +161,7 @@ RSS_FEED_MOCK_EXCEPTED_LEADS = [
         "source_raw": "ReliefWeb - Updates",
         "published_on": datetime.date(2020, 9, 17),
         "title": "Ukraine: DRC / DDG Legal Alert: Issue 55 - August 2020 [EN/RU/UK]",
-        "source_type": 'rss'
+        "source_type": "rss",
     },
     {
         "url": "https://reliefweb.int/report/ukraine/osce-special-monitoring",
@@ -167,7 +169,7 @@ RSS_FEED_MOCK_EXCEPTED_LEADS = [
         "source_raw": "ReliefWeb - Updates",
         "published_on": datetime.date(2020, 9, 16),
         "title": "OSCE Special Monitoring Mission to Ukraine (SMM) Daily Report 221/2020 issued on 16 September 2020",
-        "source_type": 'rss'
+        "source_type": "rss",
     },
     {
         "url": "https://reliefweb.int/report/ukraine/crossing-contact-line-august-2020-snapshot-enuk",
@@ -175,7 +177,7 @@ RSS_FEED_MOCK_EXCEPTED_LEADS = [
         "source_raw": "ReliefWeb - Updates",
         "published_on": datetime.date(2020, 9, 16),
         "title": "Ukraine: Crossing the Contact Line, August 2020 Snapshot [EN/UK]",
-        "source_type": 'rss'
+        "source_type": "rss",
     },
     {
         "url": "https://reliefweb.int/report/ukraine/eu-and-undp-supply-protective-respirators-medical",
@@ -183,7 +185,7 @@ RSS_FEED_MOCK_EXCEPTED_LEADS = [
         "source_raw": "ReliefWeb - Updates",
         "published_on": datetime.date(2020, 9, 16),
         "title": "Ukraine: EU and UNDP supply protective respirators to medical workers in Donetsk Oblast",
-        "source_type": 'rss'
+        "source_type": "rss",
     },
     {
         "url": "https://reliefweb.int/report/ukraine/osce-special-monitoring-mission-ukraine-smm-daily",
@@ -191,6 +193,6 @@ RSS_FEED_MOCK_EXCEPTED_LEADS = [
         "source_raw": "ReliefWeb - Updates",
         "published_on": datetime.date(2020, 9, 15),
         "title": "OSCE Special Monitoring Mission to Ukraine (SMM) Daily Report 220/2020 issued on 15 September 2020",
-        "source_type": 'rss'
+        "source_type": "rss",
     },
 ]

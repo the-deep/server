@@ -1,22 +1,21 @@
-from django.utils.functional import cached_property
-
-from utils.graphene.dataloaders import WithContextMixin
-
-from project.dataloaders import DataLoaders as ProjectDataLoaders
-from user.dataloaders import DataLoaders as UserDataLoaders
-from user_group.dataloaders import DataLoaders as UserGroupDataLoaders
-from lead.dataloaders import DataLoaders as LeadDataLoaders
-from entry.dataloaders import DataLoaders as EntryDataloaders
-from organization.dataloaders import DataLoaders as OrganizationDataLoaders
-from analysis_framework.dataloaders import DataLoaders as AfDataloaders
-from quality_assurance.dataloaders import DataLoaders as QADataLoaders
-from geo.dataloaders import DataLoaders as GeoDataLoaders
-from unified_connector.dataloaders import DataLoaders as UnifiedConnectorDataLoaders
 from analysis.dataloaders import DataLoaders as AnalysisDataLoaders
-from gallery.dataloaders import DataLoaders as DeepGalleryDataLoaders
+from analysis_framework.dataloaders import DataLoaders as AfDataloaders
 from assessment_registry.dataloaders import DataLoaders as AssessmentRegistryDataLoaders
 from assisted_tagging.dataloaders import DataLoaders as AssistedTaggingLoaders
+from django.utils.functional import cached_property
+from entry.dataloaders import DataLoaders as EntryDataloaders
+from gallery.dataloaders import DataLoaders as DeepGalleryDataLoaders
+from geo.dataloaders import DataLoaders as GeoDataLoaders
+from lead.dataloaders import DataLoaders as LeadDataLoaders
 from notification.dataloaders import DataLoaders as AssignmentLoaders
+from organization.dataloaders import DataLoaders as OrganizationDataLoaders
+from project.dataloaders import DataLoaders as ProjectDataLoaders
+from quality_assurance.dataloaders import DataLoaders as QADataLoaders
+from unified_connector.dataloaders import DataLoaders as UnifiedConnectorDataLoaders
+from user.dataloaders import DataLoaders as UserDataLoaders
+from user_group.dataloaders import DataLoaders as UserGroupDataLoaders
+
+from utils.graphene.dataloaders import WithContextMixin
 
 
 class GlobalDataLoaders(WithContextMixin):

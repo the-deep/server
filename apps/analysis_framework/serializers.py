@@ -1,143 +1,137 @@
-from django.utils.functional import cached_property
-
-from drf_dynamic_fields import DynamicFieldsMixin
-from rest_framework import serializers, exceptions
-from drf_writable_nested.serializers import WritableNestedModelSerializer
-from django.db import models
-from django.db import transaction
-
-from deep.serializers import RemoveNullFieldsMixin, TempClientIdMixin, IntegerIDField
-from user_resource.serializers import UserResourceSerializer
-from questionnaire.serializers import FrameworkQuestionSerializer
-from user.models import User, Feature
-from user.serializers import SimpleUserSerializer
-from project.models import Project
-from project.change_log import ProjectChangeManager
 from assisted_tagging.models import PredictionTagAnalysisFrameworkWidgetMapping
-from organization.serializers import SimpleOrganizationSerializer
 from assisted_tagging.serializers import PredictionTagAnalysisFrameworkMapSerializer
+from django.db import models, transaction
+from django.utils.functional import cached_property
+from drf_dynamic_fields import DynamicFieldsMixin
+from drf_writable_nested.serializers import WritableNestedModelSerializer
+from organization.serializers import SimpleOrganizationSerializer
+from project.change_log import ProjectChangeManager
+from project.models import Project
+from questionnaire.serializers import FrameworkQuestionSerializer
+from rest_framework import exceptions, serializers
+from user.models import Feature, User
+from user.serializers import SimpleUserSerializer
+from user_resource.serializers import UserResourceSerializer
+
+from deep.serializers import IntegerIDField, RemoveNullFieldsMixin, TempClientIdMixin
 
 from .models import (
     AnalysisFramework,
-    AnalysisFrameworkRole,
     AnalysisFrameworkMembership,
-    Widget,
-    Section,
-    Filter,
+    AnalysisFrameworkRole,
     Exportable,
+    Filter,
+    Section,
+    Widget,
 )
 from .tasks import export_af_to_csv_task
 
 
-class WidgetSerializer(RemoveNullFieldsMixin,
-                       DynamicFieldsMixin, serializers.ModelSerializer):
+class WidgetSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Widget Model Serializer
     """
 
     class Meta:
         model = Widget
-        fields = ('__all__')
+        fields = "__all__"
 
     # Validations
     def validate_analysis_framework(self, analysis_framework):
-        if not analysis_framework.can_modify(self.context['request'].user):
-            raise serializers.ValidationError('Invalid Analysis Framework')
+        if not analysis_framework.can_modify(self.context["request"].user):
+            raise serializers.ValidationError("Invalid Analysis Framework")
         return analysis_framework
 
 
-class FilterSerializer(RemoveNullFieldsMixin,
-                       DynamicFieldsMixin, serializers.ModelSerializer):
+class FilterSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Filter data Serializer
     """
 
     class Meta:
         model = Filter
-        fields = ('__all__')
+        fields = "__all__"
 
     # Validations
     def validate_analysis_framework(self, analysis_framework):
-        if not analysis_framework.can_modify(self.context['request'].user):
-            raise serializers.ValidationError('Invalid Analysis Framework')
+        if not analysis_framework.can_modify(self.context["request"].user):
+            raise serializers.ValidationError("Invalid Analysis Framework")
         return analysis_framework
 
 
-class ExportableSerializer(RemoveNullFieldsMixin,
-                           DynamicFieldsMixin, serializers.ModelSerializer):
+class ExportableSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer):
     """
     Export data Serializer
     """
 
     class Meta:
         model = Exportable
-        fields = ('__all__')
+        fields = "__all__"
 
     # Validations
     def validate_analysis_framework(self, analysis_framework):
-        if not analysis_framework.can_modify(self.context['request'].user):
-            raise serializers.ValidationError('Invalid Analysis Framework')
+        if not analysis_framework.can_modify(self.context["request"].user):
+            raise serializers.ValidationError("Invalid Analysis Framework")
         return analysis_framework
 
 
 class SimpleWidgetSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Widget
-        fields = ('id', 'key', 'widget_id', 'title', 'properties', 'order', 'section')
+        fields = ("id", "key", "widget_id", "title", "properties", "order", "section")
 
 
-class SimpleFilterSerializer(RemoveNullFieldsMixin,
-                             serializers.ModelSerializer):
+class SimpleFilterSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Filter
-        fields = ('id', 'key', 'widget_key', 'title',
-                  'properties', 'filter_type')
+        fields = ("id", "key", "widget_key", "title", "properties", "filter_type")
 
 
-class SimpleExportableSerializer(RemoveNullFieldsMixin,
-                                 serializers.ModelSerializer):
+class SimpleExportableSerializer(RemoveNullFieldsMixin, serializers.ModelSerializer):
     class Meta:
         model = Exportable
-        fields = ('id', 'widget_key', 'inline', 'order', 'data')
+        fields = ("id", "widget_key", "inline", "order", "data")
 
 
 class AnalysisFrameworkRoleSerializer(
-    RemoveNullFieldsMixin, serializers.ModelSerializer,
+    RemoveNullFieldsMixin,
+    serializers.ModelSerializer,
 ):
     class Meta:
         model = AnalysisFrameworkRole
-        fields = ('__all__')
+        fields = "__all__"
 
 
 class AnalysisFrameworkMembershipSerializer(
-    RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer,
+    RemoveNullFieldsMixin,
+    DynamicFieldsMixin,
+    serializers.ModelSerializer,
 ):
-    member_details = SimpleUserSerializer(read_only=True, source='member')
+    member_details = SimpleUserSerializer(read_only=True, source="member")
     role = serializers.PrimaryKeyRelatedField(
         required=False,
         queryset=AnalysisFrameworkRole.objects.all(),
     )
-    added_by_details = SimpleUserSerializer(read_only=True, source='added_by')
-    role_details = AnalysisFrameworkRoleSerializer(read_only=True, source='role')
+    added_by_details = SimpleUserSerializer(read_only=True, source="added_by")
+    role_details = AnalysisFrameworkRoleSerializer(read_only=True, source="role")
 
     class Meta:
         model = AnalysisFrameworkMembership
-        fields = ('__all__')
+        fields = "__all__"
 
     def create(self, validated_data):
-        user = self.context['request'].user
-        framework = validated_data.get('framework')
+        user = self.context["request"].user
+        framework = validated_data.get("framework")
 
         # NOTE: Default role is different for private and public framework
         # For public, two sorts of default role, one for non members and one while adding
         # member to af, which is editor role
-        default_role = framework.get_or_create_default_role() if framework.is_private else\
-            framework.get_or_create_editor_role()
+        default_role = framework.get_or_create_default_role() if framework.is_private else framework.get_or_create_editor_role()
 
-        role = validated_data.get('role') or default_role
+        role = validated_data.get("role") or default_role
 
         if framework is None:
-            raise serializers.ValidationError('Analysis Framework does not exist')
+            raise serializers.ValidationError("Analysis Framework does not exist")
 
         membership = AnalysisFrameworkMembership.objects.filter(
             member=user,
@@ -156,39 +150,34 @@ class AnalysisFrameworkMembershipSerializer(
             raise exceptions.PermissionDenied()
 
         if role.is_private_role and not framework.is_private:
-            raise exceptions.PermissionDenied(
-                {'message': 'Public framework cannot have private role'}
-            )
+            raise exceptions.PermissionDenied({"message": "Public framework cannot have private role"})
         if not role.is_private_role and framework.is_private:
-            raise exceptions.PermissionDenied(
-                {'message': 'Private framework cannot have public role'}
-            )
+            raise exceptions.PermissionDenied({"message": "Private framework cannot have public role"})
 
-        validated_data['role'] = role  # Just in case role is not provided, add default role
-        validated_data['added_by'] = user  # make request user to be added_by by default
+        validated_data["role"] = role  # Just in case role is not provided, add default role
+        validated_data["added_by"] = user  # make request user to be added_by by default
 
         return super().create(validated_data)
 
 
-class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
-                                  DynamicFieldsMixin,
-                                  UserResourceSerializer):
+class AnalysisFrameworkSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, UserResourceSerializer):
     """
     Analysis Framework Model Serializer
     """
-    widgets = SimpleWidgetSerializer(source='widget_set', many=True, required=False)
-    filters = SimpleFilterSerializer(source='get_active_filters', many=True, read_only=True)
-    exportables = SimpleExportableSerializer(source='exportable_set', many=True, read_only=True)
-    questions = FrameworkQuestionSerializer(source='frameworkquestion_set', many=True, required=False, read_only=True)
+
+    widgets = SimpleWidgetSerializer(source="widget_set", many=True, required=False)
+    filters = SimpleFilterSerializer(source="get_active_filters", many=True, read_only=True)
+    exportables = SimpleExportableSerializer(source="exportable_set", many=True, read_only=True)
+    questions = FrameworkQuestionSerializer(source="frameworkquestion_set", many=True, required=False, read_only=True)
     entries_count = serializers.IntegerField(
-        source='get_entries_count',
+        source="get_entries_count",
         read_only=True,
     )
 
     is_admin = serializers.SerializerMethodField()
     users_with_add_permission = serializers.SerializerMethodField()
     visible_projects = serializers.SerializerMethodField()
-    all_projects_count = serializers.IntegerField(source='project_set.count', read_only=True)
+    all_projects_count = serializers.IntegerField(source="project_set.count", read_only=True)
 
     project = serializers.IntegerField(
         write_only=True,
@@ -196,17 +185,18 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
     )
 
     role = serializers.SerializerMethodField()
-    organization_details = SimpleOrganizationSerializer(source='organization', read_only=True)
+    organization_details = SimpleOrganizationSerializer(source="organization", read_only=True)
 
     class Meta:
         model = AnalysisFramework
-        fields = ('__all__')
+        fields = "__all__"
 
     def get_visible_projects(self, obj):
         from project.serializers import SimpleProjectSerializer
+
         user = None
-        if 'request' in self.context:
-            user = self.context['request'].user
+        if "request" in self.context:
+            user = self.context["request"].user
         projects = obj.project_set.exclude(models.Q(is_private=True) & ~models.Q(members=user))
         return SimpleProjectSerializer(projects, context=self.context, many=True, read_only=True).data
 
@@ -216,18 +206,15 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
         """
         return SimpleUserSerializer(
             User.objects.filter(
-                id__in=obj.analysisframeworkmembership_set.filter(role__can_add_user=True).values('member'),
+                id__in=obj.analysisframeworkmembership_set.filter(role__can_add_user=True).values("member"),
             ).all(),
             context=self.context,
             many=True,
         ).data
 
     def get_role(self, obj):
-        user = self.context['request'].user
-        membership = AnalysisFrameworkMembership.objects.filter(
-            framework=obj,
-            member=user
-        ).first()
+        user = self.context["request"].user
+        membership = AnalysisFrameworkMembership.objects.filter(framework=obj, member=user).first()
 
         role = None
         if not membership and not obj.is_private:
@@ -243,28 +230,22 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
         try:
             project = Project.objects.get(id=project)
         except Project.DoesNotExist:
-            raise serializers.ValidationError(
-                'Project matching query does not exist'
-            )
+            raise serializers.ValidationError("Project matching query does not exist")
 
-        if not project.can_modify(self.context['request'].user):
-            raise serializers.ValidationError('Invalid project')
+        if not project.can_modify(self.context["request"].user):
+            raise serializers.ValidationError("Invalid project")
         return project.id
 
     def create(self, validated_data):
-        project = validated_data.pop('project', None)
-        private = validated_data.get('is_private', False)
+        project = validated_data.pop("project", None)
+        private = validated_data.get("is_private", False)
 
         # Check if user has access to private project feature
-        user = self.context['request'].user
-        private_access = user.profile.get_accessible_features().filter(
-            key=Feature.FeatureKey.PRIVATE_PROJECT
-        ).exists()
+        user = self.context["request"].user
+        private_access = user.profile.get_accessible_features().filter(key=Feature.FeatureKey.PRIVATE_PROJECT).exists()
 
         if private and not private_access:
-            raise exceptions.PermissionDenied({
-                "message": "You don't have permission to create private framework"
-            })
+            raise exceptions.PermissionDenied({"message": "You don't have permission to create private framework"})
 
         af = super().create(validated_data)
 
@@ -275,32 +256,30 @@ class AnalysisFrameworkSerializer(RemoveNullFieldsMixin,
             project.save()
 
         owner_role = af.get_or_create_owner_role()
-        af.add_member(self.context['request'].user, owner_role)
+        af.add_member(self.context["request"].user, owner_role)
         return af
 
     def update(self, instance, validated_data):
-        if 'is_private' not in validated_data:
+        if "is_private" not in validated_data:
             return super().update(instance, validated_data)
 
-        if instance.is_private != validated_data['is_private']:
-            raise exceptions.PermissionDenied({
-                "message": "You don't have permission to change framework's privacy"
-            })
+        if instance.is_private != validated_data["is_private"]:
+            raise exceptions.PermissionDenied({"message": "You don't have permission to change framework's privacy"})
         return super().update(instance, validated_data)
 
     def get_is_admin(self, analysis_framework):
-        return analysis_framework.can_modify(self.context['request'].user)
+        return analysis_framework.can_modify(self.context["request"].user)
 
 
 # ------------------ Graphql seriazliers -----------------------------------
-def validate_items_limit(items, limit, error_message='Only %d items are allowed. Provided: %d'):
+def validate_items_limit(items, limit, error_message="Only %d items are allowed. Provided: %d"):
     if items:
         count = len(items)
         if count > limit:
             raise serializers.ValidationError(error_message % (limit, count))
 
 
-class AfWidgetLimit():
+class AfWidgetLimit:
     MAX_SECTIONS_ALLOWED = 5
     MAX_WIDGETS_ALLOWED_PER_SECTION = 10
     MAX_WIDGETS_ALLOWED_IN_SECONDARY_TAGGING = 100
@@ -320,22 +299,29 @@ class WidgetGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
     class Meta:
         model = Widget
         fields = (
-            'id', 'key', 'widget_id', 'title', 'order', 'width', 'version',
-            'properties', 'conditional',
-            'client_id',
+            "id",
+            "key",
+            "widget_id",
+            "title",
+            "order",
+            "width",
+            "version",
+            "properties",
+            "conditional",
+            "client_id",
         )
 
     @cached_property
     def framework(self):
-        framework = self.context['request'].active_af
+        framework = self.context["request"].active_af
         # This is a rare case, just to make sure this is validated
         if self.instance and self.instance.analysis_framework != framework:
-            raise serializers.ValidationError('Invalid access')
+            raise serializers.ValidationError("Invalid access")
         return framework
 
     def validate_widget_id(self, widget_type):
         if widget_type in Widget.DEPRECATED_TYPES:
-            raise serializers.ValidationError(f'Widget Type {widget_type} is not supported anymore!!')
+            raise serializers.ValidationError(f"Widget Type {widget_type} is not supported anymore!!")
         return widget_type
 
     def validate_conditional(self, conditional):
@@ -345,46 +331,46 @@ class WidgetGqlSerializer(TempClientIdMixin, serializers.ModelSerializer):
             )
         if self.framework is None:
             raise serializers.ValidationError("Conditional isn't supported in creation of AF.")
-        parent_widget = conditional['parent_widget']
-        conditions = conditional['conditions']
+        parent_widget = conditional["parent_widget"]
+        conditions = conditional["conditions"]
         if parent_widget.analysis_framework_id != self.framework.id:
-            raise serializers.ValidationError('Parent widget should be of same AF')
+            raise serializers.ValidationError("Parent widget should be of same AF")
         return dict(
             conditional_parent_widget=parent_widget,
             conditional_conditions=conditions,
         )
 
     def validate(self, data):
-        if 'conditional' in data:
-            data.update(data.pop('conditional'))
+        if "conditional" in data:
+            data.update(data.pop("conditional"))
         return data
 
 
 # TODO: Using WritableNestedModelSerializer here, let's use this everywhere instead of using custom serializer.
 class SectionGqlSerializer(TempClientIdMixin, WritableNestedModelSerializer):
     id = IntegerIDField(required=False)
-    widgets = WidgetGqlSerializer(source='widget_set', many=True, required=False)
+    widgets = WidgetGqlSerializer(source="widget_set", many=True, required=False)
 
     class Meta:
         model = Section
         fields = (
-            'id', 'title', 'order', 'tooltip',
-            'widgets',
-            'client_id',
+            "id",
+            "title",
+            "order",
+            "tooltip",
+            "widgets",
+            "client_id",
         )
 
     # NOTE: Overriding perform_nested_delete_or_update to have custom behaviour for section->widgets on delete
     def perform_nested_delete_or_update(self, pks_to_delete, model_class, instance, related_field, field_source):
         if model_class != Widget:
-            return super().perform_nested_delete_or_update(
-                pks_to_delete, model_class, instance, related_field, field_source
-            )
+            return super().perform_nested_delete_or_update(pks_to_delete, model_class, instance, related_field, field_source)
         # Ignore on_delete, just delete the widgets if removed from Section instead of
         # just removing section from widget which is the default behaviour for WritableNestedModelSerializer
         # https://github.com/beda-software/drf-writable-nested/blob/master/drf_writable_nested/mixins.py#L302-L308
         qs = Widget.objects.filter(
-            section=self.instance,  # NOTE: Adding this additional filter just to make sure
-            pk__in=pks_to_delete
+            section=self.instance, pk__in=pks_to_delete  # NOTE: Adding this additional filter just to make sure
         )
         qs.delete()
 
@@ -399,9 +385,7 @@ class SectionGqlSerializer(TempClientIdMixin, WritableNestedModelSerializer):
     def validate_widgets(self, items):
         # Check max limit for widgets
         validate_items_limit(
-            items,
-            AfWidgetLimit.MAX_WIDGETS_ALLOWED_PER_SECTION,
-            error_message='Only %d widgets are allowed. Provided: %d'
+            items, AfWidgetLimit.MAX_WIDGETS_ALLOWED_PER_SECTION, error_message="Only %d widgets are allowed. Provided: %d"
         )
         return items
 
@@ -426,12 +410,12 @@ class AnalysisFrameworkPropertiesStatsConfigSerializer(serializers.Serializer):
             if many:
                 return []
         if many:
-            ids = [item['pk'] for item in data]
+            ids = [item["pk"] for item in data]
             widgets = list(Widget.objects.filter(pk__in=ids))
             widgets_type = list(set([widget.widget_id for widget in widgets]))
             if widgets_type and widgets_type != [widget_type]:
                 raise serializers.ValidationError(
-                    f'Different widget type was provided. Required: {widget_type} Provided: {widgets_type}',
+                    f"Different widget type was provided. Required: {widget_type} Provided: {widgets_type}",
                 )
             return [
                 # Only return available widgets. Make sure to follow AnalysisFrameworkPropertiesStatsConfigIdGqlSerializer
@@ -439,7 +423,7 @@ class AnalysisFrameworkPropertiesStatsConfigSerializer(serializers.Serializer):
                 for widget in widgets
             ]
         # For single widget
-        pk = data['pk']
+        pk = data["pk"]
         try:
             widget = Widget.objects.get(pk=pk)
         except Widget.DoesNotExist:
@@ -448,7 +432,7 @@ class AnalysisFrameworkPropertiesStatsConfigSerializer(serializers.Serializer):
             )
         if widget.widget_id != widget_type:
             raise serializers.ValidationError(
-                f'Different widget type was provided. Required: {widget_type} Provided: {widget.widget_id}',
+                f"Different widget type was provided. Required: {widget_type} Provided: {widget.widget_id}",
             )
         return data
 
@@ -479,7 +463,7 @@ class AnalysisFrameworkPropertiesGqlSerializer(serializers.Serializer):
 
 
 class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
-    primary_tagging = SectionGqlSerializer(source='section_set', many=True, required=False)
+    primary_tagging = SectionGqlSerializer(source="section_set", many=True, required=False)
     secondary_tagging = WidgetGqlSerializer(many=True, write_only=False, required=False)
     prediction_tags_mapping = PredictionTagAnalysisFrameworkMapSerializer(many=True, write_only=False, required=False)
     properties = AnalysisFrameworkPropertiesGqlSerializer(required=False, allow_null=True)
@@ -488,10 +472,20 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
     class Meta:
         model = AnalysisFramework
         fields = (
-            'title', 'description', 'is_private', 'properties', 'organization', 'preview_image',
-            'created_at', 'created_by', 'modified_at', 'modified_by',
-            'primary_tagging', 'secondary_tagging',
-            'prediction_tags_mapping', 'assisted_tagging_enabled',
+            "title",
+            "description",
+            "is_private",
+            "properties",
+            "organization",
+            "preview_image",
+            "created_at",
+            "created_by",
+            "modified_at",
+            "modified_by",
+            "primary_tagging",
+            "secondary_tagging",
+            "prediction_tags_mapping",
+            "assisted_tagging_enabled",
         )
 
     # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
@@ -506,23 +500,17 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
         # Changing AF Privacy is not allowed (Existing AF)
         if self.instance:
             if self.instance.is_private != value:
-                raise exceptions.PermissionDenied({
-                    "is_private": "You don't have permission to change framework's privacy"
-                })
+                raise exceptions.PermissionDenied({"is_private": "You don't have permission to change framework's privacy"})
             return value
         # Requires feature access for Private project (New AF)
-        if value and not self.context['request'].user.have_feature_access(Feature.FeatureKey.PRIVATE_PROJECT):
-            raise exceptions.PermissionDenied({
-                "is_private": "You don't have permission to create/update private framework"
-            })
+        if value and not self.context["request"].user.have_feature_access(Feature.FeatureKey.PRIVATE_PROJECT):
+            raise exceptions.PermissionDenied({"is_private": "You don't have permission to create/update private framework"})
         return value
 
     def validate_primary_tagging(self, items):
         # Check max limit for sections
         validate_items_limit(
-            items,
-            AfWidgetLimit.MAX_SECTIONS_ALLOWED,
-            error_message='Only %d sections are allowed. Provided: %d'
+            items, AfWidgetLimit.MAX_SECTIONS_ALLOWED, error_message="Only %d sections are allowed. Provided: %d"
         )
         return items
 
@@ -531,7 +519,7 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
         validate_items_limit(
             items,
             AfWidgetLimit.MAX_WIDGETS_ALLOWED_IN_SECONDARY_TAGGING,
-            error_message='Only %d widgets are allowed. Provided: %d'
+            error_message="Only %d widgets are allowed. Provided: %d",
         )
         return items
 
@@ -541,32 +529,25 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
             raise serializers.ValidationError("Can't create prediction tag mapping for new framework. Save first!")
         if not prediction_tags_mapping:
             return prediction_tags_mapping
-        widget_qs = Widget.objects.filter(
-            id__in=[
-                _map['widget'].pk
-                for _map in prediction_tags_mapping
-            ]
-        )
-        if list(widget_qs.values_list('analysis_framework', flat=True).distinct()) != [framework.pk]:
-            raise serializers.ValidationError('Found widgets from another Analysis Framework')
+        widget_qs = Widget.objects.filter(id__in=[_map["widget"].pk for _map in prediction_tags_mapping])
+        if list(widget_qs.values_list("analysis_framework", flat=True).distinct()) != [framework.pk]:
+            raise serializers.ValidationError("Found widgets from another Analysis Framework")
         return prediction_tags_mapping
 
     def _delete_old_secondary_taggings(self, af, secondary_tagging):
-        current_ids = [
-            widget_data['id'] for widget_data in secondary_tagging
-            if 'id' in widget_data
-        ]
-        qs_to_delete = Widget.objects\
-            .filter(
-                analysis_framework=af,
-                section__isnull=True,  # NOTE: section are null for secondary taggings
-            ).exclude(pk__in=current_ids)  # Exclude current provided widgets
+        current_ids = [widget_data["id"] for widget_data in secondary_tagging if "id" in widget_data]
+        qs_to_delete = Widget.objects.filter(
+            analysis_framework=af,
+            section__isnull=True,  # NOTE: section are null for secondary taggings
+        ).exclude(
+            pk__in=current_ids
+        )  # Exclude current provided widgets
         qs_to_delete.delete()
 
     def _save_secondary_taggings(self, af, secondary_tagging):
         # Create secondary tagging widgets (Primary/Section widgets are created using WritableNestedModelSerializer)
         for widget_data in secondary_tagging:
-            id = widget_data.get('id')
+            id = widget_data.get("id")
             widget = None
             if id:
                 widget = Widget.objects.filter(analysis_framework=af, pk=id).first()
@@ -581,26 +562,23 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
             serializer.save(analysis_framework=af)
 
     def _delete_old_prediction_tags_mapping(self, af, prediction_tags_mapping):
-        current_ids = [
-            mapping['id']
-            for mapping in prediction_tags_mapping
-            if 'id' in mapping
-        ]
-        qs_to_delete = PredictionTagAnalysisFrameworkWidgetMapping.objects\
-            .filter(
-                widget__analysis_framework=af,
-            ).exclude(pk__in=current_ids)  # Exclude current provided widgets
+        current_ids = [mapping["id"] for mapping in prediction_tags_mapping if "id" in mapping]
+        qs_to_delete = PredictionTagAnalysisFrameworkWidgetMapping.objects.filter(
+            widget__analysis_framework=af,
+        ).exclude(
+            pk__in=current_ids
+        )  # Exclude current provided widgets
         qs_to_delete.delete()
 
     def _save_prediction_tags_mapping(self, af, prediction_tags_mapping):
         # Create secondary tagging widgets (Primary/Section widgets are created using WritableNestedModelSerializer)
         for prediction_tag_mapping in prediction_tags_mapping:
-            id = prediction_tag_mapping.get('id')
+            id = prediction_tag_mapping.get("id")
             mapping = None
             if id:
                 mapping = PredictionTagAnalysisFrameworkWidgetMapping.objects.filter(
                     widget__analysis_framework=af,
-                    widget=prediction_tag_mapping['widget'],
+                    widget=prediction_tag_mapping["widget"],
                     pk=id,
                 ).first()
             serializer = PredictionTagAnalysisFrameworkMapSerializer(
@@ -614,15 +592,13 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
             serializer.save()
 
     def _post_save(self, instance):
-        transaction.on_commit(
-            lambda: export_af_to_csv_task.delay(instance.pk)
-        )
+        transaction.on_commit(lambda: export_af_to_csv_task.delay(instance.pk))
 
     def create(self, validated_data):
-        validated_data.pop('secondary_tagging', None)
-        validated_data.pop('prediction_tags_mapping', None)
-        secondary_tagging = self.initial_data.get('secondary_tagging', None)
-        prediction_tags_mapping = self.initial_data.get('prediction_tags_mapping', None)
+        validated_data.pop("secondary_tagging", None)
+        validated_data.pop("prediction_tags_mapping", None)
+        secondary_tagging = self.initial_data.get("secondary_tagging", None)
+        prediction_tags_mapping = self.initial_data.get("prediction_tags_mapping", None)
         # Create AF
         instance = super().create(validated_data)
         if prediction_tags_mapping:
@@ -632,17 +608,17 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
         # TODO: Check if there are any recursive conditionals
         # Create a owner role
         owner_role = instance.get_or_create_owner_role()
-        instance.add_member(self.context['request'].user, owner_role)
+        instance.add_member(self.context["request"].user, owner_role)
         # NOTE: Set current_user_role value. (get_current_user_role)
         instance.current_user_role = owner_role.type
         self._post_save(instance)
         return instance
 
     def update(self, instance, validated_data):
-        validated_data.pop('secondary_tagging', None)
-        validated_data.pop('prediction_tags_mapping', None)
-        secondary_tagging = self.initial_data.get('secondary_tagging', None)
-        prediction_tags_mapping = self.initial_data.get('prediction_tags_mapping', None)
+        validated_data.pop("secondary_tagging", None)
+        validated_data.pop("prediction_tags_mapping", None)
+        secondary_tagging = self.initial_data.get("secondary_tagging", None)
+        prediction_tags_mapping = self.initial_data.get("prediction_tags_mapping", None)
         # Update AF
         instance = super().update(instance, validated_data)
         # Update secondary_tagging
@@ -656,7 +632,7 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
         if instance.created_by_id and not instance.members.filter(id=instance.created_by_id).exists():
             owner_role = instance.get_or_create_owner_role()
             instance.add_member(instance.created_by, owner_role)
-        ProjectChangeManager.log_framework_update(instance.pk, self.context['request'].user)
+        ProjectChangeManager.log_framework_update(instance.pk, self.context["request"].user)
         self._post_save(instance)
         return instance
 
@@ -667,17 +643,14 @@ class AnalysisFrameworkMembershipGqlSerializer(TempClientIdMixin, serializers.Mo
 
     class Meta:
         model = AnalysisFrameworkMembership
-        fields = (
-            'id', 'member', 'role',
-            'client_id'
-        )
+        fields = ("id", "member", "role", "client_id")
 
     @cached_property
     def framework(self):
-        framework = self.context['request'].active_af
+        framework = self.context["request"].active_af
         # This is a rare case, just to make sure this is validated
         if self.instance and self.instance.framework != framework:
-            raise serializers.ValidationError('Invalid access')
+            raise serializers.ValidationError("Invalid access")
         return framework
 
     def _get_default_role(self):
@@ -692,20 +665,20 @@ class AnalysisFrameworkMembershipGqlSerializer(TempClientIdMixin, serializers.Mo
     def validate_member(self, member):
         current_members = AnalysisFrameworkMembership.objects.filter(framework=self.framework, member=member)
         if current_members.exclude(pk=self.instance and self.instance.pk).exists():
-            raise serializers.ValidationError('User is already a member!')
+            raise serializers.ValidationError("User is already a member!")
         return member
 
     def validate_role(self, role):
         if role.is_private_role and not self.framework.is_private:
-            raise serializers.ValidationError('Public framework cannot have private role')
+            raise serializers.ValidationError("Public framework cannot have private role")
         if not role.is_private_role and self.framework.is_private:
-            raise serializers.ValidationError('Private framework cannot have public role')
+            raise serializers.ValidationError("Private framework cannot have public role")
         return role
 
     def create(self, validated_data):
         # use default role if not provided on creation.
-        validated_data['role'] = validated_data.get('role', self._get_default_role())
+        validated_data["role"] = validated_data.get("role", self._get_default_role())
         # make request user to be added_by by default
-        validated_data['framework'] = self.framework
-        validated_data['added_by'] = self.context['request'].user
+        validated_data["framework"] = self.framework
+        validated_data["added_by"] = self.context["request"].user
         return super().create(validated_data)

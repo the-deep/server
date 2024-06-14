@@ -1,4 +1,5 @@
 from django import forms
+
 from .models import Organization
 
 
@@ -9,6 +10,6 @@ class MergeForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
-        qs = kwargs.pop('organizations')
+        qs = kwargs.pop("organizations")
         super().__init__(*args, **kwargs)
-        self.fields['parent_organization'].queryset = qs
+        self.fields["parent_organization"].queryset = qs

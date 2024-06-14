@@ -1,34 +1,29 @@
-from typing import Type
 import logging
-from rest_framework import serializers
+from typing import Type
 
-from django.db import transaction, models
-
+from analysis.models import (
+    AnalyticalStatementGeoTask,
+    AnalyticalStatementNGram,
+    AutomaticSummary,
+    TopicModel,
+)
+from assisted_tagging.models import AssistedTaggingPrediction, DraftEntry
+from deduplication.tasks.indexing import index_lead_and_calculate_duplicates
 from deepl_integration.handlers import (
-    BaseHandler,
+    AnalysisAutomaticSummaryHandler,
+    AnalysisTopicModelHandler,
+    AnalyticalStatementGeoHandler,
+    AnalyticalStatementNGramHandler,
     AssistedTaggingDraftEntryHandler,
+    AutoAssistedTaggingDraftEntryHandler,
+    BaseHandler,
     LeadExtractionHandler,
     UnifiedConnectorLeadHandler,
-    AnalysisTopicModelHandler,
-    AnalysisAutomaticSummaryHandler,
-    AnalyticalStatementNGramHandler,
-    AnalyticalStatementGeoHandler,
-    AutoAssistedTaggingDraftEntryHandler
 )
-
-from deduplication.tasks.indexing import index_lead_and_calculate_duplicates
-from assisted_tagging.models import (
-    AssistedTaggingPrediction,
-    DraftEntry,
-)
-from unified_connector.models import ConnectorLead
+from django.db import models, transaction
 from lead.models import Lead
-from analysis.models import (
-    TopicModel,
-    AutomaticSummary,
-    AnalyticalStatementNGram,
-    AnalyticalStatementGeoTask,
-)
+from rest_framework import serializers
+from unified_connector.models import ConnectorLead
 
 from .models import DeeplTrackBaseModel
 
@@ -41,14 +36,16 @@ class BaseCallbackSerializer(serializers.Serializer):
     client_id = serializers.CharField()
 
     def validate(self, data):
-        client_id = data['client_id']
+        client_id = data["client_id"]
         try:
-            data['object'] = self.nlp_handler.get_object_using_client_id(client_id)
+            data["object"] = self.nlp_handler.get_object_using_client_id(client_id)
         except Exception:
-            logger.error('Failed to parse client id', exc_info=True)
-            raise serializers.ValidationError({
-                'client_id': 'Failed to parse client id',
-            })
+            logger.error("Failed to parse client id", exc_info=True)
+            raise serializers.ValidationError(
+                {
+                    "client_id": "Failed to parse client id",
+                }
+            )
         return data
 
 
@@ -56,9 +53,9 @@ class DeeplServerBaseCallbackSerializer(BaseCallbackSerializer):
     class Status(models.IntegerChoices):
         # NOTE: Defined by NLP
         # INITIATED = 1, 'Initiated'  # Not needed or used by deep
-        SUCCESS = 2, 'Success'
-        FAILED = 3, 'Failed'
-        INPUT_URL_PROCESS_FAILED = 4, 'Input url process failed'
+        SUCCESS = 2, "Success"
+        FAILED = 3, "Failed"
+        INPUT_URL_PROCESS_FAILED = 4, "Input url process failed"
 
     status = serializers.ChoiceField(choices=Status.choices)
 
@@ -68,11 +65,13 @@ class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
     """
     Serialize deepl extractor
     """
+
     url = serializers.CharField(required=False)
     # Data fields
     images_path = serializers.ListField(
         child=serializers.CharField(allow_blank=True),
-        required=False, default=[],
+        required=False,
+        default=[],
     )
     text_path = serializers.CharField(required=False, allow_null=True)
     total_words_count = serializers.IntegerField(required=False, default=0, allow_null=True)
@@ -83,32 +82,28 @@ class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
     def validate(self, data):
         data = super().validate(data)
         # Additional validation
-        if data['status'] == self.Status.SUCCESS and data.get('text_path') in [None, '']:
-            raise serializers.ValidationError({
-                'text_path': 'text_path is required when extraction status is success'
-            })
-        if data['status'] == self.Status.SUCCESS:
+        if data["status"] == self.Status.SUCCESS and data.get("text_path") in [None, ""]:
+            raise serializers.ValidationError({"text_path": "text_path is required when extraction status is success"})
+        if data["status"] == self.Status.SUCCESS:
             errors = {}
-            for key in ['text_path', 'total_words_count', 'total_pages', 'text_extraction_id']:
+            for key in ["text_path", "total_words_count", "total_pages", "text_extraction_id"]:
                 if key not in data or data[key] is None:
-                    errors[key] = (
-                        f"<{key=} or {data.get('key')=}> is missing. Required when the extraction status is Success"
-                    )
+                    errors[key] = f"<{key=} or {data.get('key')=}> is missing. Required when the extraction status is Success"
             if errors:
                 raise serializers.ValidationError(errors)
         return data
 
     def create(self, data):
-        success = data['status'] == self.Status.SUCCESS
-        lead = data['object']   # Added from validate
+        success = data["status"] == self.Status.SUCCESS
+        lead = data["object"]  # Added from validate
         if success:
             lead = self.nlp_handler.save_data(
                 lead,
-                data['text_path'],
-                data.get('images_path', [])[:10],   # TODO: Support for more images, too much image will error.
-                data.get('total_words_count'),
-                data.get('total_pages'),
-                data.get('text_extraction_id'),
+                data["text_path"],
+                data.get("images_path", [])[:10],  # TODO: Support for more images, too much image will error.
+                data.get("total_words_count"),
+                data.get("total_pages"),
+                data.get("text_extraction_id"),
             )
             # Add to deduplication index
             transaction.on_commit(lambda: index_lead_and_calculate_duplicates.delay(lead.id))
@@ -122,10 +117,12 @@ class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSeria
     """
     Serialize deepl extractor
     """
+
     # Data fields
     images_path = serializers.ListField(
         child=serializers.CharField(allow_blank=True),
-        required=False, default=[],
+        required=False,
+        default=[],
     )
     text_path = serializers.CharField(required=False, allow_null=True)
     total_words_count = serializers.IntegerField(required=False, default=0, allow_null=True)
@@ -136,28 +133,26 @@ class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSeria
 
     def validate(self, data):
         data = super().validate(data)
-        if data['status'] == self.Status.SUCCESS:
+        if data["status"] == self.Status.SUCCESS:
             errors = {}
-            for key in ['text_path', 'total_words_count', 'total_pages', 'text_extraction_id']:
+            for key in ["text_path", "total_words_count", "total_pages", "text_extraction_id"]:
                 if key not in data or data[key] is None:
-                    errors[key] = (
-                        f"<{key=} or {data.get('key')=}> is missing. Required when the extraction status is Success"
-                    )
+                    errors[key] = f"<{key=} or {data.get('key')=}> is missing. Required when the extraction status is Success"
             if errors:
                 raise serializers.ValidationError(errors)
         return data
 
     def create(self, data):
-        success = data['status'] == self.Status.SUCCESS
-        connector_lead = data['object']   # Added from validate
+        success = data["status"] == self.Status.SUCCESS
+        connector_lead = data["object"]  # Added from validate
         if success:
             return self.nlp_handler.save_data(
                 connector_lead,
-                data['text_path'],
-                data.get('images_path', [])[:10],  # TODO: Support for more images, to much image will error.
-                data['total_words_count'],
-                data['total_pages'],
-                data['text_extraction_id'],
+                data["text_path"],
+                data.get("images_path", [])[:10],  # TODO: Support for more images, to much image will error.
+                data["total_words_count"],
+                data["total_pages"],
+                data["text_extraction_id"],
             )
         connector_lead.update_extraction_status(ConnectorLead.ExtractionStatus.FAILED)
         return connector_lead
@@ -208,6 +203,7 @@ class AutoAssistedTaggingModelPredicationCallBackSerializer(serializers.Serializ
             required=False,
         )
         is_selected = serializers.BooleanField()
+
     values = serializers.ListSerializer(
         child=serializers.CharField(),
         required=False,
@@ -227,7 +223,7 @@ class AssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializ
     nlp_handler = AssistedTaggingDraftEntryHandler
 
     def create(self, validated_data):
-        draft_entry = validated_data['object']
+        draft_entry = validated_data["object"]
         if draft_entry.prediction_status == DraftEntry.PredictionStatus.DONE:
             return draft_entry
         return self.nlp_handler.save_data(
@@ -253,10 +249,10 @@ class AutoAssistedTaggingDraftEntryCallbackSerializer(BaseCallbackSerializer):
     nlp_handler = AutoAssistedTaggingDraftEntryHandler
 
     def create(self, validated_data):
-        obj = validated_data['object']
+        obj = validated_data["object"]
         return self.nlp_handler.save_data(
             obj,
-            validated_data['entry_extraction_classification_path'],
+            validated_data["entry_extraction_classification_path"],
         )
 
 
@@ -265,12 +261,12 @@ class EntriesCollectionBaseCallbackSerializer(DeeplServerBaseCallbackSerializer)
     presigned_s3_url = serializers.URLField()
 
     def create(self, validated_data):
-        obj = validated_data['object']
-        if validated_data['status'] == self.Status.SUCCESS:
+        obj = validated_data["object"]
+        if validated_data["status"] == self.Status.SUCCESS:
             self.nlp_handler.save_data(obj, validated_data)
         else:
             obj.status = self.model.Status.FAILED
-            obj.save(update_fields=('status',))
+            obj.save(update_fields=("status",))
         return obj
 
 

@@ -1,32 +1,21 @@
 from django.db import models
-from rest_framework import (
-    exceptions,
-    permissions,
-    response,
-    views,
-    viewsets,
-)
-
-from rest_framework.decorators import action
-from deep.permissions import ModifyPermission
 from project.models import Project
+from rest_framework import exceptions, permissions, response, views, viewsets
+from rest_framework.decorators import action
+from unified_connector.sources.base import Source
+
+from deep.permissions import ModifyPermission
 from utils.common import parse_number
 
+from .models import Connector, ConnectorProject, ConnectorUser
 from .serializers import (
-    SourceSerializer,
-    SourceDataSerializer,
-
+    ConnectorProjectSerializer,
     ConnectorSerializer,
     ConnectorUserSerializer,
-    ConnectorProjectSerializer,
-)
-from .models import (
-    Connector,
-    ConnectorUser,
-    ConnectorProject,
+    SourceDataSerializer,
+    SourceSerializer,
 )
 from .sources.store import source_store
-from unified_connector.sources.base import Source
 
 
 class SourceViewSet(viewsets.ViewSet):
@@ -36,10 +25,12 @@ class SourceViewSet(viewsets.ViewSet):
         sources = [s() for s in source_store.values()]
         serializer = SourceSerializer(sources, many=True)
         results = serializer.data
-        return response.Response({
-            'count': len(results),
-            'results': results,
-        })
+        return response.Response(
+            {
+                "count": len(results),
+                "results": results,
+            }
+        )
 
 
 class SourceQueryView(views.APIView):
@@ -47,26 +38,28 @@ class SourceQueryView(views.APIView):
 
     def query(self, source_type, query, params):
         source = source_store[source_type]()
-        method = getattr(source, 'query_{}'.format(query))
+        method = getattr(source, "query_{}".format(query))
 
         query_params = self.request.query_params
 
-        offset = parse_number(query_params.get('offset')) or 0
-        limit = parse_number(query_params.get('limit')) or Source.DEFAULT_PER_PAGE
+        offset = parse_number(query_params.get("offset")) or 0
+        limit = parse_number(query_params.get("limit")) or Source.DEFAULT_PER_PAGE
 
         args = ()
-        if query == 'leads':
+        if query == "leads":
             args = (offset, limit)
 
         results = method(params, *args)
 
         if isinstance(results, list):
-            return response.Response({
-                'count': len(results),
-                'results': results,
-                'has_emm_triggers': getattr(source, 'has_emm_triggers', False),
-                'has_emm_entities': getattr(source, 'has_emm_entities', False),
-            })
+            return response.Response(
+                {
+                    "count": len(results),
+                    "results": results,
+                    "has_emm_triggers": getattr(source, "has_emm_triggers", False),
+                    "has_emm_entities": getattr(source, "has_emm_entities", False),
+                }
+            )
 
         return response.Response(results)
 
@@ -79,52 +72,48 @@ class SourceQueryView(views.APIView):
 
 class ConnectorViewSet(viewsets.ModelViewSet):
     serializer_class = ConnectorSerializer
-    permission_classes = [permissions.IsAuthenticated,
-                          ModifyPermission]
+    permission_classes = [permissions.IsAuthenticated, ModifyPermission]
 
     def get_queryset(self):
-        user = self.request.GET.get('user', self.request.user)
-        project_ids = self.request.GET.get('projects')
+        user = self.request.GET.get("user", self.request.user)
+        project_ids = self.request.GET.get("projects")
         connectors = Connector.get_for(user)
 
-        role = self.request.GET.get('role')
+        role = self.request.GET.get("role")
         if role:
             users = ConnectorUser.objects.filter(
                 role=role,
                 user=user,
             )
-            connectors = connectors.filter(
-                connectoruser__in=users
-            )
+            connectors = connectors.filter(connectoruser__in=users)
 
         if not project_ids:
             return connectors
 
-        project_ids = project_ids.split(',')
+        project_ids = project_ids.split(",")
         projects = ConnectorProject.objects.filter(
             project__id__in=project_ids,
         )
-        self_projects = projects.filter(role='self')
-        global_projects = projects.filter(role='global')
+        self_projects = projects.filter(role="self")
+        global_projects = projects.filter(role="global")
 
         return connectors.filter(
-            models.Q(connectorproject__in=self_projects, users=user) |
-            models.Q(connectorproject__in=global_projects),
+            models.Q(connectorproject__in=self_projects, users=user) | models.Q(connectorproject__in=global_projects),
         )
 
     @action(
         detail=True,
         permission_classes=[permissions.IsAuthenticated],
-        methods=['post'],
-        url_path='leads',
-        serializer_class=SourceDataSerializer
+        methods=["post"],
+        url_path="leads",
+        serializer_class=SourceDataSerializer,
     )
     def get_leads(self, request, pk=None, version=None):
         connector = self.get_object()
         if not connector.can_get(request.user):
             raise exceptions.PermissionDenied()
 
-        project_id = request.data.pop('project', None)
+        project_id = request.data.pop("project", None)
         project = project_id and Project.objects.get(id=project_id)
 
         params = {
@@ -142,29 +131,30 @@ class ConnectorViewSet(viewsets.ModelViewSet):
         serializer = SourceDataSerializer(
             data,
             many=True,
-            context={'request': request, 'project': project},
+            context={"request": request, "project": project},
         )
         results = serializer.data
 
-        return response.Response({
-            'count': count,
-            'has_emm_triggers': getattr(source, 'has_emm_triggers', False),
-            'has_emm_entities': getattr(source, 'has_emm_entities', False),
-            'results': results,
-        })
+        return response.Response(
+            {
+                "count": count,
+                "has_emm_triggers": getattr(source, "has_emm_triggers", False),
+                "has_emm_entities": getattr(source, "has_emm_entities", False),
+                "results": results,
+            }
+        )
 
 
 class ConnectorUserViewSet(viewsets.ModelViewSet):
     serializer_class = ConnectorUserSerializer
-    permission_classes = [permissions.IsAuthenticated,
-                          ModifyPermission]
+    permission_classes = [permissions.IsAuthenticated, ModifyPermission]
 
     def get_serializer(self, *args, **kwargs):
-        data = kwargs.get('data')
-        list = data and data.get('list')
+        data = kwargs.get("data")
+        list = data and data.get("list")
         if list:
-            kwargs.pop('data')
-            kwargs.pop('many', None)
+            kwargs.pop("data")
+            kwargs.pop("many", None)
             return super().get_serializer(
                 data=list,
                 many=True,
@@ -182,15 +172,14 @@ class ConnectorUserViewSet(viewsets.ModelViewSet):
 
 class ConnectorProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ConnectorProjectSerializer
-    permission_classes = [permissions.IsAuthenticated,
-                          ModifyPermission]
+    permission_classes = [permissions.IsAuthenticated, ModifyPermission]
 
     def get_serializer(self, *args, **kwargs):
-        data = kwargs.get('data')
-        list = data and data.get('list')
+        data = kwargs.get("data")
+        list = data and data.get("list")
         if list:
-            kwargs.pop('data')
-            kwargs.pop('many', None)
+            kwargs.pop("data")
+            kwargs.pop("many", None)
             return super().get_serializer(
                 data=list,
                 many=True,

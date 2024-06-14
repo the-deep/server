@@ -3,32 +3,32 @@ from factory.django import DjangoModelFactory
 
 from .models import (
     AssistedTaggingModel,
-    AssistedTaggingModelVersion,
     AssistedTaggingModelPredictionTag,
-    DraftEntry,
+    AssistedTaggingModelVersion,
     AssistedTaggingPrediction,
-    WrongPredictionReview,
+    DraftEntry,
     MissingPredictionReview,
+    WrongPredictionReview,
 )
 
 
 class AssistedTaggingModelFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda n: f'Model-{n}')
+    name = factory.Sequence(lambda n: f"Model-{n}")
 
     class Meta:
         model = AssistedTaggingModel
 
 
 class AssistedTaggingModelVersionFactory(DjangoModelFactory):
-    version = factory.Sequence(lambda n: f'version-{n}')
+    version = factory.Sequence(lambda n: f"version-{n}")
 
     class Meta:
         model = AssistedTaggingModelVersion
 
 
 class AssistedTaggingModelPredictionTagFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda n: f'name-{n}')
-    tag_id = factory.Sequence(lambda n: f'tag-{n}')
+    name = factory.Sequence(lambda n: f"name-{n}")
+    tag_id = factory.Sequence(lambda n: f"tag-{n}")
 
     class Meta:
         model = AssistedTaggingModelPredictionTag

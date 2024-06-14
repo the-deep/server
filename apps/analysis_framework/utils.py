@@ -1,4 +1,5 @@
-from analysis_framework.models import Widget, Filter, Exportable
+from analysis_framework.models import Exportable, Filter, Widget
+
 from .widgets.store import widget_store
 
 
@@ -7,15 +8,15 @@ def update_widget(widget):
     widget_module = widget_store.get(widget.widget_id)
 
     if widget_module is None:
-        raise Exception(f'Unknown widget type: {widget.widget_id}')
+        raise Exception(f"Unknown widget type: {widget.widget_id}")
 
     new_filter_keys = []
-    if hasattr(widget_module, 'get_filters'):
+    if hasattr(widget_module, "get_filters"):
         filters = widget_module.get_filters(widget, widget_properties) or []
         for filter in filters:
-            filter_key = filter.get('key', widget.key)
+            filter_key = filter.get("key", widget.key)
             new_filter_keys.append(filter_key)
-            filter['title'] = filter.get('title', widget.title)
+            filter["title"] = filter.get("title", widget.title)
             Filter.objects.update_or_create(
                 analysis_framework=widget.analysis_framework,
                 widget_key=widget.key,
@@ -24,7 +25,7 @@ def update_widget(widget):
             )
 
     new_exportable_keys = []
-    if hasattr(widget_module, 'get_exportable'):
+    if hasattr(widget_module, "get_exportable"):
         exportable = widget_module.get_exportable(widget, widget_properties)
         if exportable:
             new_exportable_keys.append(widget.key)
@@ -32,7 +33,7 @@ def update_widget(widget):
                 analysis_framework=widget.analysis_framework,
                 widget_key=widget.key,
                 defaults={
-                    'data': exportable,
+                    "data": exportable,
                 },
             )
 

@@ -12,7 +12,7 @@ class RedisConnectionTest(TestCase):
         Test redis connection by writing, reading and deleting a value
         """
         r = redis.get_connection()
-        r.set('foo', 'bar')
-        self.assertEqual(r.get('foo'), b'bar')
-        r.delete('foo')
-        self.assertEqual(r.get('foo'), None)
+        r.set("foo", "bar")
+        self.assertEqual(r.get("foo"), b"bar")
+        r.delete("foo")
+        self.assertEqual(r.get("foo"), None)

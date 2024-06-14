@@ -1,20 +1,19 @@
 import datetime
 
-from utils.graphene.tests import GraphQLTestCase
-
-from user.factories import UserFactory
-from project.factories import ProjectFactory
-
 from analysis.factories import AnalysisFactory, AnalysisPillarFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
-from lead.factories import LeadFactory
 from entry.factories import EntryFactory
+from lead.factories import LeadFactory
+from project.factories import ProjectFactory
+from user.factories import UserFactory
+
+from utils.graphene.tests import GraphQLTestCase
 
 
 class TestAnalysisQuerySchema(GraphQLTestCase):
     def test_analyses_and_analysis_pillars_query(self):
         # Permission checks
-        query = '''
+        query = """
             query MyQuery ($projectId: ID!) {
               project(id: $projectId) {
                 analyses {
@@ -33,7 +32,7 @@ class TestAnalysisQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
 
         member_user = UserFactory.create()
         non_member_user = UserFactory.create()
@@ -44,7 +43,7 @@ class TestAnalysisQuerySchema(GraphQLTestCase):
             AnalysisPillarFactory.create_batch(5, analysis=analysis, assignee=member_user)
 
         def _query_check(**kwargs):
-            return self.query_check(query, variables={'projectId': project.id}, **kwargs)
+            return self.query_check(query, variables={"projectId": project.id}, **kwargs)
 
         # -- Without login
         _query_check(assert_for_error=True)
@@ -52,21 +51,21 @@ class TestAnalysisQuerySchema(GraphQLTestCase):
         # --- With login
         self.force_login(non_member_user)
         content = _query_check()
-        self.assertEqual(content['data']['project']['analyses']['totalCount'], 0, content)
-        self.assertEqual(len(content['data']['project']['analyses']['results']), 0, content)
-        self.assertEqual(content['data']['project']['analysisPillars']['totalCount'], 0, content)
-        self.assertEqual(len(content['data']['project']['analysisPillars']['results']), 0, content)
+        self.assertEqual(content["data"]["project"]["analyses"]["totalCount"], 0, content)
+        self.assertEqual(len(content["data"]["project"]["analyses"]["results"]), 0, content)
+        self.assertEqual(content["data"]["project"]["analysisPillars"]["totalCount"], 0, content)
+        self.assertEqual(len(content["data"]["project"]["analysisPillars"]["results"]), 0, content)
 
         self.force_login(member_user)
         content = _query_check()
-        self.assertEqual(content['data']['project']['analyses']['totalCount'], 2, content)
-        self.assertEqual(len(content['data']['project']['analyses']['results']), 2, content)
-        self.assertEqual(content['data']['project']['analysisPillars']['totalCount'], 10, content)
-        self.assertEqual(len(content['data']['project']['analysisPillars']['results']), 10, content)
+        self.assertEqual(content["data"]["project"]["analyses"]["totalCount"], 2, content)
+        self.assertEqual(len(content["data"]["project"]["analyses"]["results"]), 2, content)
+        self.assertEqual(content["data"]["project"]["analysisPillars"]["totalCount"], 10, content)
+        self.assertEqual(len(content["data"]["project"]["analysisPillars"]["results"]), 10, content)
 
     def test_analysis_and_analysis_pillar_query(self):
         # Permission checks
-        query = '''
+        query = """
             query MyQuery ($projectId: ID!, $analysisId: ID!, $analysisPillarId: ID!) {
               project(id: $projectId) {
                 analysis (id: $analysisId) {
@@ -79,7 +78,7 @@ class TestAnalysisQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
 
         member_user = UserFactory.create()
         non_member_user = UserFactory.create()
@@ -92,11 +91,12 @@ class TestAnalysisQuerySchema(GraphQLTestCase):
             return self.query_check(
                 query,
                 variables={
-                    'projectId': project.id,
-                    'analysisId': analysis.id,
-                    'analysisPillarId': analysis_pillar.id,
+                    "projectId": project.id,
+                    "analysisId": analysis.id,
+                    "analysisPillarId": analysis_pillar.id,
                 },
-                **kwargs)
+                **kwargs,
+            )
 
         # -- Without login
         _query_check(assert_for_error=True)
@@ -104,16 +104,16 @@ class TestAnalysisQuerySchema(GraphQLTestCase):
         # --- With login
         self.force_login(non_member_user)
         content = _query_check()
-        self.assertEqual(content['data']['project']['analysis'], None, content)
-        self.assertEqual(content['data']['project']['analysisPillar'], None, content)
+        self.assertEqual(content["data"]["project"]["analysis"], None, content)
+        self.assertEqual(content["data"]["project"]["analysisPillar"], None, content)
 
         self.force_login(member_user)
         content = _query_check()
-        self.assertNotEqual(content['data']['project']['analysis'], None, content)
-        self.assertNotEqual(content['data']['project']['analysisPillar'], None, content)
+        self.assertNotEqual(content["data"]["project"]["analysis"], None, content)
+        self.assertNotEqual(content["data"]["project"]["analysisPillar"], None, content)
 
     def test_analysis_pillars_entries_query(self):
-        query = '''
+        query = """
             query MyQuery ($projectId: ID!, $analysisPillarId: ID!) {
               project(id: $projectId) {
                 analysisPillar (id: $analysisPillarId) {
@@ -128,7 +128,7 @@ class TestAnalysisQuerySchema(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
 
         now = datetime.datetime.now()
         member_user = UserFactory.create()
@@ -143,7 +143,7 @@ class TestAnalysisQuerySchema(GraphQLTestCase):
         def _query_check(**kwargs):
             return self.query_check(
                 query,
-                variables={'projectId': project.id, 'analysisPillarId': analysis_pillar.pk},
+                variables={"projectId": project.id, "analysisPillarId": analysis_pillar.pk},
                 **kwargs,
             )
 
@@ -153,12 +153,12 @@ class TestAnalysisQuerySchema(GraphQLTestCase):
         # --- With login
         self.force_login(non_member_user)
         content = _query_check()
-        self.assertEqual(content['data']['project']['analysisPillar'], None, content)
+        self.assertEqual(content["data"]["project"]["analysisPillar"], None, content)
 
         self.force_login(member_user)
         content = _query_check()
-        self.assertEqual(content['data']['project']['analysisPillar']['entries']['totalCount'], 0, content)
-        self.assertEqual(len(content['data']['project']['analysisPillar']['entries']['results']), 0, content)
+        self.assertEqual(content["data"]["project"]["analysisPillar"]["entries"]["totalCount"], 0, content)
+        self.assertEqual(len(content["data"]["project"]["analysisPillar"]["entries"]["results"]), 0, content)
 
         # Let's add some entries
         lead_published_on = now - datetime.timedelta(days=1)  # To fit within analysis end_date
@@ -166,5 +166,5 @@ class TestAnalysisQuerySchema(GraphQLTestCase):
         EntryFactory.create_batch(8, lead=LeadFactory.create(project=another_project, published_on=lead_published_on))
 
         content = _query_check()
-        self.assertEqual(content['data']['project']['analysisPillar']['entries']['totalCount'], 10, content)
-        self.assertEqual(len(content['data']['project']['analysisPillar']['entries']['results']), 10, content)
+        self.assertEqual(content["data"]["project"]["analysisPillar"]["entries"]["totalCount"], 10, content)
+        self.assertEqual(len(content["data"]["project"]["analysisPillar"]["entries"]["results"]), 10, content)

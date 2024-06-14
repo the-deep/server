@@ -1,5 +1,5 @@
 class FileNameRegex:
-    regex = '.*'
+    regex = ".*"
 
     def to_python(self, value):
         return value

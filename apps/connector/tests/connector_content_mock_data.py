@@ -1,4 +1,4 @@
-RSS_FEED_MOCK_DATA = '''<?xml version="1.0" encoding="utf-8" ?>
+RSS_FEED_MOCK_DATA = """<?xml version="1.0" encoding="utf-8" ?>
 <rss version="2.0"
     xmlns:atom="http://www.w3.org/2005/Atom"
     xmlns:media="http://search.yahoo.com/mrss/">
@@ -459,4 +459,6 @@ The children&rsquo;s everyday life, their daily roundabouts and school expectati
         </item>
     </channel>
 </rss>
-'''.encode('utf-8')
+""".encode(
+    "utf-8"
+)

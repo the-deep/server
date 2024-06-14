@@ -1,10 +1,10 @@
 from collections import OrderedDict
-
-import graphene
 from typing import Union
 
+import graphene
 from django.db import models
-from graphene import ObjectType, Field, Int
+from graphene import Field, Int, ObjectType
+
 # we will use graphene_django registry over the one from graphene_django_extras
 # since it adds information regarding nullability in the schema definition
 from graphene_django.registry import get_global_registry
@@ -13,23 +13,20 @@ from graphene_django_extras import DjangoListObjectType, DjangoObjectType
 from graphene_django_extras.base_types import factory_type
 from graphene_django_extras.types import DjangoObjectOptions
 
-from deep.serializers import TempClientIdMixin
 from deep.caches import local_cache
-from deep.serializers import URLCachedFileField
+from deep.serializers import TempClientIdMixin, URLCachedFileField
 from utils.graphene.fields import CustomDjangoListField
 from utils.graphene.options import CustomObjectTypeOptions
 
 
 class ClientIdMixin(graphene.ObjectType):
-    client_id = graphene.ID(required=True, description='Provides clientID if provided in the mutation. Fallback is id')
+    client_id = graphene.ID(required=True, description="Provides clientID if provided in the mutation. Fallback is id")
 
     @staticmethod
     def resolve_client_id(root, info):
         # NOTE: We should always provide non-null client_id
         client_id = (
-            getattr(root, 'client_id', None) or
-            local_cache.get(TempClientIdMixin.get_cache_key(root, info.context)) or
-            root.id
+            getattr(root, "client_id", None) or local_cache.get(TempClientIdMixin.get_cache_key(root, info.context)) or root.id
         )
         if client_id is not None:
             return client_id
@@ -49,15 +46,14 @@ class CustomListObjectType(ObjectType):
         **options,
     ):
 
-        assert base_type is not None, (
-            'Base Type of the ListField should be defined in the Meta.'
-        )
+        assert base_type is not None, "Base Type of the ListField should be defined in the Meta."
 
         if not DJANGO_FILTER_INSTALLED and filterset_class:
             raise Exception("Can only set filterset_class if Django-Filter is installed")
 
         if not filterset_class:
             from django_filters import rest_framework as df
+
             filterset_class = df.FilterSet
 
         results_field_name = results_field_name or "results"
@@ -94,19 +90,18 @@ class CustomListObjectType(ObjectType):
                         name="pageSize",
                         description="Page Size",
                     ),
-                )
+                ),
             ]
         )
 
-        super(CustomListObjectType, cls).__init_subclass_with_meta__(
-            _meta=_meta, **options
-        )
+        super(CustomListObjectType, cls).__init_subclass_with_meta__(_meta=_meta, **options)
 
 
 class CustomDjangoListObjectType(DjangoListObjectType):
     """
     Updates `DjangoListObjectType` to add page related fields into type definition
     """
+
     class Meta:
         abstract = True
 
@@ -126,20 +121,19 @@ class CustomDjangoListObjectType(DjangoListObjectType):
         **options,
     ):
 
-        assert is_valid_django_model(model), (
-            'You need to pass a valid Django Model in {}.Meta, received "{}".'
-        ).format(cls.__name__, model)
+        assert is_valid_django_model(model), ('You need to pass a valid Django Model in {}.Meta, received "{}".').format(
+            cls.__name__, model
+        )
 
         assert pagination is None, (
-            'Pagination should be applied on the ListField enclosing {0} rather than its `{0}.Meta`.'
+            "Pagination should be applied on the ListField enclosing {0} rather than its `{0}.Meta`."
         ).format(cls.__name__)
 
         if not DJANGO_FILTER_INSTALLED and filter_fields:
             raise Exception("Can only set filter_fields if Django-Filter is installed")
 
         assert isinstance(queryset, models.QuerySet) or queryset is None, (
-            "The attribute queryset in {} needs to be an instance of "
-            'Django model queryset, received "{}".'
+            "The attribute queryset in {} needs to be an instance of " 'Django model queryset, received "{}".'
         ).format(cls.__name__, queryset)
 
         results_field_name = results_field_name or "results"
@@ -199,13 +193,11 @@ class CustomDjangoListObjectType(DjangoListObjectType):
                         name="pageSize",
                         description="Page Size",
                     ),
-                )
+                ),
             ]
         )
 
-        super(DjangoListObjectType, cls).__init_subclass_with_meta__(
-            _meta=_meta, **options
-        )
+        super(DjangoListObjectType, cls).__init_subclass_with_meta__(_meta=_meta, **options)
 
 
 class FileFieldType(graphene.ObjectType):
@@ -219,9 +211,7 @@ class FileFieldType(graphene.ObjectType):
         return root.name
 
     def resolve_url(root, info, **kwargs) -> Union[str, None]:
-        return info.context.request.build_absolute_uri(
-            URLCachedFileField.name_to_representation(root)
-        )
+        return info.context.request.build_absolute_uri(URLCachedFileField.name_to_representation(root))
 
 
 class DateCountType(graphene.ObjectType):

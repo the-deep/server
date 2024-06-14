@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class AnalysisFrameworkConfig(AppConfig):
-    name = 'analysis_framework'
+    name = "analysis_framework"

@@ -1,4 +1,5 @@
 from functools import partial
+
 import django_filters
 import graphene
 from graphene.types.generic import GenericScalar
@@ -30,9 +31,7 @@ def _generate_filter_class(inner_type, filter_type=None, non_null=False):
             ).format(inner_type.__name__, _filter_type),
         },
     )
-    convert_form_field.register(form_field)(
-        lambda _: graphene.NonNull(inner_type) if non_null else inner_type()
-    )
+    convert_form_field.register(form_field)(lambda _: graphene.NonNull(inner_type) if non_null else inner_type())
 
     return filter_class
 
@@ -69,9 +68,7 @@ def _generate_list_filter_class(inner_type, filter_type=None, field_class=None):
             ).format(inner_type.__name__, _filter_type),
         },
     )
-    convert_form_field.register(form_field)(
-        lambda _: graphene.List(graphene.NonNull(inner_type))
-    )
+    convert_form_field.register(form_field)(lambda _: graphene.List(graphene.NonNull(inner_type)))
 
     return filter_class
 
@@ -117,14 +114,14 @@ DateTimeFilter = partial(
 )
 DateTimeGteFilter = partial(
     django_filters.DateTimeFilter,
-    lookup_expr='gte',
+    lookup_expr="gte",
     input_formats=[django_filters.fields.IsoDateTimeField.ISO_8601],
 )
 DateTimeLteFilter = partial(
     django_filters.DateTimeFilter,
-    lookup_expr='lte',
+    lookup_expr="lte",
     input_formats=[django_filters.fields.IsoDateTimeField.ISO_8601],
 )
 
-DateGteFilter = partial(django_filters.DateFilter, lookup_expr='gte')
-DateLteFilter = partial(django_filters.DateFilter, lookup_expr='lte')
+DateGteFilter = partial(django_filters.DateFilter, lookup_expr="gte")
+DateLteFilter = partial(django_filters.DateFilter, lookup_expr="lte")

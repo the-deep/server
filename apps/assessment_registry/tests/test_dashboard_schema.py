@@ -1,24 +1,21 @@
 from datetime import date, timedelta
 
-from utils.graphene.tests import GraphQLTestCase
-
-from organization.factories import OrganizationFactory
-from geo.factories import RegionFactory, AdminLevelFactory, GeoAreaFactory
-from gallery.factories import FileFactory
-from project.factories import ProjectFactory
-from user.factories import UserFactory
-from lead.factories import LeadFactory
-from assessment_registry.factories import (
-    QuestionFactory,
-    SummaryIssueFactory,
-)
+from assessment_registry.factories import QuestionFactory, SummaryIssueFactory
 from assessment_registry.models import (
+    AdditionalDocument,
     AssessmentRegistry,
     MethodologyAttribute,
-    AdditionalDocument,
-    ScoreRating,
     Question,
+    ScoreRating,
 )
+from gallery.factories import FileFactory
+from geo.factories import AdminLevelFactory, GeoAreaFactory, RegionFactory
+from lead.factories import LeadFactory
+from organization.factories import OrganizationFactory
+from project.factories import ProjectFactory
+from user.factories import UserFactory
+
+from utils.graphene.tests import GraphQLTestCase
 
 
 class AssessmentDashboardQuerySchema(GraphQLTestCase):
@@ -355,21 +352,21 @@ class AssessmentDashboardQuerySchema(GraphQLTestCase):
         self.assertEqual(content["assessmentPerFrameworkPillar"][0]["date"], str(date.today()))
         # assessment dashboard tab 2
         self.assertEqual(
-            content['assessmentByDataCollectionTechniqueAndGeolocation'][0]['dataCollectionTechnique'],
-            "SECONDARY_DATA_REVIEW")
+            content["assessmentByDataCollectionTechniqueAndGeolocation"][0]["dataCollectionTechnique"], "SECONDARY_DATA_REVIEW"
+        )
         self.assertEqual(
-            content['assessmentByDataCollectionTechniqueAndGeolocation'][1]['dataCollectionTechnique'],
-            "KEY_INFORMAT_INTERVIEW")
-        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][0]['geoArea'], str(self.geo_area1.id))
-        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][1]['geoArea'], str(self.geo_area1.id))
-        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][0]['count'], 1)
-        self.assertEqual(content['assessmentByDataCollectionTechniqueAndGeolocation'][1]['count'], 1)
-        self.assertEqual(content['assessmentByProximityAndGeolocation'][0]['count'], 2)
-        self.assertEqual(content['assessmentByProximityAndGeolocation'][0]['proximity'], "FACE_TO_FACE")
-        self.assertEqual(content['assessmentByProximityAndGeolocation'][0]['geoArea'], str(self.geo_area1.id))
+            content["assessmentByDataCollectionTechniqueAndGeolocation"][1]["dataCollectionTechnique"], "KEY_INFORMAT_INTERVIEW"
+        )
+        self.assertEqual(content["assessmentByDataCollectionTechniqueAndGeolocation"][0]["geoArea"], str(self.geo_area1.id))
+        self.assertEqual(content["assessmentByDataCollectionTechniqueAndGeolocation"][1]["geoArea"], str(self.geo_area1.id))
+        self.assertEqual(content["assessmentByDataCollectionTechniqueAndGeolocation"][0]["count"], 1)
+        self.assertEqual(content["assessmentByDataCollectionTechniqueAndGeolocation"][1]["count"], 1)
+        self.assertEqual(content["assessmentByProximityAndGeolocation"][0]["count"], 2)
+        self.assertEqual(content["assessmentByProximityAndGeolocation"][0]["proximity"], "FACE_TO_FACE")
+        self.assertEqual(content["assessmentByProximityAndGeolocation"][0]["geoArea"], str(self.geo_area1.id))
         # assessment Dashboard tab 3
-        self.assertEqual(content['medianQualityScoreByAnalyticalDensityDate'][0]['sector'], "FOOD_SECURITY")
-        self.assertEqual(content['medianQualityScoreByAnalyticalDensityDate'][0]['sectorDisplay'], "Food Security")
-        self.assertEqual(content['medianQualityScoreByAnalyticalDensityDate'][0]['date'], str(date.today()))
-        self.assertEqual(content['medianQualityScoreByAnalyticalDensityDate'][1]['finalScore'], 0.0)
-        self.assertEqual(content['medianQualityScoreByGeoArea'][0]['finalScore'], 8.75)
+        self.assertEqual(content["medianQualityScoreByAnalyticalDensityDate"][0]["sector"], "FOOD_SECURITY")
+        self.assertEqual(content["medianQualityScoreByAnalyticalDensityDate"][0]["sectorDisplay"], "Food Security")
+        self.assertEqual(content["medianQualityScoreByAnalyticalDensityDate"][0]["date"], str(date.today()))
+        self.assertEqual(content["medianQualityScoreByAnalyticalDensityDate"][1]["finalScore"], 0.0)
+        self.assertEqual(content["medianQualityScoreByGeoArea"][0]["finalScore"], 8.75)

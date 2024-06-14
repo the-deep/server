@@ -1,10 +1,8 @@
 from django import template
 from django.conf import settings
-from django.templatetags.static import static
 from django.core.files.storage import FileSystemStorage, get_storage_class
-
+from django.templatetags.static import static
 from mdmail.api import EmailContent
-
 
 register = template.Library()
 
@@ -16,7 +14,7 @@ def markdown_render(value):
     if value:
         content = EmailContent(value)
         return content.html
-    return '-'
+    return "-"
 
 
 @register.filter(is_safe=True)

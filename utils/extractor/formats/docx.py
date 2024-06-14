@@ -1,17 +1,18 @@
 #! /usr/bin/env python3
 
-import xml.etree.ElementTree as ET
-from django.conf import settings
 import argparse
-import tempfile
-import zipfile
-import sys
-import re
+import logging
 import os
 import random
+import re
 import string
+import sys
+import tempfile
+import xml.etree.ElementTree as ET
+import zipfile
 from subprocess import call
-import logging
+
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -21,25 +22,23 @@ Usage:
     text, images = process(doc) -> images for tempfile
 """
 
-nsmap = {'w': 'http://schemas.openxmlformats.org/wordprocessingml/2006/main',
-         'p': 'http://schemas.openxmlformats.org/presentationml/2006/main',
-         'a': 'http://schemas.openxmlformats.org/drawingml/2006/main',
-         'wP': 'http://schemas.openxmlformats.org/officeDocument/2006/extended-properties',  # noqa
-         }
+nsmap = {
+    "w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main",
+    "p": "http://schemas.openxmlformats.org/presentationml/2006/main",
+    "a": "http://schemas.openxmlformats.org/drawingml/2006/main",
+    "wP": "http://schemas.openxmlformats.org/officeDocument/2006/extended-properties",  # noqa
+}
 
 
 def process_args():
-    parser = argparse.ArgumentParser(description='A pure python-based utility '
-                                                 'to extract text and images '
-                                                 'from docx files.')
+    parser = argparse.ArgumentParser(description="A pure python-based utility " "to extract text and images " "from docx files.")
     parser.add_argument("docx", help="path of the docx file")
-    parser.add_argument('-i', '--img_dir', help='path of directory '
-                                                'to extract images')
+    parser.add_argument("-i", "--img_dir", help="path of directory " "to extract images")
 
     args = parser.parse_args()
 
     if not os.path.exists(args.docx):
-        print('File {} does not exist.'.format(args.docx))
+        print("File {} does not exist.".format(args.docx))
         sys.exit(1)
 
     if args.img_dir is not None:
@@ -59,9 +58,9 @@ def qn(tag):
     example, ``qn('p:cSld')`` returns ``'{http://schemas.../main}cSld'``.
     Source: https://github.com/python-openxml/python-docx/
     """
-    prefix, tagroot = tag.split(':')
+    prefix, tagroot = tag.split(":")
     uri = nsmap[prefix]
-    return '{{{}}}{}'.format(uri, tagroot)
+    return "{{{}}}{}".format(uri, tagroot)
 
 
 def xml2text(xml, pptx=False):
@@ -71,35 +70,35 @@ def xml2text(xml, pptx=False):
     equivalent.
     Adapted from: https://github.com/python-openxml/python-docx/
     """
-    text = u''
+    text = ""
     root = ET.fromstring(xml)
     if pptx is False:
         for child in root.iter():
-            if child.tag == qn('w:t'):
+            if child.tag == qn("w:t"):
                 t_text = child.text
-                text += t_text if t_text is not None else ''
-            elif child.tag == qn('w:tab'):
-                text += '\t'
-            elif child.tag in (qn('w:br'), qn('w:cr')):
-                text += '\n'
+                text += t_text if t_text is not None else ""
+            elif child.tag == qn("w:tab"):
+                text += "\t"
+            elif child.tag in (qn("w:br"), qn("w:cr")):
+                text += "\n"
             elif child.tag == qn("w:p"):
-                text += '\n\n'
+                text += "\n\n"
     else:
         for child in root.iter():
-            if child.tag == qn('a:t'):
+            if child.tag == qn("a:t"):
                 t_text = child.text
-                text += t_text if t_text is not None else ''
-            elif child.tag == qn('a:tab'):
-                text += '\t'
-            elif child.tag in (qn('a:br'), qn('a:cr')):
-                text += '\n'
+                text += t_text if t_text is not None else ""
+            elif child.tag == qn("a:tab"):
+                text += "\t"
+            elif child.tag in (qn("a:br"), qn("a:cr")):
+                text += "\n"
             elif child.tag in (qn("a:p"), qn("a:bodyPr"), qn("a:fld")):
-                text += '\n\n'
+                text += "\n\n"
     return text
 
 
 def process(docx, pptx=False, img_dir=None):
-    text = u''
+    text = ""
 
     # unzip the docx in memory
     zipf = zipfile.ZipFile(docx)
@@ -109,13 +108,13 @@ def process(docx, pptx=False, img_dir=None):
 
     # get header text
     # there can be 3 header files in the zip
-    header_xmls = 'ppt/header[0-9]*.xml' if pptx else 'word/header[0-9]*.xml'
+    header_xmls = "ppt/header[0-9]*.xml" if pptx else "word/header[0-9]*.xml"
     for fname in filelist:
         if re.match(header_xmls, fname):
             text += xml2text(zipf.read(fname))
 
     # get main text
-    doc_xml = 'ppt/slides/slide[0-9]*.xml' if pptx else 'word/document.xml'
+    doc_xml = "ppt/slides/slide[0-9]*.xml" if pptx else "word/document.xml"
     if pptx:
         for fname in filelist:
             if re.match(doc_xml, fname):
@@ -129,7 +128,7 @@ def process(docx, pptx=False, img_dir=None):
 
     # get footer text
     # there can be 3 footer files in the zip
-    footer_xmls = 'ppt/footer[0-9]*.xml' if pptx else 'word/footer[0-9]*.xml'
+    footer_xmls = "ppt/footer[0-9]*.xml" if pptx else "word/footer[0-9]*.xml"
     for fname in filelist:
         if re.match(footer_xmls, fname):
             text += xml2text(zipf.read(fname))
@@ -157,48 +156,53 @@ def pptx_process(docx, img_dir=None):
 
 
 def msword_process(doc, img_dir=None):
-    tmp_filepath = '/tmp/{}'.format(
-        ''.join(random.sample(string.ascii_lowercase, 10)) + '.doc'
-    )
+    tmp_filepath = "/tmp/{}".format("".join(random.sample(string.ascii_lowercase, 10)) + ".doc")
 
-    with open(tmp_filepath, 'wb') as tmpdoc:
+    with open(tmp_filepath, "wb") as tmpdoc:
         tmpdoc.write(doc.read())
         tmpdoc.flush()
 
-    call([
-        'libreoffice', '--headless', '--convert-to', 'docx',
-        tmp_filepath, '--outdir', settings.TEMP_DIR,
-    ])
-
-    doc_filename = os.path.join(
-        settings.TEMP_DIR,
-        re.sub(r'doc$', 'docx', os.path.basename(tmp_filepath))
+    call(
+        [
+            "libreoffice",
+            "--headless",
+            "--convert-to",
+            "docx",
+            tmp_filepath,
+            "--outdir",
+            settings.TEMP_DIR,
+        ]
     )
+
+    doc_filename = os.path.join(settings.TEMP_DIR, re.sub(r"doc$", "docx", os.path.basename(tmp_filepath)))
     # docx = open(doc_filename)
 
     response = process(doc_filename)
 
     # Clean up converted docx file
-    call(['rm', '-f', doc_filename, tmp_filepath])
+    call(["rm", "-f", doc_filename, tmp_filepath])
     return response
 
 
 def get_pages_in_docx(file):
     with zipfile.ZipFile(file) as zipf:
         try:
-            xml = zipf.read('docProps/app.xml')
-            pages = ET.fromstring(xml).find('wP:Pages', nsmap)
+            xml = zipf.read("docProps/app.xml")
+            pages = ET.fromstring(xml).find("wP:Pages", nsmap)
             # pages could be False or None
             return int(pages.text) if pages is not None else 0
         except KeyError:
-            logger.warning('Error reading page from docx {}'.format(
-                file,
-            ), exc_info=True)
+            logger.warning(
+                "Error reading page from docx {}".format(
+                    file,
+                ),
+                exc_info=True,
+            )
             return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = process_args()
     text, images = process(args.docx, args.img_dir)
-    print(text.encode('utf-8'))
+    print(text.encode("utf-8"))
     print(images)

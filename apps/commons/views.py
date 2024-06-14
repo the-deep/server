@@ -4,31 +4,25 @@ import logging
 import random
 import string
 
-from django.views.generic import View
 from django.http import FileResponse, HttpResponse
-
-
+from django.views.generic import View
 from geo.models import GeoArea
-from tabular.viz import (
-    barchart,
-    histograms,
-    map as _map,
-)
-
+from tabular.viz import barchart, histograms
+from tabular.viz import map as _map
 
 logger = logging.getLogger(__name__)
 
 try:
     import pandas as pd
 except ImportError as e:
-    logger.warning(f'ImportError: {e}')
+    logger.warning(f"ImportError: {e}")
 
 
-STRINGS = string.ascii_uppercase + string.digits + 'चैनपुर नगरपालिका à€'
+STRINGS = string.ascii_uppercase + string.digits + "चैनपुर नगरपालिका à€"
 
 
 def _get_random_string(N):
-    return ''.join(random.choice(STRINGS) for _ in range(N))
+    return "".join(random.choice(STRINGS) for _ in range(N))
 
 
 def _get_random_number(min, max):
@@ -36,18 +30,20 @@ def _get_random_number(min, max):
 
 
 def _get_image_response(fp, image_format):
-    if image_format == 'svg':
+    if image_format == "svg":
         return HttpResponse(
-            '''
+            """
             <!DOCTYPE html>
             <html>
             <body>
             {}
             </body>
             </html>
-            '''.format(fp.read().decode('utf-8'))
+            """.format(
+                fp.read().decode("utf-8")
+            )
         )
-    return FileResponse(fp, content_type='image/png')
+    return FileResponse(fp, content_type="image/png")
 
 
 class RenderChart(View):
@@ -55,6 +51,7 @@ class RenderChart(View):
     Debug chart rendering
     NOTE: Use Only For Debug
     """
+
     MAX_VALUE_LEN = 1000
     MAX_VALUE_INTEGER = 100
     MAX_ROW = 10
@@ -63,55 +60,58 @@ class RenderChart(View):
     def get_geo_data(self):
         return [
             {
-                'count': _get_random_number(1, self.MAX_COUNT),
-                'value': geoarea.id,
-            } for geoarea in GeoArea.objects.filter(admin_level_id=2)
+                "count": _get_random_number(1, self.MAX_COUNT),
+                "value": geoarea.id,
+            }
+            for geoarea in GeoArea.objects.filter(admin_level_id=2)
         ]
 
     def get_data(self, number=False):
         return [
             {
-                'count': _get_random_number(10, self.MAX_COUNT),
-                'value': _get_random_number(10, self.MAX_VALUE_INTEGER)
-                if number else _get_random_string(self.MAX_VALUE_LEN),
-            } for row in range(self.MAX_ROW)
+                "count": _get_random_number(10, self.MAX_COUNT),
+                "value": _get_random_number(10, self.MAX_VALUE_INTEGER) if number else _get_random_string(self.MAX_VALUE_LEN),
+            }
+            for row in range(self.MAX_ROW)
         ]
 
     def get(self, request):
-        image_format = request.GET.get('format', 'png')
-        chart_type = request.GET.get('chart_type', 'barchart')
-        if chart_type in ['histograms']:
+        image_format = request.GET.get("format", "png")
+        chart_type = request.GET.get("chart_type", "barchart")
+        if chart_type in ["histograms"]:
             df = pd.DataFrame(self.get_data(number=True))
-        elif chart_type in ['map']:
+        elif chart_type in ["map"]:
             df = pd.DataFrame(self.get_geo_data())
         else:
             df = pd.DataFrame(self.get_data())
 
         params = {
-            'x_label': 'Test Label',
-            'y_label': 'count',
-            'chart_size': (8, 4),
-            'data': df,
-            'format': image_format,
+            "x_label": "Test Label",
+            "y_label": "count",
+            "chart_size": (8, 4),
+            "data": df,
+            "format": image_format,
         }
 
-        if chart_type == 'barchart':
-            params['data']['value'] = params['data']['value'].str.slice(0, 20) + '...'
+        if chart_type == "barchart":
+            params["data"]["value"] = params["data"]["value"].str.slice(0, 20) + "..."
             fp = barchart.plotly(**params)
-        elif chart_type == 'histograms':
+        elif chart_type == "histograms":
             new_data = []
-            values = df['value'].tolist()
-            counts = df['count'].tolist()
+            values = df["value"].tolist()
+            counts = df["count"].tolist()
             for index, value in enumerate(values):
                 new_data.extend([value for i in range(counts[index])])
-            params['data'] = pd.to_numeric(new_data)
+            params["data"] = pd.to_numeric(new_data)
             fp = histograms.plotly(**params)
-        elif chart_type == 'map':
-            adjust_df = pd.DataFrame([
-                {'value': 0, 'count': 0},   # Count 0 is min's max value
-                {'value': 0, 'count': 5},   # Count 5 is max's min value
-            ])
-            params['data'] = params['data'].append(adjust_df, ignore_index=True)
+        elif chart_type == "map":
+            adjust_df = pd.DataFrame(
+                [
+                    {"value": 0, "count": 0},  # Count 0 is min's max value
+                    {"value": 0, "count": 5},  # Count 5 is max's min value
+                ]
+            )
+            params["data"] = params["data"].append(adjust_df, ignore_index=True)
             fp = _map.plot(**params)
 
-        return _get_image_response(fp[0]['image'], fp[0]['format'])
+        return _get_image_response(fp[0]["image"], fp[0]["format"])

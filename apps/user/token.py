@@ -1,4 +1,5 @@
 from django.conf import settings
+
 from deep.token import DeepTokenGenerator
 
 
@@ -7,6 +8,7 @@ class UnsubscribeEmailTokenGenerator(DeepTokenGenerator):
     Strategy object used to generate and check tokens for the unsubscribing
     user from receving email.
     """
+
     key_salt = "user.token.UnsubscribeEmailTokenGenerator"
     secret = settings.SECRET_KEY
     reset_timeout_days = 100
@@ -23,8 +25,9 @@ class UnsubscribeEmailTokenGenerator(DeepTokenGenerator):
         """
         return (
             # FIXME: Add str(user.receive_email) here
-            str(user.pk) + user.password +
-            str(timestamp)
+            str(user.pk)
+            + user.password
+            + str(timestamp)
         )
 
 

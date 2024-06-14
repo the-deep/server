@@ -18,7 +18,7 @@ class CustomSQLCompiler:
             # when  we have public API way of forcing the GROUP BY clause.
             # Converts string references to expressions.
             for expr in self.query.group_by:
-                if not hasattr(expr, 'as_sql'):
+                if not hasattr(expr, "as_sql"):
                     expressions.append(self.query.resolve_ref(expr))
                 else:
                     expressions.append(expr)

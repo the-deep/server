@@ -1,24 +1,18 @@
+import graphene
 from django.utils.translation import gettext
 
-import graphene
-
+from utils.graphene.error_types import CustomErrorType, mutation_is_not_valid
 from utils.graphene.mutation import GrapheneMutation, generate_input_type_for_serializer
-from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
 
-from .serializers import AssignmentSerializer, NotificationGqSerializer
-from .schema import AssignmentType, NotificationType
 from .models import Assignment, Notification
+from .schema import AssignmentType, NotificationType
+from .serializers import AssignmentSerializer, NotificationGqSerializer
 
 NotificationStatusInputType = generate_input_type_for_serializer(
-    'NotificationStatusInputType',
-    serializer_class=NotificationGqSerializer
-
+    "NotificationStatusInputType", serializer_class=NotificationGqSerializer
 )
 
-AssignmentInputType = generate_input_type_for_serializer(
-    'AssignmentInputType',
-    serializer_class=AssignmentSerializer
-)
+AssignmentInputType = generate_input_type_for_serializer("AssignmentInputType", serializer_class=AssignmentSerializer)
 
 
 class NotificationStatusUpdate(graphene.Mutation):
@@ -32,17 +26,15 @@ class NotificationStatusUpdate(graphene.Mutation):
     @staticmethod
     def mutate(root, info, data):
         try:
-            instance = Notification.objects.get(id=data['id'], receiver=info.context.request.user)
+            instance = Notification.objects.get(id=data["id"], receiver=info.context.request.user)
 
         except Notification.DoesNotExist:
-            return NotificationStatusUpdate(errors=[
-                dict(
-                    field='nonFieldErrors',
-                    messages=gettext('Notification doesnot exist')
-                )
-            ], ok=False)
-        serializer = NotificationGqSerializer(instance=instance, data=data,
-                                              context={'request': info.context.request}, partial=True)
+            return NotificationStatusUpdate(
+                errors=[dict(field="nonFieldErrors", messages=gettext("Notification doesnot exist"))], ok=False
+            )
+        serializer = NotificationGqSerializer(
+            instance=instance, data=data, context={"request": info.context.request}, partial=True
+        )
         if errors := mutation_is_not_valid(serializer):
             return NotificationStatusUpdate(errors=errors, ok=False)
         instance = serializer.save()
@@ -53,6 +45,7 @@ class AssignmentUpdate(GrapheneMutation):
     class Arguments:
         id = graphene.ID(required=True)
         data = AssignmentInputType(required=True)
+
     model = Assignment
     result = graphene.Field(AssignmentType)
     serializer_class = AssignmentSerializer

@@ -3,18 +3,12 @@ from utils.graphene.enums import (
     get_enum_name_from_django_field,
 )
 
-from .models import (
-    Widget,
-    Filter,
-    AnalysisFrameworkRole,
-)
+from .models import AnalysisFrameworkRole, Filter, Widget
 
-
-AnalysisFrameworkRoleTypeEnum = convert_enum_to_graphene_enum(
-    AnalysisFrameworkRole.Type, name='AnalysisFrameworkRoleTypeEnum')
-WidgetWidgetTypeEnum = convert_enum_to_graphene_enum(Widget.WidgetType, name='WidgetWidgetTypeEnum')
-WidgetWidthTypeEnum = convert_enum_to_graphene_enum(Widget.WidthType, name='WidgetWidthTypeEnum')
-WidgetFilterTypeEnum = convert_enum_to_graphene_enum(Filter.FilterType, name='WidgetFilterTypeEnum')
+AnalysisFrameworkRoleTypeEnum = convert_enum_to_graphene_enum(AnalysisFrameworkRole.Type, name="AnalysisFrameworkRoleTypeEnum")
+WidgetWidgetTypeEnum = convert_enum_to_graphene_enum(Widget.WidgetType, name="WidgetWidgetTypeEnum")
+WidgetWidthTypeEnum = convert_enum_to_graphene_enum(Widget.WidthType, name="WidgetWidthTypeEnum")
+WidgetFilterTypeEnum = convert_enum_to_graphene_enum(Filter.FilterType, name="WidgetFilterTypeEnum")
 
 enum_map = {
     get_enum_name_from_django_field(field): enum

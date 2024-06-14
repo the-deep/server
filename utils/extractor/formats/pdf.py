@@ -1,14 +1,11 @@
 from io import BytesIO
-from pdfminer.pdfparser import PDFParser
-from pdfminer.pdfdocument import PDFDocument
-from pdfminer.pdfinterp import (
-    resolve1,
-    PDFResourceManager,
-    PDFPageInterpreter,
-)
+
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
+from pdfminer.pdfdocument import PDFDocument
+from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager, resolve1
 from pdfminer.pdfpage import PDFPage
+from pdfminer.pdfparser import PDFParser
 
 
 def process(doc):
@@ -19,15 +16,21 @@ def process(doc):
         rsrcmgr = PDFResourceManager()
         laparams = LAParams()
         with TextConverter(
-                rsrcmgr, retstr, codec='utf-8', laparams=laparams,
+            rsrcmgr,
+            retstr,
+            codec="utf-8",
+            laparams=laparams,
         ) as device:
             interpreter = PDFPageInterpreter(rsrcmgr, device)
             maxpages = 0
             caching = True
             pagenos = set()
             for page in PDFPage.get_pages(
-                    fp, pagenos, maxpages=maxpages,
-                    caching=caching, check_extractable=True,
+                fp,
+                pagenos,
+                maxpages=maxpages,
+                caching=caching,
+                check_extractable=True,
             ):
                 interpreter.process_page(page)
             content = retstr.getvalue().decode()
@@ -37,4 +40,4 @@ def process(doc):
 
 def get_pages_in_pdf(file):
     document = PDFDocument(PDFParser(file))
-    return resolve1(document.catalog['Pages'])['Count']
+    return resolve1(document.catalog["Pages"])["Count"]

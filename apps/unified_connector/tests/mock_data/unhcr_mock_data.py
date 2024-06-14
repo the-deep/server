@@ -1,6 +1,6 @@
 import datetime
 
-UNHCR_MOCK_DATA_PAGE_1_RAW = '''
+UNHCR_MOCK_DATA_PAGE_1_RAW = """
 <!DOCTYPE html>
 <html lang="en"
    dir='ltr'   >
@@ -320,9 +320,9 @@ UNHCR_MOCK_DATA_PAGE_1_RAW = '''
       </div>
    </body>
 </html>
-'''
+"""
 
-UNHCR_MOCK_DATA_PAGE_2_RAW = '''
+UNHCR_MOCK_DATA_PAGE_2_RAW = """
 <!DOCTYPE html>
 <html lang="en"
    dir='ltr'   >
@@ -608,7 +608,7 @@ UNHCR_MOCK_DATA_PAGE_2_RAW = '''
       </div>
    </body>
 </html>
-'''
+"""
 
 
 UNHCR_WEB_MOCK_EXCEPTED_LEADS = [

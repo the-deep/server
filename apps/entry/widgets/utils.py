@@ -1,13 +1,16 @@
-from analysis_framework.models import Filter, Exportable
-from entry.models import FilterData, ExportData
+from analysis_framework.models import Exportable, Filter
+from entry.models import ExportData, FilterData
 
 
 def set_filter_data(
-        entry, widget, key=None,
-        number=None,
-        from_number=None, to_number=None,
-        values=None,
-        text=None,
+    entry,
+    widget,
+    key=None,
+    number=None,
+    from_number=None,
+    to_number=None,
+    values=None,
+    text=None,
 ):
     key = key or widget.key
     filter = Filter.objects.filter(
@@ -19,11 +22,11 @@ def set_filter_data(
         entry=entry,
         filter=filter,
         defaults={
-            'number': number,
-            'values': values,
-            'from_number': from_number,
-            'to_number': to_number,
-            'text': text,
+            "number": number,
+            "values": values,
+            "from_number": from_number,
+            "to_number": to_number,
+            "text": text,
         },
     )
     return f
@@ -38,7 +41,7 @@ def set_export_data(entry, widget, data):
         entry=entry,
         exportable=exportable,
         defaults={
-            'data': data,
+            "data": data,
         },
     )
     return e

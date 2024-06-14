@@ -1,16 +1,18 @@
 import django_filters
 from django.db import models
 from django.db.models import Q
-
+from lead.models import Lead
+from project.models import Project
+from user.models import User
 from user_resource.filters import UserResourceGqlFilterSet
+
 from utils.graphene.filters import SimpleInputFilter
 
-from user.models import User
-from project.models import Project
-from lead.models import Lead
-
+from .enums import (
+    AssessmentRegistrySummarySubDimensionTypeEnum,
+    AssessmentRegistrySummarySubPillarTypeEnum,
+)
 from .models import AssessmentRegistry, SummaryIssue
-from .enums import AssessmentRegistrySummarySubPillarTypeEnum, AssessmentRegistrySummarySubDimensionTypeEnum
 
 
 class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
@@ -18,7 +20,7 @@ class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
     date_to = django_filters.DateFilter(required=False)
     project = django_filters.ModelMultipleChoiceFilter(
         queryset=Project.objects.all(),
-        field_name='lead__project',
+        field_name="lead__project",
     )
     lead = django_filters.ModelMultipleChoiceFilter(
         queryset=Lead.objects.all(),
@@ -27,16 +29,12 @@ class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
         queryset=User.objects.all(),
     )
     publication_date_lte = django_filters.DateFilter(
-        field_name='publication_date',
-        lookup_expr='lte',
-        input_formats=['%Y-%m-%d%z']
+        field_name="publication_date", lookup_expr="lte", input_formats=["%Y-%m-%d%z"]
     )
     publication_date_gte = django_filters.DateFilter(
-        field_name='publication_date',
-        lookup_expr='gte',
-        input_formats=['%Y-%m-%d%z']
+        field_name="publication_date", lookup_expr="gte", input_formats=["%Y-%m-%d%z"]
     )
-    search = django_filters.CharFilter(method='filter_assessment_registry')
+    search = django_filters.CharFilter(method="filter_assessment_registry")
 
     class Meta:
         model = AssessmentRegistry
@@ -44,9 +42,9 @@ class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
 
         filter_overrides = {
             models.CharField: {
-                'filter_class': django_filters.CharFilter,
-                'extra': lambda f: {
-                    'lookup_expr': 'icontains',
+                "filter_class": django_filters.CharFilter,
+                "extra": lambda f: {
+                    "lookup_expr": "icontains",
                 },
             },
         }
@@ -54,27 +52,26 @@ class AssessmentRegistryGQFilterSet(UserResourceGqlFilterSet):
     def filter_assessment_registry(self, qs, name, value):
         if not value:
             return qs
-        return qs.filter(
-            Q(lead__title__icontains=value)
-        ).distinct()
+        return qs.filter(Q(lead__title__icontains=value)).distinct()
 
 
 class AssessmentRegistryIssueGQFilterSet(django_filters.FilterSet):
     sub_pillar = SimpleInputFilter(AssessmentRegistrySummarySubPillarTypeEnum)
     sub_dimension = SimpleInputFilter(AssessmentRegistrySummarySubDimensionTypeEnum)
-    search = django_filters.CharFilter(method='filter_assessment_registry_issues')
-    is_parent = django_filters.BooleanFilter(method='filter_is_parent')
+    search = django_filters.CharFilter(method="filter_assessment_registry_issues")
+    is_parent = django_filters.BooleanFilter(method="filter_is_parent")
 
     class Meta:
         model = SummaryIssue
-        fields = ('label', 'parent',)
+        fields = (
+            "label",
+            "parent",
+        )
 
     def filter_assessment_registry_issues(self, qs, name, value):
         if not value:
             return qs
-        return qs.filter(
-            label__icontains=value
-        )
+        return qs.filter(label__icontains=value)
 
     def filter_is_parent(self, qs, name, value):
         if value is None:

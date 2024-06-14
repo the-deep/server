@@ -1,41 +1,48 @@
 from typing import Union
 
 import graphene
-from graphene_django import DjangoObjectType, DjangoListField
-from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
-from graphene.types.generic import GenericScalar
-from django.db.models import QuerySet
-
-from utils.graphene.enums import EnumDescription
-from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin, FileFieldType
-from utils.graphene.fields import DjangoPaginatedListObjectField, generate_type_for_serializer
-from deep.permissions import AnalysisFrameworkPermissions as AfP
-from project.schema import AnalysisFrameworkVisibleProjectType
-from project.models import ProjectMembership
 from assisted_tagging.models import PredictionTagAnalysisFrameworkWidgetMapping
-from .models import (
-    AnalysisFramework,
-    AnalysisFrameworkTag,
-    Section,
-    Widget,
-    Filter,
-    Exportable,
-    AnalysisFrameworkMembership,
-    AnalysisFrameworkRole,
+from django.db.models import QuerySet
+from graphene.types.generic import GenericScalar
+from graphene_django import DjangoListField, DjangoObjectType
+from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
+from project.models import ProjectMembership
+from project.schema import AnalysisFrameworkVisibleProjectType
+
+from deep.permissions import AnalysisFrameworkPermissions as AfP
+from utils.graphene.enums import EnumDescription
+from utils.graphene.fields import (
+    DjangoPaginatedListObjectField,
+    generate_type_for_serializer,
 )
+from utils.graphene.types import (
+    ClientIdMixin,
+    CustomDjangoListObjectType,
+    FileFieldType,
+)
+
 from .enums import (
+    AnalysisFrameworkRoleTypeEnum,
+    WidgetFilterTypeEnum,
     WidgetWidgetTypeEnum,
     WidgetWidthTypeEnum,
-    WidgetFilterTypeEnum,
-    AnalysisFrameworkRoleTypeEnum,
 )
-from .serializers import AnalysisFrameworkPropertiesGqlSerializer
 from .filter_set import AnalysisFrameworkGqFilterSet, AnalysisFrameworkTagGqFilterSet
+from .models import (
+    AnalysisFramework,
+    AnalysisFrameworkMembership,
+    AnalysisFrameworkRole,
+    AnalysisFrameworkTag,
+    Exportable,
+    Filter,
+    Section,
+    Widget,
+)
 from .public_schema import PublicAnalysisFrameworkListType
-
+from .serializers import AnalysisFrameworkPropertiesGqlSerializer
 
 AnalysisFrameworkPropertiesType = generate_type_for_serializer(
-    'AnalysisFrameworkPropertiesType',
+    "AnalysisFrameworkPropertiesType",
     serializer_class=AnalysisFrameworkPropertiesGqlSerializer,
 )
 
@@ -50,13 +57,17 @@ class WidgetType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Widget
         only_fields = (
-            'id', 'title', 'order', 'properties', 'version',
+            "id",
+            "title",
+            "order",
+            "properties",
+            "version",
         )
 
     widget_id = graphene.Field(WidgetWidgetTypeEnum, required=True)
-    widget_id_display = EnumDescription(source='get_widget_id_display', required=True)
+    widget_id_display = EnumDescription(source="get_widget_id_display", required=True)
     width = graphene.Field(WidgetWidthTypeEnum, required=True)
-    width_display = EnumDescription(source='get_width_display', required=True)
+    width_display = EnumDescription(source="get_width_display", required=True)
     key = graphene.String(required=True)
     version = graphene.Int(required=True)
     conditional = graphene.Field(WidgetConditionalType)
@@ -77,7 +88,10 @@ class SectionType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Section
         only_fields = (
-            'id', 'title', 'order', 'tooltip',
+            "id",
+            "title",
+            "order",
+            "tooltip",
         )
 
     @staticmethod
@@ -89,9 +103,9 @@ class AnalysisFrameworkTagType(DjangoObjectType):
     class Meta:
         model = AnalysisFrameworkTag
         only_fields = (
-            'id',
-            'title',
-            'description',
+            "id",
+            "title",
+            "description",
         )
 
     icon = graphene.Field(FileFieldType, required=False)
@@ -107,14 +121,22 @@ class AnalysisFrameworkType(DjangoObjectType):
     class Meta:
         model = AnalysisFramework
         only_fields = (
-            'id', 'title', 'description', 'is_private', 'assisted_tagging_enabled', 'organization',
-            'created_by', 'created_at', 'modified_by', 'modified_at',
+            "id",
+            "title",
+            "description",
+            "is_private",
+            "assisted_tagging_enabled",
+            "organization",
+            "created_by",
+            "created_at",
+            "modified_by",
+            "modified_at",
         )
 
     current_user_role = graphene.Field(AnalysisFrameworkRoleTypeEnum)
     preview_image = graphene.Field(FileFieldType)
     export = graphene.Field(FileFieldType)
-    cloned_from = graphene.ID(source='cloned_from_id')
+    cloned_from = graphene.ID(source="cloned_from_id")
     allowed_permissions = graphene.List(
         graphene.NonNull(
             graphene.Enum.from_enum(AfP.Permission),
@@ -162,10 +184,10 @@ class AnalysisFrameworkRoleType(DjangoObjectType):
     class Meta:
         model = AnalysisFrameworkRole
         only_fields = (
-            'id',
-            'title',
-            'is_private_role',
-            'is_default_role',
+            "id",
+            "title",
+            "is_private_role",
+            "is_default_role",
         )
 
     type = graphene.Field(AnalysisFrameworkRoleTypeEnum)
@@ -174,13 +196,18 @@ class AnalysisFrameworkRoleType(DjangoObjectType):
 class AnalysisFrameworkFilterType(DjangoObjectType):
     class Meta:
         model = Filter
-        only_fields = ('id', 'title', 'properties', 'widget_key',)
+        only_fields = (
+            "id",
+            "title",
+            "properties",
+            "widget_key",
+        )
 
     key = graphene.String(required=True)
     widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
-    widget_type_display = EnumDescription(source='get_widget_type_display', required=True)
+    widget_type_display = EnumDescription(source="get_widget_type_display", required=True)
     filter_type = graphene.Field(WidgetFilterTypeEnum, required=True)
-    filter_type_display = EnumDescription(source='get_filter_type_display', required=True)
+    filter_type_display = EnumDescription(source="get_filter_type_display", required=True)
 
     @staticmethod
     def resolve_widget_type(root, info, **kwargs):
@@ -190,11 +217,16 @@ class AnalysisFrameworkFilterType(DjangoObjectType):
 class AnalysisFrameworkExportableType(DjangoObjectType):
     class Meta:
         model = Exportable
-        only_fields = ('id', 'inline', 'order', 'data',)
+        only_fields = (
+            "id",
+            "inline",
+            "order",
+            "data",
+        )
 
     widget_key = graphene.String(required=True)
     widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
-    widget_type_display = EnumDescription(source='get_widget_type_display', required=True)
+    widget_type_display = EnumDescription(source="get_widget_type_display", required=True)
 
     @staticmethod
     def resolve_widget_type(root, info, **kwargs):
@@ -204,21 +236,21 @@ class AnalysisFrameworkExportableType(DjangoObjectType):
 class AnalysisFrameworkMembershipType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = AnalysisFrameworkMembership
-        only_fields = ('id', 'member', 'role', 'joined_at', 'added_by')
+        only_fields = ("id", "member", "role", "joined_at", "added_by")
 
 
 class AnalysisFrameworkPredictionMappingType(ClientIdMixin, DjangoObjectType):
-    widget = graphene.ID(source='widget_id', required=True)
+    widget = graphene.ID(source="widget_id", required=True)
     widget_type = graphene.Field(WidgetWidgetTypeEnum, required=True)
-    tag = graphene.ID(source='tag_id')
+    tag = graphene.ID(source="tag_id")
 
     class Meta:
         model = PredictionTagAnalysisFrameworkWidgetMapping
         only_fields = (
-            'id',
-            'widget',
-            'tag',
-            'association',
+            "id",
+            "widget",
+            "tag",
+            "association",
         )
 
     @staticmethod
@@ -246,8 +278,16 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
         model = AnalysisFramework
         skip_registry = True
         only_fields = (
-            'id', 'title', 'description', 'is_private', 'assisted_tagging_enabled', 'organization',
-            'created_by', 'created_at', 'modified_by', 'modified_at',
+            "id",
+            "title",
+            "description",
+            "is_private",
+            "assisted_tagging_enabled",
+            "organization",
+            "created_by",
+            "created_at",
+            "modified_by",
+            "modified_at",
         )
 
     @staticmethod
@@ -274,11 +314,10 @@ class AnalysisFrameworkDetailType(AnalysisFrameworkType):
 
     @staticmethod
     def resolve_prediction_tags_mapping(root, info):
-        project_membership_qs = ProjectMembership.objects\
-            .filter(
-                project__analysis_framework=root,
-                member=info.context.request.user,
-            )
+        project_membership_qs = ProjectMembership.objects.filter(
+            project__analysis_framework=root,
+            member=info.context.request.user,
+        )
         if root.get_current_user_role(info.context.request.user) is not None or project_membership_qs.exists():
             return PredictionTagAnalysisFrameworkWidgetMapping.objects.filter(
                 widget__analysis_framework=root,
@@ -301,22 +340,13 @@ class AnalysisFrameworkTagListType(CustomDjangoListObjectType):
 class Query:
     analysis_framework = DjangoObjectField(AnalysisFrameworkDetailType)
     analysis_frameworks = DjangoPaginatedListObjectField(
-        AnalysisFrameworkListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        AnalysisFrameworkListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
     public_analysis_frameworks = DjangoPaginatedListObjectField(
-        PublicAnalysisFrameworkListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        PublicAnalysisFrameworkListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
     analysis_framework_tags = DjangoPaginatedListObjectField(
-        AnalysisFrameworkTagListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        AnalysisFrameworkTagListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
     analysis_framework_roles = graphene.List(graphene.NonNull(AnalysisFrameworkRoleType), required=True)
 

@@ -1,23 +1,14 @@
 import json
 
+import reversion
+from deep_migration.models import ProjectMigration, UserGroupMigration, UserMigration
 from deep_migration.utils import (
     MigrationCommand,
+    get_migrated_gallery_file,
     get_source_url,
     request_with_auth,
-    get_migrated_gallery_file,
 )
-
-from deep_migration.models import (
-    UserGroupMigration,
-    UserMigration,
-    ProjectMigration,
-)
-from user_group.models import (
-    UserGroup,
-    GroupMembership,
-)
-
-import reversion
+from user_group.models import GroupMembership, UserGroup
 
 
 def get_user(old_user_id):
@@ -32,29 +23,27 @@ def get_project(project_id):
 
 class Command(MigrationCommand):
     def run(self):
-        if self.kwargs.get('data_file'):
-            with open(self.kwargs['data_file']) as f:
+        if self.kwargs.get("data_file"):
+            with open(self.kwargs["data_file"]) as f:
                 user_groups = json.load(f)
         else:
-            user_groups = request_with_auth(
-                get_source_url('user-groups', 'v1')
-            )
+            user_groups = request_with_auth(get_source_url("user-groups", "v1"))
 
         if not user_groups:
-            print('Couldn\'t find user groups data')
+            print("Couldn't find user groups data")
 
         with reversion.create_revision():
             for user_group in user_groups:
                 self.import_user_group(user_group)
 
     def import_user_group(self, data):
-        print('------------')
-        print('Migrating user group')
+        print("------------")
+        print("Migrating user group")
 
-        old_id = data['id']
-        title = data['name']
+        old_id = data["id"]
+        title = data["name"]
 
-        print('{} - {}'.format(old_id, title))
+        print("{} - {}".format(old_id, title))
 
         migration, _ = UserGroupMigration.objects.get_or_create(
             old_id=old_id,
@@ -69,32 +58,30 @@ class Command(MigrationCommand):
             return migration.user_group
 
         user_group = migration.user_group
-        user_group.description = data['description']
-        user_group.display_picture = get_migrated_gallery_file(
-            data['photo']
-        )
-        user_group.global_crisis_monitoring = data['acaps']
+        user_group.description = data["description"]
+        user_group.display_picture = get_migrated_gallery_file(data["photo"])
+        user_group.global_crisis_monitoring = data["acaps"]
         user_group.save()
 
-        for user_id in data['admins']:
+        for user_id in data["admins"]:
             user = get_user(user_id)
             if user:
                 GroupMembership.objects.get_or_create(
                     group=user_group,
                     member=user,
-                    defaults={'role': 'admin'},
+                    defaults={"role": "admin"},
                 )
 
-        for user_id in data['members']:
+        for user_id in data["members"]:
             user = get_user(user_id)
             if user:
                 GroupMembership.objects.get_or_create(
                     group=user_group,
                     member=user,
-                    defaults={'role': 'normal'},
+                    defaults={"role": "normal"},
                 )
 
-        for project_id in data['projects']:
+        for project_id in data["projects"]:
             project = get_project(project_id)
             if project:
                 project.user_groups.add(user_group)

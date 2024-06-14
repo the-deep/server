@@ -7,10 +7,10 @@ from .models import Field
 class CacheStatusListFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
     # right admin sidebar just above the filter options.
-    title = _('Cache Status')
+    title = _("Cache Status")
 
     # Parameter for the filter that will be used in the URL query.
-    parameter_name = 'is_cache_status'
+    parameter_name = "is_cache_status"
 
     def lookups(self, request, model_admin):
         return Field.CACHE_STATUS_TYPES

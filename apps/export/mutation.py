@@ -1,11 +1,11 @@
 import graphene
 
+from deep.permissions import ProjectPermissions as PP
 from utils.graphene.mutation import (
-    generate_input_type_for_serializer,
     GrapheneMutation,
     PsGrapheneMutation,
+    generate_input_type_for_serializer,
 )
-from deep.permissions import ProjectPermissions as PP
 
 from .models import Export
 from .schema import (
@@ -20,33 +20,32 @@ from .serializers import (
     UserGenericExportCreateGqlSerializer,
 )
 
-
 ExportCreateInputType = generate_input_type_for_serializer(
-    'ExportCreateInputType',
+    "ExportCreateInputType",
     serializer_class=UserExportCreateGqlSerializer,
 )
 
 
 ExportUpdateInputType = generate_input_type_for_serializer(
-    'ExportUpdateInputType',
+    "ExportUpdateInputType",
     serializer_class=UserExportUpdateGqlSerializer,
     partial=True,
 )
 
 
 GenericExportCreateInputType = generate_input_type_for_serializer(
-    'GenericExportCreateInputType',
+    "GenericExportCreateInputType",
     serializer_class=UserGenericExportCreateGqlSerializer,
 )
 
 
-class UserExportMutationMixin():
+class UserExportMutationMixin:
     @classmethod
     def filter_queryset(cls, _, info):
         return get_export_qs(info)
 
 
-class UserGenericExportMutationMixin():
+class UserGenericExportMutationMixin:
     @classmethod
     def filter_queryset(cls, _, info):
         return get_generic_export_qs(info)
@@ -55,6 +54,7 @@ class UserGenericExportMutationMixin():
 class CreateUserExport(PsGrapheneMutation):
     class Arguments:
         data = ExportCreateInputType(required=True)
+
     model = Export
     serializer_class = UserExportCreateGqlSerializer
     result = graphene.Field(UserExportType)
@@ -65,6 +65,7 @@ class UpdateUserExport(UserExportMutationMixin, PsGrapheneMutation):
     class Arguments:
         id = graphene.ID(required=True)
         data = ExportUpdateInputType(required=True)
+
     model = Export
     serializer_class = UserExportUpdateGqlSerializer
     result = graphene.Field(UserExportType)
@@ -74,6 +75,7 @@ class UpdateUserExport(UserExportMutationMixin, PsGrapheneMutation):
 class CancelUserExport(UserExportMutationMixin, PsGrapheneMutation):
     class Arguments:
         id = graphene.ID(required=True)
+
     model = Export
     result = graphene.Field(UserExportType)
     permissions = [PP.Permission.CREATE_EXPORT]
@@ -90,6 +92,7 @@ class CancelUserExport(UserExportMutationMixin, PsGrapheneMutation):
 class DeleteUserExport(UserExportMutationMixin, PsGrapheneMutation):
     class Arguments:
         id = graphene.ID(required=True)
+
     model = Export
     result = graphene.Field(UserExportType)
     permissions = [PP.Permission.CREATE_EXPORT]
@@ -101,7 +104,12 @@ class DeleteUserExport(UserExportMutationMixin, PsGrapheneMutation):
             return cls(result=export, errors=errors, ok=True)
         export.cancel(commit=False)
         export.is_deleted = True  # Soft delete
-        export.save(update_fields=('status', 'is_deleted',))
+        export.save(
+            update_fields=(
+                "status",
+                "is_deleted",
+            )
+        )
         return cls(result=export, errors=None, ok=True)
 
 
@@ -123,6 +131,7 @@ class CreateUserGenericExport(GrapheneMutation):
 class CancelUserGenericExport(UserGenericExportMutationMixin, GrapheneMutation):
     class Arguments:
         id = graphene.ID(required=True)
+
     model = Export
     result = graphene.Field(UserGenericExportType)
 
@@ -139,13 +148,13 @@ class CancelUserGenericExport(UserGenericExportMutationMixin, GrapheneMutation):
         return cls(result=export, errors=None, ok=True)
 
 
-class ProjectMutation():
+class ProjectMutation:
     export_create = CreateUserExport.Field()
     export_update = UpdateUserExport.Field()
     export_cancel = CancelUserExport.Field()
     export_delete = DeleteUserExport.Field()
 
 
-class Mutation():
+class Mutation:
     generic_export_create = CreateUserGenericExport.Field()
     generic_export_cancel = CancelUserGenericExport.Field()

@@ -1,16 +1,16 @@
 import os
 import tempfile
 
-from django.urls import reverse
 from django.conf import settings
-from django.utils.http import urlsafe_base64_encode
+from django.urls import reverse
 from django.utils.encoding import force_bytes
-
-from deep.tests import TestCase
+from django.utils.http import urlsafe_base64_encode
+from entry.models import Entry
 from gallery.models import File, FilePreview
 from lead.models import Lead
 from project.models import Project
-from entry.models import Entry
+
+from deep.tests import TestCase
 
 
 class GalleryTests(TestCase):
@@ -18,11 +18,11 @@ class GalleryTests(TestCase):
         super().setUp()
 
         tmp_file = tempfile.NamedTemporaryFile(delete=False)
-        tmp_file.write(b'Hello world')
+        tmp_file.write(b"Hello world")
         tmp_file.close()
 
-        path = os.path.join(settings.TEST_DIR, 'documents')
-        self.supported_file = os.path.join(path, 'doc.docx')
+        path = os.path.join(settings.TEST_DIR, "documents")
+        self.supported_file = os.path.join(path, "doc.docx")
 
         self.unsupported_file = tmp_file.name
 
@@ -32,20 +32,20 @@ class GalleryTests(TestCase):
 
     def test_upload_supported_file(self):
         file_count = File.objects.count()
-        url = '/api/v1/files/'
+        url = "/api/v1/files/"
 
         data = {
-            'title': 'Test file',
-            'file': open(self.supported_file, 'rb'),
-            'isPublic': True,
+            "title": "Test file",
+            "file": open(self.supported_file, "rb"),
+            "isPublic": True,
         }
 
         self.authenticate()
-        response = self.client.post(url, data, format='multipart')
+        response = self.client.post(url, data, format="multipart")
         self.assert_201(response)
 
         self.assertEqual(File.objects.count(), file_count + 1)
-        self.assertEqual(response.data['title'], data['title'])
+        self.assertEqual(response.data["title"], data["title"])
 
         # Let's delete the file from the filesystem to keep
         # things clean
@@ -58,12 +58,12 @@ class GalleryTests(TestCase):
 
     def test_upload_unsupported_file(self):
         file_count = File.objects.count()
-        url = '/api/v1/files/'
+        url = "/api/v1/files/"
 
         data = {
-            'title': 'Test file',
-            'file': open(self.unsupported_file, 'rb'),
-            'isPublic': True,
+            "title": "Test file",
+            "file": open(self.unsupported_file, "rb"),
+            "isPublic": True,
         }
 
         self.authenticate()
@@ -73,70 +73,69 @@ class GalleryTests(TestCase):
         self.assertEqual(File.objects.count(), file_count)
 
     def test_trigger_api(self):
-        url = '/api/v1/file-extraction-trigger/'
+        url = "/api/v1/file-extraction-trigger/"
         data = {
-            'file_ids': [1],
+            "file_ids": [1],
         }
 
         self.authenticate()
         response = self.client.post(url, data)
         self.assert_200(response)
 
-        self.assertTrue(FilePreview.objects.filter(
-            id=response.data['extraction_triggered']
-        ).exists())
+        self.assertTrue(FilePreview.objects.filter(id=response.data["extraction_triggered"]).exists())
 
     def test_duplicate_trigger_api(self):
         preview = self.create(FilePreview, file_ids=[1, 2])
-        url = '/api/v1/file-extraction-trigger/'
+        url = "/api/v1/file-extraction-trigger/"
         data = {
-            'file_ids': [2, 1],
+            "file_ids": [2, 1],
         }
 
         self.authenticate()
         response = self.client.post(url, data)
         self.assert_200(response)
 
-        self.assertEqual(response.data['extraction_triggered'], preview.id)
+        self.assertEqual(response.data["extraction_triggered"], preview.id)
 
     def test_preview_api(self):
         preview = self.create(FilePreview, file_ids=[])
-        url = '/api/v1/file-previews/{}/'.format(preview.id)
+        url = "/api/v1/file-previews/{}/".format(preview.id)
 
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
 
-        self.assertEqual(response.data['text'], preview.text)
+        self.assertEqual(response.data["text"], preview.text)
 
     def test_meta_api_no_file(self):
-        url = 'api/v1/meta-extraction/1000/'
+        url = "api/v1/meta-extraction/1000/"
 
         self.authenticate()
         response = self.client.get(url)
         self.assert_404(response)
 
     def test_get_file_private_no_random_string(self):
-        url = '/private-file/1/'
+        url = "/private-file/1/"
         self.authenticate()
         response = self.client.get(url)
         self.assert_404(response)
 
     def test_public_to_private_file_url(self):
-        urlf_public = '/public-file/{}/{}/{}'
+        urlf_public = "/public-file/{}/{}/{}"
 
         file_id = self.save_file_with_api()
         file = File.objects.get(id=file_id)
 
         url = urlf_public.format(
             urlsafe_base64_encode(force_bytes(file_id)),
-            'random-strings-xxyyzz',
+            "random-strings-xxyyzz",
             file.title,
         )
-        redirect_url = 'http://testserver' + reverse(
-            'gallery_private_url',
+        redirect_url = "http://testserver" + reverse(
+            "gallery_private_url",
             kwargs={
-                'uuid': file.uuid, 'filename': file.title,
+                "uuid": file.uuid,
+                "filename": file.title,
             },
         )
         response = self.client.get(url)
@@ -144,10 +143,10 @@ class GalleryTests(TestCase):
         assert response.url == redirect_url, f"Should return {redirect_url}"
 
     def test_private_file_url(self):
-        urlf = '/private-file/{}/{}'
+        urlf = "/private-file/{}/{}"
 
-        file_id = self.save_file_with_api({'isPublic': False})
-        entry_file_id = self.save_file_with_api({'isPublic': False})
+        file_id = self.save_file_with_api({"isPublic": False})
+        entry_file_id = self.save_file_with_api({"isPublic": False})
 
         file = File.objects.get(id=file_id)
         entry_file = File.objects.get(id=entry_file_id)
@@ -190,18 +189,18 @@ class GalleryTests(TestCase):
         assert response.status_code == 302, "Should return 302 redirect"
 
     def save_file_with_api(self, kwargs={}):
-        url = '/api/v1/files/'
+        url = "/api/v1/files/"
 
         data = {
-            'title': 'Test file',
-            'file': open(self.supported_file, 'rb'),
-            'isPublic': True,
+            "title": "Test file",
+            "file": open(self.supported_file, "rb"),
+            "isPublic": True,
             **kwargs,
         }
 
         self.authenticate()
-        response = self.client.post(url, data, format='multipart')
+        response = self.client.post(url, data, format="multipart")
         self.assert_201(response)
-        return response.data['id']
+        return response.data["id"]
 
     # NOTE: Test for files

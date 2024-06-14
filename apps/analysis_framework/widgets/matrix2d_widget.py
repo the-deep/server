@@ -1,4 +1,4 @@
-WIDGET_ID = 'matrix2dWidget'
+WIDGET_ID = "matrix2dWidget"
 
 
 """
@@ -43,103 +43,116 @@ def get_filters(widget, properties):
     from analysis_framework.models import Filter  # To avoid circular import
 
     row_options = []
-    rows = properties.get('rows', [])
+    rows = properties.get("rows", [])
 
     for row in rows:
-        row_options.append({
-            'label': row.get('label'),
-            'key': row.get('key'),
-        })
+        row_options.append(
+            {
+                "label": row.get("label"),
+                "key": row.get("key"),
+            }
+        )
 
-        sub_rows = row.get('subRows', [])
+        sub_rows = row.get("subRows", [])
         for sub_row in sub_rows:
-            row_options.append({
-                'label': '{} / {}'.format(
-                    row.get('label'),
-                    sub_row.get('label'),
-                ),
-                'key': sub_row.get('key'),
-            })
+            row_options.append(
+                {
+                    "label": "{} / {}".format(
+                        row.get("label"),
+                        sub_row.get("label"),
+                    ),
+                    "key": sub_row.get("key"),
+                }
+            )
 
     column_options = []
-    columns = properties.get('columns', [])
+    columns = properties.get("columns", [])
 
     for column in columns:
-        column_options.append({
-            'label': column.get('label'),
-            'key': column.get('key'),
-        })
+        column_options.append(
+            {
+                "label": column.get("label"),
+                "key": column.get("key"),
+            }
+        )
 
-        subcolumns = column.get('subColumns', [])
+        subcolumns = column.get("subColumns", [])
         for subcolumn in subcolumns:
-            column_options.append({
-                'label': '{} / {}'.format(
-                    column.get('label'),
-                    subcolumn.get('label'),
-                ),
-                'key': subcolumn.get('key'),
-            })
+            column_options.append(
+                {
+                    "label": "{} / {}".format(
+                        column.get("label"),
+                        subcolumn.get("label"),
+                    ),
+                    "key": subcolumn.get("key"),
+                }
+            )
 
-    return [{
-        'title': '{} Rows'.format(widget.title),
-        'filter_type': Filter.FilterType.LIST,
-        'key': '{}-rows'.format(widget.key),
-        'properties': {
-            'type': 'multiselect',
-            'options': row_options,
+    return [
+        {
+            "title": "{} Rows".format(widget.title),
+            "filter_type": Filter.FilterType.LIST,
+            "key": "{}-rows".format(widget.key),
+            "properties": {
+                "type": "multiselect",
+                "options": row_options,
+            },
         },
-    }, {
-        'title': '{} Columns'.format(widget.title),
-        'filter_type': Filter.FilterType.LIST,
-        'key': '{}-columns'.format(widget.key),
-        'properties': {
-            'type': 'multiselect',
-            'options': column_options,
+        {
+            "title": "{} Columns".format(widget.title),
+            "filter_type": Filter.FilterType.LIST,
+            "key": "{}-columns".format(widget.key),
+            "properties": {
+                "type": "multiselect",
+                "options": column_options,
+            },
         },
-    }]
+    ]
 
 
 def get_exportable(widget, properties):
     excel = {
-        'type': 'multiple',
-        'titles': [
-            '{} - Row'.format(widget.title),
-            '{} - SubRow'.format(widget.title),
-            '{} - Column'.format(widget.title),
-            '{} - SubColumns'.format(widget.title),
+        "type": "multiple",
+        "titles": [
+            "{} - Row".format(widget.title),
+            "{} - SubRow".format(widget.title),
+            "{} - Column".format(widget.title),
+            "{} - SubColumns".format(widget.title),
         ],
     }
 
     report = {
-        'levels': [
+        "levels": [
             {
-                'id': column.get('key'),
-                'title': column.get('label'),
-                'sublevels': [
+                "id": column.get("key"),
+                "title": column.get("label"),
+                "sublevels": [
                     {
-                        'id': '{}-{}'.format(
-                            column.get('key'),
-                            row.get('key'),
+                        "id": "{}-{}".format(
+                            column.get("key"),
+                            row.get("key"),
                         ),
-                        'title': row.get('label'),
-                        'sublevels': [
+                        "title": row.get("label"),
+                        "sublevels": [
                             {
-                                'id': '{}-{}-{}'.format(
-                                    column.get('key'),
-                                    row.get('key'),
-                                    sub_row.get('key'),
+                                "id": "{}-{}-{}".format(
+                                    column.get("key"),
+                                    row.get("key"),
+                                    sub_row.get("key"),
                                 ),
-                                'title': sub_row.get('label'),
-                            } for sub_row
-                            in row.get('subRows', [])
-                        ]
-                    } for row in properties.get('rows', [])
+                                "title": sub_row.get("label"),
+                            }
+                            for sub_row in row.get("subRows", [])
+                        ],
+                    }
+                    for row in properties.get("rows", [])
                 ],
-            } for column in properties.get('columns', [])
+            }
+            for column in properties.get("columns", [])
         ],
     }
 
     return {
-        'excel': excel,
-        'report': report,
+        "excel": excel,
+        "report": report,
     }

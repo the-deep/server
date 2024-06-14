@@ -1,25 +1,23 @@
 import datetime
-
 from unittest.mock import patch
 
-from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
-
-from user.factories import UserFactory
-from project.factories import ProjectFactory
-from export.factories import ExportFactory
 from analysis.factories import AnalysisFactory
 from analysis_framework.factories import AnalysisFrameworkFactory
-from lead.factories import LeadFactory
 from entry.factories import EntryFactory
-
-from lead.models import Lead
+from export.factories import ExportFactory
 from export.models import Export, GenericExport, export_upload_to
-from export.tasks import get_export_filename
 from export.serializers import UserExportCreateGqlSerializer
+from export.tasks import get_export_filename
+from lead.factories import LeadFactory
+from lead.models import Lead
+from project.factories import ProjectFactory
+from user.factories import UserFactory
+
+from utils.graphene.tests import GraphQLSnapShotTestCase, GraphQLTestCase
 
 
 class TestExportMutationSchema(GraphQLTestCase):
-    CREATE_EXPORT_QUERY = '''
+    CREATE_EXPORT_QUERY = """
         mutation MyMutation ($projectId: ID!, $input: ExportCreateInputType!) {
           project(id: $projectId) {
             exportCreate(data: $input) {
@@ -128,9 +126,9 @@ class TestExportMutationSchema(GraphQLTestCase):
             }
           }
         }
-    '''
+    """
 
-    UPDATE_EXPORT_QUERY = '''
+    UPDATE_EXPORT_QUERY = """
         mutation MyMutation ($projectId: ID!, $exportId: ID!, $input: ExportUpdateInputType!) {
           project(id: $projectId) {
             exportUpdate(id: $exportId, data: $input) {
@@ -239,9 +237,9 @@ class TestExportMutationSchema(GraphQLTestCase):
             }
           }
         }
-    '''
+    """
 
-    CANCEL_EXPORT_QUERY = '''
+    CANCEL_EXPORT_QUERY = """
         mutation MyMutation ($projectId: ID!, $exportId: ID!) {
           project(id: $projectId) {
             exportCancel(id: $exportId) {
@@ -346,9 +344,9 @@ class TestExportMutationSchema(GraphQLTestCase):
             }
           }
         }
-    '''
+    """
 
-    DELETE_EXPORT_QUERY = '''
+    DELETE_EXPORT_QUERY = """
         mutation MyMutation ($projectId: ID!, $exportId: ID!) {
           project(id: $projectId) {
             exportDelete(id: $exportId) {
@@ -453,7 +451,7 @@ class TestExportMutationSchema(GraphQLTestCase):
             }
           }
         }
-    '''
+    """
 
     def setUp(self):
         super().setUp()
@@ -477,60 +475,55 @@ class TestExportMutationSchema(GraphQLTestCase):
         """
         This test makes sure only valid users can create export
         """
+
         def _query_check(minput, **kwargs):
-            return self.query_check(
-                self.CREATE_EXPORT_QUERY,
-                minput=minput,
-                variables={'projectId': self.project.id},
-                **kwargs
-            )
+            return self.query_check(self.CREATE_EXPORT_QUERY, minput=minput, variables={"projectId": self.project.id}, **kwargs)
 
         minput = dict(
             format=self.genum(Export.Format.PDF),
             type=self.genum(Export.DataType.ENTRIES),
-            title='Export 101',
+            title="Export 101",
             exportType=self.genum(Export.ExportType.EXCEL),
             isPreview=False,
-
             filters={
-                'ids': [],
-                'search': None,
-                'statuses': [
+                "ids": [],
+                "search": None,
+                "statuses": [
                     self.genum(Lead.Status.NOT_TAGGED),
                     self.genum(Lead.Status.IN_PROGRESS),
                     self.genum(Lead.Status.TAGGED),
                 ],
-                'assignees': None,
-                'priorities': None,
-                'createdAtGte': '2021-11-01T00:00:00Z',
-                'createdAtLte': '2021-01-01T00:00:00Z',
-                'confidentiality': None,
-                'publishedOnGte': None,
-                'publishedOnLte': None,
-                'excludeProvidedLeadsId': True,
-                'authoringOrganizationTypes': None,
-                'hasEntries': True,
-                'entriesFilterData': {
-                    'controlled': None,
-                    'createdBy': None,
-                    'entryTypes': None,
-                    'filterableData': [
+                "assignees": None,
+                "priorities": None,
+                "createdAtGte": "2021-11-01T00:00:00Z",
+                "createdAtLte": "2021-01-01T00:00:00Z",
+                "confidentiality": None,
+                "publishedOnGte": None,
+                "publishedOnLte": None,
+                "excludeProvidedLeadsId": True,
+                "authoringOrganizationTypes": None,
+                "hasEntries": True,
+                "entriesFilterData": {
+                    "controlled": None,
+                    "createdBy": None,
+                    "entryTypes": None,
+                    "filterableData": [
                         {
-                            'filterKey': 'random-element-1',
-                            'value': None,
-                            'valueGte': None,
-                            'valueLte': None,
-                            'valueList': [
-                                'random-value-1',
-                                'random-value-2',
-                                'random-value-3',
-                                'random-value-4',
+                            "filterKey": "random-element-1",
+                            "value": None,
+                            "valueGte": None,
+                            "valueLte": None,
+                            "valueList": [
+                                "random-value-1",
+                                "random-value-2",
+                                "random-value-3",
+                                "random-value-4",
                             ],
-                            'useExclude': None,
-                            'useAndOperator': None,
-                            'includeSubRegions': None,
+                            "useExclude": None,
+                            "useAndOperator": None,
+                            "includeSubRegions": None,
                         }
-                    ]
+                    ],
                 },
             },
         )
@@ -544,54 +537,49 @@ class TestExportMutationSchema(GraphQLTestCase):
         # --- member user
         self.force_login(self.member_user)
         # ----- (Simple validation)
-        response = _query_check(minput, okay=False)['data']
-        self.assertEqual(response['project']['exportCreate']['result'], None, response)
+        response = _query_check(minput, okay=False)["data"]
+        self.assertEqual(response["project"]["exportCreate"]["result"], None, response)
 
         # -----
-        minput['format'] = self.genum(Export.Format.XLSX)
-        response = _query_check(minput)['data']
-        response_export = response['project']['exportCreate']['result']
+        minput["format"] = self.genum(Export.Format.XLSX)
+        response = _query_check(minput)["data"]
+        response_export = response["project"]["exportCreate"]["result"]
         self.assertNotEqual(response_export, None, response)
-        export = Export.objects.get(pk=response_export['id'])
+        export = Export.objects.get(pk=response_export["id"])
         excepted_filters = {
-            'ids': [],
-            'search': None,
-            'statuses': [
-                'pending',
-                'processed',
-                'validated',
+            "ids": [],
+            "search": None,
+            "statuses": [
+                "pending",
+                "processed",
+                "validated",
             ],
-            'assignees': None,
-            'priorities': None,
-            'created_at_gte': '2021-11-01T00:00:00Z',
-            'created_at_lte': '2021-01-01T00:00:00Z',
-            'confidentiality': None,
-            'published_on_gte': None,
-            'published_on_lte': None,
-            'exclude_provided_leads_id': True,
-            'authoring_organization_types': None,
-            'has_entries': True,
-            'entries_filter_data': {
-                'controlled': None,
-                'created_by': None,
-                'entry_types': None,
-                'filterable_data': [
+            "assignees": None,
+            "priorities": None,
+            "created_at_gte": "2021-11-01T00:00:00Z",
+            "created_at_lte": "2021-01-01T00:00:00Z",
+            "confidentiality": None,
+            "published_on_gte": None,
+            "published_on_lte": None,
+            "exclude_provided_leads_id": True,
+            "authoring_organization_types": None,
+            "has_entries": True,
+            "entries_filter_data": {
+                "controlled": None,
+                "created_by": None,
+                "entry_types": None,
+                "filterable_data": [
                     {
-                        'value': None,
-                        'value_gte': None,
-                        'value_lte': None,
-                        'filter_key': 'random-element-1',
-                        'value_list': [
-                            'random-value-1',
-                            'random-value-2',
-                            'random-value-3',
-                            'random-value-4'
-                        ],
-                        'use_exclude': None,
-                        'use_and_operator': None,
-                        'include_sub_regions': None
+                        "value": None,
+                        "value_gte": None,
+                        "value_lte": None,
+                        "filter_key": "random-element-1",
+                        "value_list": ["random-value-1", "random-value-2", "random-value-3", "random-value-4"],
+                        "use_exclude": None,
+                        "use_and_operator": None,
+                        "include_sub_regions": None,
                     }
-                ]
+                ],
             },
         }
         # Make sure the filters are stored in db properly
@@ -603,7 +591,7 @@ class TestExportMutationSchema(GraphQLTestCase):
         """
         export = ExportFactory.create(exported_by=self.member_user, **self.common_export_attrs)
         export_2 = ExportFactory.create(
-            title='Export 2',
+            title="Export 2",
             exported_by=self.member_user,
             **self.common_export_attrs,
         )
@@ -612,12 +600,12 @@ class TestExportMutationSchema(GraphQLTestCase):
             return self.query_check(
                 self.UPDATE_EXPORT_QUERY,
                 minput=minput,
-                mnested=['project'],
+                mnested=["project"],
                 variables={
-                    'projectId': self.project.id,
-                    'exportId': export.id,
+                    "projectId": self.project.id,
+                    "exportId": export.id,
                 },
-                **kwargs
+                **kwargs,
             )
 
         # Snapshot
@@ -634,37 +622,28 @@ class TestExportMutationSchema(GraphQLTestCase):
         # --- member user
         self.force_login(self.member_user)
         # -----
-        minput['title'] = 'Export 1 (Updated)'
-        response = _query_check(minput, okay=True)['data']
-        response_export = response['project']['exportUpdate']['result']
+        minput["title"] = "Export 1 (Updated)"
+        response = _query_check(minput, okay=True)["data"]
+        response_export = response["project"]["exportUpdate"]["result"]
         self.assertNotEqual(response_export, None, response)
         export.refresh_from_db()
         updated_export_data = UserExportCreateGqlSerializer(export).data
         # Make sure the filters are stored in db properly
         self.assertNotEqual(updated_export_data, export_data, response)
-        export_data['title'] = minput['title']
+        export_data["title"] = minput["title"]
         self.assertEqual(updated_export_data, export_data, response)
 
     def test_analysis_export(self):
         # create analysis
-        analysis1 = AnalysisFactory.create(
-            project=self.project,
-            end_date=datetime.datetime.now(),
-            team_lead=self.member_user
-        )
+        analysis1 = AnalysisFactory.create(project=self.project, end_date=datetime.datetime.now(), team_lead=self.member_user)
 
         def _query_check(minput, **kwargs):
-            return self.query_check(
-                self.CREATE_EXPORT_QUERY,
-                minput=minput,
-                variables={'projectId': self.project.id},
-                **kwargs
-            )
+            return self.query_check(self.CREATE_EXPORT_QUERY, minput=minput, variables={"projectId": self.project.id}, **kwargs)
 
         minput = dict(
             format=self.genum(Export.Format.XLSX),
             type=self.genum(Export.DataType.ANALYSES),
-            title='Analysis Export 100',
+            title="Analysis Export 100",
             exportType=self.genum(Export.ExportType.EXCEL),
             analysis=analysis1.id,
             filters={},
@@ -679,9 +658,9 @@ class TestExportMutationSchema(GraphQLTestCase):
         # --- member user
         self.force_login(self.member_user)
 
-        response = _query_check(minput, okay=False)['data']
-        self.assertNotEqual(response['project']['exportCreate']['result'], None, response)
-        self.assertEqual(response['project']['exportCreate']['result']['analysis']['title'], analysis1.title)
+        response = _query_check(minput, okay=False)["data"]
+        self.assertNotEqual(response["project"]["exportCreate"]["result"], None, response)
+        self.assertEqual(response["project"]["exportCreate"]["result"]["analysis"]["title"], analysis1.title)
 
         # TODO: Add test case for file check
 
@@ -689,17 +668,18 @@ class TestExportMutationSchema(GraphQLTestCase):
         """
         This test makes sure only valid users can cancel export
         """
+
         def _query_check(export, **kwargs):
             return self.query_check(
-                self.CANCEL_EXPORT_QUERY,
-                variables={'projectId': self.project.id, 'exportId': export.id},
-                **kwargs
+                self.CANCEL_EXPORT_QUERY, variables={"projectId": self.project.id, "exportId": export.id}, **kwargs
             )
 
         export_pending = ExportFactory.create(
-            exported_by=self.member_user, status=Export.Status.PENDING, **self.common_export_attrs)
+            exported_by=self.member_user, status=Export.Status.PENDING, **self.common_export_attrs
+        )
         export_failed = ExportFactory.create(
-            exported_by=self.member_user, status=Export.Status.FAILURE, **self.common_export_attrs)
+            exported_by=self.member_user, status=Export.Status.FAILURE, **self.common_export_attrs
+        )
         export2 = ExportFactory.create(exported_by=self.another_member_user, **self.common_export_attrs)
 
         # -- Without login
@@ -719,21 +699,20 @@ class TestExportMutationSchema(GraphQLTestCase):
 
         # --- member user (with ownership)
         self.force_login(self.member_user)
-        content = _query_check(export_failed)['data']['project']['exportCancel']['result']
-        self.assertEqual(content['status'], self.genum(Export.Status.FAILURE), content)
+        content = _query_check(export_failed)["data"]["project"]["exportCancel"]["result"]
+        self.assertEqual(content["status"], self.genum(Export.Status.FAILURE), content)
 
-        content = _query_check(export_pending)['data']['project']['exportCancel']['result']
-        self.assertEqual(content['status'], self.genum(Export.Status.CANCELED), content)
+        content = _query_check(export_pending)["data"]["project"]["exportCancel"]["result"]
+        self.assertEqual(content["status"], self.genum(Export.Status.CANCELED), content)
 
     def test_export_delete(self):
         """
         This test makes sure only valid users can delete export
         """
+
         def _query_check(export, **kwargs):
             return self.query_check(
-                self.DELETE_EXPORT_QUERY,
-                variables={'projectId': self.project.id, 'exportId': export.id},
-                **kwargs
+                self.DELETE_EXPORT_QUERY, variables={"projectId": self.project.id, "exportId": export.id}, **kwargs
             )
 
         export1 = ExportFactory.create(exported_by=self.member_user, **self.common_export_attrs)
@@ -756,15 +735,15 @@ class TestExportMutationSchema(GraphQLTestCase):
 
         # --- member user (with ownership)
         self.force_login(self.member_user)
-        content = _query_check(export1)['data']['project']['exportDelete']['result']
-        self.assertEqual(content['id'], str(export1.id), content)
+        content = _query_check(export1)["data"]["project"]["exportDelete"]["result"]
+        self.assertEqual(content["id"], str(export1.id), content)
 
 
 class TestGenericExportMutationSchema(GraphQLSnapShotTestCase):
     factories_used = [AnalysisFrameworkFactory, ProjectFactory, LeadFactory, UserFactory]
     ENABLE_NOW_PATCHER = True
 
-    CREATE_GENERIC_EXPORT_QUERY = '''
+    CREATE_GENERIC_EXPORT_QUERY = """
         mutation MyMutation ($input: GenericExportCreateInputType!) {
             genericExportCreate(data: $input) {
               ok
@@ -789,7 +768,7 @@ class TestGenericExportMutationSchema(GraphQLSnapShotTestCase):
               }
             }
         }
-    '''
+    """
 
     def setUp(self):
         super().setUp()
@@ -815,11 +794,7 @@ class TestGenericExportMutationSchema(GraphQLSnapShotTestCase):
 
     def test_project_stats(self):
         def _query_check(minput, **kwargs):
-            return self.query_check(
-                self.CREATE_GENERIC_EXPORT_QUERY,
-                minput=minput,
-                **kwargs
-            )
+            return self.query_check(self.CREATE_GENERIC_EXPORT_QUERY, minput=minput, **kwargs)
 
         minput = dict(
             format=self.genum(GenericExport.Format.CSV),
@@ -838,64 +813,57 @@ class TestGenericExportMutationSchema(GraphQLSnapShotTestCase):
         self.force_login(self.user)
 
         with self.captureOnCommitCallbacks(execute=True):
-            response = _query_check(minput, okay=True)['data']
-        self.assertNotEqual(response['genericExportCreate']['result'], None, response)
-        generic_export = GenericExport.objects.get(pk=response['genericExportCreate']['result']['id'])
+            response = _query_check(minput, okay=True)["data"]
+        self.assertNotEqual(response["genericExportCreate"]["result"], None, response)
+        generic_export = GenericExport.objects.get(pk=response["genericExportCreate"]["result"]["id"])
         self.assertEqual(generic_export.status, GenericExport.Status.SUCCESS, response)
         self.assertNotEqual(generic_export.file.name, None, response)
-        self.assertMatchSnapshot(generic_export.file.read().decode('utf-8'), 'generic-export-csv')
+        self.assertMatchSnapshot(generic_export.file.read().decode("utf-8"), "generic-export-csv")
 
 
 class GeneraltestCase(GraphQLTestCase):
     def test_export_path_generation(self):
-        MOCK_TIME_STR = '20211205'
-        MOCK_RANDOM_STRING = 'random-string'
+        MOCK_TIME_STR = "20211205"
+        MOCK_RANDOM_STRING = "random-string"
         user = UserFactory.create()
         project = ProjectFactory.create()
         common_args = {
-            'type': Export.DataType.ENTRIES,
-            'exported_by': user,
-            'project': project,
+            "type": Export.DataType.ENTRIES,
+            "exported_by": user,
+            "project": project,
         }
-        with \
-                patch('export.models.get_random_string') as get_random_string_mock, \
-                patch('export.models.timezone') as timezone_mock:
+        with patch("export.models.get_random_string") as get_random_string_mock, patch("export.models.timezone") as timezone_mock:
             get_random_string_mock.return_value = MOCK_RANDOM_STRING
             timezone_mock.now.return_value.strftime.return_value = MOCK_TIME_STR
             for export, expected_title, expected_filename, _type in [
                 (
-                    ExportFactory(
-                        title='',
-                        format=Export.Format.DOCX,
-                        export_type=Export.ExportType.REPORT,
-                        **common_args
-                    ),
-                    f'{MOCK_TIME_STR} DEEP Entries General Export',
-                    f'{MOCK_TIME_STR} DEEP Entries General Export.docx',
-                    'without-title',
+                    ExportFactory(title="", format=Export.Format.DOCX, export_type=Export.ExportType.REPORT, **common_args),
+                    f"{MOCK_TIME_STR} DEEP Entries General Export",
+                    f"{MOCK_TIME_STR} DEEP Entries General Export.docx",
+                    "without-title",
                 ),
                 (
                     ExportFactory(
-                        title='test 123',
+                        title="test 123",
                         format=Export.Format.PDF,
                         export_type=Export.ExportType.REPORT,
                         **common_args,
                     ),
-                    'test 123',
-                    'test 123.pdf',
-                    'with-title-01',
+                    "test 123",
+                    "test 123.pdf",
+                    "with-title-01",
                 ),
                 (
                     ExportFactory(
-                        title='test 321',
+                        title="test 321",
                         format=Export.Format.JSON,
                         export_type=Export.ExportType.JSON,
                         is_preview=True,
                         **common_args,
                     ),
-                    'test 321',
-                    '(Preview) test 321.json',
-                    'with-title-02',
+                    "test 321",
+                    "(Preview) test 321.json",
+                    "with-title-02",
                 ),
             ]:
                 export.save()
@@ -903,4 +871,4 @@ class GeneraltestCase(GraphQLTestCase):
                 # export.title = export.title or generated_title  # This is automatically done on export save (mocking here)
                 generated_filename = export_upload_to(export, get_export_filename(export))
                 self.assertEqual(export.title, expected_title, _type)
-                self.assertEqual(generated_filename, f'export/{MOCK_RANDOM_STRING}/{expected_filename}', _type)
+                self.assertEqual(generated_filename, f"export/{MOCK_RANDOM_STRING}/{expected_filename}", _type)

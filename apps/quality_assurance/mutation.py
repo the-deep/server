@@ -1,26 +1,23 @@
 import graphene
 
-from utils.graphene.mutation import (
-    generate_input_type_for_serializer,
-    PsGrapheneMutation,
-    PsDeleteMutation,
-)
 from deep.permissions import ProjectPermissions as PP
+from utils.graphene.mutation import (
+    PsDeleteMutation,
+    PsGrapheneMutation,
+    generate_input_type_for_serializer,
+)
 
 from .models import EntryReviewComment
 from .schema import EntryReviewCommentDetailType
-from .serializers import (
-    EntryReviewCommentGqlSerializer as EntryReviewCommentSerializer,
-)
-
+from .serializers import EntryReviewCommentGqlSerializer as EntryReviewCommentSerializer
 
 EntryReviewCommentInputType = generate_input_type_for_serializer(
-    'EntryReviewCommentInputType',
+    "EntryReviewCommentInputType",
     serializer_class=EntryReviewCommentSerializer,
 )
 
 
-class EntryReviewCommentMutationMixin():
+class EntryReviewCommentMutationMixin:
     @classmethod
     def filter_queryset(cls, qs, info):
         return qs.filter(created_by=info.context.user)
@@ -29,6 +26,7 @@ class EntryReviewCommentMutationMixin():
 class CreateEntryReviewComment(EntryReviewCommentMutationMixin, PsGrapheneMutation):
     class Arguments:
         data = EntryReviewCommentInputType(required=True)
+
     model = EntryReviewComment
     serializer_class = EntryReviewCommentSerializer
     result = graphene.Field(EntryReviewCommentDetailType)
@@ -39,6 +37,7 @@ class UpdateEntryReviewComment(EntryReviewCommentMutationMixin, PsGrapheneMutati
     class Arguments:
         data = EntryReviewCommentInputType(required=True)
         id = graphene.ID(required=True)
+
     model = EntryReviewComment
     serializer_class = EntryReviewCommentSerializer
     result = graphene.Field(EntryReviewCommentDetailType)
@@ -48,12 +47,13 @@ class UpdateEntryReviewComment(EntryReviewCommentMutationMixin, PsGrapheneMutati
 class DeleteEntryReviewComment(EntryReviewCommentMutationMixin, PsDeleteMutation):
     class Arguments:
         id = graphene.ID(required=True)
+
     model = EntryReviewComment
     result = graphene.Field(EntryReviewCommentDetailType)
     permissions = [PP.Permission.CREATE_ENTRY, PP.Permission.UPDATE_ENTRY]
 
 
-class Mutation():
+class Mutation:
     entry_review_comment_create = CreateEntryReviewComment.Field()
     entry_review_comment_update = UpdateEntryReviewComment.Field()
     entry_review_comment_delete = DeleteEntryReviewComment.Field()

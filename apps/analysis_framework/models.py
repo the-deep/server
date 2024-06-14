@@ -1,20 +1,21 @@
 import copy
 from typing import Union
 
-from django.db import models
 from django.core.exceptions import ValidationError
+from django.db import models
+from organization.models import Organization
+from user.models import User
+from user_resource.models import UserResource
 
 from utils.common import get_enum_display
-from user_resource.models import UserResource
-from user.models import User
-from organization.models import Organization
+
 from .widgets import store as widgets_store
 
 
 class AnalysisFrameworkTag(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    icon = models.FileField(upload_to='af-tag-icon/', max_length=255)
+    icon = models.FileField(upload_to="af-tag-icon/", max_length=255)
 
     def __str__(self):
         return self.title
@@ -26,17 +27,16 @@ class AnalysisFramework(UserResource):
 
     Analysis is done to create entries out of leads.
     """
+
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    tags = models.ManyToManyField(AnalysisFrameworkTag, related_name='+', blank=True)
+    tags = models.ManyToManyField(AnalysisFrameworkTag, related_name="+", blank=True)
 
     is_private = models.BooleanField(default=False)
     assisted_tagging_enabled = models.BooleanField(default=False)
 
     members = models.ManyToManyField(
-        User, blank=True,
-        through_fields=('framework', 'member'),
-        through='AnalysisFrameworkMembership'
+        User, blank=True, through_fields=("framework", "member"), through="AnalysisFrameworkMembership"
     )
 
     properties = models.JSONField(default=dict, blank=True, null=True)
@@ -44,15 +44,15 @@ class AnalysisFramework(UserResource):
     organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, blank=True, null=True)
     # Image is provided by user as a reference.
     preview_image = models.FileField(
-        upload_to='af-preview-image/', max_length=255, null=True, blank=True, default=None,
+        upload_to="af-preview-image/",
+        max_length=255,
+        null=True,
+        blank=True,
+        default=None,
     )
-    export = models.FileField(upload_to='af-exports/', max_length=255, null=True, blank=True, default=None)
+    export = models.FileField(upload_to="af-exports/", max_length=255, null=True, blank=True, default=None)
     # added to keep the track of cloned analysisframework
-    cloned_from = models.ForeignKey(
-        'AnalysisFramework',
-        on_delete=models.SET_NULL,
-        null=True, blank=True
-    )
+    cloned_from = models.ForeignKey("AnalysisFramework", on_delete=models.SET_NULL, null=True, blank=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -68,10 +68,8 @@ class AnalysisFramework(UserResource):
         Clone analysis framework along with all widgets,
         filters and exportables
         """
-        title = overrides.get(
-            'title', '{} (cloned)'.format(self.title[:230])
-        )  # Strip off extra chars from title
-        description = overrides.get('description', '')
+        title = overrides.get("title", "{} (cloned)".format(self.title[:230]))  # Strip off extra chars from title
+        description = overrides.get("description", "")
         clone_analysis_framework = AnalysisFramework(
             title=title,
             description=description,
@@ -99,34 +97,30 @@ class AnalysisFramework(UserResource):
         # For widgets with conditional assigned.
         for widget in widgets_with_conditional:
             widget.conditional_parent_widget_id = old_new_widgets_map[widget.conditional_parent_widget_id]
-            widget.save(update_fields=('conditional_parent_widget_id',))
+            widget.save(update_fields=("conditional_parent_widget_id",))
         return clone_analysis_framework
 
     @staticmethod
     def get_for(user):
         return AnalysisFramework.objects.all().exclude(
-            models.Q(is_private=True) & ~models.Q(members=user) &
-            ~models.Q(project__members=user)
+            models.Q(is_private=True) & ~models.Q(members=user) & ~models.Q(project__members=user)
         )
 
     @classmethod
     def get_for_gq(cls, user, only_member=False):
-        visible_afs = cls.objects\
-            .annotate(
-                # NOTE: This is used by permission module
-                current_user_role=models.Subquery(
-                    AnalysisFrameworkMembership.objects.filter(
-                        framework=models.OuterRef('pk'),
-                        member=user,
-                    ).order_by('role__type').values('role__type')[:1],
-                    output_field=models.CharField()
+        visible_afs = cls.objects.annotate(
+            # NOTE: This is used by permission module
+            current_user_role=models.Subquery(
+                AnalysisFrameworkMembership.objects.filter(
+                    framework=models.OuterRef("pk"),
+                    member=user,
                 )
-                # NOTE: Exclude if af is private + user is not a member and user is not member of project using af
-            ).exclude(
-                models.Q(is_private=True) &
-                models.Q(current_user_role__isnull=True) &
-                ~models.Q(project__members=user)
+                .order_by("role__type")
+                .values("role__type")[:1],
+                output_field=models.CharField(),
             )
+            # NOTE: Exclude if af is private + user is not a member and user is not member of project using af
+        ).exclude(models.Q(is_private=True) & models.Q(current_user_role__isnull=True) & ~models.Q(project__members=user))
         if only_member:
             return visible_afs.filter(current_user_role__isnull=False)
         return visible_afs
@@ -135,14 +129,14 @@ class AnalysisFramework(UserResource):
         """
         Return current_user_role from instance (if get_for_gq is used or generate)
         """
-        if hasattr(self, 'current_user_role'):
+        if hasattr(self, "current_user_role"):
             self.current_user_role: Union[str, None]
             return self.current_user_role
         # If not available generate
         self.current_user_role = None
-        self.current_user_role = AnalysisFrameworkMembership.objects\
-            .filter(framework=self, member=user)\
-            .values_list('role__type', flat=True).first()
+        self.current_user_role = (
+            AnalysisFrameworkMembership.objects.filter(framework=self, member=user).values_list("role__type", flat=True).first()
+        )
         return self.current_user_role
 
     def can_get(self, _: User):
@@ -155,18 +149,12 @@ class AnalysisFramework(UserResource):
         * user is super user, or
         * the framework belongs to a project where the user is admin
         """
-        return (
-            AnalysisFrameworkMembership.objects.filter(
-                member=user,
-                framework=self,
-                role__can_edit_framework=True
-            ).exists()
-        )
+        return AnalysisFrameworkMembership.objects.filter(member=user, framework=self, role__can_edit_framework=True).exists()
 
     def can_clone(self, user):
         return (
-            not self.is_private or
-            AnalysisFrameworkMembership.objects.filter(
+            not self.is_private
+            or AnalysisFrameworkMembership.objects.filter(
                 member=user,
                 framework=self,
                 role__can_clone_framework=True,
@@ -175,43 +163,36 @@ class AnalysisFramework(UserResource):
 
     def get_entries_count(self):
         from entry.models import Entry
+
         return Entry.objects.filter(analysis_framework=self).count()
 
     def get_or_create_owner_role(self):
         permission_fields = self.get_owner_permissions()
-        privacy_label = 'Private' if self.is_private else 'Public'
+        privacy_label = "Private" if self.is_private else "Public"
         role, _ = AnalysisFrameworkRole.objects.get_or_create(
-            **permission_fields,
-            is_private_role=self.is_private,
-            defaults={
-                'title': f'Owner ({privacy_label})'
-            }
+            **permission_fields, is_private_role=self.is_private, defaults={"title": f"Owner ({privacy_label})"}
         )
         return role
 
     def get_or_create_editor_role(self):
         permission_fields = self.get_editor_permissions()
-        privacy_label = 'Private' if self.is_private else 'Public'
+        privacy_label = "Private" if self.is_private else "Public"
 
         role, _ = AnalysisFrameworkRole.objects.get_or_create(
-            **permission_fields,
-            is_private_role=self.is_private,
-            defaults={
-                'title': f'Editor ({privacy_label})'
-            }
+            **permission_fields, is_private_role=self.is_private, defaults={"title": f"Editor ({privacy_label})"}
         )
         return role
 
     def get_or_create_default_role(self):
         permission_fields = self.get_default_permissions()
-        privacy_label = 'Private' if self.is_private else 'Public'
+        privacy_label = "Private" if self.is_private else "Public"
         role, _ = AnalysisFrameworkRole.objects.get_or_create(
             is_default_role=True,
             is_private_role=self.is_private,
             defaults={
                 **permission_fields,
-                'title': f'Default({privacy_label})',
-            }
+                "title": f"Default({privacy_label})",
+            },
         )
         return role
 
@@ -222,7 +203,7 @@ class AnalysisFramework(UserResource):
             framework=self,
             role=role,
             defaults={
-                'added_by': added_by,
+                "added_by": added_by,
             },
         )
 
@@ -255,7 +236,7 @@ class AnalysisFramework(UserResource):
         return permission_fields
 
     def get_active_filters(self):
-        current_widgets_key = self.widget_set.values_list('key', flat=True)
+        current_widgets_key = self.widget_set.values_list("key", flat=True)
         return self.filter_set.filter(widget_key__in=current_widgets_key).all()
 
 
@@ -263,6 +244,7 @@ class Section(models.Model):
     """
     Section to group widgets
     """
+
     analysis_framework_id: Union[int, None]
     analysis_framework = models.ForeignKey(AnalysisFramework, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
@@ -270,7 +252,7 @@ class Section(models.Model):
     tooltip = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f'{self.analysis_framework_id}#{self.title}'
+        return f"{self.analysis_framework_id}#{self.title}"
 
     def clone_to(self, analysis_framework):
         section_clone = copy.deepcopy(self)
@@ -284,6 +266,7 @@ class Widget(models.Model):
     """
     Widget inserted into a framework
     """
+
     class WidgetType(models.TextChoices):
         DATE = widgets_store.date_widget.WIDGET_ID
         DATE_RANGE = widgets_store.date_range_widget.WIDGET_ID
@@ -300,7 +283,7 @@ class Widget(models.Model):
         NUMBER_MATRIX = widgets_store.number_matrix_widget.WIDGET_ID
         CONDITIONAL = widgets_store.conditional_widget.WIDGET_ID
         TEXT = widgets_store.text_widget.WIDGET_ID
-        EXCERPT = 'excerptWidget', 'Excerpt #DEPRICATED'  # TODO:DEPRICATED
+        EXCERPT = "excerptWidget", "Excerpt #DEPRICATED"  # TODO:DEPRICATED
 
     DEPRECATED_TYPES = [
         WidgetType.EXCERPT,
@@ -309,8 +292,8 @@ class Widget(models.Model):
     ]
 
     class WidthType(models.TextChoices):
-        FULL = 'full', 'Full'
-        HALF = 'half', 'Half'
+        FULL = "full", "Full"
+        HALF = "half", "Half"
 
     analysis_framework = models.ForeignKey(AnalysisFramework, on_delete=models.CASCADE)
     # FIXME: key shouldn't be null (Filter/Exportable have non-nullable key)
@@ -327,7 +310,8 @@ class Widget(models.Model):
     version = models.SmallIntegerField(null=True, blank=True)
     # Conditional
     conditional_parent_widget = models.ForeignKey(
-        'Widget', related_name='child_widget_conditionals', on_delete=models.SET_NULL, null=True, blank=True)
+        "Widget", related_name="child_widget_conditionals", on_delete=models.SET_NULL, null=True, blank=True
+    )
     conditional_conditions = models.JSONField(default=list, blank=True)
 
     # For typing
@@ -339,10 +323,11 @@ class Widget(models.Model):
             self.analysis_framework_id = self.section.analysis_framework_id
         super().save(*args, **kwargs)
         from .utils import update_widget
+
         update_widget(self)
 
     def __str__(self):
-        return '{}:: {}:{} ({})'.format(self.analysis_framework_id, self.title, self.pk, self.widget_id)
+        return "{}:: {}:{} ({})".format(self.analysis_framework_id, self.title, self.pk, self.widget_id)
 
     def clone_to(self, analysis_framework, section_id):
         widget_clone = copy.deepcopy(self)
@@ -359,9 +344,9 @@ class Widget(models.Model):
         AnalysisFramework which has access to it's project
         """
         return Widget.objects.filter(
-            models.Q(analysis_framework__project=None) |
-            models.Q(analysis_framework__project__members=user) |
-            models.Q(analysis_framework__project__user_groups__members=user)
+            models.Q(analysis_framework__project=None)
+            | models.Q(analysis_framework__project__members=user)
+            | models.Q(analysis_framework__project__user_groups__members=user)
         ).distinct()
 
     def can_get(self, user):
@@ -375,14 +360,16 @@ class Filter(models.Model):
     """
     A filter for a widget in an analysis framework
     """
+
     class FilterType(models.TextChoices):
-        TEXT = 'text', 'Text'
-        NUMBER = 'number', 'Number'
-        LIST = 'list', 'List'
-        INTERSECTS = 'intersects', 'Intersection between two numbers'
+        TEXT = "text", "Text"
+        NUMBER = "number", "Number"
+        LIST = "list", "List"
+        INTERSECTS = "intersects", "Intersection between two numbers"
 
     analysis_framework = models.ForeignKey(
-        AnalysisFramework, on_delete=models.CASCADE,
+        AnalysisFramework,
+        on_delete=models.CASCADE,
     )
     key = models.CharField(max_length=100, db_index=True)
     widget_key = models.CharField(max_length=100)
@@ -391,13 +378,13 @@ class Filter(models.Model):
     filter_type = models.CharField(max_length=20, choices=FilterType.choices, default=FilterType.LIST)
 
     class Meta:
-        ordering = ['title', 'widget_key', 'key']
+        ordering = ["title", "widget_key", "key"]
 
     def __str__(self):
-        return '{} ({})'.format(self.title, self.key)
+        return "{} ({})".format(self.title, self.key)
 
     def get_widget_type_display(self):
-        widget_type = getattr(self, 'widget_type')  # Included when qs_with_widget_type is used
+        widget_type = getattr(self, "widget_type")  # Included when qs_with_widget_type is used
         if widget_type:
             return get_enum_display(Widget.WidgetType, widget_type)
 
@@ -408,9 +395,10 @@ class Filter(models.Model):
         return cls.objects.annotate(
             widget_type=models.Subquery(
                 Widget.objects.filter(
-                    key=models.OuterRef('widget_key'),
-                    analysis_framework=models.OuterRef('analysis_framework'),
-                ).values('widget_id')[:1], output_field=models.CharField()
+                    key=models.OuterRef("widget_key"),
+                    analysis_framework=models.OuterRef("analysis_framework"),
+                ).values("widget_id")[:1],
+                output_field=models.CharField(),
             )
         )
 
@@ -436,9 +424,9 @@ class Filter(models.Model):
         if with_widget_type:
             qs = cls.qs_with_widget_type()
         return qs.filter(
-            models.Q(analysis_framework__project=None) |
-            models.Q(analysis_framework__project__members=user) |
-            models.Q(analysis_framework__project__user_groups__members=user)
+            models.Q(analysis_framework__project=None)
+            | models.Q(analysis_framework__project__members=user)
+            | models.Q(analysis_framework__project__user_groups__members=user)
         ).distinct()
 
     def can_get(self, user):
@@ -452,8 +440,10 @@ class Exportable(models.Model):
     """
     Export data for given widget
     """
+
     analysis_framework = models.ForeignKey(
-        AnalysisFramework, on_delete=models.CASCADE,
+        AnalysisFramework,
+        on_delete=models.CASCADE,
     )
     widget_key = models.CharField(max_length=100, db_index=True)
     inline = models.BooleanField(default=False)
@@ -461,10 +451,10 @@ class Exportable(models.Model):
     data = models.JSONField(default=None, blank=True, null=True)
 
     def __str__(self):
-        return 'Exportable ({})'.format(self.widget_key)
+        return "Exportable ({})".format(self.widget_key)
 
     class Meta:
-        ordering = ['order']
+        ordering = ["order"]
 
     @classmethod
     def qs_with_widget_type(cls):
@@ -473,9 +463,10 @@ class Exportable(models.Model):
         return cls.objects.annotate(
             widget_type=models.Subquery(
                 Widget.objects.filter(
-                    key=models.OuterRef('widget_key'),
-                    analysis_framework=models.OuterRef('analysis_framework'),
-                ).values('widget_id')[:1], output_field=models.CharField()
+                    key=models.OuterRef("widget_key"),
+                    analysis_framework=models.OuterRef("analysis_framework"),
+                ).values("widget_id")[:1],
+                output_field=models.CharField(),
             )
         )
 
@@ -495,13 +486,13 @@ class Exportable(models.Model):
         AnalysisFramework which has access to it's project
         """
         return Exportable.objects.filter(
-            models.Q(analysis_framework__project=None) |
-            models.Q(analysis_framework__project__members=user) |
-            models.Q(analysis_framework__project__user_groups__members=user)
+            models.Q(analysis_framework__project=None)
+            | models.Q(analysis_framework__project__members=user)
+            | models.Q(analysis_framework__project__user_groups__members=user)
         ).distinct()
 
     def get_widget_type_display(self):
-        widget_type = getattr(self, 'widget_type')  # Included when qs_with_widget_type is used
+        widget_type = getattr(self, "widget_type")  # Included when qs_with_widget_type is used
         if widget_type:
             return get_enum_display(Widget.WidgetType, widget_type)
 
@@ -516,14 +507,15 @@ class AnalysisFrameworkRole(models.Model):
     """
     Roles for AnalysisFramework
     """
+
     class Type(models.TextChoices):
-        EDITOR = 'editor', 'Editor'
-        OWNER = 'owner', 'Owner'
-        DEFAULT = 'default', 'default'
-        PRIVATE_EDITOR = 'private_editor', 'Private Editor'
-        PRIVATE_OWNER = 'private_owner', 'Private Owner'
-        PRIVATE_VIEWER = 'private_viewer', 'Private Viewer'
-        UNKNOWN = 'unknown', 'Unknown'
+        EDITOR = "editor", "Editor"
+        OWNER = "owner", "Owner"
+        DEFAULT = "default", "default"
+        PRIVATE_EDITOR = "private_editor", "Private Editor"
+        PRIVATE_OWNER = "private_owner", "Private Owner"
+        PRIVATE_VIEWER = "private_viewer", "Private Viewer"
+        UNKNOWN = "unknown", "Unknown"
 
     PRIVATE_TYPES = [
         Type.PRIVATE_EDITOR,
@@ -531,10 +523,10 @@ class AnalysisFrameworkRole(models.Model):
         Type.PRIVATE_VIEWER,
     ]
 
-    CAN_ADD_USER = 'can_add_user'
-    CAN_CLONE_FRAMEWORK = 'can_clone_framework'
-    CAN_EDIT_FRAMEWORK = 'can_edit_framework'
-    CAN_USE_IN_OTHER_PROJECTS = 'can_use_in_other_projects'
+    CAN_ADD_USER = "can_add_user"
+    CAN_CLONE_FRAMEWORK = "can_clone_framework"
+    CAN_EDIT_FRAMEWORK = "can_edit_framework"
+    CAN_USE_IN_OTHER_PROJECTS = "can_use_in_other_projects"
 
     PERMISSION_FIELDS = (
         CAN_ADD_USER,
@@ -561,12 +553,12 @@ class AnalysisFrameworkRole(models.Model):
 
     class Meta:
         unique_together = (
-            'can_add_user',
-            'can_clone_framework',
-            'can_edit_framework',
-            'can_use_in_other_projects',
-            'is_default_role',
-            'is_private_role',
+            "can_add_user",
+            "can_clone_framework",
+            "can_edit_framework",
+            "can_use_in_other_projects",
+            "is_default_role",
+            "is_private_role",
         )
 
     def __str__(self):
@@ -574,28 +566,26 @@ class AnalysisFrameworkRole(models.Model):
 
     @property
     def permissions(self):
-        return {
-            x: self.__dict__[x]
-            for x in AnalysisFrameworkRole.PERMISSION_FIELDS
-        }
+        return {x: self.__dict__[x] for x in AnalysisFrameworkRole.PERMISSION_FIELDS}
 
     def clean(self):
         if self.is_private_role:
             if self.type not in self.PRIVATE_TYPES:
-                raise ValidationError({
-                    'type': f'{self.type} is not allowed for Private Roles.',
-                })
+                raise ValidationError(
+                    {
+                        "type": f"{self.type} is not allowed for Private Roles.",
+                    }
+                )
         elif self.type in self.PRIVATE_TYPES:
-            raise ValidationError({
-                'type': f'{self.type} is not allowed for Public Roles.',
-            })
+            raise ValidationError(
+                {
+                    "type": f"{self.type} is not allowed for Public Roles.",
+                }
+            )
 
 
 class AnalysisFrameworkMembership(models.Model):
-    member = models.ForeignKey(
-        User, on_delete=models.CASCADE,
-        related_name='framework_membership'
-    )
+    member = models.ForeignKey(User, on_delete=models.CASCADE, related_name="framework_membership")
     framework = models.ForeignKey(AnalysisFramework, on_delete=models.CASCADE)
     role = models.ForeignKey(
         AnalysisFrameworkRole,
@@ -603,19 +593,18 @@ class AnalysisFrameworkMembership(models.Model):
     )
     joined_at = models.DateTimeField(auto_now_add=True)
     added_by = models.ForeignKey(
-        User, on_delete=models.CASCADE,
-        null=True, blank=True, default=None,
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        default=None,
     )
 
     class Meta:
-        unique_together = ('member', 'framework')
+        unique_together = ("member", "framework")
 
     @staticmethod
     def get_for(user):
         return AnalysisFrameworkMembership.objects.filter(
-            (
-                models.Q(member=user) &
-                models.Q(role__can_add_user=True)
-            ) |
-            models.Q(framework__members=user),
+            (models.Q(member=user) & models.Q(role__can_add_user=True)) | models.Q(framework__members=user),
         )

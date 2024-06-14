@@ -1,16 +1,16 @@
 import graphene
+from gallery.models import File
+from gallery.schema import GalleryFileType
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
+from utils.graphene.fields import DjangoPaginatedListObjectField
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.types import CustomDjangoListObjectType
-from utils.graphene.fields import DjangoPaginatedListObjectField
 
-from gallery.schema import GalleryFileType
-from gallery.models import File
-
-from .models import Organization, OrganizationType as _OrganizationType
 from .filters import OrganizationFilterSet
+from .models import Organization
+from .models import OrganizationType as _OrganizationType
 from .public_schema import PublicOrganizationListObjectType
 
 
@@ -18,10 +18,10 @@ class OrganizationTypeType(DjangoObjectType):
     class Meta:
         model = _OrganizationType
         only_fields = (
-            'id',
-            'title',
-            'short_name',
-            'description',
+            "id",
+            "title",
+            "short_name",
+            "description",
         )
 
 
@@ -36,14 +36,15 @@ class MergedAsOrganizationType(DjangoObjectType):
         model = Organization
         skip_registry = True
         only_fields = (
-            'id',
-            'title',
-            'short_name',
-            'long_name',
-            'url',
-            'logo',
-            'verified',
+            "id",
+            "title",
+            "short_name",
+            "long_name",
+            "url",
+            "logo",
+            "verified",
         )
+
     logo = graphene.Field(GalleryFileType)
 
     def resolve_logo(root, info, **kwargs) -> File:
@@ -54,18 +55,19 @@ class OrganizationType(DjangoObjectType):
     class Meta:
         model = Organization
         only_fields = (
-            'id',
-            'title',
-            'short_name',
-            'long_name',
-            'url',
-            'logo',
-            'regions',
-            'organization_type',
-            'verified',
+            "id",
+            "title",
+            "short_name",
+            "long_name",
+            "url",
+            "logo",
+            "regions",
+            "organization_type",
+            "verified",
         )
+
     logo = graphene.Field(GalleryFileType)
-    merged_as = graphene.Field(MergedAsOrganizationType, source='parent')
+    merged_as = graphene.Field(MergedAsOrganizationType, source="parent")
 
     def resolve_logo(root, info, **kwargs) -> File:
         return info.context.dl.organization.logo.load(root.pk)
@@ -83,23 +85,14 @@ class OrganizationListType(CustomDjangoListObjectType):
 class Query:
     organization = DjangoObjectField(OrganizationType)
     organizations = DjangoPaginatedListObjectField(
-        OrganizationListType,
-        pagination=NoOrderingPageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        OrganizationListType, pagination=NoOrderingPageGraphqlPagination(page_size_query_param="pageSize")
     )
     public_organizations = DjangoPaginatedListObjectField(
-        PublicOrganizationListObjectType,
-        pagination=NoOrderingPageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        PublicOrganizationListObjectType, pagination=NoOrderingPageGraphqlPagination(page_size_query_param="pageSize")
     )
     organization_type = DjangoObjectField(OrganizationTypeType)
     organization_types = DjangoPaginatedListObjectField(
-        OrganizationTypeListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        OrganizationTypeListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
 
     def resolve_organizations(root, info, **kwargs):

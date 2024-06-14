@@ -1,10 +1,12 @@
 """
 Source: https://raw.githubusercontent.com/EverWinter23/graphene-gis/master/graphene_gis/scalars.py
 """
+
 import json
-from graphql.language import ast
-from graphene.types import Scalar
+
 from django.contrib.gis.geos import GEOSGeometry
+from graphene.types import Scalar
+from graphql.language import ast
 
 
 class GISScalar(Scalar):

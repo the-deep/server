@@ -1,21 +1,18 @@
+from django.db.models.signals import m2m_changed, post_delete
 from django.dispatch import receiver
-from django.db.models.signals import (
-    m2m_changed,
-    post_delete,
-)
-
-from deep.middleware import get_current_user
 from lead.models import Lead
 from notification.models import Assignment
 from quality_assurance.models import EntryReviewComment
 
+from deep.middleware import get_current_user
+
 
 @receiver(m2m_changed, sender=Lead.assignee.through)
 def lead_assignment_signal(sender, instance, action, **kwargs):
-    pk_set = kwargs.get('pk_set', [])
+    pk_set = kwargs.get("pk_set", [])
     # Gets the username from the request with a middleware helper
     user = get_current_user()
-    if action == 'post_add' and pk_set and user:
+    if action == "post_add" and pk_set and user:
         for receiver_user in pk_set:
             if Assignment.objects.filter(
                 lead__id=instance.id,
@@ -30,7 +27,7 @@ def lead_assignment_signal(sender, instance, action, **kwargs):
                 created_by=user,
             )
 
-    elif action == 'post_remove' and pk_set and user:
+    elif action == "post_remove" and pk_set and user:
         for receiver_user in pk_set:
             Assignment.objects.filter(
                 lead__id=instance.id,
@@ -39,16 +36,16 @@ def lead_assignment_signal(sender, instance, action, **kwargs):
 
     # handling `post_clear` since single assignee is passed
     # though the api
-    elif action == 'post_clear':
+    elif action == "post_clear":
         Assignment.objects.filter(lead__id=instance.id).delete()
 
 
 @receiver(m2m_changed, sender=EntryReviewComment.mentioned_users.through)
 def entrycomment_assignment_signal(sender, instance, action, **kwargs):
-    pk_set = kwargs.get('pk_set', [])
+    pk_set = kwargs.get("pk_set", [])
     # Gets the username from the request with a middleware helper
     user = get_current_user()
-    if action == 'post_add' and pk_set and user:
+    if action == "post_add" and pk_set and user:
         for receiver_user in pk_set:
             if Assignment.objects.filter(
                 entry_review_comment__id=instance.id,
@@ -63,7 +60,7 @@ def entrycomment_assignment_signal(sender, instance, action, **kwargs):
                 created_by=user,
             )
 
-    elif action == 'post_remove' and pk_set and user:
+    elif action == "post_remove" and pk_set and user:
         for receiver_user in pk_set:
             Assignment.objects.filter(
                 entry_review_comment__id=instance.id,

@@ -1,50 +1,40 @@
+import django_filters
 import graphene
-
 from django.contrib.postgres.aggregates.general import ArrayAgg
-from graphene_django.filter.utils import get_filtering_args_from_filterset
 from django.db import models
 from django.db.models.functions import Concat, Lower
-import django_filters
-
-from deep.permissions import ProjectPermissions as PP
-from deep.filter_set import OrderEnumMixin, generate_type_for_filter_set
-from utils.graphene.filters import (
-    SimpleInputFilter,
-    IDListFilter,
-    MultipleInputFilter,
-)
+from geo.models import Region
+from graphene_django.filter.utils import get_filtering_args_from_filterset
 from user_resource.filters import UserResourceFilterSet, UserResourceGqlFilterSet
 
-from geo.models import Region
-from .models import (
-    Project,
-    ProjectMembership,
-    ProjectUserGroupMembership,
-)
+from deep.filter_set import OrderEnumMixin, generate_type_for_filter_set
+from deep.permissions import ProjectPermissions as PP
+from utils.graphene.filters import IDListFilter, MultipleInputFilter, SimpleInputFilter
+
 from .enums import (
+    ProjectOrderingEnum,
     ProjectPermissionEnum,
     ProjectStatusEnum,
-    ProjectOrderingEnum,
     PublicProjectOrderingEnum,
 )
+from .models import Project, ProjectMembership, ProjectUserGroupMembership
 
 
 class ProjectFilterSet(UserResourceFilterSet):
     class Meta:
         model = Project
-        fields = ['id', 'title', 'status', 'user_groups']
+        fields = ["id", "title", "status", "user_groups"]
 
         filter_overrides = {
             models.CharField: {
-                'filter_class': django_filters.CharFilter,
-                'extra': lambda _: {
-                    'lookup_expr': 'icontains',
+                "filter_class": django_filters.CharFilter,
+                "extra": lambda _: {
+                    "lookup_expr": "icontains",
                 },
             },
         }
 
-    is_current_user_member = django_filters.BooleanFilter(
-        field_name='is_current_user_member', method='filter_with_membership')
+    is_current_user_member = django_filters.BooleanFilter(field_name="is_current_user_member", method="filter_with_membership")
 
     def filter_with_membership(self, queryset, _, value):
         if value is not None:
@@ -60,29 +50,29 @@ class ProjectFilterSet(UserResourceFilterSet):
 class ProjectMembershipFilterSet(UserResourceFilterSet):
     class Meta:
         model = ProjectMembership
-        fields = ['id', 'project', 'member']
+        fields = ["id", "project", "member"]
 
 
 class ProjectUserGroupMembershipFilterSet(UserResourceFilterSet):
     class Meta:
         model = ProjectUserGroupMembership
-        fields = ['id', 'project', 'usergroup']
+        fields = ["id", "project", "usergroup"]
 
 
 def get_filtered_projects(user, queries, annotate=False):
     projects = Project.get_for(user, annotate)
-    involvement = queries.get('involvement')
+    involvement = queries.get("involvement")
     if involvement:
-        if involvement == 'my_projects':
+        if involvement == "my_projects":
             projects = projects.filter(Project.get_query_for_member(user))
-        if involvement == 'not_my_projects':
+        if involvement == "not_my_projects":
             projects = projects.exclude(Project.get_query_for_member(user))
 
-    regions = queries.get('regions') or ''
+    regions = queries.get("regions") or ""
     if regions:
-        projects = projects.filter(regions__in=regions.split(','))
+        projects = projects.filter(regions__in=regions.split(","))
 
-    ordering = queries.get('ordering')
+    ordering = queries.get("ordering")
     if ordering:
         projects = projects.order_by(ordering)
 
@@ -91,18 +81,17 @@ def get_filtered_projects(user, queries, annotate=False):
 
 # -------------------- Graphql Filters -----------------------------------
 class ProjectGqlFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
-    ids = IDListFilter(field_name='id')
-    exclude_ids = IDListFilter(method='filter_exclude_ids')
+    ids = IDListFilter(field_name="id")
+    exclude_ids = IDListFilter(method="filter_exclude_ids")
     status = SimpleInputFilter(ProjectStatusEnum)
     organizations = IDListFilter(distinct=True)
-    analysis_frameworks = IDListFilter(field_name='analysis_framework')
+    analysis_frameworks = IDListFilter(field_name="analysis_framework")
     regions = IDListFilter(distinct=True)
-    search = django_filters.CharFilter(method='filter_title')
-    is_current_user_member = django_filters.BooleanFilter(
-        field_name='is_current_user_member', method='filter_with_membership')
-    has_permission_access = SimpleInputFilter(ProjectPermissionEnum, method='filter_has_permission_access')
-    ordering = MultipleInputFilter(ProjectOrderingEnum, method='ordering_filter')
-    is_test = django_filters.BooleanFilter(field_name='is_test', method='filter_is_test')
+    search = django_filters.CharFilter(method="filter_title")
+    is_current_user_member = django_filters.BooleanFilter(field_name="is_current_user_member", method="filter_with_membership")
+    has_permission_access = SimpleInputFilter(ProjectPermissionEnum, method="filter_has_permission_access")
+    ordering = MultipleInputFilter(ProjectOrderingEnum, method="ordering_filter")
+    is_test = django_filters.BooleanFilter(field_name="is_test", method="filter_is_test")
 
     class Meta:
         model = Project
@@ -137,47 +126,51 @@ class ProjectGqlFilterSet(OrderEnumMixin, UserResourceGqlFilterSet):
                 id__in=ProjectMembership.objects.filter(
                     member=self.request.user,
                     role__type__in=PP.REVERSE_PERMISSION_MAP[value],
-                ).values('project')
+                ).values("project")
             )
         return queryset
 
 
 class PublicProjectGqlFilterSet(ProjectGqlFilterSet):
-    ordering = MultipleInputFilter(PublicProjectOrderingEnum, method='ordering_filter')
+    ordering = MultipleInputFilter(PublicProjectOrderingEnum, method="ordering_filter")
 
 
 class ProjectMembershipGqlFilterSet(UserResourceGqlFilterSet):
-    search = django_filters.CharFilter(method='filter_search')
-    members = IDListFilter(distinct=True, field_name='member')
+    search = django_filters.CharFilter(method="filter_search")
+    members = IDListFilter(distinct=True, field_name="member")
 
     class Meta:
         model = ProjectMembership
-        fields = ('id',)
+        fields = ("id",)
 
     def filter_search(self, qs, _, value):
         if value:
-            return qs.annotate(
-                full_name=Lower(
-                    Concat(
-                        'member__first_name',
-                        models.Value(' '),
-                        'member__last_name',
-                        models.Value(' '),
-                        'member__email',
-                        output_field=models.CharField(),
-                    )
-                ),
-            ).filter(full_name__icontains=value).distinct()
+            return (
+                qs.annotate(
+                    full_name=Lower(
+                        Concat(
+                            "member__first_name",
+                            models.Value(" "),
+                            "member__last_name",
+                            models.Value(" "),
+                            "member__email",
+                            output_field=models.CharField(),
+                        )
+                    ),
+                )
+                .filter(full_name__icontains=value)
+                .distinct()
+            )
         return qs
 
 
 class ProjectUserGroupMembershipGqlFilterSet(UserResourceGqlFilterSet):
-    search = django_filters.CharFilter(method='filter_search')
-    usergroups = IDListFilter(distinct=True, field_name='usergroup')
+    search = django_filters.CharFilter(method="filter_search")
+    usergroups = IDListFilter(distinct=True, field_name="usergroup")
 
     class Meta:
         model = ProjectUserGroupMembership
-        fields = ('id',)
+        fields = ("id",)
 
     def filter_search(self, qs, _, value):
         if value:
@@ -187,12 +180,12 @@ class ProjectUserGroupMembershipGqlFilterSet(UserResourceGqlFilterSet):
 
 class ProjectByRegionGqlFilterSet(django_filters.FilterSet):
     RegionProjectFilterData = type(
-        'RegionProjectFilterData',
+        "RegionProjectFilterData",
         (graphene.InputObjectType,),
-        get_filtering_args_from_filterset(ProjectGqlFilterSet, 'project.schema.ProjectListType')
+        get_filtering_args_from_filterset(ProjectGqlFilterSet, "project.schema.ProjectListType"),
     )
 
-    project_filter = SimpleInputFilter(RegionProjectFilterData, method='filter_project_filter')
+    project_filter = SimpleInputFilter(RegionProjectFilterData, method="filter_project_filter")
 
     class Meta:
         model = Region
@@ -209,17 +202,22 @@ class ProjectByRegionGqlFilterSet(django_filters.FilterSet):
     def qs(self):
         project_qs = self.get_project_queryset()
         # Filter project if filter is provided
-        project_filter = self.data.get('project_filter')
+        project_filter = self.data.get("project_filter")
         if project_filter:
             project_qs = ProjectGqlFilterSet(data=project_filter, queryset=project_qs, request=self.request).qs
-        return super().qs.annotate(
-            projects_id=ArrayAgg(
-                'project',
-                distinct=True,
-                ordering='project',
-                filter=models.Q(project__in=project_qs),
-            ),
-        ).filter(projects_id__isnull=False).only('id', 'centroid')
+        return (
+            super()
+            .qs.annotate(
+                projects_id=ArrayAgg(
+                    "project",
+                    distinct=True,
+                    ordering="project",
+                    filter=models.Q(project__in=project_qs),
+                ),
+            )
+            .filter(projects_id__isnull=False)
+            .only("id", "centroid")
+        )
 
 
 class PublicProjectByRegionGqlFileterSet(ProjectByRegionGqlFilterSet):
@@ -233,7 +231,7 @@ class PublicProjectByRegionGqlFileterSet(ProjectByRegionGqlFilterSet):
 
 ProjectsFilterDataType, ProjectsFilterDataInputType = generate_type_for_filter_set(
     ProjectGqlFilterSet,
-    'project.schema.ProjectListType',
-    'ProjectsFilterDataType',
-    'ProjectsFilterDataInputType',
+    "project.schema.ProjectListType",
+    "ProjectsFilterDataType",
+    "ProjectsFilterDataInputType",
 )

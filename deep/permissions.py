@@ -1,29 +1,23 @@
 import logging
-from typing import List
-from enum import Enum, auto, unique
 from collections import defaultdict
+from enum import Enum, auto, unique
+from typing import List
 
+from analysis.models import AnalysisPillar
+from analysis_framework.models import AnalysisFrameworkRole
 from django.db.models import F
+from entry.models import Entry
+from lead.models import Lead
+from project.models import Project, ProjectMembership, ProjectRole
+from project.permissions import PROJECT_PERMISSIONS
 from rest_framework import permissions
+from user_group.models import GroupMembership, UserGroup
 
 from deep.exceptions import PermissionDeniedException
-from project.models import Project, ProjectRole, ProjectMembership
-from analysis_framework.models import AnalysisFrameworkRole
-from project.permissions import PROJECT_PERMISSIONS
-from lead.models import Lead
-from entry.models import Entry
-from analysis.models import AnalysisPillar
-from user_group.models import UserGroup, GroupMembership
 
 logger = logging.getLogger(__name__)
 
-METHOD_ACTION_MAP = {
-    'PUT': 'modify',
-    'PATCH': 'modify',
-    'GET': 'view',
-    'POST': 'create',
-    'DELETE': 'delete'
-}
+METHOD_ACTION_MAP = {"PUT": "modify", "PATCH": "modify", "GET": "view", "POST": "create", "DELETE": "delete"}
 
 
 class ModifyPermission(permissions.BasePermission):
@@ -32,7 +26,7 @@ class ModifyPermission(permissions.BasePermission):
             return True
 
         action = METHOD_ACTION_MAP[request.method]
-        objmethod = 'can_{}'.format(action)
+        objmethod = "can_{}".format(action)
         if hasattr(obj, objmethod):
             return getattr(obj, objmethod)(request.user)
 
@@ -41,11 +35,12 @@ class ModifyPermission(permissions.BasePermission):
 
 class CreateLeadPermission(permissions.BasePermission):
     """Permission class to check if user can create Lead"""
+
     def has_permission(self, request, view):
-        if request.method != 'POST':
+        if request.method != "POST":
             return True
         # Check project and all
-        project_id = request.data.get('project')
+        project_id = request.data.get("project")
 
         # If there is no project id, the serializers will give 400 error, no need to forbid here
         if project_id is None:
@@ -62,25 +57,26 @@ class CreateLeadPermission(permissions.BasePermission):
         # Check if the user has create permissions on all projects
         # To do this, filter projects in which user has permissions and check if
         # the returned result length equals the queried projects length
-        projects_count = Project.objects.filter(
-            id__in=project_ids,
-            projectmembership__member=request.user
-        ).annotate(
-            create_lead=F('projectmembership__role__lead_permissions').bitand(create_lead_perm_value)
-        ).filter(
-            create_lead__gt=0,
-        ).count()
+        projects_count = (
+            Project.objects.filter(id__in=project_ids, projectmembership__member=request.user)
+            .annotate(create_lead=F("projectmembership__role__lead_permissions").bitand(create_lead_perm_value))
+            .filter(
+                create_lead__gt=0,
+            )
+            .count()
+        )
 
         return projects_count == len(project_ids)
 
 
 class DeleteLeadPermission(permissions.BasePermission):
     """Checks if user can delete lead(s)"""
+
     def has_permission(self, request, view):
-        if request.method not in ('POST', 'DELETE'):
+        if request.method not in ("POST", "DELETE"):
             return True
 
-        project_id = view.kwargs.get('project_id')
+        project_id = view.kwargs.get("project_id")
 
         if not project_id:
             return False
@@ -88,31 +84,32 @@ class DeleteLeadPermission(permissions.BasePermission):
         delete_lead_perm_value = PROJECT_PERMISSIONS.lead.delete
 
         # Check if the user has delete permissions on all projects
-        return Project.objects.filter(
-            id=project_id,
-            projectmembership__member=request.user
-        ).annotate(
-            delete_lead=F('projectmembership__role__lead_permissions').bitand(delete_lead_perm_value)
-        ).filter(
-            delete_lead__gt=0,
-        ).exists()
+        return (
+            Project.objects.filter(id=project_id, projectmembership__member=request.user)
+            .annotate(delete_lead=F("projectmembership__role__lead_permissions").bitand(delete_lead_perm_value))
+            .filter(
+                delete_lead__gt=0,
+            )
+            .exists()
+        )
 
 
 class CreateEntryPermission(permissions.BasePermission):
     """Permission class to check if user can create Lead"""
+
     def get_project_id(self, request):
         """Try getting project id first from the data itself, if not try to
         get it from lead
         """
-        project_id = request.data.get('project')
+        project_id = request.data.get("project")
         if project_id:
             return project_id
         # Else, get it from lead
-        lead = Lead.objects.filter(id=request.data.get('lead')).first()
+        lead = Lead.objects.filter(id=request.data.get("lead")).first()
         return lead and lead.project.id
 
     def has_permission(self, request, view):
-        if request.method != 'POST':
+        if request.method != "POST":
             return True
 
         # Get project id from request
@@ -123,34 +120,39 @@ class CreateEntryPermission(permissions.BasePermission):
             return False
 
         create_entry_perm_value = PROJECT_PERMISSIONS.entry.create
-        return ProjectRole.objects.annotate(
-            create_entry=F('entry_permissions').bitand(create_entry_perm_value)
-        ).filter(
-            projectmembership__project_id=project_id,
-            projectmembership__member=request.user,
-            create_entry__gt=0,
-        ).exists()
+        return (
+            ProjectRole.objects.annotate(create_entry=F("entry_permissions").bitand(create_entry_perm_value))
+            .filter(
+                projectmembership__project_id=project_id,
+                projectmembership__member=request.user,
+                create_entry__gt=0,
+            )
+            .exists()
+        )
 
 
 class CreateAssessmentPermission(permissions.BasePermission):
     """Permission class to check if user can create Lead"""
+
     def has_permission(self, request, view):
-        if request.method != 'POST':
+        if request.method != "POST":
             return True
         # Check project and all
-        project_id = request.data.get('project')
+        project_id = request.data.get("project")
         # If there is no project id, the serializers will give 400 error, no need to forbid here
         if project_id is None:
             return True
 
         create_assmt_perm_value = PROJECT_PERMISSIONS.assessment.create
-        return ProjectRole.objects.annotate(
-            create_entry=F('assessment_permissions').bitand(create_assmt_perm_value)
-        ).filter(
-            projectmembership__project_id=project_id,
-            projectmembership__member=request.user,
-            create_entry__gt=0,
-        ).exists()
+        return (
+            ProjectRole.objects.annotate(create_entry=F("assessment_permissions").bitand(create_assmt_perm_value))
+            .filter(
+                projectmembership__project_id=project_id,
+                projectmembership__member=request.user,
+                create_entry__gt=0,
+            )
+            .exists()
+        )
 
 
 class IsSuperAdmin(permissions.BasePermission):
@@ -162,13 +164,13 @@ class IsSuperAdmin(permissions.BasePermission):
 
 
 class IsProjectMember(permissions.BasePermission):
-    message = 'Only allowed for Project members'
+    message = "Only allowed for Project members"
 
     def has_permission(self, request, view):
-        project_id = view.kwargs.get('project_id')
-        lead_id = view.kwargs.get('lead_id')
-        entry_id = view.kwargs.get('entry_id')
-        analysis_pillar_id = view.kwargs.get('analysis_pillar_id')
+        project_id = view.kwargs.get("project_id")
+        lead_id = view.kwargs.get("lead_id")
+        entry_id = view.kwargs.get("entry_id")
+        analysis_pillar_id = view.kwargs.get("analysis_pillar_id")
 
         if project_id:
             return Project.get_for_member(request.user).filter(id=project_id).exists()
@@ -178,8 +180,7 @@ class IsProjectMember(permissions.BasePermission):
             return Entry.get_for(request.user).filter(id=entry_id).exists()
         elif analysis_pillar_id:
             return AnalysisPillar.objects.filter(
-                analysis__project__projectmembership__member=request.user,
-                id=analysis_pillar_id
+                analysis__project__projectmembership__member=request.user, id=analysis_pillar_id
             ).exists()
         return True
 
@@ -190,10 +191,10 @@ class IsProjectMember(permissions.BasePermission):
 
 
 class IsUserGroupMember(permissions.BasePermission):
-    message = 'Only allowed for UserGroup members'
+    message = "Only allowed for UserGroup members"
 
     def has_permission(self, request, view):
-        user_group_id = view.kwargs.get('pk')
+        user_group_id = view.kwargs.get("pk")
         if user_group_id:
             return UserGroup.get_for_member(request.user).filter(id=user_group_id).exists()
         return True
@@ -201,15 +202,17 @@ class IsUserGroupMember(permissions.BasePermission):
 
 # ---------------------------- GRAPHQL Permissions ------------------------------
 
-class BasePermissions():
+
+class BasePermissions:
 
     # ------------ Define this after using this as base -----------
     @unique
     class Permission(Enum):
         pass
+
     __error_message__ = {}
     PERMISSION_MAP = {}
-    CONTEXT_PERMISSION_ATTR = ''
+    CONTEXT_PERMISSION_ATTR = ""
     # ------------ Define this after using this as base -----------
 
     DEFAULT_PERMISSION_DENIED_MESSAGE = PermissionDeniedException.default_message
@@ -273,7 +276,7 @@ class ProjectPermissions(BasePermissions):
         CREATE_ASSESSMENT_REGISTRY = auto()
         UPDATE_ASSESSMENT_REGISTRY = auto()
 
-    Permission.__name__ = 'ProjectPermission'
+    Permission.__name__ = "ProjectPermission"
 
     __error_message__ = {
         Permission.UPDATE_PROJECT: "You don't have permission to update project",
@@ -357,7 +360,7 @@ class ProjectPermissions(BasePermissions):
             REVERSE_PERMISSION_MAP[permission].append(_role_type)
             REVERSE_PERMISSION_MAP[permission.value].append(_role_type)
 
-    CONTEXT_PERMISSION_ATTR = 'project_permissions'
+    CONTEXT_PERMISSION_ATTR = "project_permissions"
 
     @classmethod
     def get_permissions(cls, project, user) -> List[Permission]:
@@ -365,11 +368,7 @@ class ProjectPermissions(BasePermissions):
         badges = project.get_current_user_badges(user) or []
         if role is None:
             return []
-        badges_permissions = [
-            cls.BADGES_PERMISSION_MAP[badge]
-            for badge in badges
-            if badge in cls.BADGES_PERMISSION_MAP
-        ]
+        badges_permissions = [cls.BADGES_PERMISSION_MAP[badge] for badge in badges if badge in cls.BADGES_PERMISSION_MAP]
         return [
             *cls.PERMISSION_MAP.get(role, []),
             *badges_permissions,
@@ -386,7 +385,7 @@ class AnalysisFrameworkPermissions(BasePermissions):
         CAN_USE_IN_OTHER_PROJECTS = auto()
         DELETE_FRAMEWORK = auto()
 
-    Permission.__name__ = 'AnalysisFrameworkPermission'
+    Permission.__name__ = "AnalysisFrameworkPermission"
 
     __error_message__ = {
         Permission.CAN_ADD_USER: "You don't have permission to add user",
@@ -413,10 +412,9 @@ class AnalysisFrameworkPermissions(BasePermissions):
         AnalysisFrameworkRole.Type.PRIVATE_EDITOR: PRIVATE_EDITOR,
         AnalysisFrameworkRole.Type.PRIVATE_OWNER: PRIVATE_OWNER,
         AnalysisFrameworkRole.Type.PRIVATE_VIEWER: PRIVATE_VIEWER,
-
     }
 
-    CONTEXT_PERMISSION_ATTR = 'af_permissions'
+    CONTEXT_PERMISSION_ATTR = "af_permissions"
 
     @classmethod
     def get_permissions(cls, role, is_public=False):
@@ -431,7 +429,7 @@ class UserGroupPermissions(BasePermissions):
     class Permission(Enum):
         CAN_ADD_USER = auto()
 
-    Permission.__name__ = 'UserGroupPermission'
+    Permission.__name__ = "UserGroupPermission"
 
     __error_message__ = {
         Permission.CAN_ADD_USER: "You don't have permission to update memberships",
@@ -445,7 +443,7 @@ class UserGroupPermissions(BasePermissions):
         GroupMembership.Role.NORMAL: NORMAL,
     }
 
-    CONTEXT_PERMISSION_ATTR = 'ug_permissions'
+    CONTEXT_PERMISSION_ATTR = "ug_permissions"
 
     @classmethod
     def get_permissions(cls, role):

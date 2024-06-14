@@ -1,38 +1,35 @@
 from rest_framework import serializers
-
-from .utils import get_hierarchy_level
 from user_resource.serializers import UserResourceSerializer
+
 from deep.serializers import (
+    IntegerIDField,
     ProjectPropertySerializerMixin,
     TempClientIdMixin,
-    IntegerIDField,
 )
+
 from .models import (
-    AssessmentRegistry,
-    MethodologyAttribute,
     AdditionalDocument,
-    SummaryIssue,
-    Summary,
-    SummarySubPillarIssue,
-    SummaryFocus,
-    SummarySubDimensionIssue,
-    ScoreRating,
-    ScoreAnalyticalDensity,
     Answer,
+    AssessmentRegistry,
     AssessmentRegistryOrganization,
+    MethodologyAttribute,
+    ScoreAnalyticalDensity,
+    ScoreRating,
+    Summary,
+    SummaryFocus,
+    SummaryIssue,
+    SummarySubDimensionIssue,
+    SummarySubPillarIssue,
 )
+from .utils import get_hierarchy_level
 
 
-class AssessmentRegistryOrganizationSerializer(
-    TempClientIdMixin,
-    UserResourceSerializer,
-    serializers.ModelSerializer
-):
+class AssessmentRegistryOrganizationSerializer(TempClientIdMixin, UserResourceSerializer, serializers.ModelSerializer):
     id = IntegerIDField(required=False)
 
     class Meta:
         model = AssessmentRegistryOrganization
-        fields = ('id', 'client_id', 'organization', 'organization_type')
+        fields = ("id", "client_id", "organization", "organization_type")
 
 
 class MethodologyAttributeSerializer(TempClientIdMixin, serializers.ModelSerializer):
@@ -41,8 +38,14 @@ class MethodologyAttributeSerializer(TempClientIdMixin, serializers.ModelSeriali
     class Meta:
         model = MethodologyAttribute
         fields = (
-            "id", "client_id", "data_collection_technique", "sampling_approach", "sampling_size",
-            "proximity", "unit_of_analysis", "unit_of_reporting",
+            "id",
+            "client_id",
+            "data_collection_technique",
+            "sampling_approach",
+            "sampling_size",
+            "proximity",
+            "unit_of_analysis",
+            "unit_of_reporting",
         )
 
 
@@ -51,20 +54,24 @@ class AdditionalDocumentSerializer(TempClientIdMixin, UserResourceSerializer):
 
     class Meta:
         model = AdditionalDocument
-        fields = ("id", "client_id", "document_type", "file", "external_link",)
+        fields = (
+            "id",
+            "client_id",
+            "document_type",
+            "file",
+            "external_link",
+        )
 
 
 class IssueSerializer(UserResourceSerializer):
     class Meta:
         model = SummaryIssue
-        fields = (
-            'sub_pillar', 'sub_dimension', 'parent', 'label'
-        )
+        fields = ("sub_pillar", "sub_dimension", "parent", "label")
 
     def validate(self, data):
-        sub_pillar = data.get('sub_pillar')
-        sub_dimension = data.get('sub_dimension')
-        parent = data.get('parent')
+        sub_pillar = data.get("sub_pillar")
+        sub_dimension = data.get("sub_dimension")
+        parent = data.get("parent")
 
         if all([sub_pillar, sub_dimension]):
             raise serializers.ValidationError("Cannot select both sub_pillar and sub_dimension field.")
@@ -97,8 +104,13 @@ class SummaryMetaSerializer(UserResourceSerializer):
     class Meta:
         model = Summary
         fields = (
-            "id", "total_people_assessed", "total_dead", "total_injured", "total_missing",
-            "total_people_facing_hum_access_cons", "percentage_of_people_facing_hum_access_cons",
+            "id",
+            "total_people_assessed",
+            "total_dead",
+            "total_injured",
+            "total_missing",
+            "total_people_facing_hum_access_cons",
+            "percentage_of_people_facing_hum_access_cons",
         )
 
 
@@ -108,9 +120,19 @@ class SummaryFocusMetaSerializer(UserResourceSerializer, TempClientIdMixin):
     class Meta:
         model = SummaryFocus
         fields = (
-            "id", "client_id", "sector", "percentage_of_people_affected", "total_people_affected", "percentage_of_moderate",
-            "percentage_of_severe", "percentage_of_critical", "percentage_in_need", "total_moderate",
-            "total_severe", "total_critical", "total_in_need",
+            "id",
+            "client_id",
+            "sector",
+            "percentage_of_people_affected",
+            "total_people_affected",
+            "percentage_of_moderate",
+            "percentage_of_severe",
+            "percentage_of_critical",
+            "percentage_in_need",
+            "total_moderate",
+            "total_severe",
+            "total_critical",
+            "total_in_need",
         )
 
 
@@ -135,7 +157,13 @@ class ScoreRatingSerializer(UserResourceSerializer, TempClientIdMixin):
 
     class Meta:
         model = ScoreRating
-        fields = ("id", "client_id", "score_type", "rating", "reason",)
+        fields = (
+            "id",
+            "client_id",
+            "score_type",
+            "rating",
+            "reason",
+        )
 
 
 class ScoreAnalyticalDensitySerializer(UserResourceSerializer, TempClientIdMixin):
@@ -143,7 +171,14 @@ class ScoreAnalyticalDensitySerializer(UserResourceSerializer, TempClientIdMixin
 
     class Meta:
         model = ScoreAnalyticalDensity
-        fields = ("id", "client_id", "sector", "analysis_level_covered", "figure_provided", "score",)
+        fields = (
+            "id",
+            "client_id",
+            "sector",
+            "analysis_level_covered",
+            "figure_provided",
+            "score",
+        )
 
 
 class CNAAnswerSerializer(TempClientIdMixin, UserResourceSerializer):
@@ -151,46 +186,28 @@ class CNAAnswerSerializer(TempClientIdMixin, UserResourceSerializer):
 
     class Meta:
         model = Answer
-        fields = ("id", 'client_id', 'question', 'answer')
+        fields = ("id", "client_id", "question", "answer")
 
 
 class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerializerMixin):
     stakeholders = AssessmentRegistryOrganizationSerializer(
-        source='assessmentregistryorganization_set',
+        source="assessmentregistryorganization_set",
         many=True,
         required=False,
     )
-    methodology_attributes = MethodologyAttributeSerializer(
-        many=True, required=False
-    )
-    additional_documents = AdditionalDocumentSerializer(
-        many=True, required=False
-    )
-    score_ratings = ScoreRatingSerializer(
-        many=True, required=False
-    )
-    score_analytical_density = ScoreAnalyticalDensitySerializer(
-        source="analytical_density", many=True, required=False
-    )
-    cna = CNAAnswerSerializer(
-        source='answer',
-        many=True,
-        required=False
-    )
-    summary_pillar_meta = SummaryMetaSerializer(source='summary', required=False)
+    methodology_attributes = MethodologyAttributeSerializer(many=True, required=False)
+    additional_documents = AdditionalDocumentSerializer(many=True, required=False)
+    score_ratings = ScoreRatingSerializer(many=True, required=False)
+    score_analytical_density = ScoreAnalyticalDensitySerializer(source="analytical_density", many=True, required=False)
+    cna = CNAAnswerSerializer(source="answer", many=True, required=False)
+    summary_pillar_meta = SummaryMetaSerializer(source="summary", required=False)
 
-    summary_sub_pillar_issue = SummarySubPillarIssueSerializer(
-        source="summary_sub_sector_issue_ary", many=True, required=False
-    )
-    summary_dimension_meta = SummaryFocusMetaSerializer(
-        source='summary_focus', many=True, required=False
-    )
+    summary_sub_pillar_issue = SummarySubPillarIssueSerializer(source="summary_sub_sector_issue_ary", many=True, required=False)
+    summary_dimension_meta = SummaryFocusMetaSerializer(source="summary_focus", many=True, required=False)
     summary_sub_dimension_issue = SummarySubDimensionSerializer(
         source="summary_focus_subsector_issue_ary", many=True, required=False
     )
-    additional_documents = AdditionalDocumentSerializer(
-        many=True, required=False
-    )
+    additional_documents = AdditionalDocumentSerializer(many=True, required=False)
 
     class Meta:
         model = AssessmentRegistry
@@ -241,7 +258,7 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             "methodology_complete",
             "summary_complete",
             "cna_complete",
-            "score_complete"
+            "score_complete",
         )
 
     def validate_score_ratings(self, data):
@@ -265,19 +282,19 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
     def validate_stakeholders(self, data):
         stakeholders_list = []
         for org in data:
-            org.pop('client_id', None)
+            org.pop("client_id", None)
             if org in stakeholders_list:
-                raise serializers.ValidationError('Dublicate organization selected')
+                raise serializers.ValidationError("Dublicate organization selected")
             stakeholders_list.append(org)
 
     def validate_cna(self, data):
         question_list = []
         for question in data:
-            question.pop('client_id', None)
+            question.pop("client_id", None)
             if question in question_list:
-                raise serializers.ValidationError('Dublicate question selected')
+                raise serializers.ValidationError("Dublicate question selected")
             question_list.append(question)
 
     def validate(self, data):
-        data['project'] = self.project
+        data["project"] = self.project
         return data

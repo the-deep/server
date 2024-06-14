@@ -1,14 +1,9 @@
 from utils.files import generate_json_file_for_upload
 
-
-DOCX_MIME_TYPE = \
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-PDF_MIME_TYPE = \
-    'application/pdf'
-EXCEL_MIME_TYPE = \
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-JSON_MIME_TYPE = \
-    'application/json'
+DOCX_MIME_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+PDF_MIME_TYPE = "application/pdf"
+EXCEL_MIME_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+JSON_MIME_TYPE = "application/json"
 
 
 class Exporter:

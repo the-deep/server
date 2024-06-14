@@ -1,34 +1,30 @@
-from deep.tests import TestCase
-
 from lead.models import Lead
 from organization.models import Organization
-from project.permissions import PROJECT_PERMISSIONS, get_project_permissions_value
 from project.models import Project, ProjectRole
+from project.permissions import PROJECT_PERMISSIONS, get_project_permissions_value
+
+from deep.tests import TestCase
 
 
 class TestLeadPermissions(TestCase):
     def setUp(self):
         super().setUp()
         common_role_attrs = {
-            'entry_permissions': get_project_permissions_value('entry', '__all__'),
-            'setup_permissions': get_project_permissions_value('setup', '__all__'),
-            'export_permissions': get_project_permissions_value('export', '__all__'),
-            'assessment_permissions': get_project_permissions_value('assessment', '__all__'),
+            "entry_permissions": get_project_permissions_value("entry", "__all__"),
+            "setup_permissions": get_project_permissions_value("setup", "__all__"),
+            "export_permissions": get_project_permissions_value("export", "__all__"),
+            "assessment_permissions": get_project_permissions_value("assessment", "__all__"),
         }
         self.no_lead_creation_role = ProjectRole.objects.create(
-            title='No Lead Creation Role',
-            lead_permissions=0,
-            **common_role_attrs
+            title="No Lead Creation Role", lead_permissions=0, **common_role_attrs
         )
         self.lead_creation_role = ProjectRole.objects.create(
-            title='Lead Creation Role',
-            lead_permissions=get_project_permissions_value('lead', ['create']),
-            **common_role_attrs
+            title="Lead Creation Role", lead_permissions=get_project_permissions_value("lead", ["create"]), **common_role_attrs
         )
         self.lead_view_clone_role = ProjectRole.objects.create(
-            title='Lead View Role',
-            lead_permissions=get_project_permissions_value('lead', ['view', 'create']),
-            **common_role_attrs
+            title="Lead View Role",
+            lead_permissions=get_project_permissions_value("lead", ["view", "create"]),
+            **common_role_attrs,
         )
         self.author = self.source = self.create_organization()
 
@@ -47,10 +43,10 @@ class TestLeadPermissions(TestCase):
         lead = self.create(Lead, project=source_project)
 
         data = {
-            'projects': [dest_project.pk],
-            'leads': [lead.pk],
+            "projects": [dest_project.pk],
+            "leads": [lead.pk],
         }
-        url = '/api/v1/lead-copy/'
+        url = "/api/v1/lead-copy/"
 
         self.authenticate()
         response = self.client.post(url, data)
@@ -65,18 +61,17 @@ class TestLeadPermissions(TestCase):
         initial_lead_count = Lead.objects.count()
 
         data = {
-            'projects': [dest_project.pk],
-            'leads': [lead.pk],
+            "projects": [dest_project.pk],
+            "leads": [lead.pk],
         }
-        url = '/api/v1/lead-copy/'
+        url = "/api/v1/lead-copy/"
 
         self.authenticate()
         response = self.client.post(url, data)
         self.assert_201(response)
 
         assert Lead.objects.count() == initial_lead_count + 1, "One more lead should be created"
-        assert Lead.objects.filter(title=lead.title, project=dest_project).exists(), \
-            "Exact same lead should be created"
+        assert Lead.objects.filter(title=lead.title, project=dest_project).exists(), "Exact same lead should be created"
 
     def test_cannot_view_confidential_lead_without_permissions(self):
         view_unprotected_role = ProjectRole.objects.create(
@@ -87,24 +82,24 @@ class TestLeadPermissions(TestCase):
         lead1 = self.create_lead(project=project, confidentiality=Lead.Confidentiality.UNPROTECTED)
         lead_confidential = self.create_lead(project=project, confidentiality=Lead.Confidentiality.CONFIDENTIAL)
 
-        url = '/api/v1/leads/'
+        url = "/api/v1/leads/"
         self.authenticate()
 
         resp = self.client.get(url)
         self.assert_200(resp)
 
-        leads_ids = set([x['id'] for x in resp.data['results']])
+        leads_ids = set([x["id"] for x in resp.data["results"]])
         assert leads_ids == {lead1.id}, "Only confidential should be present"
 
         # Check get particuar non-confidential lead, should return 200
-        url = f'/api/v1/leads/{lead1.id}/'
+        url = f"/api/v1/leads/{lead1.id}/"
         self.authenticate()
 
         resp = self.client.get(url)
         self.assert_200(resp)
 
         # Check get particuar confidential lead, should return 404
-        url = f'/api/v1/leads/{lead_confidential.id}/'
+        url = f"/api/v1/leads/{lead_confidential.id}/"
         self.authenticate()
 
         resp = self.client.get(url)
@@ -113,16 +108,16 @@ class TestLeadPermissions(TestCase):
     def test_create_lead_no_permission(self):
         # Create a project where self.user has no lead creation permission
         project = self.create(Project, role=self.no_lead_creation_role)
-        url = '/api/v1/leads/'
+        url = "/api/v1/leads/"
         data = {
-            'title': 'Spaceship spotted in sky',
-            'project': project.id,
-            'source': self.source.pk,
-            'author': self.author.pk,
-            'confidentiality': Lead.Confidentiality.UNPROTECTED,
-            'status': Lead.Status.NOT_TAGGED,
-            'text': 'Alien shapeship has been spotted in the sky',
-            'assignee': self.user.id,
+            "title": "Spaceship spotted in sky",
+            "project": project.id,
+            "source": self.source.pk,
+            "author": self.author.pk,
+            "confidentiality": Lead.Confidentiality.UNPROTECTED,
+            "status": Lead.Status.NOT_TAGGED,
+            "text": "Alien shapeship has been spotted in the sky",
+            "assignee": self.user.id,
         }
         self.authenticate()
         response = self.client.post(url, data)
@@ -131,16 +126,16 @@ class TestLeadPermissions(TestCase):
     def test_create_lead_with_permission(self):
         # Create a project where self.user has no lead creation permission
         project = self.create(Project, role=self.lead_creation_role)
-        url = '/api/v1/leads/'
+        url = "/api/v1/leads/"
         data = {
-            'title': 'Spaceship spotted in sky',
-            'project': project.id,
-            'source': self.source.pk,
-            'author': self.author.pk,
-            'confidentiality': Lead.Confidentiality.UNPROTECTED,
-            'status': Lead.Status.NOT_TAGGED,
-            'text': 'Alien shapeship has been spotted in the sky',
-            'assignee': self.user.id,
+            "title": "Spaceship spotted in sky",
+            "project": project.id,
+            "source": self.source.pk,
+            "author": self.author.pk,
+            "confidentiality": Lead.Confidentiality.UNPROTECTED,
+            "status": Lead.Status.NOT_TAGGED,
+            "text": "Alien shapeship has been spotted in the sky",
+            "assignee": self.user.id,
         }
         self.authenticate()
         response = self.client.post(url, data)

@@ -1,12 +1,9 @@
-from project.models import (
-    Project,
-    ProjectJoinRequest,
-)
+from project.models import Project, ProjectJoinRequest
 from project.serializers import ProjectJoinRequestSerializer
 
 
 class Notification:
-    PROJECT_JOIN_REQUEST = 'project_join_request'
+    PROJECT_JOIN_REQUEST = "project_join_request"
 
     def __init__(self, date, notification_type):
         self.date = date
@@ -15,8 +12,7 @@ class Notification:
 
 
 def _get_project_join_requests(user):
-    admin_projects = Project.get_modifiable_for(user)\
-        .values_list('id', flat=True)
+    admin_projects = Project.get_modifiable_for(user).values_list("id", flat=True)
 
     join_requests = ProjectJoinRequest.objects.filter(
         project__id__in=admin_projects,

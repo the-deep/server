@@ -1,18 +1,16 @@
+import logging
+import os
+import tempfile
+import zipfile
+
+import reversion
 from celery import shared_task
 from django.conf import settings
 from django.contrib.gis.gdal import DataSource
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q
-from geo.models import Region, AdminLevel, GeoArea
-
+from geo.models import AdminLevel, GeoArea, Region
 from redis_store import redis
-
-import os
-import reversion
-import tempfile
-import zipfile
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +33,7 @@ def _save_geo_area(admin_level, parent, feature):
     if admin_level.code_prop:
         code = feature.get(admin_level.code_prop)
 
-    name = name or ''
+    name = name or ""
 
     geo_area = GeoArea.objects.filter(
         Q(code=None, title=name) | Q(code=code),
@@ -46,7 +44,7 @@ def _save_geo_area(admin_level, parent, feature):
         geo_area = GeoArea()
 
     geo_area.title = name
-    geo_area.code = code if code else ''
+    geo_area.code = code if code else ""
     geo_area.admin_level = admin_level
 
     geom = feature.geom
@@ -61,31 +59,18 @@ def _save_geo_area(admin_level, parent, feature):
     #     raise Exception('Invalid geometry type for geoarea')
 
     geo_area.polygons = geom
-    feature_names = [
-        f.decode('utf-8') if isinstance(f, bytes) else f
-        for f in feature.fields
-    ]
+    feature_names = [f.decode("utf-8") if isinstance(f, bytes) else f for f in feature.fields]
 
     if parent:
-        if admin_level.parent_name_prop and \
-                admin_level.parent_name_prop in feature_names:
-            candidates = GeoArea.objects.filter(
-                admin_level=parent,
-                title=feature.get(admin_level.parent_name_prop)
-            )
+        if admin_level.parent_name_prop and admin_level.parent_name_prop in feature_names:
+            candidates = GeoArea.objects.filter(admin_level=parent, title=feature.get(admin_level.parent_name_prop))
 
             if admin_level.parent_code_prop:
-                candidates = candidates.filter(
-                    code=feature.get(admin_level.parent_code_prop)
-                )
+                candidates = candidates.filter(code=feature.get(admin_level.parent_code_prop))
             geo_area.parent = candidates.first()
 
-        elif admin_level.parent_code_prop and \
-                admin_level.parent_code_prop in feature_names:
-            geo_area.parent = GeoArea.objects.filter(
-                admin_level=parent,
-                code=feature.get(admin_level.parent_code_prop)
-            ).first()
+        elif admin_level.parent_code_prop and admin_level.parent_code_prop in feature_names:
+            geo_area.parent = GeoArea.objects.filter(admin_level=parent, code=feature.get(admin_level.parent_code_prop)).first()
 
     geo_area.save()
     return geo_area
@@ -101,8 +86,7 @@ def _generate_geo_areas(admin_level, parent):
         # disk.
         # Then load data from that file
         filename, extension = os.path.splitext(geo_shape_file.file.name)
-        f = tempfile.NamedTemporaryFile(suffix=extension,
-                                        dir=settings.TEMP_DIR)
+        f = tempfile.NamedTemporaryFile(suffix=extension, dir=settings.TEMP_DIR)
         f.write(geo_shape_file.file.read())
 
         # Flush the file before reading it with GDAL
@@ -110,14 +94,11 @@ def _generate_geo_areas(admin_level, parent):
         # the write is complete and will raise an exception.
         f.flush()
 
-        if extension == '.zip':
-            with tempfile.TemporaryDirectory(
-                dir=settings.TEMP_DIR
-            ) as tmpdirname:
-                zipfile.ZipFile(f.name, 'r').extractall(tmpdirname)
+        if extension == ".zip":
+            with tempfile.TemporaryDirectory(dir=settings.TEMP_DIR) as tmpdirname:
+                zipfile.ZipFile(f.name, "r").extractall(tmpdirname)
                 files = os.listdir(tmpdirname)
-                shape_file = next((f for f in files if f.endswith('.shp')),
-                                  None)
+                shape_file = next((f for f in files if f.endswith(".shp")), None)
                 data_source = DataSource(os.path.join(tmpdirname, shape_file))
         else:
             data_source = DataSource(f.name)
@@ -132,15 +113,14 @@ def _generate_geo_areas(admin_level, parent):
             for feature in layer:
                 # Each feature is a geo area
                 geo_area = _save_geo_area(
-                    admin_level, parent,
+                    admin_level,
+                    parent,
                     feature,
                 )
                 added_areas.append(geo_area.id)
 
             # Delete all previous geo areas that have not been added
-            GeoArea.objects.filter(
-                admin_level=admin_level
-            ).exclude(id__in=added_areas).delete()
+            GeoArea.objects.filter(admin_level=admin_level).exclude(id__in=added_areas).delete()
 
     admin_level.stale_geo_areas = False
     admin_level.geojson_file = None
@@ -188,9 +168,7 @@ def _load_geo_areas(region_id):
         if AdminLevel.objects.filter(region=region).count() == 0:
             return True
 
-        parent_admin_levels = AdminLevel.objects.filter(
-            region=region, parent=None
-        )
+        parent_admin_levels = AdminLevel.objects.filter(region=region, parent=None)
         completed_levels = []
         _extract_from_admin_levels(
             parent_admin_levels,
@@ -205,7 +183,7 @@ def _load_geo_areas(region_id):
 
 @shared_task
 def load_geo_areas(region_id):
-    key = 'load_geo_areas_{}'.format(region_id)
+    key = "load_geo_areas_{}".format(region_id)
     lock = redis.get_lock(key, 60 * 30)  # Lock lifetime 30 minutes
     have_lock = lock.acquire(blocking=False)
     if not have_lock:
@@ -214,7 +192,7 @@ def load_geo_areas(region_id):
     try:
         return_value = _load_geo_areas(region_id)
     except Exception:
-        logger.error('Load Geo Areas', exc_info=True)
+        logger.error("Load Geo Areas", exc_info=True)
         return_value = False
 
     lock.release()
@@ -232,7 +210,7 @@ def cal_region_cache(regions_id):
             region.calc_cache()
             success_regions.append(region.pk)
         except Exception:
-            logger.error('Region Cache Calculation Failed!!', exc_info=True)
+            logger.error("Region Cache Calculation Failed!!", exc_info=True)
     return success_regions
 
 
@@ -247,5 +225,5 @@ def cal_admin_level_cache(admin_levels_id):
             admin_level.calc_cache()
             success_admin_levels.append(admin_level.pk)
         except Exception:
-            logger.error('Admin Level Cache Calculation Failed!!', exc_info=True)
+            logger.error("Admin Level Cache Calculation Failed!!", exc_info=True)
     return success_admin_levels

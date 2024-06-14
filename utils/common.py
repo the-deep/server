@@ -1,34 +1,34 @@
 # -*- coding: utf-8 -*-
+import datetime
 import hashlib
+import logging
 import os
-import re
-import time
 import random
+import re
 import string
 import tempfile
-import requests
-import logging
-import datetime
-from typing import Union, Optional
+import time
 from collections import Counter
 from functools import reduce
-
-from django.core.cache import cache
-from django.utils.hashable import make_hashable
-from django.utils.encoding import force_str
-from django.core.files.storage import FileSystemStorage, get_storage_class
-from django.conf import settings
-from django.utils.encoding import force_bytes, force_text
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from typing import Optional, Union
 from xml.sax.saxutils import escape as xml_escape
 
+import requests
+from django.conf import settings
+from django.core.cache import cache
+from django.core.files.storage import FileSystemStorage, get_storage_class
+from django.utils.encoding import force_bytes, force_str, force_text
+from django.utils.hashable import make_hashable
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from redis_store import redis
 
-USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1)' + \
-    ' AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'
+USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1)"
+    + " AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36"
+)
 
 DEFAULT_HEADERS = {
-    'User-Agent': USER_AGENT,
+    "User-Agent": USER_AGENT,
 }
 
 ONE_DAY = 24 * 60 * 60
@@ -38,10 +38,10 @@ logger = logging.getLogger(__name__)
 
 try:
     import matplotlib as mp
-    import plotly.io as pio
     import plotly.graph_objs as ploty_go
+    import plotly.io as pio
 except ImportError as e:
-    logger.warning(f'ImportError: {e}')
+    logger.warning(f"ImportError: {e}")
 
 
 StorageClass = get_storage_class()
@@ -50,13 +50,13 @@ StorageClass = get_storage_class()
 def sanitize_text(_text):
     text = _text
     # Remove NUL (0x00) characters
-    text = text.replace('\x00', '')
+    text = text.replace("\x00", "")
     # Tabs and nbsps to space
-    text = re.sub(r'(\t|&nbsp;)', ' ', text)
+    text = re.sub(r"(\t|&nbsp;)", " ", text)
     # Multiple spaces to single
-    text = re.sub(r' +', ' ', text)
+    text = re.sub(r" +", " ", text)
     # More than 3 line breaks to just 3 line breaks
-    text = re.sub(r'\n\s*\n\s*(\n\s*)+', '\n\n\n', text)
+    text = re.sub(r"\n\s*\n\s*(\n\s*)+", "\n\n\n", text)
     return text.strip()
 
 
@@ -75,7 +75,7 @@ def write_file(r, fp):
     return fp
 
 
-def get_temp_file(dir='/tmp/', mode='w+b', suffix=None):
+def get_temp_file(dir="/tmp/", mode="w+b", suffix=None):
     if suffix:
         return tempfile.NamedTemporaryFile(dir=dir, suffix=suffix, mode=mode)
     return tempfile.NamedTemporaryFile(dir=dir, mode=mode)
@@ -92,11 +92,11 @@ def get_file_from_url(url):
 
 def get_or_write_file(path, text):
     try:
-        extracted = open(path, 'r')
+        extracted = open(path, "r")
     except FileNotFoundError:
-        with open(path, 'w') as fp:
+        with open(path, "w") as fp:
             fp.write(text)
-        extracted = open(path, 'r')
+        extracted = open(path, "r")
     return extracted
 
 
@@ -109,15 +109,15 @@ def makedirs(path):
 
 def replace_ns(nsmap, tag):
     for k, v in nsmap.items():
-        k = k or ''
-        tag = tag.replace('{{{}}}'.format(v), '{}:'.format(k))
+        k = k or ""
+        tag = tag.replace("{{{}}}".format(v), "{}:".format(k))
     return tag
 
 
 def get_ns_tag(nsmap, tag):
     for k, v in nsmap.items():
-        k = k or ''
-        tag = tag.replace('{}:'.format(k), '{{{}}}'.format(v))
+        k = k or ""
+        tag = tag.replace("{}:".format(k), "{{{}}}".format(v))
     return tag
 
 
@@ -125,35 +125,29 @@ def is_valid_xml_char_ordinal(c):
     codepoint = ord(c)
     # conditions ordered by presumed frequency
     return (
-        0x20 <= codepoint <= 0xD7FF or
-        codepoint in (0x9, 0xA, 0xD) or
-        0xE000 <= codepoint <= 0xFFFD or
-        0x10000 <= codepoint <= 0x10FFFF
+        0x20 <= codepoint <= 0xD7FF
+        or codepoint in (0x9, 0xA, 0xD)
+        or 0xE000 <= codepoint <= 0xFFFD
+        or 0x10000 <= codepoint <= 0x10FFFF
     )
 
 
 def get_valid_xml_string(string, escape=True):
     if string:
         s = xml_escape(string) if escape else string
-        return ''.join(c for c in s if is_valid_xml_char_ordinal(c))
-    return ''
+        return "".join(c for c in s if is_valid_xml_char_ordinal(c))
+    return ""
 
 
-def deep_date_format(
-    date: Optional[Union[datetime.date, datetime.datetime]],
-    fallback: Optional[str] = ''
-) -> Optional[str]:
-    if date and (
-        isinstance(date, datetime.datetime) or
-        isinstance(date, datetime.date)
-    ):
-        return date.strftime('%d-%m-%Y')
+def deep_date_format(date: Optional[Union[datetime.date, datetime.datetime]], fallback: Optional[str] = "") -> Optional[str]:
+    if date and (isinstance(date, datetime.datetime) or isinstance(date, datetime.date)):
+        return date.strftime("%d-%m-%Y")
     return fallback
 
 
 def deep_date_parse(date_str: str, raise_exception=True) -> Optional[datetime.date]:
     try:
-        return datetime.datetime.strptime(date_str, '%d-%m-%Y').date()
+        return datetime.datetime.strptime(date_str, "%d-%m-%Y").date()
     except (ValueError, TypeError) as e:
         if raise_exception:
             raise e
@@ -161,14 +155,14 @@ def deep_date_parse(date_str: str, raise_exception=True) -> Optional[datetime.da
 
 def parse_date(date_str):
     try:
-        return date_str and datetime.datetime.strptime(date_str, '%d-%m-%Y')
+        return date_str and datetime.datetime.strptime(date_str, "%d-%m-%Y")
     except ValueError:
         return None
 
 
 def parse_time(time_str):
     try:
-        return time_str and datetime.datetime.strptime(time_str, '%H:%M').time()
+        return time_str and datetime.datetime.strptime(time_str, "%H:%M").time()
     except ValueError:
         return None
 
@@ -188,13 +182,13 @@ def identity(x):
 
 
 def underscore_to_title(x):
-    return ' '.join([y.title() for y in x.split('_')])
+    return " ".join([y.title() for y in x.split("_")])
 
 
 def random_key(length=16):
     candidates = string.ascii_lowercase + string.digits
     winners = [random.choice(candidates) for _ in range(length)]
-    return ''.join(winners)
+    return "".join(winners)
 
 
 def get_max_occurence_and_count(items):
@@ -203,9 +197,7 @@ def get_max_occurence_and_count(items):
         return 0, None
     count = Counter(items)
     return reduce(
-        lambda a, x: x if x[1] > a[1] else a,
-        count.items(),  # [(item, count)...]
-        (items[0], -1)  # Initial accumulator
+        lambda a, x: x if x[1] > a[1] else a, count.items(), (items[0], -1)  # [(item, count)...]  # Initial accumulator
     )
 
 
@@ -227,12 +219,9 @@ def excel_column_name(column_number):
 
 
 class LogTime:
-    logger = logging.getLogger('profiling')
+    logger = logging.getLogger("profiling")
 
-    def __init__(
-            self, block_name='', log_args=True,
-            args_accessor=identity, kwargs_accessor=identity
-    ):
+    def __init__(self, block_name="", log_args=True, args_accessor=identity, kwargs_accessor=identity):
         self.log_args = log_args
         self.block_name = block_name
         self.args_accessor = args_accessor
@@ -246,8 +235,7 @@ class LogTime:
         if not settings.PROFILE:
             return
         end = time.time()
-        LogTime.logger.info("BLOCK: {} TIME {}s.".format(
-            self.block_name, end - self.start))
+        LogTime.logger.info("BLOCK: {} TIME {}s.".format(self.block_name, end - self.start))
 
     def __call__(self, func_to_be_tracked):
         def wrapper(*args, **kwargs):
@@ -260,20 +248,18 @@ class LogTime:
 
             fname = func_to_be_tracked.__name__
 
-            str_args = 'args: {}'.format(
-                self.args_accessor(args)
-            )[:100] if self.log_args else ''
+            str_args = "args: {}".format(self.args_accessor(args))[:100] if self.log_args else ""
 
-            str_kwargs = 'kwargs: {}'.format(
-                self.kwargs_accessor(kwargs)
-            )[:100] if self.log_args else ''
+            str_kwargs = "kwargs: {}".format(self.kwargs_accessor(kwargs))[:100] if self.log_args else ""
 
             log_message = "FUNCTION[{}]: '{}({}, {})' : TIME {}s.".format(
-                self.block_name, fname, str_args, str_kwargs, end - start)
+                self.block_name, fname, str_args, str_kwargs, end - start
+            )
 
             LogTime.logger.info(log_message)
 
             return ret
+
         wrapper.__name__ = func_to_be_tracked.__name__
         wrapper.__module__ = func_to_be_tracked.__module__
         return wrapper
@@ -300,28 +286,30 @@ def create_plot_image(func):
     """
     Return tmp file image with func render logic
     """
+
     def func_wrapper(*args, **kwargs):
-        size = kwargs.pop('chart_size', (8, 4))
-        if isinstance(kwargs.get('format', 'png'), list):
-            images_format = kwargs.pop('format')
+        size = kwargs.pop("chart_size", (8, 4))
+        if isinstance(kwargs.get("format", "png"), list):
+            images_format = kwargs.pop("format")
         else:
-            images_format = [kwargs.pop('format', 'png')]
+            images_format = [kwargs.pop("format", "png")]
         func(*args, **kwargs)
         figure = mp.pyplot.gcf()
 
         if size:
             figure.set_size_inches(size)
         mp.pyplot.draw()
-        mp.pyplot.gca().spines['top'].set_visible(False)
-        mp.pyplot.gca().spines['right'].set_visible(False)
+        mp.pyplot.gca().spines["top"].set_visible(False)
+        mp.pyplot.gca().spines["right"].set_visible(False)
         images = []
         for image_format in images_format:
-            fp = get_temp_file(suffix='.{}'.format(image_format))
-            figure.savefig(fp, bbox_inches='tight', format=image_format, alpha=True, dpi=300)
+            fp = get_temp_file(suffix=".{}".format(image_format))
+            figure.savefig(fp, bbox_inches="tight", format=image_format, alpha=True, dpi=300)
             mp.pyplot.close(figure)
             fp.seek(0)
-            images.append({'image': fp, 'format': image_format})
+            images.append({"image": fp, "format": image_format})
         return images
+
     return func_wrapper
 
 
@@ -329,54 +317,58 @@ def create_plotly_image(func):
     """
     Return tmp file image with func render logic
     """
+
     def func_wrapper(*args, **kwargs):
-        width, height = kwargs.pop('chart_size', (5, 4))
-        if isinstance(kwargs.get('format', 'png'), list):
-            images_format = kwargs.pop('format', 'png')
+        width, height = kwargs.pop("chart_size", (5, 4))
+        if isinstance(kwargs.get("format", "png"), list):
+            images_format = kwargs.pop("format", "png")
         else:
-            images_format = [kwargs.pop('format', 'png')]
-        x_label = kwargs.pop('x_label')
-        y_label = kwargs.pop('y_label')
-        x_params = kwargs.pop('x_params', {})
-        y_params = kwargs.pop('y_params', {})
+            images_format = [kwargs.pop("format", "png")]
+        x_label = kwargs.pop("x_label")
+        y_label = kwargs.pop("y_label")
+        x_params = kwargs.pop("x_params", {})
+        y_params = kwargs.pop("y_params", {})
         data, layout = func(*args, **kwargs)
         if layout is None:
-            layout = ploty_go.Layout(**{
-                'title': x_label,
-                'yaxis': {
-                    **create_plotly_image.axis_config,
-                    **y_params,
-                    'title': y_label,
-                },
-                'xaxis': {
-                    **create_plotly_image.axis_config,
-                    **x_params,
-                    'ticks': 'outside',
-                },
-            })
+            layout = ploty_go.Layout(
+                **{
+                    "title": x_label,
+                    "yaxis": {
+                        **create_plotly_image.axis_config,
+                        **y_params,
+                        "title": y_label,
+                    },
+                    "xaxis": {
+                        **create_plotly_image.axis_config,
+                        **x_params,
+                        "ticks": "outside",
+                    },
+                }
+            )
         fig = ploty_go.Figure(data=data, layout=layout)
         images = []
         for image_format in images_format:
             img_bytes = pio.to_image(fig, format=image_format, width=width, height=height, scale=2)
-            fp = get_temp_file(suffix='.{}'.format(image_format))
+            fp = get_temp_file(suffix=".{}".format(image_format))
             fp.write(img_bytes)
             fp.seek(0)
-            images.append({'image': fp, 'format': image_format})
+            images.append({"image": fp, "format": image_format})
         return images
+
     return func_wrapper
 
 
 create_plotly_image.axis_config = {
-    'automargin': True,
-    'tickfont': dict(size=8),
-    'separatethousands': True,
+    "automargin": True,
+    "tickfont": dict(size=8),
+    "separatethousands": True,
 }
 create_plotly_image.marker = dict(
-    color='teal',
+    color="teal",
     line=dict(
-        color='white',
+        color="white",
         width=0.5,
-    )
+    ),
 )
 
 
@@ -391,24 +383,27 @@ def redis_lock(lock_key, timeout: float = 60 * 60 * 4):
     """
     Default Lock lifetime 4 hours
     """
+
     def _dec(func):
         def _caller(*args, **kwargs):
             key = lock_key.format(*args, **kwargs)
             lock = redis.get_lock(key, timeout)
             have_lock = lock.acquire(blocking=False)
             if not have_lock:
-                logger.warning(f'Unable to get lock for {key}(ttl: {get_redis_lock_ttl(lock)})')
+                logger.warning(f"Unable to get lock for {key}(ttl: {get_redis_lock_ttl(lock)})")
                 return False
             try:
                 return_value = func(*args, **kwargs) or True
             except Exception:
-                logger.error('{}.{}'.format(func.__module__, func.__name__), exc_info=True)
+                logger.error("{}.{}".format(func.__module__, func.__name__), exc_info=True)
                 return_value = False
             lock.release()
             return return_value
+
         _caller.__name__ = func.__name__
         _caller.__module__ = func.__module__
         return _caller
+
     return _dec
 
 
@@ -418,35 +413,35 @@ def make_colormap(seq):
     and in the interval (0,1).
     """
     seq = [(None,) * 3, 0.0] + list(seq) + [1.0, (None,) * 3]
-    cdict = {'red': [], 'green': [], 'blue': []}
+    cdict = {"red": [], "green": [], "blue": []}
     for i, item in enumerate(seq):
         if isinstance(item, float):
             r1, g1, b1 = seq[i - 1]
             r2, g2, b2 = seq[i + 1]
-            cdict['red'].append([item, r1, r2])
-            cdict['green'].append([item, g1, g2])
-            cdict['blue'].append([item, b1, b2])
-    return mp.colors.LinearSegmentedColormap('CustomMap', cdict)
+            cdict["red"].append([item, r1, r2])
+            cdict["green"].append([item, g1, g2])
+            cdict["blue"].append([item, b1, b2])
+    return mp.colors.LinearSegmentedColormap("CustomMap", cdict)
 
 
 def excel_to_python_date_format(excel_format):
     # TODO: support all formats
     # First replace excel's locale identifiers such as [$-409] by empty string
-    python_format = re.sub(
-        r'(\[\\$-\d+\])', '', excel_format.upper()
-    ).\
-        replace('\\', '').\
-        replace('YYYY', '%Y').\
-        replace('YY', '%y').\
-        replace('MMMM', '%m').\
-        replace('MMM', '%m').\
-        replace('MM', '%m').\
-        replace('M', '%m').\
-        replace('DD', '%d').\
-        replace('D', '%d').\
-        replace('HH', '%H').\
-        replace('H', '%H').\
-        replace('SS', '%S')
+    python_format = (
+        re.sub(r"(\[\\$-\d+\])", "", excel_format.upper())
+        .replace("\\", "")
+        .replace("YYYY", "%Y")
+        .replace("YY", "%y")
+        .replace("MMMM", "%m")
+        .replace("MMM", "%m")
+        .replace("MM", "%m")
+        .replace("M", "%m")
+        .replace("DD", "%d")
+        .replace("D", "%d")
+        .replace("HH", "%H")
+        .replace("H", "%H")
+        .replace("SS", "%S")
+    )
     return python_format
 
 
@@ -476,11 +471,11 @@ def calculate_md5(file):
 
 
 def camelcase_to_titlecase(label):
-    return re.sub(r'((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))', r' \1', label)
+    return re.sub(r"((?<=[a-z])[A-Z]|(?<!\A)[A-Z](?=[a-z]))", r" \1", label)
 
 
 def kebabcase_to_titlecase(kebab_str):
-    return ' '.join([x.title() for x in kebab_str.split('-')])
+    return " ".join([x.title() for x in kebab_str.split("-")])
 
 
 def is_valid_number(value):
@@ -493,7 +488,7 @@ def is_valid_number(value):
 
 
 def to_camelcase(snake_str):
-    components = snake_str.split('_')
+    components = snake_str.split("_")
     return components[0] + "".join(x.title() for x in components[1:])
 
 
@@ -512,7 +507,7 @@ def has_prefetched(obj, field):
     """
     Checks if field is prefetched.
     """
-    if hasattr(obj, '_prefetched_objects_cache') and field in obj._prefetched_objects_cache:
+    if hasattr(obj, "_prefetched_objects_cache") and field in obj._prefetched_objects_cache:
         return True
     return False
 
@@ -529,7 +524,7 @@ def has_select_related(obj, field):
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
-        yield lst[i:i + n]
+        yield lst[i : i + n]
 
 
 def get_full_media_url(media_path, file_system_domain=None):
@@ -541,7 +536,7 @@ def get_full_media_url(media_path, file_system_domain=None):
     return media_path
 
 
-class UidBase64Helper():
+class UidBase64Helper:
     @staticmethod
     def encode(integer):
         return urlsafe_base64_encode(force_bytes(integer))
@@ -578,6 +573,7 @@ def graphene_cache(cache_key, cache_key_gen=None, timeout=60):
     """
     Default Lock lifetime 4 hours
     """
+
     def _dec(func):
         def _caller(*args, **kwargs):
             if cache_key_gen:
@@ -589,15 +585,17 @@ def graphene_cache(cache_key, cache_key_gen=None, timeout=60):
                 lambda: func(*args, **kwargs),
                 timeout,
             )
+
         _caller.__name__ = func.__name__
         _caller.__module__ = func.__module__
         return _caller
+
     return _dec
 
 
 def generate_sha256(text: str):
     m = hashlib.sha256()
-    m.update(text.encode('utf-8'))
+    m.update(text.encode("utf-8"))
     return m.hexdigest()
 
 
@@ -605,6 +603,6 @@ def render_string_for_graphql(text):
     """
     Return null if text is empty ("")
     """
-    if text == '':
+    if text == "":
         return None
     return text

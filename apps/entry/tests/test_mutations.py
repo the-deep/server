@@ -1,15 +1,13 @@
+from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
 from django.utils import timezone
+from entry.factories import EntryAttributeFactory, EntryFactory
+from entry.models import Entry
+from gallery.factories import FileFactory
+from lead.factories import LeadFactory
+from project.factories import ProjectFactory
+from user.factories import UserFactory
 
 from utils.graphene.tests import GraphQLSnapShotTestCase
-
-from entry.models import Entry
-
-from user.factories import UserFactory
-from entry.factories import EntryFactory, EntryAttributeFactory
-from project.factories import ProjectFactory
-from lead.factories import LeadFactory
-from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
-from gallery.factories import FileFactory
 
 
 class TestEntryMutation(GraphQLSnapShotTestCase):
@@ -17,9 +15,10 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
     TODO:
     - Make sure only 1 attribute is allowed for one widget
     """
+
     factories_used = [FileFactory]
 
-    CREATE_ENTRY_QUERY = '''
+    CREATE_ENTRY_QUERY = """
         mutation MyMutation ($projectId: ID!, $input: EntryInputType!) {
           project(id: $projectId) {
             entryCreate(data: $input) {
@@ -49,9 +48,9 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
             }
           }
         }
-    '''
+    """
 
-    UPDATE_ENTRY_QUERY = '''
+    UPDATE_ENTRY_QUERY = """
         mutation MyMutation ($projectId: ID!, $entryId: ID!, $input: EntryInputType!) {
           project(id: $projectId) {
             entryUpdate(id: $entryId data: $input) {
@@ -81,9 +80,9 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
             }
           }
         }
-    '''
+    """
 
-    DELETE_ENTRY_QUERY = '''
+    DELETE_ENTRY_QUERY = """
         mutation MyMutation ($projectId: ID!, $entryId: ID!) {
           project(id: $projectId) {
             entryDelete(id: $entryId) {
@@ -113,9 +112,9 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
             }
           }
         }
-    '''
+    """
 
-    BULK_ENTRY_QUERY = '''
+    BULK_ENTRY_QUERY = """
         mutation MyMutation ($projectId: ID!, $deleteIds: [ID!], $items: [BulkEntryInputType!]) {
           project(id: $projectId) {
             entryBulk(deleteIds: $deleteIds items: $items) {
@@ -165,7 +164,7 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
             }
           }
         }
-    '''
+    """
 
     def setUp(self):
         super().setUp()
@@ -192,9 +191,9 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
         """
         minput = dict(
             attributes=[
-                dict(widget=self.widget1.pk, data=self.dummy_data, clientId='client-id-attribute-1', widgetVersion=1),
-                dict(widget=self.widget2.pk, data=self.dummy_data, clientId='client-id-attribute-2', widgetVersion=1),
-                dict(widget=self.widget3.pk, data=self.dummy_data, clientId='client-id-attribute-3', widgetVersion=1),
+                dict(widget=self.widget1.pk, data=self.dummy_data, clientId="client-id-attribute-1", widgetVersion=1),
+                dict(widget=self.widget2.pk, data=self.dummy_data, clientId="client-id-attribute-2", widgetVersion=1),
+                dict(widget=self.widget3.pk, data=self.dummy_data, clientId="client-id-attribute-3", widgetVersion=1),
             ],
             order=1,
             lead=self.lead.pk,
@@ -202,19 +201,14 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
             image=self.other_file.pk,
             # leadImage='',
             highlightHidden=False,
-            excerpt='This is a text',
+            excerpt="This is a text",
             entryType=self.genum(Entry.TagType.EXCERPT),
-            droppedExcerpt='This is a dropped text',
-            clientId='entry-101',
+            droppedExcerpt="This is a dropped text",
+            clientId="entry-101",
         )
 
         def _query_check(**kwargs):
-            return self.query_check(
-                self.CREATE_ENTRY_QUERY,
-                minput=minput,
-                variables={'projectId': self.project.id},
-                **kwargs
-            )
+            return self.query_check(self.CREATE_ENTRY_QUERY, minput=minput, variables={"projectId": self.project.id}, **kwargs)
 
         # -- Without login
         _query_check(assert_for_error=True)
@@ -231,12 +225,12 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
         # Invalid input
         self.force_login(self.member_user)
         response = _query_check(okay=False)
-        self.assertMatchSnapshot(response, 'error')
+        self.assertMatchSnapshot(response, "error")
 
         # Valid input
-        minput['image'] = self.our_file.pk
+        minput["image"] = self.our_file.pk
         response = _query_check()
-        self.assertMatchSnapshot(response, 'success')
+        self.assertMatchSnapshot(response, "success")
 
     def test_entry_update(self):
         """
@@ -246,9 +240,9 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
 
         minput = dict(
             attributes=[
-                dict(widget=self.widget1.pk, data=self.dummy_data, clientId='client-id-attribute-1', widgetVersion=1),
-                dict(widget=self.widget2.pk, data=self.dummy_data, clientId='client-id-attribute-2', widgetVersion=1),
-                dict(widget=self.widget1.pk, data=self.dummy_data, clientId='client-id-attribute-3', widgetVersion=1),
+                dict(widget=self.widget1.pk, data=self.dummy_data, clientId="client-id-attribute-1", widgetVersion=1),
+                dict(widget=self.widget2.pk, data=self.dummy_data, clientId="client-id-attribute-2", widgetVersion=1),
+                dict(widget=self.widget1.pk, data=self.dummy_data, clientId="client-id-attribute-3", widgetVersion=1),
             ],
             order=1,
             lead=self.lead.pk,
@@ -256,18 +250,15 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
             image=self.other_file.pk,
             # leadImage='',
             highlightHidden=False,
-            excerpt='This is a text',
+            excerpt="This is a text",
             entryType=self.genum(Entry.TagType.EXCERPT),
-            droppedExcerpt='This is a dropped text',
-            clientId='entry-101',
+            droppedExcerpt="This is a dropped text",
+            clientId="entry-101",
         )
 
         def _query_check(**kwargs):
             return self.query_check(
-                self.UPDATE_ENTRY_QUERY,
-                minput=minput,
-                variables={'projectId': self.project.id, 'entryId': entry.id},
-                **kwargs
+                self.UPDATE_ENTRY_QUERY, minput=minput, variables={"projectId": self.project.id, "entryId": entry.id}, **kwargs
             )
 
         # -- Without login
@@ -285,12 +276,12 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
         # Invalid input
         self.force_login(self.member_user)
         response = _query_check(okay=False)
-        self.assertMatchSnapshot(response, 'error')
+        self.assertMatchSnapshot(response, "error")
 
         # Valid input
-        minput['image'] = self.our_file.pk
+        minput["image"] = self.our_file.pk
         response = _query_check()
-        self.assertMatchSnapshot(response, 'success')
+        self.assertMatchSnapshot(response, "success")
 
     def test_entry_delete(self):
         """
@@ -300,9 +291,7 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
 
         def _query_check(**kwargs):
             return self.query_check(
-                self.DELETE_ENTRY_QUERY,
-                variables={'projectId': self.project.id, 'entryId': entry.id},
-                **kwargs
+                self.DELETE_ENTRY_QUERY, variables={"projectId": self.project.id, "entryId": entry.id}, **kwargs
             )
 
         # -- Without login
@@ -319,16 +308,15 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
         # --- member user
         # Invalid input
         self.force_login(self.member_user)
-        content = _query_check(okay=False)['data']['project']['entryDelete']['result']
-        self.assertIdEqual(content['id'], entry.id)
+        content = _query_check(okay=False)["data"]["project"]["entryDelete"]["result"]
+        self.assertIdEqual(content["id"], entry.id)
 
     def test_entry_bulk(self):
         """
         This test makes sure only valid users can bulk create/update/delete entry
         """
         entry1, entry2 = EntryFactory.create_batch(
-            2,
-            project=self.project, lead=self.lead, analysis_framework=self.project.analysis_framework
+            2, project=self.project, lead=self.lead, analysis_framework=self.project.analysis_framework
         )
         entry2_att1 = EntryAttributeFactory.create(entry=entry2, widget=self.widget1, data=self.dummy_data)
 
@@ -341,14 +329,14 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
                         dict(
                             widget=self.widget1.pk,
                             data=self.dummy_data,
-                            clientId='client-id-old-new-attribute-1',
-                            widgetVersion=1
+                            clientId="client-id-old-new-attribute-1",
+                            widgetVersion=1,
                         ),
                         dict(
                             id=entry2_att1.pk,
                             widget=self.widget1.pk,
                             data=self.dummy_data,
-                            clientId='client-id-old-attribute-1',
+                            clientId="client-id-old-attribute-1",
                             widgetVersion=1,
                         ),
                     ],
@@ -358,17 +346,17 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
                     image=self.other_file.pk,
                     # leadImage='',
                     highlightHidden=False,
-                    excerpt='This is a text (UPDATED)',
+                    excerpt="This is a text (UPDATED)",
                     entryType=self.genum(Entry.TagType.EXCERPT),
-                    droppedExcerpt='This is a dropped text (UPDATED)',
-                    clientId='entry-old-101 (UPDATED)',
+                    droppedExcerpt="This is a dropped text (UPDATED)",
+                    clientId="entry-old-101 (UPDATED)",
                 ),
                 dict(
                     attributes=[
                         dict(
                             widget=self.widget1.pk,
                             data=self.dummy_data,
-                            clientId='client-id-new-attribute-1',
+                            clientId="client-id-new-attribute-1",
                             widgetVersion=1,
                         ),
                     ],
@@ -378,20 +366,16 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
                     image=self.other_file.pk,
                     # leadImage='',
                     highlightHidden=False,
-                    excerpt='This is a text (NEW)',
+                    excerpt="This is a text (NEW)",
                     entryType=self.genum(Entry.TagType.EXCERPT),
-                    droppedExcerpt='This is a dropped text (NEW)',
-                    clientId='entry-new-102',
-                )
+                    droppedExcerpt="This is a dropped text (NEW)",
+                    clientId="entry-new-102",
+                ),
             ],
         )
 
         def _query_check(**kwargs):
-            return self.query_check(
-                self.BULK_ENTRY_QUERY,
-                variables={'projectId': self.project.id, **minput},
-                **kwargs
-            )
+            return self.query_check(self.BULK_ENTRY_QUERY, variables={"projectId": self.project.id, **minput}, **kwargs)
 
         # -- Without login
         _query_check(assert_for_error=True)
@@ -408,12 +392,12 @@ class TestEntryMutation(GraphQLSnapShotTestCase):
         self.force_login(self.member_user)
         # Invalid input
         response = _query_check(okay=False)
-        self.assertMatchSnapshot(response, 'error')
+        self.assertMatchSnapshot(response, "error")
 
         # Valid input
-        minput['items'][0]['image'] = self.our_file.pk
-        minput['items'][1]['image'] = self.our_file.pk
+        minput["items"][0]["image"] = self.our_file.pk
+        minput["items"][1]["image"] = self.our_file.pk
         response = _query_check()
-        self.assertMatchSnapshot(response, 'success')
+        self.assertMatchSnapshot(response, "success")
 
     # TODO: Add test for other entry attributes id as well

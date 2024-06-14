@@ -1,15 +1,14 @@
+from ary.filters import AssessmentGQFilterSet
+from ary.models import Assessment
 from django.db.models import QuerySet
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
-
-from utils.graphene.types import CustomDjangoListObjectType
-from utils.graphene.fields import DjangoPaginatedListObjectField
-from deep.permissions import ProjectPermissions as PP
+from lead.models import Lead
 from user_resource.schema import UserResourceMixin
 
-from lead.models import Lead
-from ary.models import Assessment
-from ary.filters import AssessmentGQFilterSet
+from deep.permissions import ProjectPermissions as PP
+from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.types import CustomDjangoListObjectType
 
 
 def get_assessment_qs(info):
@@ -26,9 +25,15 @@ class AssessmentType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = Assessment
         only_fields = (
-            'id', 'lead', 'project', 'lead_group',
-            'metadata', 'methodology', 'summary',
-            'score', 'questionnaire',
+            "id",
+            "lead",
+            "project",
+            "lead_group",
+            "metadata",
+            "methodology",
+            "summary",
+            "score",
+            "questionnaire",
         )
 
     @staticmethod
@@ -45,10 +50,7 @@ class AssessmentListType(CustomDjangoListObjectType):
 class Query:
     assessment = DjangoObjectField(AssessmentType)
     assessments = DjangoPaginatedListObjectField(
-        AssessmentListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        AssessmentListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
 
     @staticmethod

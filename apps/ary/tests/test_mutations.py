@@ -1,14 +1,14 @@
-from utils.graphene.tests import GraphQLTestCase
-
 from ary.factories import AssessmentFactory
-from project.factories import ProjectFactory
 from lead.factories import LeadFactory
+from project.factories import ProjectFactory
 from user.factories import UserFactory
+
+from utils.graphene.tests import GraphQLTestCase
 
 
 class TestAssessmentMutation(GraphQLTestCase):
     def test_assessment_delete_mutation(self):
-        query = '''
+        query = """
             mutation MyMutation ($projectId: ID! $assessmentId: ID!) {
               project(id: $projectId) {
                 assessmentDelete(id: $assessmentId) {
@@ -20,7 +20,7 @@ class TestAssessmentMutation(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
         project = ProjectFactory.create()
         member_user = UserFactory.create()
         non_member_user = UserFactory.create()
@@ -30,11 +30,7 @@ class TestAssessmentMutation(GraphQLTestCase):
         ary = AssessmentFactory.create(project=project, lead=lead1)
 
         def _query_check(**kwargs):
-            return self.query_check(
-                query,
-                variables={'projectId': project.id, 'assessmentId': ary.id},
-                **kwargs
-            )
+            return self.query_check(query, variables={"projectId": project.id, "assessmentId": ary.id}, **kwargs)
 
         # -- Without login
         _query_check(assert_for_error=True)
@@ -42,8 +38,8 @@ class TestAssessmentMutation(GraphQLTestCase):
         # --- member user
         self.force_login(member_user)
         content = _query_check(assert_for_error=False)
-        self.assertEqual(content['data']['project']['assessmentDelete']['ok'], True)
-        self.assertIdEqual(content['data']['project']['assessmentDelete']['result']['id'], ary.id)
+        self.assertEqual(content["data"]["project"]["assessmentDelete"]["ok"], True)
+        self.assertIdEqual(content["data"]["project"]["assessmentDelete"]["result"]["id"], ary.id)
 
         # --- non_member user
         self.force_login(non_member_user)

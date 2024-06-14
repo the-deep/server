@@ -10,7 +10,7 @@ class EntryReviewCommentFactory(DjangoModelFactory):
 
 
 class EntryReviewCommentTextFactory(DjangoModelFactory):
-    text = factory.Sequence(lambda n: f'Text-{n}')
+    text = factory.Sequence(lambda n: f"Text-{n}")
 
     class Meta:
         model = EntryReviewCommentText

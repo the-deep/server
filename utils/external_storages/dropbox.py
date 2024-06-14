@@ -1,6 +1,8 @@
-import requests
-from utils.common import write_file, DEFAULT_HEADERS
 import tempfile
+
+import requests
+
+from utils.common import DEFAULT_HEADERS, write_file
 
 
 def download(file_url, SUPPORTED_MIME_TYPES):

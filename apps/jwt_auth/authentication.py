@@ -4,25 +4,25 @@ from rest_framework.exceptions import AuthenticationFailed
 
 from .token import AccessToken, TokenError
 
-
 # The auth header type 'Bearer' encoded to bytes
-AUTH_HEADER_TYPE_BYTES = 'Bearer'.encode(HTTP_HEADER_ENCODING)
+AUTH_HEADER_TYPE_BYTES = "Bearer".encode(HTTP_HEADER_ENCODING)
 
 # Paths for which no verification of access token in performed
 # such as expiry verifications
 # TODO: Use more generalized way to check safe path such as regex
-SAFE_PATHS = ['/api/v1/token/refresh/']
+SAFE_PATHS = ["/api/v1/token/refresh/"]
 
 
 class JwtAuthentication(authentication.BaseAuthentication):
     """
     JwtAuthentication for django rest framework
     """
+
     def authenticate_header(self, request):
         """
         Value of www-authenticate header in 401 error
         """
-        return 'Bearer realm=api'
+        return "Bearer realm=api"
 
     def authenticate(self, request):
         """
@@ -31,7 +31,7 @@ class JwtAuthentication(authentication.BaseAuthentication):
         """
 
         # Get header
-        header = request.META.get('HTTP_AUTHORIZATION')
+        header = request.META.get("HTTP_AUTHORIZATION")
         if header is None:
             return None
 
@@ -63,17 +63,14 @@ class JwtAuthentication(authentication.BaseAuthentication):
 
         # Improper Bearer header
         if len(parts) != 2:
-            raise AuthenticationFailed(
-                'Authorization header must be of format: Bearer <token>'
-            )
+            raise AuthenticationFailed("Authorization header must be of format: Bearer <token>")
 
         token = parts[1]
 
         # We got the token string, decode and return the
         # access token object
         try:
-            access_token = AccessToken(token,
-                                       verify=request.path not in SAFE_PATHS)
+            access_token = AccessToken(token, verify=request.path not in SAFE_PATHS)
             return access_token
         except TokenError as e:
             raise AuthenticationFailed(e.message)

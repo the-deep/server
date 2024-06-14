@@ -1,1 +1,1 @@
-default_app_config = 'tabular.apps.TabularConfig'
+default_app_config = "tabular.apps.TabularConfig"

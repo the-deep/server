@@ -2,22 +2,20 @@ import copy
 import json
 from unittest import mock
 
-from django.core.files.temp import NamedTemporaryFile
-from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
-from user.factories import UserFactory
-from graphene_file_upload.django.testing import GraphQLFileUploadTestCase
-
-from analysis_framework.models import Widget
-
-from project.models import ProjectChangeLog
-from project.factories import ProjectFactory
-from organization.factories import OrganizationFactory
-from analysis_framework.models import AnalysisFramework
 from analysis_framework.factories import (
     AnalysisFrameworkFactory,
     SectionFactory,
     WidgetFactory,
 )
+from analysis_framework.models import AnalysisFramework, Widget
+from django.core.files.temp import NamedTemporaryFile
+from graphene_file_upload.django.testing import GraphQLFileUploadTestCase
+from organization.factories import OrganizationFactory
+from project.factories import ProjectFactory
+from project.models import ProjectChangeLog
+from user.factories import UserFactory
+
+from utils.graphene.tests import GraphQLSnapShotTestCase, GraphQLTestCase
 
 
 class TestPreviewImage(GraphQLFileUploadTestCase, GraphQLTestCase):
@@ -51,49 +49,42 @@ class TestPreviewImage(GraphQLFileUploadTestCase, GraphQLTestCase):
           }
         }
         """
-        self.variables = {
-            "data": {"title": 'test', "previewImage": None}
-        }
+        self.variables = {"data": {"title": "test", "previewImage": None}}
         self.force_login(self.user)
 
     def test_upload_preview_image(self):
-        file_text = b'preview image text'
-        with NamedTemporaryFile(suffix='.png') as t_file:
+        file_text = b"preview image text"
+        with NamedTemporaryFile(suffix=".png") as t_file:
             t_file.write(file_text)
             t_file.seek(0)
             response = self._client.post(
-                '/graphql',
+                "/graphql",
                 data={
-                    'operations': json.dumps({
-                        'query': self.upload_mutation,
-                        'variables': self.variables
-                    }),
-                    't_file': t_file,
-                    'map': json.dumps({
-                        't_file': ['variables.data.previewImage']
-                    })
-                }
+                    "operations": json.dumps({"query": self.upload_mutation, "variables": self.variables}),
+                    "t_file": t_file,
+                    "map": json.dumps({"t_file": ["variables.data.previewImage"]}),
+                },
             )
         content = response.json()
         self.assertResponseNoErrors(response)
 
         # Test can upload image
-        af_id = content['data']['analysisFrameworkCreate']['result']['id']
-        self.assertTrue(content['data']['analysisFrameworkCreate']['ok'], content)
-        self.assertTrue(content['data']['analysisFrameworkCreate']['result']['previewImage']["name"])
-        preview_image_name = content['data']['analysisFrameworkCreate']['result']['previewImage']["name"]
-        preview_image_url = content['data']['analysisFrameworkCreate']['result']['previewImage']["url"]
-        self.assertTrue(preview_image_name.endswith('.png'))
+        af_id = content["data"]["analysisFrameworkCreate"]["result"]["id"]
+        self.assertTrue(content["data"]["analysisFrameworkCreate"]["ok"], content)
+        self.assertTrue(content["data"]["analysisFrameworkCreate"]["result"]["previewImage"]["name"])
+        preview_image_name = content["data"]["analysisFrameworkCreate"]["result"]["previewImage"]["name"]
+        preview_image_url = content["data"]["analysisFrameworkCreate"]["result"]["previewImage"]["url"]
+        self.assertTrue(preview_image_name.endswith(".png"))
         self.assertTrue(preview_image_url.endswith(preview_image_name))
 
         # Test can retrive image
         response = self.query(self.retrieve_af_query % af_id)
         self.assertResponseNoErrors(response)
         content = response.json()
-        self.assertTrue(content['data']['analysisFramework']['previewImage']["name"])
-        preview_image_name = content['data']['analysisFramework']['previewImage']["name"]
-        preview_image_url = content['data']['analysisFramework']['previewImage']["url"]
-        self.assertTrue(preview_image_name.endswith('.png'))
+        self.assertTrue(content["data"]["analysisFramework"]["previewImage"]["name"])
+        preview_image_name = content["data"]["analysisFramework"]["previewImage"]["name"]
+        preview_image_url = content["data"]["analysisFramework"]["previewImage"]["url"]
+        self.assertTrue(preview_image_name.endswith(".png"))
         self.assertTrue(preview_image_url.endswith(preview_image_name))
 
 
@@ -102,7 +93,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
 
     def setUp(self):
         super().setUp()
-        self.create_query = '''
+        self.create_query = """
             mutation MyMutation ($input: AnalysisFrameworkInputType!) {
               __typename
               analysisFrameworkCreate(data: $input) {
@@ -144,63 +135,63 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                 }
               }
             }
-        '''
+        """
 
         self.organization1 = OrganizationFactory.create()
         self.invalid_minput = dict(
-            title='',
-            description='Af description',
+            title="",
+            description="Af description",
             isPrivate=False,
             organization=str(self.organization1.id),
             # previewImage='',
             primaryTagging=[
                 dict(
-                    title='',
-                    clientId='section-101',
+                    title="",
+                    clientId="section-101",
                     order=2,
-                    tooltip='Tooltip for section 101',
+                    tooltip="Tooltip for section 101",
                     widgets=[
                         dict(
-                            clientId='section-text-101-client-id',
-                            title='',
+                            clientId="section-text-101-client-id",
+                            title="",
                             widgetId=self.genum(Widget.WidgetType.TEXT),
                             version=1,
-                            key='section-text-101',
+                            key="section-text-101",
                             order=1,
                             properties=dict(),
                         ),
                         dict(
-                            clientId='section-text-102-client-id',
-                            title='',
+                            clientId="section-text-102-client-id",
+                            title="",
                             widgetId=self.genum(Widget.WidgetType.TEXT),
                             version=1,
-                            key='section-text-102',
+                            key="section-text-102",
                             order=2,
                             properties=dict(),
                         ),
                     ],
                 ),
                 dict(
-                    title='',
-                    clientId='section-102',
+                    title="",
+                    clientId="section-102",
                     order=1,
-                    tooltip='Tooltip for section 102',
+                    tooltip="Tooltip for section 102",
                     widgets=[
                         dict(
-                            clientId='section-2-text-101-client-id',
-                            title='Section-2-Text-101',
+                            clientId="section-2-text-101-client-id",
+                            title="Section-2-Text-101",
                             widgetId=self.genum(Widget.WidgetType.TEXT),
                             version=1,
-                            key='section-2-text-101',
+                            key="section-2-text-101",
                             order=1,
                             properties=dict(),
                         ),
                         dict(
-                            clientId='section-2-text-102-client-id',
-                            title='Section-2-Text-102',
+                            clientId="section-2-text-102-client-id",
+                            title="Section-2-Text-102",
                             widgetId=self.genum(Widget.WidgetType.TEXT),
                             version=1,
-                            key='section-2-text-102',
+                            key="section-2-text-102",
                             order=2,
                             properties=dict(),
                         ),
@@ -209,20 +200,20 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
             ],
             secondaryTagging=[
                 dict(
-                    clientId='select-widget-101-client-id',
-                    title='',
+                    clientId="select-widget-101-client-id",
+                    title="",
                     widgetId=self.genum(Widget.WidgetType.SELECT),
                     version=1,
-                    key='select-widget-101-key',
+                    key="select-widget-101-key",
                     order=1,
                     properties=dict(),
                 ),
                 dict(
-                    clientId='multi-select-widget-102-client-id',
-                    title='multi-select-Widget-2',
+                    clientId="multi-select-widget-102-client-id",
+                    title="multi-select-Widget-2",
                     widgetId=self.genum(Widget.WidgetType.MULTISELECT),
                     version=1,
-                    key='multi-select-widget-102-key',
+                    key="multi-select-widget-102-key",
                     order=2,
                     properties=dict(),
                 ),
@@ -230,97 +221,96 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         )
 
         self.valid_minput = dict(
-            title='AF (TEST)',
-            description='Af description',
+            title="AF (TEST)",
+            description="Af description",
             isPrivate=False,
             organization=str(self.organization1.id),
             properties=dict(),
             # previewImage='',
             primaryTagging=[
                 dict(
-                    title='Section 101',
-                    clientId='section-101',
+                    title="Section 101",
+                    clientId="section-101",
                     order=2,
-                    tooltip='Tooltip for section 101',
+                    tooltip="Tooltip for section 101",
                     widgets=[
                         dict(
-                            clientId='section-text-101-client-id',
-                            title='Section-Text-101',
+                            clientId="section-text-101-client-id",
+                            title="Section-Text-101",
                             widgetId=self.genum(Widget.WidgetType.MATRIX1D),
                             version=1,
-                            key='section-text-101',
+                            key="section-text-101",
                             order=1,
                             properties=dict(
                                 rows=[
                                     dict(
-                                        key='row-key-1',
-                                        label='Row Label 1',
+                                        key="row-key-1",
+                                        label="Row Label 1",
                                         cells=[
-                                            dict(key='cell-key-1.1', label='Cell Label 1.1'),
-                                            dict(key='cell-key-1.2', label='Cell Label 1.2'),
-                                            dict(key='cell-key-1.3', label='Cell Label 1.3'),
+                                            dict(key="cell-key-1.1", label="Cell Label 1.1"),
+                                            dict(key="cell-key-1.2", label="Cell Label 1.2"),
+                                            dict(key="cell-key-1.3", label="Cell Label 1.3"),
                                         ],
                                     ),
                                     dict(
-                                        key='row-key-2',
-                                        label='Row Label 2',
+                                        key="row-key-2",
+                                        label="Row Label 2",
                                         cells=[
-                                            dict(key='cell-key-2.1', label='Cell Label 2.1'),
-                                            dict(key='cell-key-2.2', label='Cell Label 2.2'),
+                                            dict(key="cell-key-2.1", label="Cell Label 2.1"),
+                                            dict(key="cell-key-2.2", label="Cell Label 2.2"),
                                         ],
                                     ),
-
                                 ],
                             ),
                         ),
                         dict(
-                            clientId='section-text-102-client-id',
-                            title='Section-Text-102',
+                            clientId="section-text-102-client-id",
+                            title="Section-Text-102",
                             widgetId=self.genum(Widget.WidgetType.MATRIX2D),
                             version=1,
-                            key='section-text-102',
+                            key="section-text-102",
                             order=2,
                             properties=dict(
                                 rows=[
                                     dict(
-                                        key='row-key-1',
-                                        label='Row Label 1',
+                                        key="row-key-1",
+                                        label="Row Label 1",
                                         subRows=[
-                                            dict(key='sub-row-key-1.1', label='SubRow Label 1.1'),
-                                            dict(key='sub-row-key-1.2', label='SubRow Label 1.2'),
-                                            dict(key='sub-row-key-1.3', label='SubRow Label 1.3'),
+                                            dict(key="sub-row-key-1.1", label="SubRow Label 1.1"),
+                                            dict(key="sub-row-key-1.2", label="SubRow Label 1.2"),
+                                            dict(key="sub-row-key-1.3", label="SubRow Label 1.3"),
                                         ],
                                     ),
                                     dict(
-                                        key='row-key-2',
-                                        label='Row Label 2',
+                                        key="row-key-2",
+                                        label="Row Label 2",
                                         subRows=[
-                                            dict(key='sub-row-key-2.1', label='SubRow Label 2.1'),
-                                            dict(key='sub-row-key-2.2', label='SubRow Label 2.2'),
+                                            dict(key="sub-row-key-2.1", label="SubRow Label 2.1"),
+                                            dict(key="sub-row-key-2.2", label="SubRow Label 2.2"),
                                         ],
                                     ),
                                 ],
                                 columns=[
                                     dict(
-                                        key='column-key-1',
-                                        label='Column Label 1',
+                                        key="column-key-1",
+                                        label="Column Label 1",
                                         subColumns=[
-                                            dict(key='sub-column-key-1.1', label='SubColumn Label 1.1'),
-                                            dict(key='sub-column-key-1.2', label='SubColumn Label 1.2'),
-                                            dict(key='sub-column-key-1.3', label='SubColumn Label 1.3'),
+                                            dict(key="sub-column-key-1.1", label="SubColumn Label 1.1"),
+                                            dict(key="sub-column-key-1.2", label="SubColumn Label 1.2"),
+                                            dict(key="sub-column-key-1.3", label="SubColumn Label 1.3"),
                                         ],
                                     ),
                                     dict(
-                                        key='column-key-2',
-                                        label='Column Label 2',
+                                        key="column-key-2",
+                                        label="Column Label 2",
                                         subColumns=[
-                                            dict(key='sub-column-key-2.1', label='SubColumn Label 2.1'),
-                                            dict(key='sub-column-key-2.2', label='SubColumn Label 2.2'),
+                                            dict(key="sub-column-key-2.1", label="SubColumn Label 2.1"),
+                                            dict(key="sub-column-key-2.2", label="SubColumn Label 2.2"),
                                         ],
                                     ),
                                     dict(
-                                        key='column-key-3',
-                                        label='Column Label 3',
+                                        key="column-key-3",
+                                        label="Column Label 3",
                                         subColumns=[],
                                     ),
                                 ],
@@ -329,26 +319,26 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                     ],
                 ),
                 dict(
-                    title='Section 102',
-                    clientId='section-102',
+                    title="Section 102",
+                    clientId="section-102",
                     order=1,
-                    tooltip='Tooltip for section 102',
+                    tooltip="Tooltip for section 102",
                     widgets=[
                         dict(
-                            clientId='section-2-text-101-client-id',
-                            title='Section-2-Text-101',
+                            clientId="section-2-text-101-client-id",
+                            title="Section-2-Text-101",
                             widgetId=self.genum(Widget.WidgetType.TEXT),
                             version=1,
-                            key='section-2-text-101',
+                            key="section-2-text-101",
                             order=1,
                             properties=dict(),
                         ),
                         dict(
-                            clientId='section-2-text-102-client-id',
-                            title='Section-2-Text-102',
+                            clientId="section-2-text-102-client-id",
+                            title="Section-2-Text-102",
                             widgetId=self.genum(Widget.WidgetType.TEXT),
                             version=1,
-                            key='section-2-text-102',
+                            key="section-2-text-102",
                             order=2,
                             properties=dict(),
                         ),
@@ -357,20 +347,20 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
             ],
             secondaryTagging=[
                 dict(
-                    clientId='select-widget-101-client-id',
-                    title='Select-Widget-1',
+                    clientId="select-widget-101-client-id",
+                    title="Select-Widget-1",
                     widgetId=self.genum(Widget.WidgetType.SELECT),
                     version=1,
-                    key='select-widget-101-key',
+                    key="select-widget-101-key",
                     order=1,
                     properties=dict(),
                 ),
                 dict(
-                    clientId='multi-select-widget-102-client-id',
-                    title='multi-select-Widget-2',
+                    clientId="multi-select-widget-102-client-id",
+                    title="multi-select-Widget-2",
                     widgetId=self.genum(Widget.WidgetType.MULTISELECT),
                     version=1,
-                    key='multi-select-widget-102-key',
+                    key="multi-select-widget-102-key",
                     order=2,
                     properties=dict(),
                 ),
@@ -390,17 +380,17 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         self.force_login(user)
 
         response = _query_check(self.invalid_minput, okay=False)
-        self.assertMatchSnapshot(response, 'errors')
+        self.assertMatchSnapshot(response, "errors")
 
         with self.captureOnCommitCallbacks(execute=True):
             response = _query_check(self.valid_minput, okay=True)
-        self.assertMatchSnapshot(response, 'success')
+        self.assertMatchSnapshot(response, "success")
         # Export test
-        new_af = AnalysisFramework.objects.get(pk=response['data']['analysisFrameworkCreate']['result']['id'])
-        self.assertMatchSnapshot(new_af.export.file.read().decode('utf-8'), 'success-af-export')
+        new_af = AnalysisFramework.objects.get(pk=response["data"]["analysisFrameworkCreate"]["result"]["id"])
+        self.assertMatchSnapshot(new_af.export.file.read().decode("utf-8"), "success-af-export")
 
     def test_analysis_framework_update(self):
-        query = '''
+        query = """
             mutation MyMutation ($id: ID! $input: AnalysisFrameworkInputType!) {
               __typename
               analysisFramework (id: $id ) {
@@ -479,7 +469,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                   }
               }
             }
-        '''
+        """
 
         user = UserFactory.create()
         project1, project2, project3 = ProjectFactory.create_batch(3)
@@ -488,8 +478,8 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
             return self.query_check(
                 query,
                 minput=minput,
-                mnested=['analysisFramework'],
-                variables={'id': id},
+                mnested=["analysisFramework"],
+                variables={"id": id},
                 **kwargs,
             )
 
@@ -497,53 +487,52 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         valid_minput = copy.deepcopy(self.valid_minput)
         new_widgets = [
             dict(
-                clientId='geo-widget-103-client-id',
-                title='Geo',
+                clientId="geo-widget-103-client-id",
+                title="Geo",
                 widgetId=self.genum(Widget.WidgetType.GEO),
                 version=1,
-                key='geo-widget-103-key',
+                key="geo-widget-103-key",
                 order=3,
                 properties=dict(),
             ),
             dict(
-                clientId='scale-widget-104-client-id',
-                title='Scale',
+                clientId="scale-widget-104-client-id",
+                title="Scale",
                 widgetId=self.genum(Widget.WidgetType.SCALE),
                 version=1,
-                key='scale-widget-104-key',
+                key="scale-widget-104-key",
                 order=4,
                 properties=dict(),
             ),
             dict(
-                clientId='organigram-widget-104-client-id',
-                title='Organigram',
+                clientId="organigram-widget-104-client-id",
+                title="Organigram",
                 widgetId=self.genum(Widget.WidgetType.ORGANIGRAM),
                 version=1,
-                key='organigram-widget-104-key',
+                key="organigram-widget-104-key",
                 order=5,
                 properties=dict(),
             ),
         ]
-        valid_minput['secondaryTagging'].extend(new_widgets)
+        valid_minput["secondaryTagging"].extend(new_widgets)
         _query_check(0, valid_minput, assert_for_error=True)
         # ---------- With login
         self.force_login(user)
         # ---------- Let's create a new AF (Using create test data)
-        new_af_response = self.query_check(
-            self.create_query, minput=valid_minput)['data']['analysisFrameworkCreate']['result']
-        self.assertMatchSnapshot(copy.deepcopy(new_af_response), 'created')
+        new_af_response = self.query_check(self.create_query, minput=valid_minput)["data"]["analysisFrameworkCreate"]["result"]
+        self.assertMatchSnapshot(copy.deepcopy(new_af_response), "created")
 
-        new_af_id = new_af_response['id']
+        new_af_id = new_af_response["id"]
         for project in [project1, project2]:
             project.analysis_framework_id = new_af_id
-            project.save(update_fields=('analysis_framework_id',))
+            project.save(update_fields=("analysis_framework_id",))
 
         # ---------------- Remove invalid attributes
-        new_af_response.pop('currentUserRole')
-        new_af_response.pop('id')
+        new_af_response.pop("currentUserRole")
+        new_af_response.pop("id")
         # ---------- Let's change some attributes (for validation errors)
-        new_af_response['title'] = ''
-        new_af_response['primaryTagging'][0]['title'] = ''
+        new_af_response["title"] = ""
+        new_af_response["primaryTagging"][0]["title"] = ""
         # ----------------- Let's try to update
         # ---- Add stats_config as well.
 
@@ -552,24 +541,17 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         def _get_widget_ID(_type):
             widget = widget_qs.filter(widget_id=_type).first()
             if widget:
-                return dict(
-                    pk=str(widget.id)
-                )
+                return dict(pk=str(widget.id))
 
         def _get_multiple_widget_ID(_type):
-            return [
-                dict(
-                    pk=str(widget.id)
-                )
-                for widget in widget_qs.filter(widget_id=_type)
-            ]
+            return [dict(pk=str(widget.id)) for widget in widget_qs.filter(widget_id=_type)]
 
-        new_af_response['properties'] = dict(
+        new_af_response["properties"] = dict(
             statsConfig=dict(
                 # Invalid IDS
                 geoWidget=_get_widget_ID(Widget.WidgetType.MULTISELECT),
                 severityWidget=_get_widget_ID(Widget.WidgetType.MULTISELECT),
-                reliabilityWidget=dict(pk='10000001'),
+                reliabilityWidget=dict(pk="10000001"),
                 # widget1d=_get_multiple_widget_ID(Widget.WidgetType.MULTISELECT),
                 widget1d=_get_multiple_widget_ID(Widget.WidgetType.MULTISELECT),
                 widget2d=_get_multiple_widget_ID(Widget.WidgetType.MULTISELECT),
@@ -578,18 +560,18 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
             ),
         )
         response = _query_check(new_af_id, new_af_response, okay=False)
-        self.assertMatchSnapshot(response, 'errors')
+        self.assertMatchSnapshot(response, "errors")
         # ---------- Let's change some attributes (for success change)
-        new_af_response['title'] = 'Updated AF (TEST)'
-        new_af_response['description'] = 'Updated Af description'
-        new_af_response['primaryTagging'][0]['title'] = 'Updated Section 102'
-        new_af_response['primaryTagging'][0]['widgets'][0].pop('id')  # Remove/Create a widget
-        new_af_response['primaryTagging'][0]['widgets'][1]['title'] = 'Updated-Section-2-Text-101'  # Remove a widget
-        new_af_response['primaryTagging'][1].pop('id')  # Remove/Create second ordered section (but use current widgets)
-        new_af_response['secondaryTagging'].pop(0)  # Remove another widget
-        new_af_response['secondaryTagging'][0].pop('id')  # Remove/Create another widget
+        new_af_response["title"] = "Updated AF (TEST)"
+        new_af_response["description"] = "Updated Af description"
+        new_af_response["primaryTagging"][0]["title"] = "Updated Section 102"
+        new_af_response["primaryTagging"][0]["widgets"][0].pop("id")  # Remove/Create a widget
+        new_af_response["primaryTagging"][0]["widgets"][1]["title"] = "Updated-Section-2-Text-101"  # Remove a widget
+        new_af_response["primaryTagging"][1].pop("id")  # Remove/Create second ordered section (but use current widgets)
+        new_af_response["secondaryTagging"].pop(0)  # Remove another widget
+        new_af_response["secondaryTagging"][0].pop("id")  # Remove/Create another widget
         # ----------------- Let's try to update
-        new_af_response['properties'] = dict(
+        new_af_response["properties"] = dict(
             statsConfig=dict(
                 # Invalid IDS
                 geoWidget=_get_widget_ID(Widget.WidgetType.GEO),
@@ -603,16 +585,16 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         )
         with self.captureOnCommitCallbacks(execute=True):
             response = _query_check(new_af_id, new_af_response, okay=True)
-        self.assertMatchSnapshot(response, 'success')
+        self.assertMatchSnapshot(response, "success")
         new_af = AnalysisFramework.objects.get(pk=new_af_id)
-        self.assertMatchSnapshot(new_af.export.file.read().decode('utf-8'), 'success-af-export')
+        self.assertMatchSnapshot(new_af.export.file.read().decode("utf-8"), "success-af-export")
         # Check with conditionals
         other_af_widget = WidgetFactory.create(analysis_framework=AnalysisFrameworkFactory.create())
         af_widget = Widget.objects.filter(analysis_framework_id=new_af_id).first()
         af_widget_pk = af_widget and af_widget.pk
 
         # Some with conditionals
-        new_af_response['primaryTagging'][0]['widgets'][1]['conditional'] = dict(
+        new_af_response["primaryTagging"][0]["widgets"][1]["conditional"] = dict(
             parentWidget=other_af_widget.pk,
             conditions=[],
         )
@@ -620,22 +602,22 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         response = _query_check(new_af_id, new_af_response, okay=False)
 
         # Success Add
-        new_af_response['primaryTagging'][0]['widgets'][1]['conditional'] = dict(
+        new_af_response["primaryTagging"][0]["widgets"][1]["conditional"] = dict(
             parentWidget=af_widget_pk,
             conditions=[],
         )
-        new_af_response['secondaryTagging'][0]['conditional'] = dict(
+        new_af_response["secondaryTagging"][0]["conditional"] = dict(
             parentWidget=af_widget_pk,
             conditions=[],
         )
         response = _query_check(new_af_id, new_af_response, okay=True)
-        self.assertMatchSnapshot(response, 'with-conditionals-add')
+        self.assertMatchSnapshot(response, "with-conditionals-add")
 
         # Success Remove
-        new_af_response['primaryTagging'][0]['widgets'][1].pop('conditional')
-        new_af_response['secondaryTagging'][0]['conditional'] = None  # Should remove this only
+        new_af_response["primaryTagging"][0]["widgets"][1].pop("conditional")
+        new_af_response["secondaryTagging"][0]["conditional"] = None  # Should remove this only
         response = _query_check(new_af_id, new_af_response, okay=True)
-        self.assertMatchSnapshot(response, 'with-conditionals-remove')
+        self.assertMatchSnapshot(response, "with-conditionals-remove")
 
         # With another user (Access denied)
         another_user = UserFactory.create()
@@ -644,18 +626,22 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
 
         # Project Log Check
         def _get_project_logs_qs(project):
-            return ProjectChangeLog.objects.filter(project=project).order_by('id')
+            return ProjectChangeLog.objects.filter(project=project).order_by("id")
 
         assert _get_project_logs_qs(project3).count() == 0
         for project in [project1, project2]:
             project_log_qs = _get_project_logs_qs(project)
             assert project_log_qs.count() == 3
-            assert list(project_log_qs.values_list('diff', flat=True)) == [
-                dict(framework=dict(updated=True)),
-            ] * 3
+            assert (
+                list(project_log_qs.values_list("diff", flat=True))
+                == [
+                    dict(framework=dict(updated=True)),
+                ]
+                * 3
+            )
 
     def test_analysis_framework_membership_bulk(self):
-        query = '''
+        query = """
           mutation MyMutation(
               $id: ID!,
               $afMembership: [BulkAnalysisFrameworkMembershipInputType!]!,
@@ -704,7 +690,7 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
             }
           }
         }
-        '''
+        """
         creater_user = UserFactory.create()
         user = UserFactory.create()
         low_permission_user = UserFactory.create()
@@ -762,10 +748,11 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         def _query_check(**kwargs):
             return self.query_check(
                 query,
-                mnested=['analysisFramework'],
-                variables={'id': af.id, **minput},
+                mnested=["analysisFramework"],
+                variables={"id": af.id, **minput},
                 **kwargs,
             )
+
         # ---------- Without login
         _query_check(assert_for_error=True)
         # ---------- With login (with non-member)
@@ -777,16 +764,16 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         # ---------- With login (with higher permission)
         self.force_login(user)
         # ----------------- Some Invalid input
-        response = _query_check()['data']['analysisFramework']['analysisFrameworkMembershipBulk']
-        self.assertMatchSnapshot(response, 'try 1')
+        response = _query_check()["data"]["analysisFramework"]["analysisFrameworkMembershipBulk"]
+        self.assertMatchSnapshot(response, "try 1")
         # ----------------- All valid input
-        minput['afMembership'].pop(1)
-        response = _query_check()['data']['analysisFramework']['analysisFrameworkMembershipBulk']
-        self.assertMatchSnapshot(response, 'try 2')
+        minput["afMembership"].pop(1)
+        response = _query_check()["data"]["analysisFramework"]["analysisFrameworkMembershipBulk"]
+        self.assertMatchSnapshot(response, "try 2")
 
-    @mock.patch('analysis_framework.serializers.AfWidgetLimit')
+    @mock.patch("analysis_framework.serializers.AfWidgetLimit")
     def test_widgets_limit(self, AfWidgetLimitMock):
-        query = '''
+        query = """
             mutation MyMutation ($input: AnalysisFrameworkInputType!) {
               __typename
               analysisFrameworkCreate(data: $input) {
@@ -797,38 +784,39 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
                 }
               }
             }
-        '''
+        """
 
         user = UserFactory.create()
 
         minput = dict(
-            title='AF (TEST)',
+            title="AF (TEST)",
             primaryTagging=[
                 dict(
-                    title=f'Section {i}',
-                    clientId=f'section-{i}',
+                    title=f"Section {i}",
+                    clientId=f"section-{i}",
                     order=i,
-                    tooltip=f'Tooltip for section {i}',
+                    tooltip=f"Tooltip for section {i}",
                     widgets=[
                         dict(
-                            clientId=f'section-text-{j}-client-id',
-                            title=f'Section-Text-{j}',
+                            clientId=f"section-text-{j}-client-id",
+                            title=f"Section-Text-{j}",
                             widgetId=self.genum(Widget.WidgetType.TEXT),
                             version=1,
-                            key=f'section-text-{j}',
+                            key=f"section-text-{j}",
                             order=j,
                         )
                         for j in range(0, 4)
                     ],
-                ) for i in range(0, 2)
+                )
+                for i in range(0, 2)
             ],
             secondaryTagging=[
                 dict(
-                    clientId=f'section-text-{j}-client-id',
-                    title=f'Section-Text-{j}',
+                    clientId=f"section-text-{j}-client-id",
+                    title=f"Section-Text-{j}",
                     widgetId=self.genum(Widget.WidgetType.TEXT),
                     version=1,
-                    key=f'section-text-{j}',
+                    key=f"section-text-{j}",
                     order=j,
                 )
                 for j in range(0, 4)
@@ -838,19 +826,19 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         self.force_login(user)
 
         def _query_check(**kwargs):
-            return self.query_check(query, minput=minput, **kwargs)['data']['analysisFrameworkCreate']
+            return self.query_check(query, minput=minput, **kwargs)["data"]["analysisFrameworkCreate"]
 
         # Let's change the limit to lower value for easy testing :P
         AfWidgetLimitMock.MAX_SECTIONS_ALLOWED = 1
         AfWidgetLimitMock.MAX_WIDGETS_ALLOWED_PER_SECTION = 2
         AfWidgetLimitMock.MAX_WIDGETS_ALLOWED_IN_SECONDARY_TAGGING = 2
         response = _query_check(okay=False)
-        self.assertMatchSnapshot(response, 'failure-widget-level')
+        self.assertMatchSnapshot(response, "failure-widget-level")
         # Let's change the limit to lower value for easy testing :P
         AfWidgetLimitMock.MAX_WIDGETS_ALLOWED_IN_SECONDARY_TAGGING = 10
         AfWidgetLimitMock.MAX_WIDGETS_ALLOWED_PER_SECTION = 10
         response = _query_check(okay=False)
-        self.assertMatchSnapshot(response, 'failure-section-level')
+        self.assertMatchSnapshot(response, "failure-section-level")
         # Let's change the limit to higher value
         # Let's change the limit to higher value
         AfWidgetLimitMock.MAX_SECTIONS_ALLOWED = 5
@@ -861,7 +849,7 @@ class TestAnalysisFrameworkCreateUpdate(GraphQLTestCase):
     def setUp(self):
         super().setUp()
         self.user = UserFactory.create()
-        self.create_mutation = '''
+        self.create_mutation = """
         mutation Mutation($input: AnalysisFrameworkInputType!) {
           analysisFrameworkCreate(data: $input) {
             ok
@@ -874,8 +862,8 @@ class TestAnalysisFrameworkCreateUpdate(GraphQLTestCase):
             }
           }
         }
-        '''
-        self.update_mutation = '''
+        """
+        self.update_mutation = """
         mutation UpdateMutation($input: AnalysisFrameworkInputType!, $id: ID!) {
             analysisFramework (id: $id ) {
               analysisFrameworkUpdate(data: $input) {
@@ -890,26 +878,18 @@ class TestAnalysisFrameworkCreateUpdate(GraphQLTestCase):
               }
           }
         }
-        '''
+        """
 
     def test_create_analysis_framework(self):
-        self.input = dict(
-            title='new title'
-        )
+        self.input = dict(title="new title")
         self.force_login(self.user)
 
-        response = self.query(
-            self.create_mutation,
-            input_data=self.input
-        )
+        response = self.query(self.create_mutation, input_data=self.input)
         self.assertResponseNoErrors(response)
 
         content = response.json()
-        self.assertTrue(content['data']['analysisFrameworkCreate']['ok'], content)
-        self.assertEqual(
-            content['data']['analysisFrameworkCreate']['result']['title'],
-            self.input['title']
-        )
+        self.assertTrue(content["data"]["analysisFrameworkCreate"]["ok"], content)
+        self.assertEqual(content["data"]["analysisFrameworkCreate"]["result"]["title"], self.input["title"])
 
     # TODO: MOVE THIS TO PROJECT TEST
     # def test_create_private_framework_unauthorized(self):
@@ -956,93 +936,75 @@ class TestAnalysisFrameworkCreateUpdate(GraphQLTestCase):
         private_framework = AnalysisFrameworkFactory.create(is_private=True)
         public_framework = AnalysisFrameworkFactory.create(is_private=False)
         user = self.user
-        private_framework.add_member(
-            user,
-            private_framework.get_or_create_owner_role()
-        )
-        public_framework.add_member(
-            user,
-            public_framework.get_or_create_owner_role()
-        )
+        private_framework.add_member(user, private_framework.get_or_create_owner_role())
+        public_framework.add_member(user, public_framework.get_or_create_owner_role())
         content = self._change_framework_privacy(public_framework, user)
-        self.assertIsNotNone(content['errors'][0]['message'])
-        self.assertIn('permission', content['errors'][0]['message'])
+        self.assertIsNotNone(content["errors"][0]["message"])
+        self.assertIn("permission", content["errors"][0]["message"])
         content = self._change_framework_privacy(private_framework, user)
-        self.assertIsNotNone(content['errors'][0]['message'])
-        self.assertIn('permission', content['errors'][0]['message'])
+        self.assertIsNotNone(content["errors"][0]["message"])
+        self.assertIn("permission", content["errors"][0]["message"])
 
     def test_change_other_fields(self):
         private_framework = AnalysisFrameworkFactory.create(is_private=True)
         public_framework = AnalysisFrameworkFactory.create(is_private=False)
         user = self.user
-        private_framework.add_member(
-            user,
-            private_framework.get_or_create_owner_role()
-        )
-        public_framework.add_member(
-            user,
-            public_framework.get_or_create_owner_role()
-        )
+        private_framework.add_member(user, private_framework.get_or_create_owner_role())
+        public_framework.add_member(user, public_framework.get_or_create_owner_role())
 
         self.force_login(user)
 
         # private framework update
         self.input = dict(
-            title='new title updated',
+            title="new title updated",
             isPrivate=private_framework.is_private,
         )
         response = self.query(
             self.update_mutation,
             input_data=self.input,
-            variables={'id': private_framework.id},
+            variables={"id": private_framework.id},
         )
         private_framework.refresh_from_db()
         content = response.json()
-        self.assertNotEqual(content['data']['analysisFramework']['analysisFrameworkUpdate'], None, content)
-        self.assertTrue(content['data']['analysisFramework']['analysisFrameworkUpdate']['ok'], content)
-        self.assertEqual(
-            private_framework.title,
-            self.input['title']
-        )
+        self.assertNotEqual(content["data"]["analysisFramework"]["analysisFrameworkUpdate"], None, content)
+        self.assertTrue(content["data"]["analysisFramework"]["analysisFrameworkUpdate"]["ok"], content)
+        self.assertEqual(private_framework.title, self.input["title"])
 
         # public framework update
         self.input = dict(
-            title='public title updated',
+            title="public title updated",
             isPrivate=public_framework.is_private,
         )
         response = self.query(
             self.update_mutation,
             input_data=self.input,
-            variables={'id': public_framework.id},
+            variables={"id": public_framework.id},
         )
         public_framework.refresh_from_db()
         content = response.json()
-        self.assertNotEqual(content['data']['analysisFramework']['analysisFrameworkUpdate'], None, content)
-        self.assertTrue(content['data']['analysisFramework']['analysisFrameworkUpdate']['ok'], content)
-        self.assertEqual(
-            public_framework.title,
-            self.input['title']
-        )
+        self.assertNotEqual(content["data"]["analysisFramework"]["analysisFrameworkUpdate"], None, content)
+        self.assertTrue(content["data"]["analysisFramework"]["analysisFrameworkUpdate"]["ok"], content)
+        self.assertEqual(public_framework.title, self.input["title"])
 
     def _change_framework_privacy(self, framework, user):
         self.force_login(user)
 
         changed_privacy = not framework.is_private
         self.input = dict(
-            title='new title',
+            title="new title",
             isPrivate=changed_privacy,
             # other fields not cared for now
         )
         response = self.query(
             self.update_mutation,
             input_data=self.input,
-            variables={'id': framework.id},
+            variables={"id": framework.id},
         )
         content = response.json()
         return content
 
     def test_af_modified_at(self):
-        create_mutation = '''
+        create_mutation = """
         mutation Mutation($input: AnalysisFrameworkInputType!) {
           analysisFrameworkCreate(data: $input) {
             ok
@@ -1056,8 +1018,8 @@ class TestAnalysisFrameworkCreateUpdate(GraphQLTestCase):
             }
           }
         }
-        '''
-        update_mutation = '''
+        """
+        update_mutation = """
         mutation UpdateMutation($input: AnalysisFrameworkInputType!, $id: ID!) {
             analysisFramework (id: $id ) {
               analysisFrameworkUpdate(data: $input) {
@@ -1073,20 +1035,20 @@ class TestAnalysisFrameworkCreateUpdate(GraphQLTestCase):
               }
           }
         }
-        '''
+        """
 
         self.force_login(self.user)
 
         # Create
-        minput = dict(title='new title')
-        af_response = self.query_check(create_mutation, minput=minput)['data']['analysisFrameworkCreate']['result']
-        af_id = af_response['id']
-        af_modified_at = af_response['modifiedAt']
+        minput = dict(title="new title")
+        af_response = self.query_check(create_mutation, minput=minput)["data"]["analysisFrameworkCreate"]["result"]
+        af_id = af_response["id"]
+        af_modified_at = af_response["modifiedAt"]
 
         # Update
-        minput = dict(title='new updated title')
-        updated_af_response = self.query_check(
-            update_mutation, minput=minput, variables={'id': af_id}
-        )['data']['analysisFramework']['analysisFrameworkUpdate']['result']
+        minput = dict(title="new updated title")
+        updated_af_response = self.query_check(update_mutation, minput=minput, variables={"id": af_id})["data"][
+            "analysisFramework"
+        ]["analysisFrameworkUpdate"]["result"]
         # Make sure modifiedAt is higher now
-        assert updated_af_response['modifiedAt'] > af_modified_at
+        assert updated_af_response["modifiedAt"] > af_modified_at

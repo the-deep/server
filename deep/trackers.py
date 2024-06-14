@@ -1,16 +1,15 @@
-from typing import Type
 from enum import Enum, auto, unique
+from typing import Type
 
-from django.core.cache import cache
-from django.utils import timezone
-from django.db import transaction, models
 from celery import shared_task
 from dateutil.relativedelta import relativedelta
+from django.core.cache import cache
+from django.db import models, transaction
+from django.utils import timezone
+from project.models import Project
+from user.models import Profile
 
 from deep.caches import CacheKey
-
-from user.models import Profile
-from project.models import Project
 
 
 class TrackerAction:
@@ -45,20 +44,20 @@ def update_entity_data_in_bulk(
     cache_key_prefix: str,
     field: str,
 ):
-    cache_keys = cache.keys(cache_key_prefix + '*')
+    cache_keys = cache.keys(cache_key_prefix + "*")
     entities_update = []
     for key, value in cache.get_many(cache_keys).items():
         entities_update.append(
-            Model(**{
-                'id': key.split(cache_key_prefix)[1],
-                field: value,
-            })
+            Model(
+                **{
+                    "id": key.split(cache_key_prefix)[1],
+                    field: value,
+                }
+            )
         )
     if entities_update:
         Model.objects.bulk_update(entities_update, fields=[field], batch_size=200)
-    transaction.on_commit(
-        lambda: cache.delete_many(cache_keys)
-    )
+    transaction.on_commit(lambda: cache.delete_many(cache_keys))
 
 
 def update_project_data_in_bulk():
@@ -66,13 +65,13 @@ def update_project_data_in_bulk():
     update_entity_data_in_bulk(
         Project,
         CacheKey.Tracker.LAST_PROJECT_READ_ACCESS_DATETIME,
-        'last_read_access',
+        "last_read_access",
     )
     # -- Write
     update_entity_data_in_bulk(
         Project,
         CacheKey.Tracker.LAST_PROJECT_WRITE_ACCESS_DATETIME,
-        'last_write_access',
+        "last_write_access",
     )
     # -- Update project->status using last_write_access
     # -- -- To active
@@ -97,7 +96,7 @@ def update_user_data_in_bulk():
     update_entity_data_in_bulk(
         Profile,
         CacheKey.Tracker.LAST_USER_ACTIVE_DATETIME,
-        'last_active',
+        "last_active",
     )
     # -- Update user->profile-is_active using last_active
     # -- -- To active

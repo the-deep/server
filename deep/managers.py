@@ -1,4 +1,5 @@
 from collections import defaultdict
+
 from django.apps import apps
 
 
@@ -17,7 +18,7 @@ class BaseBulkManager(object):
         self.chunk_size = chunk_size
 
     def _commit(self, _):
-        raise Exception('This is not implemented yet.')
+        raise Exception("This is not implemented yet.")
 
     def _process_obj(self, obj):
         return obj
@@ -58,7 +59,7 @@ class BulkUpdateManager(BaseBulkManager):
 
     def _process_obj(self, obj):
         if obj.pk is None:
-            raise Exception(f'Only object with pk is allowed: {obj}')
+            raise Exception(f"Only object with pk is allowed: {obj}")
         return obj
 
     def _commit(self, model_class):

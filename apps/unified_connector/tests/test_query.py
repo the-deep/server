@@ -1,25 +1,22 @@
-from unified_connector.models import ConnectorSourceLead
 from django.db.models import Q
-from utils.graphene.tests import GraphQLTestCase
-
-from unified_connector.models import ConnectorSource
-
-from project.factories import ProjectFactory
-from user.factories import UserFactory
 from organization.factories import OrganizationFactory
-
+from project.factories import ProjectFactory
 from unified_connector.factories import (
     ConnectorLeadFactory,
     ConnectorSourceFactory,
     ConnectorSourceLeadFactory,
     UnifiedConnectorFactory,
 )
+from unified_connector.models import ConnectorSource, ConnectorSourceLead
+from user.factories import UserFactory
+
+from utils.graphene.tests import GraphQLTestCase
 
 
 class TestUnifiedConnectorQuery(GraphQLTestCase):
     ENABLE_NOW_PATCHER = True
 
-    UNIFIED_CONNECTORS_QUERY = '''
+    UNIFIED_CONNECTORS_QUERY = """
         query MyQuery ($id: ID!) {
           project(id: $id) {
             unifiedConnector {
@@ -56,9 +53,9 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             }
           }
         }
-    '''
+    """
 
-    UNIFIED_CONNECTOR_QUERY = '''
+    UNIFIED_CONNECTOR_QUERY = """
         query MyQuery ($id: ID! $connectorId: ID!) {
           project(id: $id) {
             unifiedConnector {
@@ -92,9 +89,9 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             }
           }
         }
-    '''
+    """
 
-    SOURCE_CONNECTORS_QUERY = '''
+    SOURCE_CONNECTORS_QUERY = """
         query MyQuery ($id: ID!) {
           project(id: $id) {
             unifiedConnector {
@@ -120,9 +117,9 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             }
           }
         }
-    '''
+    """
 
-    SOURCE_CONNECTOR_QUERY = '''
+    SOURCE_CONNECTOR_QUERY = """
         query MyQuery ($id: ID! $connectorSourceId: ID!) {
           project(id: $id) {
             unifiedConnector {
@@ -145,9 +142,9 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             }
           }
         }
-    '''
+    """
 
-    SOURCE_CONNECTOR_LEADS_QUERY = '''
+    SOURCE_CONNECTOR_LEADS_QUERY = """
         query MyQuery ($id: ID!) {
           project(id: $id) {
             unifiedConnector {
@@ -173,9 +170,9 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             }
           }
         }
-    '''
+    """
 
-    SOURCE_CONNECTOR_LEAD_QUERY = '''
+    SOURCE_CONNECTOR_LEAD_QUERY = """
         query MyQuery ($id: ID! $connectorSourceLeadId: ID!) {
           project(id: $id) {
             unifiedConnector {
@@ -198,8 +195,8 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             }
           }
         }
-    '''
-    SOURCE_COUNT_EXCLUDING_ADDED_AND_IGNORED_QUERY = '''
+    """
+    SOURCE_COUNT_EXCLUDING_ADDED_AND_IGNORED_QUERY = """
         query MyQuery ($id: ID!) {
           project(id: $id) {
             unifiedConnector {
@@ -207,7 +204,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                 }
             }
         }
-    '''
+    """
 
     def setUp(self):
         super().setUp()
@@ -230,14 +227,14 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
     def test_unified_connector_query(self):
         # -- non member user
         self.force_login(self.another_user)
-        content = self.query_check(
-            self.UNIFIED_CONNECTORS_QUERY, variables=dict(id=self.project.id)
-        )['data']['project']['unifiedConnector']
+        content = self.query_check(self.UNIFIED_CONNECTORS_QUERY, variables=dict(id=self.project.id))["data"]["project"][
+            "unifiedConnector"
+        ]
         self.assertEqual(content, None)
         # Single
         content = self.query_check(
             self.UNIFIED_CONNECTOR_QUERY, variables=dict(id=self.project.id, connectorId=str(self.uc1.pk))
-        )['data']['project']['unifiedConnector']
+        )["data"]["project"]["unifiedConnector"]
         self.assertEqual(content, None)
 
         # -- member user
@@ -245,32 +242,40 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
         content = self.query_check(
             self.UNIFIED_CONNECTORS_QUERY,
             variables=dict(id=self.project.id),
-        )['data']['project']['unifiedConnector']['unifiedConnectors']
-        self.assertEqual(content['totalCount'], 2)
-        self.assertEqual(content['results'], [
-            dict(
-                id=str(self.uc1.pk),
-                isActive=False,
-                project=str(self.project.pk),
-                title=self.uc1.title,
-                leadsCount=dict(alreadyAdded=0, blocked=0, total=0),
-                sources=[],
-            ),
-            dict(
-                id=str(self.uc2.pk),
-                isActive=False,
-                project=str(self.project.pk),
-                title=self.uc2.title,
-                leadsCount=dict(alreadyAdded=0, blocked=0, total=0),
-                sources=[],
-            ),
-        ])
+        )[
+            "data"
+        ]["project"][
+            "unifiedConnector"
+        ]["unifiedConnectors"]
+        self.assertEqual(content["totalCount"], 2)
+        self.assertEqual(
+            content["results"],
+            [
+                dict(
+                    id=str(self.uc1.pk),
+                    isActive=False,
+                    project=str(self.project.pk),
+                    title=self.uc1.title,
+                    leadsCount=dict(alreadyAdded=0, blocked=0, total=0),
+                    sources=[],
+                ),
+                dict(
+                    id=str(self.uc2.pk),
+                    isActive=False,
+                    project=str(self.project.pk),
+                    title=self.uc2.title,
+                    leadsCount=dict(alreadyAdded=0, blocked=0, total=0),
+                    sources=[],
+                ),
+            ],
+        )
         # Single
         content = self.query_check(
             self.UNIFIED_CONNECTOR_QUERY, variables=dict(id=self.project.id, connectorId=str(self.uc1.pk))
-        )['data']['project']['unifiedConnector']['unifiedConnector']
+        )["data"]["project"]["unifiedConnector"]["unifiedConnector"]
         self.assertEqual(
-            content, dict(
+            content,
+            dict(
                 id=str(self.uc1.pk),
                 isActive=False,
                 project=str(self.project.pk),
@@ -295,14 +300,14 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
 
         # -- non member user
         self.force_login(self.another_user)
-        content = self.query_check(
-            self.SOURCE_CONNECTORS_QUERY, variables=dict(id=self.project.id)
-        )['data']['project']['unifiedConnector']
+        content = self.query_check(self.SOURCE_CONNECTORS_QUERY, variables=dict(id=self.project.id))["data"]["project"][
+            "unifiedConnector"
+        ]
         self.assertEqual(content, None)
         # Single
         content = self.query_check(
             self.SOURCE_CONNECTOR_QUERY, variables=dict(id=self.project.id, connectorSourceId=str(self.uc1.pk))
-        )['data']['project']['unifiedConnector']
+        )["data"]["project"]["unifiedConnector"]
         self.assertEqual(content, None)
 
         ec_source1_1 = dict(
@@ -312,7 +317,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             unifiedConnector=str(self.uc1.pk),
             params={},
             leadsCount=dict(alreadyAdded=0, blocked=0, total=2),
-            stats=[{'count': 2, 'date': self.now_datetime.strftime('%Y-%m-%d')}],
+            stats=[{"count": 2, "date": self.now_datetime.strftime("%Y-%m-%d")}],
         )
         ec_source1_2 = dict(
             id=str(source1_2.pk),
@@ -330,7 +335,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
             unifiedConnector=str(self.uc2.pk),
             params={},
             leadsCount=dict(alreadyAdded=0, blocked=0, total=1),
-            stats=[{'count': 1, 'date': self.now_datetime.strftime('%Y-%m-%d')}],
+            stats=[{"count": 1, "date": self.now_datetime.strftime("%Y-%m-%d")}],
         )
         ec_source2_2 = dict(
             id=str(source2_2.pk),
@@ -346,46 +351,58 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
         self.force_login(self.user)
         content = self.query_check(
             self.SOURCE_CONNECTORS_QUERY,
-            variables={'id': self.project.id},
-        )['data']['project']['unifiedConnector']['connectorSources']
-        self.assertEqual(content['totalCount'], 4)
-        self.assertEqual(content['results'], [ec_source1_1, ec_source1_2, ec_source2_1, ec_source2_2])
+            variables={"id": self.project.id},
+        )[
+            "data"
+        ]["project"][
+            "unifiedConnector"
+        ]["connectorSources"]
+        self.assertEqual(content["totalCount"], 4)
+        self.assertEqual(content["results"], [ec_source1_1, ec_source1_2, ec_source2_1, ec_source2_2])
         # Single
         content = self.query_check(
             self.SOURCE_CONNECTOR_QUERY, variables=dict(id=self.project.id, connectorSourceId=str(source1_2.pk))
-        )['data']['project']['unifiedConnector']['connectorSource']
+        )["data"]["project"]["unifiedConnector"]["connectorSource"]
         self.assertEqual(content, ec_source1_2)
 
         # -- Unified connector -> Sources
         content = self.query_check(
             self.UNIFIED_CONNECTORS_QUERY,
             variables=dict(id=self.project.id),
-        )['data']['project']['unifiedConnector']['unifiedConnectors']
-        self.assertEqual(content['totalCount'], 2)
-        self.assertEqual(content['results'], [
-            dict(
-                id=str(self.uc1.pk),
-                isActive=False,
-                project=str(self.project.pk),
-                title=self.uc1.title,
-                sources=[ec_source1_1, ec_source1_2],
-                leadsCount=dict(alreadyAdded=0, blocked=0, total=2),
-            ),
-            dict(
-                id=str(self.uc2.pk),
-                isActive=False,
-                project=str(self.project.pk),
-                title=self.uc2.title,
-                sources=[ec_source2_1, ec_source2_2],
-                leadsCount=dict(alreadyAdded=0, blocked=0, total=1),
-            ),
-        ])
+        )[
+            "data"
+        ]["project"][
+            "unifiedConnector"
+        ]["unifiedConnectors"]
+        self.assertEqual(content["totalCount"], 2)
+        self.assertEqual(
+            content["results"],
+            [
+                dict(
+                    id=str(self.uc1.pk),
+                    isActive=False,
+                    project=str(self.project.pk),
+                    title=self.uc1.title,
+                    sources=[ec_source1_1, ec_source1_2],
+                    leadsCount=dict(alreadyAdded=0, blocked=0, total=2),
+                ),
+                dict(
+                    id=str(self.uc2.pk),
+                    isActive=False,
+                    project=str(self.project.pk),
+                    title=self.uc2.title,
+                    sources=[ec_source2_1, ec_source2_2],
+                    leadsCount=dict(alreadyAdded=0, blocked=0, total=1),
+                ),
+            ],
+        )
         # Single
         content = self.query_check(
             self.UNIFIED_CONNECTOR_QUERY, variables=dict(id=self.project.id, connectorId=str(self.uc1.pk))
-        )['data']['project']['unifiedConnector']['unifiedConnector']
+        )["data"]["project"]["unifiedConnector"]["unifiedConnector"]
         self.assertEqual(
-            content, dict(
+            content,
+            dict(
                 id=str(self.uc1.pk),
                 isActive=False,
                 project=str(self.project.pk),
@@ -410,11 +427,40 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
 
         self.maxDiff = None
         self.force_login(self.user)
+        content = self.query_check(self.SOURCE_CONNECTOR_LEADS_QUERY, variables=dict(id=self.project.id))["data"]["project"][
+            "unifiedConnector"
+        ]["connectorSourceLeads"]
+        self.assertEqual(content["totalCount"], 15)
+        self.assertEqual(
+            content["results"],
+            [
+                dict(
+                    id=str(lead.pk),
+                    alreadyAdded=False,
+                    blocked=False,
+                    connectorLead=dict(
+                        id=str(clead1.pk),
+                        title=clead1.title,
+                        source=dict(id=str(org1.pk)),
+                        authors=[dict(id=str(org2.pk)), dict(id=str(org3.pk))],
+                    ),
+                    source=str(lead.source_id),
+                )
+                for lead in [
+                    *source1_1_leads,
+                    *source1_2_leads,
+                    *source2_1_leads,
+                    *source2_2_leads,
+                ]
+            ],
+        )
+
+        lead = source1_1_leads[0]
         content = self.query_check(
-            self.SOURCE_CONNECTOR_LEADS_QUERY, variables=dict(id=self.project.id)
-        )['data']['project']['unifiedConnector']['connectorSourceLeads']
-        self.assertEqual(content['totalCount'], 15)
-        self.assertEqual(content['results'], [
+            self.SOURCE_CONNECTOR_LEAD_QUERY, variables=dict(id=self.project.id, connectorSourceLeadId=str(lead.pk))
+        )["data"]["project"]["unifiedConnector"]["connectorSourceLead"]
+        self.assertEqual(
+            content,
             dict(
                 id=str(lead.pk),
                 alreadyAdded=False,
@@ -426,32 +472,7 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
                     authors=[dict(id=str(org2.pk)), dict(id=str(org3.pk))],
                 ),
                 source=str(lead.source_id),
-            )
-            for lead in [
-                *source1_1_leads,
-                *source1_2_leads,
-                *source2_1_leads,
-                *source2_2_leads,
-            ]
-        ])
-
-        lead = source1_1_leads[0]
-        content = self.query_check(
-            self.SOURCE_CONNECTOR_LEAD_QUERY, variables=dict(id=self.project.id, connectorSourceLeadId=str(lead.pk))
-        )['data']['project']['unifiedConnector']['connectorSourceLead']
-        self.assertEqual(
-            content, dict(
-                id=str(lead.pk),
-                alreadyAdded=False,
-                blocked=False,
-                connectorLead=dict(
-                    id=str(clead1.pk),
-                    title=clead1.title,
-                    source=dict(id=str(org1.pk)),
-                    authors=[dict(id=str(org2.pk)), dict(id=str(org3.pk))],
-                ),
-                source=str(lead.source_id),
-            )
+            ),
         )
 
         # check for total sources count excluding already_added, blocked for enabled unified connector.
@@ -461,15 +482,16 @@ class TestUnifiedConnectorQuery(GraphQLTestCase):
         ConnectorSourceLeadFactory.create_batch(2, source=source, connector_lead=lead)
         ConnectorSourceLeadFactory.create_batch(2, source=source, connector_lead=self.fake_lead, blocked=True)
         ConnectorSourceLeadFactory.create_batch(2, source=source, connector_lead=self.fake_lead, already_added=True)
-        total_source_count = ConnectorSourceLead.objects.filter(
-            source__unified_connector__project=self.project,
-            source__unified_connector__is_active=True,
-        ).exclude(
-            Q(blocked=True) |
-            Q(already_added=True)
-        ).count()
-        content = self.query_check(
-            self.SOURCE_COUNT_EXCLUDING_ADDED_AND_IGNORED_QUERY, variables=dict(id=self.project.id)
-        )['data']['project']['unifiedConnector']['sourceCountWithoutIngnoredAndAdded']
+        total_source_count = (
+            ConnectorSourceLead.objects.filter(
+                source__unified_connector__project=self.project,
+                source__unified_connector__is_active=True,
+            )
+            .exclude(Q(blocked=True) | Q(already_added=True))
+            .count()
+        )
+        content = self.query_check(self.SOURCE_COUNT_EXCLUDING_ADDED_AND_IGNORED_QUERY, variables=dict(id=self.project.id))[
+            "data"
+        ]["project"]["unifiedConnector"]["sourceCountWithoutIngnoredAndAdded"]
 
         self.assertEqual(content, total_source_count)

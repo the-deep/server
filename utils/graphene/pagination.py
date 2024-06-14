@@ -1,12 +1,13 @@
 from graphene import String
-from graphene_django_extras.paginations.pagination import BaseDjangoGraphqlPagination
 from graphene_django_extras import PageGraphqlPagination
+from graphene_django_extras.paginations.pagination import BaseDjangoGraphqlPagination
 
 
 class NoOrderingPageGraphqlPagination(PageGraphqlPagination):
     """
     Custom pagination to support enum ordering from filterset
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -21,6 +22,7 @@ class OrderingOnlyArgumentPagination(BaseDjangoGraphqlPagination):
     Pagination just for ordering. Created for DjangoFilterPaginateListField (or its subclasses) in mind, to remove the
     page related arguments.
     """
+
     __name__ = "OrderingOnlyArgument"
 
     def __init__(

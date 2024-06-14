@@ -2,7 +2,7 @@ import datetime
 
 from lead.models import Lead
 
-PDNA_MOCK_DATA_RAW = '''
+PDNA_MOCK_DATA_RAW = """
 <!DOCTYPE html>
 <html>
    <body class="path-node page-node-type-page page-post-disaster-needs-assessments has-glyphicons no-filters">
@@ -46,7 +46,7 @@ PDNA_MOCK_DATA_RAW = '''
         </table>
    </body>
 </html>
-'''
+"""
 
 PDNA_PARAMS = {
     "country": "Nepal",
@@ -54,11 +54,11 @@ PDNA_PARAMS = {
 
 PDNA_MOCK_EXCEPTED_LEADS = [
     {
-        'title': 'Earthquake',
-        'url': 'https://www.gfdrr.org/sites/default/files/publication/Nepal%20Earthquake%202015%20Post-Disaster%20Needs%20Assessment%20Vol%20A.pdf',
-        'source_raw': 'PDNA portal',
-        'author_raw': 'PDNA portal',
-        'published_on': datetime.date(2015, datetime.date.today().month, datetime.date.today().day),
-        'source_type': Lead.SourceType.WEBSITE,
+        "title": "Earthquake",
+        "url": "https://www.gfdrr.org/sites/default/files/publication/Nepal%20Earthquake%202015%20Post-Disaster%20Needs%20Assessment%20Vol%20A.pdf",
+        "source_raw": "PDNA portal",
+        "author_raw": "PDNA portal",
+        "published_on": datetime.date(2015, datetime.date.today().month, datetime.date.today().day),
+        "source_type": Lead.SourceType.WEBSITE,
     }
 ]

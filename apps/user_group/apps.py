@@ -2,7 +2,7 @@ from django.apps import AppConfig
 
 
 class UserGroupConfig(AppConfig):
-    name = 'user_group'
+    name = "user_group"
 
     def ready(self):
-        from . import receivers # noqa
+        from . import receivers  # noqa

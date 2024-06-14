@@ -1,21 +1,22 @@
-import pytest
 from unittest.mock import patch
-from django.db.models import Q
 
-from deep.tests import TestCase
-from project.factories import ProjectFactory
-from lead.factories import LeadPreviewFactory, LeadFactory
-from lead.receivers import update_index_and_duplicates
-from lead.models import Lead, LeadDuplicates
-from deduplication.models import LSHIndex
+import pytest
 from deduplication.factories import LSHIndexFactory
+from deduplication.models import LSHIndex
 from deduplication.tasks.indexing import (
-    process_and_index_lead,
+    create_project_index,
     get_index_object_for_project,
     index_lead_and_calculate_duplicates,
+    process_and_index_lead,
     remove_lead_from_index,
-    create_project_index,
 )
+from django.db.models import Q
+from lead.factories import LeadFactory, LeadPreviewFactory
+from lead.models import Lead, LeadDuplicates
+from lead.receivers import update_index_and_duplicates
+from project.factories import ProjectFactory
+
+from deep.tests import TestCase
 
 
 @pytest.mark.django_db
@@ -45,7 +46,7 @@ class TestTasks(TestCase):
         final_count = LSHIndex.objects.count()
         assert final_count == original_count
 
-    @patch('deduplication.tasks.indexing.get_index_object_for_project')
+    @patch("deduplication.tasks.indexing.get_index_object_for_project")
     def test_index_lead_and_calculate_duplicates_no_text(self, get_index_func):
         """When lead has no text, the function should return early without calling
         the function get_index_object_for_project
@@ -55,7 +56,7 @@ class TestTasks(TestCase):
         index_lead_and_calculate_duplicates(lead.id)
         get_index_func.assert_not_called()
 
-    @patch('deduplication.tasks.indexing.process_and_index_lead')
+    @patch("deduplication.tasks.indexing.process_and_index_lead")
     def test_index_lead_and_calculate_duplicates_errored_index(self, process_lead_func):
         project = ProjectFactory.create()
         lead = LeadFactory.create(project=project)
@@ -180,10 +181,9 @@ class TestTasks(TestCase):
 
         project_leads = Lead.objects.filter(project=project)
         assert project_leads.filter(duplicate_leads_count=0).count() == 0, "Leads should have duplicates"
-        assert LeadDuplicates.objects.filter(
-            Q(source_lead_id=first_lead.id) |
-            Q(target_lead_id=first_lead.id)
-        ).count() > 0, "There should be duplicates entries for the first lead"
+        assert (
+            LeadDuplicates.objects.filter(Q(source_lead_id=first_lead.id) | Q(target_lead_id=first_lead.id)).count() > 0
+        ), "There should be duplicates entries for the first lead"
 
         # NOTE: this should have been called by signal
         update_index_and_duplicates(first_lead)

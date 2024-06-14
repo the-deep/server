@@ -1,7 +1,6 @@
 from analysis.models import AnalyticalStatementEntry
-from export.models import Export
-
 from export.analyses.excel_exporter import ExcelExporter
+from export.models import Export
 
 
 def export_analyses(export):
@@ -12,12 +11,10 @@ def export_analyses(export):
         analytical_statement__analysis_pillar__analysis=analysis
     )
     if export_type == Export.ExportType.EXCEL:
-        export_data = ExcelExporter(analytical_statement_entries)\
-            .add_analytical_statement_entries(analytical_statement_entries)\
-            .export()
-    else:
-        raise Exception(
-            f'(Analysis Export) Unkown Export Type Provided: {export_type} for Export: {export.id}'
+        export_data = (
+            ExcelExporter(analytical_statement_entries).add_analytical_statement_entries(analytical_statement_entries).export()
         )
+    else:
+        raise Exception(f"(Analysis Export) Unkown Export Type Provided: {export_type} for Export: {export.id}")
 
     return export_data

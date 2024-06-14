@@ -1,27 +1,24 @@
 import graphene
 
+from deep.permissions import ProjectPermissions as PP
 from utils.graphene.mutation import (
-    generate_input_type_for_serializer,
-    PsGrapheneMutation,
     PsBulkGrapheneMutation,
     PsDeleteMutation,
+    PsGrapheneMutation,
+    generate_input_type_for_serializer,
 )
-from deep.permissions import ProjectPermissions as PP
 
 from .models import Entry
 from .schema import EntryType
-from .serializers import (
-    EntryGqSerializer as EntrySerializer,
-)
-
+from .serializers import EntryGqSerializer as EntrySerializer
 
 EntryInputType = generate_input_type_for_serializer(
-    'EntryInputType',
+    "EntryInputType",
     serializer_class=EntrySerializer,
 )
 
 
-class EntryMutationMixin():
+class EntryMutationMixin:
     @classmethod
     def filter_queryset(cls, qs, info):
         return qs.filter(
@@ -35,6 +32,7 @@ class EntryMutationMixin():
 class CreateEntry(EntryMutationMixin, PsGrapheneMutation):
     class Arguments:
         data = EntryInputType(required=True)
+
     model = Entry
     serializer_class = EntrySerializer
     result = graphene.Field(EntryType)
@@ -45,6 +43,7 @@ class UpdateEntry(EntryMutationMixin, PsGrapheneMutation):
     class Arguments:
         data = EntryInputType(required=True)
         id = graphene.ID(required=True)
+
     model = Entry
     serializer_class = EntrySerializer
     result = graphene.Field(EntryType)
@@ -54,6 +53,7 @@ class UpdateEntry(EntryMutationMixin, PsGrapheneMutation):
 class DeleteEntry(EntryMutationMixin, PsDeleteMutation):
     class Arguments:
         id = graphene.ID(required=True)
+
     model = Entry
     result = graphene.Field(EntryType)
     permissions = [PP.Permission.DELETE_ENTRY]
@@ -76,7 +76,7 @@ class BulkEntry(EntryMutationMixin, PsBulkGrapheneMutation):
     permissions = [PP.Permission.CREATE_ENTRY]
 
 
-class Mutation():
+class Mutation:
     entry_create = CreateEntry.Field()
     entry_update = UpdateEntry.Field()
     entry_delete = DeleteEntry.Field()

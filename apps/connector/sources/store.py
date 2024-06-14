@@ -1,31 +1,33 @@
-from collections import OrderedDict
-from unified_connector.sources import (
-    atom_feed,
-    rss_feed,
-    acaps_briefing_notes,
-    unhcr_portal,
-    relief_web,
-    pdna,
-    research_center,
-    wpf,
-    humanitarian_response,
-    emm,
-)
 import random
+from collections import OrderedDict
 
+from unified_connector.sources import (
+    acaps_briefing_notes,
+    atom_feed,
+    emm,
+    humanitarian_response,
+    pdna,
+    relief_web,
+    research_center,
+    rss_feed,
+    unhcr_portal,
+    wpf,
+)
 
-source_store = OrderedDict([
-    (atom_feed.AtomFeed.key, atom_feed.AtomFeed),
-    ('rss-feed', rss_feed.RssFeed),
-    ('emm', emm.EMM),
-    ('acaps-briefing-notes', acaps_briefing_notes.AcapsBriefingNotes),
-    ('unhcr-portal', unhcr_portal.UNHCRPortal),
-    ('relief-web', relief_web.ReliefWeb),
-    ('post-disaster-needs-assessment', pdna.PDNA),
-    ('research-resource-center', research_center.ResearchResourceCenter),
-    ('world-food-programme', wpf.WorldFoodProgramme),
-    ('humanitarian-response', humanitarian_response.HumanitarianResponse),
-])
+source_store = OrderedDict(
+    [
+        (atom_feed.AtomFeed.key, atom_feed.AtomFeed),
+        ("rss-feed", rss_feed.RssFeed),
+        ("emm", emm.EMM),
+        ("acaps-briefing-notes", acaps_briefing_notes.AcapsBriefingNotes),
+        ("unhcr-portal", unhcr_portal.UNHCRPortal),
+        ("relief-web", relief_web.ReliefWeb),
+        ("post-disaster-needs-assessment", pdna.PDNA),
+        ("research-resource-center", research_center.ResearchResourceCenter),
+        ("world-food-programme", wpf.WorldFoodProgramme),
+        ("humanitarian-response", humanitarian_response.HumanitarianResponse),
+    ]
+)
 
 sources = None
 

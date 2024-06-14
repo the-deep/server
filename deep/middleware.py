@@ -1,15 +1,14 @@
 import logging
-import requests
 import threading
 
-from reversion.views import create_revision
-from django.utils import timezone
+import requests
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.files.storage import get_storage_class
+from django.utils import timezone
+from reversion.views import create_revision
 
 from utils.date_extractor import str_to_date
-
 
 logger = logging.getLogger(__name__)
 _threadlocal = threading.local()
@@ -17,7 +16,7 @@ _threadlocal = threading.local()
 
 class RevisionMiddleware:
     skip_paths = [
-        '/api/v1/token/',
+        "/api/v1/token/",
     ]
 
     def __init__(self, get_response):
@@ -43,24 +42,22 @@ def get_s3_signed_url_ttl():
 
 
 class DeepInnerCacheMiddleware:
-    EC2_META_URL = 'http://169.254.169.254/latest/meta-data/iam/security-credentials/'
-    THREAD_S3_SIGNED_URL_TTL_ATTRIBUTE = 'URLCachedFileField__get_cache_ttl'
+    EC2_META_URL = "http://169.254.169.254/latest/meta-data/iam/security-credentials/"
+    THREAD_S3_SIGNED_URL_TTL_ATTRIBUTE = "URLCachedFileField__get_cache_ttl"
 
     @classmethod
     def get_cache_ttl(cls):
-        if getattr(get_storage_class()(), 'access_key', None) is not None:
+        if getattr(get_storage_class()(), "access_key", None) is not None:
             return settings.MAX_FILE_CACHE_AGE
 
         # Assume IAM Role is being used
         try:
             iam_role_resp = requests.get(cls.EC2_META_URL, timeout=0.01)
             if iam_role_resp.status_code == 200:
-                expiration = str_to_date(
-                    requests.get(cls.EC2_META_URL + iam_role_resp.text, timeout=0.01).json()['Expiration']
-                )
+                expiration = str_to_date(requests.get(cls.EC2_META_URL + iam_role_resp.text, timeout=0.01).json()["Expiration"])
                 return max(0, expiration.timestamp() - timezone.now().timestamp())
         except requests.exceptions.RequestException:
-            logger.error('Failed to retrive IAM Role session expiration.', exc_info=True)
+            logger.error("Failed to retrive IAM Role session expiration.", exc_info=True)
         # Avoid cache for now (This shouldn't happen)
         return 0
 
@@ -75,15 +72,15 @@ class DeepInnerCacheMiddleware:
 
 
 def _do_set_current_request(request_fun):
-    setattr(_threadlocal, 'request', request_fun.__get__(request_fun, threading.local))
+    setattr(_threadlocal, "request", request_fun.__get__(request_fun, threading.local))
 
 
 def _set_current_request(request=None):
-    '''
+    """
     Sets current user in local thread.
     Can be used as a hook e.g. for shell jobs (when request object is not
     available).
-    '''
+    """
     _do_set_current_request(lambda self: request)
 
 

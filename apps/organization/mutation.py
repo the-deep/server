@@ -2,15 +2,12 @@ import graphene
 from organization.schema import OrganizationType
 from organization.serializers import OrganizationGqSerializer
 
-from utils.graphene.mutation import (
-    generate_input_type_for_serializer,
-    GrapheneMutation
-)
+from utils.graphene.mutation import GrapheneMutation, generate_input_type_for_serializer
 
 from .models import Organization
 
 OrganizationInputType = generate_input_type_for_serializer(
-    'OrganizationInputType',
+    "OrganizationInputType",
     serializer_class=OrganizationGqSerializer,
 )
 
@@ -18,6 +15,7 @@ OrganizationInputType = generate_input_type_for_serializer(
 class OrganizationCreate(GrapheneMutation):
     class Arguments:
         data = OrganizationInputType(required=True)
+
     model = Organization
     result = graphene.Field(OrganizationType)
     serializer_class = OrganizationGqSerializer
@@ -27,5 +25,5 @@ class OrganizationCreate(GrapheneMutation):
         return True  # global permission is always True
 
 
-class Mutation():
+class Mutation:
     organization_create = OrganizationCreate.Field()

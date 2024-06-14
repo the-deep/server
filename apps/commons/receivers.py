@@ -2,11 +2,7 @@
 from django.db import models
 from django.db.transaction import on_commit
 from django.dispatch import receiver
-
-from lead.models import (
-    LeadPreview,
-    LeadPreviewImage,
-)
+from lead.models import LeadPreview, LeadPreviewImage
 from unified_connector.models import ConnectorLeadPreviewImage
 
 

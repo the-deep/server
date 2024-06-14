@@ -1,9 +1,9 @@
 import requests
 from bs4 import BeautifulSoup as Soup
-
-from .base import Source
 from connector.utils import ConnectorWrapper
 from lead.models import Lead
+
+from .base import Source
 
 COUNTRIES_OPTIONS = [
     {"key": "All", "label": "Any"},
@@ -139,22 +139,12 @@ YEAR_OPTIONS = [
 
 @ConnectorWrapper
 class WorldFoodProgramme(Source):
-    URL = 'https://www.wfp.org/food-security/assessment-bank'
-    title = 'WFP Assessments'
-    key = 'world-food-programme'
+    URL = "https://www.wfp.org/food-security/assessment-bank"
+    title = "WFP Assessments"
+    key = "world-food-programme"
     options = [
-        {
-            'key': 'tid_1',
-            'field_type': 'select',
-            'title': 'Country',
-            'options': COUNTRIES_OPTIONS
-        },
-        {
-            'key': 'tid_6',
-            'field_type': 'select',
-            'title': 'Year',
-            'options': YEAR_OPTIONS
-        },
+        {"key": "tid_1", "field_type": "select", "title": "Country", "options": COUNTRIES_OPTIONS},
+        {"key": "tid_6", "field_type": "select", "title": "Year", "options": YEAR_OPTIONS},
     ]
 
     def get_content(self, url, params):
@@ -165,21 +155,21 @@ class WorldFoodProgramme(Source):
         results = []
 
         content = self.get_content(self.URL, params)
-        soup = Soup(content, 'html.parser')
+        soup = Soup(content, "html.parser")
 
-        contents = soup.find('div', {'class': 'view-content'})
+        contents = soup.find("div", {"class": "view-content"})
         if not contents:
             return results, len(results)
         # iterate and get leads
-        for row in contents.findAll('div', {'class': 'views-row'}):
-            content = row.find('h3').find('a')
+        for row in contents.findAll("div", {"class": "views-row"}):
+            content = row.find("h3").find("a")
             title = content.get_text()
-            url = content['href']
+            url = content["href"]
             data = {
-                'title': title.strip(),
-                'url': url,
-                'source': 'WFP Assessments',
-                'source_type': Lead.SourceType.WEBSITE,
+                "title": title.strip(),
+                "url": url,
+                "source": "WFP Assessments",
+                "source_type": Lead.SourceType.WEBSITE,
             }
             results.append(data)
         return results, len(results)

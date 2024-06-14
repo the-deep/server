@@ -1,10 +1,10 @@
 from django.contrib import admin
 
 from .models import (
-    UnifiedConnector,
+    ConnectorLead,
     ConnectorSource,
     ConnectorSourceLead,
-    ConnectorLead,
+    UnifiedConnector,
 )
 
 
@@ -26,11 +26,17 @@ class ConnectorSourceLeadAdmin(admin.ModelAdmin):
 @admin.register(ConnectorLead)
 class ConnectorLeadAdmin(admin.ModelAdmin):
     list_display = [
-        'id',
-        'title',
-        'created_at',
-        'modified_at',
+        "id",
+        "title",
+        "created_at",
+        "modified_at",
     ]
-    readonly_fields = ('created_at', 'modified_at',)
-    autocomplete_fields = ('authors', 'source',)
-    search_fields = ('title',)
+    readonly_fields = (
+        "created_at",
+        "modified_at",
+    )
+    autocomplete_fields = (
+        "authors",
+        "source",
+    )
+    search_fields = ("title",)

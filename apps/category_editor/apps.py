@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class CategoryEditorConfig(AppConfig):
-    name = 'category_editor'
+    name = "category_editor"

@@ -1,80 +1,87 @@
 import graphene
-
+from analysis_framework.models import Widget
 from django.db import models
 from django.db.models.functions import Cast
+from entry.filter_set import EntriesFilterDataType
+from entry.models import Attribute, Entry
+from entry.schema import EntryType, get_entry_qs
+from gallery.models import File as GalleryFile
+from gallery.schema import GalleryFileType
+from geo.models import GeoArea
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
-
-from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin, FileFieldType
-from utils.graphene.fields import DjangoPaginatedListObjectField, generate_type_for_serializer
-from utils.graphene.enums import EnumDescription
-from utils.graphene.geo_scalars import PointScalar
-from utils.common import has_select_related
-from utils.db.functions import IsEmpty
-from deep.permissions import ProjectPermissions as PP
+from lead.models import Lead
+from organization.schema import OrganizationType
+from user.schema import UserType
 from user_resource.schema import UserResourceMixin, resolve_user_field
 
-from lead.models import Lead
-from analysis_framework.models import Widget
-from geo.models import GeoArea
-from entry.models import Entry, Attribute
-from entry.schema import get_entry_qs, EntryType
-from entry.filter_set import EntriesFilterDataType
-from user.schema import UserType
-from organization.schema import OrganizationType
-from gallery.schema import GalleryFileType
-from gallery.models import File as GalleryFile
-
-from .models import (
-    Analysis,
-    AnalysisPillar,
-    AnalyticalStatement,
-    AnalyticalStatementEntry,
-    DiscardedEntry,
-    TopicModel,
-    TopicModelCluster,
-    AutomaticSummary,
-    AnalyticalStatementNGram,
-    AnalyticalStatementGeoTask,
-    AnalyticalStatementGeoEntry,
-    AnalysisReport,
-    AnalysisReportUpload,
-    AnalysisReportContainer,
-    AnalysisReportContainerData,
-    AnalysisReportSnapshot,
+from deep.permissions import ProjectPermissions as PP
+from utils.common import has_select_related
+from utils.db.functions import IsEmpty
+from utils.graphene.enums import EnumDescription
+from utils.graphene.fields import (
+    DjangoPaginatedListObjectField,
+    generate_type_for_serializer,
 )
+from utils.graphene.geo_scalars import PointScalar
+from utils.graphene.types import (
+    ClientIdMixin,
+    CustomDjangoListObjectType,
+    FileFieldType,
+)
+
 from .enums import (
+    AnalysisReportContainerContentTypeEnum,
+    AnalysisReportUploadTypeEnum,
+    AnalyticalStatementGeoTaskStatusEnum,
+    AnalyticalStatementNGramStatusEnum,
+    AutomaticSummaryStatusEnum,
     DiscardedEntryTagTypeEnum,
     TopicModelStatusEnum,
-    AutomaticSummaryStatusEnum,
-    AnalyticalStatementNGramStatusEnum,
-    AnalysisReportContainerContentTypeEnum,
-    AnalyticalStatementGeoTaskStatusEnum,
-    AnalysisReportUploadTypeEnum,
 )
 from .filter_set import (
     AnalysisGQFilterSet,
-    AnalysisPillarGQFilterSet,
-    AnalysisPillarEntryGQFilterSet,
-    AnalyticalStatementGQFilterSet,
     AnalysisPillarDiscardedEntryGqlFilterSet,
+    AnalysisPillarEntryGQFilterSet,
+    AnalysisPillarGQFilterSet,
     AnalysisReportGQFilterSet,
-    AnalysisReportUploadGQFilterSet,
     AnalysisReportSnapshotGQFilterSet,
+    AnalysisReportUploadGQFilterSet,
+    AnalyticalStatementGQFilterSet,
+)
+from .models import (
+    Analysis,
+    AnalysisPillar,
+    AnalysisReport,
+    AnalysisReportContainer,
+    AnalysisReportContainerData,
+    AnalysisReportSnapshot,
+    AnalysisReportUpload,
+    AnalyticalStatement,
+    AnalyticalStatementEntry,
+    AnalyticalStatementGeoEntry,
+    AnalyticalStatementGeoTask,
+    AnalyticalStatementNGram,
+    AutomaticSummary,
+    DiscardedEntry,
+    TopicModel,
+    TopicModelCluster,
 )
 from .serializers import (
     AnalysisReportConfigurationSerializer,
-    AnalysisReportUploadMetadataSerializer,
     AnalysisReportContainerContentConfigurationSerializer,
     AnalysisReportContainerStyleSerializer,
+    AnalysisReportUploadMetadataSerializer,
 )
 
 
 def _get_qs(model, info, project_field):
-    qs = model.objects.filter(**{
-        # Filter by project
-        project_field: info.context.active_project,
-    })
+    qs = model.objects.filter(
+        **{
+            # Filter by project
+            project_field: info.context.active_project,
+        }
+    )
     # Generate queryset according to permission
     if PP.check_permission(info, PP.Permission.VIEW_ENTRY):
         return qs
@@ -82,45 +89,45 @@ def _get_qs(model, info, project_field):
 
 
 def get_analysis_qs(info):
-    return _get_qs(Analysis, info, 'project')
+    return _get_qs(Analysis, info, "project")
 
 
 def get_analysis_pillar_qs(info):
-    return _get_qs(AnalysisPillar, info, 'analysis__project')
+    return _get_qs(AnalysisPillar, info, "analysis__project")
 
 
 def get_analytical_statement_qs(info):
-    return _get_qs(AnalyticalStatement, info, 'analysis_pillar__analysis__project')
+    return _get_qs(AnalyticalStatement, info, "analysis_pillar__analysis__project")
 
 
 def get_analysis_report_qs(info):
-    return _get_qs(AnalysisReport, info, 'analysis__project')
+    return _get_qs(AnalysisReport, info, "analysis__project")
 
 
 def get_analysis_report_upload_qs(info):
-    return _get_qs(AnalysisReportUpload, info, 'report__analysis__project')
+    return _get_qs(AnalysisReportUpload, info, "report__analysis__project")
 
 
 def get_analysis_report_snaphost_qs(info):
-    return _get_qs(AnalysisReportSnapshot, info, 'report__analysis__project')
+    return _get_qs(AnalysisReportSnapshot, info, "report__analysis__project")
 
 
 class AnalyticalStatementEntryType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = AnalyticalStatementEntry
         only_fields = (
-            'id',
-            'order',
+            "id",
+            "order",
         )
 
     entry = graphene.Field(EntryType, required=True)
     entry_id = graphene.ID(required=True)
-    analytical_statement = graphene.ID(source='analytical_statement_id', required=True)
+    analytical_statement = graphene.ID(source="analytical_statement_id", required=True)
 
     @staticmethod
     def resolve_entry(root, info, **_):
-        if has_select_related(root, 'entry'):
-            return getattr(root, 'entry')
+        if has_select_related(root, "entry"):
+            return getattr(root, "entry")
         # Use Dataloader to load the data
         return info.context.dl.entry.entry.load(root.entry_id)
 
@@ -129,16 +136,16 @@ class AnalyticalStatementType(UserResourceMixin, ClientIdMixin, DjangoObjectType
     class Meta:
         model = AnalyticalStatement
         only_fields = (
-            'title',
-            'id',
-            'statement',
-            'report_text',
-            'information_gaps',
-            'include_in_report',
-            'order',
+            "title",
+            "id",
+            "statement",
+            "report_text",
+            "information_gaps",
+            "include_in_report",
+            "order",
         )
 
-    cloned_from = graphene.ID(source='cloned_from_id')
+    cloned_from = graphene.ID(source="cloned_from_id")
     entries_count = graphene.Int(required=True)
 
     # XXX: N+1 and No pagination
@@ -160,18 +167,18 @@ class AnalyticalStatementType(UserResourceMixin, ClientIdMixin, DjangoObjectType
 class AnalysisPillarDiscardedEntryType(DjangoObjectType):
     class Meta:
         model = DiscardedEntry
-        only_fields = ('id',)
+        only_fields = ("id",)
 
-    analysis_pillar = graphene.ID(source='analysis_pillar_id')
+    analysis_pillar = graphene.ID(source="analysis_pillar_id")
     entry = graphene.Field(EntryType, required=True)
     entry_id = graphene.ID(required=True)
     tag = graphene.Field(DiscardedEntryTagTypeEnum, required=True)
-    tag_display = EnumDescription(source='get_tag_display', required=True)
+    tag_display = EnumDescription(source="get_tag_display", required=True)
 
     @staticmethod
     def resolve_entry(root, info, **_):
-        if has_select_related(root, 'entry'):
-            return getattr(root, 'entry')
+        if has_select_related(root, "entry"):
+            return getattr(root, "entry")
         # Use Dataloader to load the data
         return info.context.dl.entry.entry.load(root.entry_id)
 
@@ -192,33 +199,27 @@ class AnalysisPillarType(ClientIdMixin, UserResourceMixin, DjangoObjectType):
     class Meta:
         model = AnalysisPillar
         only_fields = (
-            'id',
-            'title',
-            'main_statement',
-            'information_gap',
-            'filters',
+            "id",
+            "title",
+            "main_statement",
+            "information_gap",
+            "filters",
         )
 
     assignee = graphene.Field(UserType, required=True)
-    analysis = graphene.ID(source='analysis_id', required=True)
-    cloned_from = graphene.ID(source='cloned_from_id')
+    analysis = graphene.ID(source="analysis_id", required=True)
+    cloned_from = graphene.ID(source="cloned_from_id")
     analyzed_entries_count = graphene.Int(required=True)
 
     # XXX: N+1 and No pagination
     statements = graphene.List(graphene.NonNull(AnalyticalStatementType))
     discarded_entries = DjangoPaginatedListObjectField(
-        AnalysisPillarDiscardedEntryListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        AnalysisPillarDiscardedEntryListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
 
     # Generated
     entries = DjangoPaginatedListObjectField(
-        AnalysisPillarEntryListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        AnalysisPillarEntryListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
 
     @staticmethod
@@ -227,7 +228,7 @@ class AnalysisPillarType(ClientIdMixin, UserResourceMixin, DjangoObjectType):
 
     @staticmethod
     def resolve_assignee(root, info, **_):
-        return resolve_user_field(root, info, 'assignee')
+        return resolve_user_field(root, info, "assignee")
 
     @staticmethod
     def resolve_analyzed_entries_count(root, info, **_):
@@ -247,7 +248,7 @@ class AnalysisPillarType(ClientIdMixin, UserResourceMixin, DjangoObjectType):
         # filtering out the entries whose lead published_on date is less than analysis end_date
         return root.get_entries_qs(
             queryset=get_entry_qs(info),
-            only_discarded=kwargs.get('discarded'),  # NOTE: From AnalysisPillarEntryGQFilterSet.discarded
+            only_discarded=kwargs.get("discarded"),  # NOTE: From AnalysisPillarEntryGQFilterSet.discarded
         )
 
 
@@ -255,19 +256,23 @@ class AnalysisType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = Analysis
         only_fields = (
-            'id',
-            'title',
-            'start_date',
-            'end_date',
+            "id",
+            "title",
+            "start_date",
+            "end_date",
         )
 
-    cloned_from = graphene.ID(source='cloned_from_id')
+    cloned_from = graphene.ID(source="cloned_from_id")
     team_lead = graphene.Field(UserType, required=True)
     publication_date = graphene.Field(
-        type('AnalysisPublicationDateType', (graphene.ObjectType,), {
-            'start_date': graphene.Date(required=True),
-            'end_date': graphene.Date(required=True),
-        })
+        type(
+            "AnalysisPublicationDateType",
+            (graphene.ObjectType,),
+            {
+                "start_date": graphene.Date(required=True),
+                "end_date": graphene.Date(required=True),
+            },
+        )
     )
     analyzed_entries_count = graphene.Int(required=True)
     analyzed_leads_count = graphene.Int(required=True)
@@ -281,7 +286,7 @@ class AnalysisType(UserResourceMixin, DjangoObjectType):
 
     @staticmethod
     def resolve_team_lead(root, info, **_):
-        return resolve_user_field(root, info, 'team_lead')
+        return resolve_user_field(root, info, "team_lead")
 
     @staticmethod
     def resolve_publication_date(root, info, **_):
@@ -306,13 +311,19 @@ class AnalysisOverviewType(graphene.ObjectType):
     analyzed_entries_count = graphene.Int(required=True)
     analyzed_leads_count = graphene.Int(required=True)
 
-    authoring_organizations = graphene.List(graphene.NonNull(
-        type('AnalysisOverviewOrganizationType', (graphene.ObjectType,), {
-            'id': graphene.ID(required=True),
-            'title': graphene.String(required=True),
-            'count': graphene.Int(required=True),
-        })
-    ))
+    authoring_organizations = graphene.List(
+        graphene.NonNull(
+            type(
+                "AnalysisOverviewOrganizationType",
+                (graphene.ObjectType,),
+                {
+                    "id": graphene.ID(required=True),
+                    "title": graphene.String(required=True),
+                    "count": graphene.Int(required=True),
+                },
+            )
+        )
+    )
     # analysis_list': analysis_list,
     # analysis_list = Analysis.objects.filter(project=project_id).values('id', 'title', 'created_at')
 
@@ -322,64 +333,79 @@ class AnalysisOverviewType(graphene.ObjectType):
 
     @staticmethod
     def resolve_total_leads_count(root, info, **_):
-        return Lead.objects\
-            .filter(project=info.context.active_project)\
-            .annotate(entries_count=models.Count('entry'))\
-            .filter(entries_count__gt=0)\
+        return (
+            Lead.objects.filter(project=info.context.active_project)
+            .annotate(entries_count=models.Count("entry"))
+            .filter(entries_count__gt=0)
             .count()
+        )
 
     @staticmethod
     def resolve_analyzed_entries_count(root, info, **_):
         project = info.context.active_project
-        entries_dragged = AnalyticalStatementEntry.objects\
-            .filter(analytical_statement__analysis_pillar__analysis__project=project)\
-            .order_by().values('entry').distinct()
-        entries_discarded = DiscardedEntry.objects\
-            .filter(analysis_pillar__analysis__project=project)\
-            .order_by().values('entry').distinct()
+        entries_dragged = (
+            AnalyticalStatementEntry.objects.filter(analytical_statement__analysis_pillar__analysis__project=project)
+            .order_by()
+            .values("entry")
+            .distinct()
+        )
+        entries_discarded = (
+            DiscardedEntry.objects.filter(analysis_pillar__analysis__project=project).order_by().values("entry").distinct()
+        )
         return entries_discarded.union(entries_dragged).count()
 
     @staticmethod
     def resolve_analyzed_leads_count(root, info, **_):
         project = info.context.active_project
-        sources_discarded = DiscardedEntry.objects\
-            .filter(analysis_pillar__analysis__project=project)\
-            .order_by().values('entry__lead_id').distinct()
-        sources_dragged = AnalyticalStatementEntry.objects\
-            .filter(analytical_statement__analysis_pillar__analysis__project=project)\
-            .order_by().values('entry__lead_id').distinct()
+        sources_discarded = (
+            DiscardedEntry.objects.filter(analysis_pillar__analysis__project=project)
+            .order_by()
+            .values("entry__lead_id")
+            .distinct()
+        )
+        sources_dragged = (
+            AnalyticalStatementEntry.objects.filter(analytical_statement__analysis_pillar__analysis__project=project)
+            .order_by()
+            .values("entry__lead_id")
+            .distinct()
+        )
         return sources_dragged.union(sources_discarded).count()
 
     @staticmethod
     def resolve_authoring_organizations(root, info, **_):
-        lead_qs = Lead.objects\
-            .filter(
+        lead_qs = (
+            Lead.objects.filter(
                 project=info.context.active_project,
                 authors__organization_type__isnull=False,
-            )\
-            .annotate(
-                entries_count=models.functions.Coalesce(models.Subquery(
-                    AnalyticalStatementEntry.objects.filter(
-                        entry__lead_id=models.OuterRef('pk')
-                    ).order_by().values('entry__lead_id').annotate(count=models.Count('*'))
-                    .values('count')[:1],
-                    output_field=models.IntegerField(),
-                ), 0)
-            ).filter(entries_count__gt=0)
-        qs = Lead.objects\
-            .filter(id__in=lead_qs)\
-            .order_by('authors__organization_type').values('authors__organization_type')\
-            .annotate(
-                count=models.Count('id'),
-                organization_type_title=models.functions.Coalesce(
-                    models.F('authors__organization_type__title'),
-                    models.Value(''),
-                )
-            ).values_list(
-                'count',
-                'organization_type_title',
-                models.F('authors__organization_type__id')
             )
+            .annotate(
+                entries_count=models.functions.Coalesce(
+                    models.Subquery(
+                        AnalyticalStatementEntry.objects.filter(entry__lead_id=models.OuterRef("pk"))
+                        .order_by()
+                        .values("entry__lead_id")
+                        .annotate(count=models.Count("*"))
+                        .values("count")[:1],
+                        output_field=models.IntegerField(),
+                    ),
+                    0,
+                )
+            )
+            .filter(entries_count__gt=0)
+        )
+        qs = (
+            Lead.objects.filter(id__in=lead_qs)
+            .order_by("authors__organization_type")
+            .values("authors__organization_type")
+            .annotate(
+                count=models.Count("id"),
+                organization_type_title=models.functions.Coalesce(
+                    models.F("authors__organization_type__title"),
+                    models.Value(""),
+                ),
+            )
+            .values_list("count", "organization_type_title", models.F("authors__organization_type__id"))
+        )
         return [
             dict(
                 id=_id,
@@ -415,9 +441,7 @@ class AnalysisTopicModelClusterType(DjangoObjectType):
 
     class Meta:
         model = TopicModelCluster
-        only_fields = (
-            'id',
-        )
+        only_fields = ("id",)
 
     @staticmethod
     def resolve_entries(root: TopicModelCluster, info, **_):
@@ -428,17 +452,15 @@ class AnalysisTopicModelType(UserResourceMixin, DjangoObjectType):
     status = graphene.Field(TopicModelStatusEnum, required=True)
     clusters = graphene.List(AnalysisTopicModelClusterType, required=True)
     additional_filters = graphene.Field(EntriesFilterDataType)
-    analysis_pillar = graphene.ID(source='analysis_pillar_id', required=True)
+    analysis_pillar = graphene.ID(source="analysis_pillar_id", required=True)
 
     class Meta:
         model = TopicModel
-        only_fields = (
-            'id',
-        )
+        only_fields = ("id",)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **_):
-        return _get_qs(TopicModel, info, 'analysis_pillar__analysis__project')
+        return _get_qs(TopicModel, info, "analysis_pillar__analysis__project")
 
     @staticmethod
     def resolve_clusters(root: TopicModel, info, **_):
@@ -449,23 +471,21 @@ class AnalysisAutomaticSummaryType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = AutomaticSummary
         only_fields = (
-            'id',
-            'summary',
+            "id",
+            "summary",
         )
 
     status = graphene.Field(AutomaticSummaryStatusEnum, required=True)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **_):
-        return _get_qs(AutomaticSummary, info, 'project')
+        return _get_qs(AutomaticSummary, info, "project")
 
 
 class AnalyticalStatementNGramType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = AnalyticalStatementNGram
-        only_fields = (
-            'id',
-        )
+        only_fields = ("id",)
 
     class AnalyticalStatementNGramDataType(graphene.ObjectType):
         word = graphene.String(required=True)
@@ -480,14 +500,11 @@ class AnalyticalStatementNGramType(UserResourceMixin, DjangoObjectType):
 
     @staticmethod
     def get_custom_queryset(queryset, info, **_):
-        return _get_qs(AnalyticalStatementNGram, info, 'project')
+        return _get_qs(AnalyticalStatementNGram, info, "project")
 
     @staticmethod
     def render_grams(dict_value):
-        return [
-            dict(word=word, count=count)
-            for word, count in dict_value.items()
-        ]
+        return [dict(word=word, count=count) for word, count in dict_value.items()]
 
     @classmethod
     def resolve_unigrams(cls, root: AnalyticalStatementNGram, info, **_):
@@ -505,29 +522,38 @@ class AnalyticalStatementNGramType(UserResourceMixin, DjangoObjectType):
 class AnalyticalStatementEntryGeoType(DjangoObjectType):
     class Meta:
         model = AnalyticalStatementGeoEntry
-        only_fields = (
-            'id',
-        )
+        only_fields = ("id",)
 
     entry = graphene.Field(EntryType, required=True)
     entry_id = graphene.ID(required=True)
-    data = graphene.List(graphene.NonNull(
-        type('AnalyticalStatementEntryGeoDataType', (graphene.ObjectType,), {
-            'entity': graphene.String(),
-            'meta': graphene.NonNull(
-                type('AnalyticalStatementEntryGeoMetaDataType', (graphene.ObjectType,), {
-                    'latitude': graphene.Float(),
-                    'longitude': graphene.Float(),
-                    'offset_start': graphene.Int(),
-                    'offset_end': graphene.Int(),
-                }))
-        })
-    ))
+    data = graphene.List(
+        graphene.NonNull(
+            type(
+                "AnalyticalStatementEntryGeoDataType",
+                (graphene.ObjectType,),
+                {
+                    "entity": graphene.String(),
+                    "meta": graphene.NonNull(
+                        type(
+                            "AnalyticalStatementEntryGeoMetaDataType",
+                            (graphene.ObjectType,),
+                            {
+                                "latitude": graphene.Float(),
+                                "longitude": graphene.Float(),
+                                "offset_start": graphene.Int(),
+                                "offset_end": graphene.Int(),
+                            },
+                        )
+                    ),
+                },
+            )
+        )
+    )
 
     @staticmethod
     def resolve_entry(root, info, **_):
-        if has_select_related(root, 'entry'):
-            return getattr(root, 'entry')
+        if has_select_related(root, "entry"):
+            return getattr(root, "entry")
         # Use Dataloader to load the data
         return info.context.dl.entry.entry.load(root.entry_id)
 
@@ -535,16 +561,14 @@ class AnalyticalStatementEntryGeoType(DjangoObjectType):
 class AnalyticalStatementGeoTaskType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = AnalyticalStatementGeoTask
-        only_fields = (
-            'id',
-        )
+        only_fields = ("id",)
 
     status = graphene.Field(AnalyticalStatementGeoTaskStatusEnum, required=True)
     entry_geo = graphene.List(AnalyticalStatementEntryGeoType, required=True)
 
     @staticmethod
     def get_custom_queryset(queryset, info, **_):
-        return _get_qs(AnalyticalStatementGeoTask, info, 'project')
+        return _get_qs(AnalyticalStatementGeoTask, info, "project")
 
     @staticmethod
     def resolve_entry_geo(root, info, **_):
@@ -560,16 +584,18 @@ class AnalysisReportUploadType(DjangoObjectType):
     class Meta:
         model = AnalysisReportUpload
         only_fields = (
-            'id',
-            'file',
+            "id",
+            "file",
         )
 
-    report = graphene.ID(source='report_id', required=True)
+    report = graphene.ID(source="report_id", required=True)
     type = graphene.Field(AnalysisReportUploadTypeEnum, required=True)
-    metadata = graphene.Field(generate_type_for_serializer(
-        'AnalysisReportUploadMetadataType',
-        serializer_class=AnalysisReportUploadMetadataSerializer,
-    ))
+    metadata = graphene.Field(
+        generate_type_for_serializer(
+            "AnalysisReportUploadMetadataType",
+            serializer_class=AnalysisReportUploadMetadataSerializer,
+        )
+    )
 
     @staticmethod
     def get_custom_queryset(queryset, info, **_):
@@ -584,10 +610,10 @@ class AnalysisReportContainerDataType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = AnalysisReportContainerData
         only_fields = (
-            'id',
-            'upload',  # AnalysisReportUploadType
-            'data',  # NOTE: This is Generic for now
-            'client_reference_id',
+            "id",
+            "upload",  # AnalysisReportUploadType
+            "data",  # NOTE: This is Generic for now
+            "client_reference_id",
         )
 
     @staticmethod
@@ -599,19 +625,19 @@ class AnalysisReportContainerType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = AnalysisReportContainer
         only_fields = (
-            'id',
-            'row',
-            'column',
-            'width',
-            'height',
+            "id",
+            "row",
+            "column",
+            "width",
+            "height",
         )
 
     content_type = graphene.Field(AnalysisReportContainerContentTypeEnum, required=True)
-    report = graphene.ID(source='report_id', required=True)
+    report = graphene.ID(source="report_id", required=True)
 
     style = graphene.Field(
         generate_type_for_serializer(
-            'AnalysisReportContainerStyleType',
+            "AnalysisReportContainerStyleType",
             serializer_class=AnalysisReportContainerStyleSerializer,
             update_cache=True,
         )
@@ -619,7 +645,7 @@ class AnalysisReportContainerType(ClientIdMixin, DjangoObjectType):
     # Content metadata
     content_configuration = graphene.Field(
         generate_type_for_serializer(
-            'AnalysisReportContainerContentConfigurationType',
+            "AnalysisReportContainerContentConfigurationType",
             serializer_class=AnalysisReportContainerContentConfigurationSerializer,
         )
     )
@@ -634,11 +660,11 @@ class AnalysisReportSnapshotType(DjangoObjectType):
     class Meta:
         model = AnalysisReportSnapshot
         only_fields = (
-            'id',
-            'published_on',
+            "id",
+            "published_on",
         )
 
-    report = graphene.ID(source='report_id', required=True)
+    report = graphene.ID(source="report_id", required=True)
     published_by = graphene.Field(UserType, required=True)
     report_data_file = graphene.Field(FileFieldType)
     files = graphene.List(graphene.NonNull(GalleryFileType), required=True)
@@ -649,17 +675,15 @@ class AnalysisReportSnapshotType(DjangoObjectType):
 
     @staticmethod
     def resolve_published_by(root, info, **_):
-        return resolve_user_field(root, info, 'published_by')
+        return resolve_user_field(root, info, "published_by")
 
     @staticmethod
     def resolve_files(root, info, **_):
         # For now
         # - organization logos
         # - report uploads
-        related_file_id = (
-            root.report.analysisreportupload_set.values_list('file').union(
-                root.report.organizations.values_list('logo')
-            )
+        related_file_id = root.report.analysisreportupload_set.values_list("file").union(
+            root.report.organizations.values_list("logo")
         )
         return GalleryFile.objects.filter(id__in=related_file_id).all()
 
@@ -668,25 +692,22 @@ class AnalysisReportType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = AnalysisReport
         only_fields = (
-            'id',
-            'is_public',
-            'slug',
-            'title',
-            'sub_title',
+            "id",
+            "is_public",
+            "slug",
+            "title",
+            "sub_title",
         )
 
-    analysis = graphene.ID(source='analysis_id', required=True)
-    configuration = graphene.Field(generate_type_for_serializer(
-        'AnalysisReportConfigurationType',
-        serializer_class=AnalysisReportConfigurationSerializer,
-    ))
-
-    containers = graphene.List(
-        graphene.NonNull(
-            AnalysisReportContainerType
-        ),
-        required=True
+    analysis = graphene.ID(source="analysis_id", required=True)
+    configuration = graphene.Field(
+        generate_type_for_serializer(
+            "AnalysisReportConfigurationType",
+            serializer_class=AnalysisReportConfigurationSerializer,
+        )
     )
+
+    containers = graphene.List(graphene.NonNull(AnalysisReportContainerType), required=True)
     organizations = graphene.List(graphene.NonNull(OrganizationType), required=True)
     uploads = graphene.List(graphene.NonNull(AnalysisReportUploadType), required=True)
     latest_snapshot = graphene.Field(AnalysisReportSnapshotType, required=False)
@@ -734,28 +755,19 @@ class Query:
     analysis_overview = graphene.Field(AnalysisOverviewType)
     analysis = DjangoObjectField(AnalysisType)
     analyses = DjangoPaginatedListObjectField(
-        AnalysisListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        AnalysisListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
 
     # Pillar
     analysis_pillar = DjangoObjectField(AnalysisPillarType)
     analysis_pillars = DjangoPaginatedListObjectField(
-        AnalysisPillarListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        AnalysisPillarListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
 
     # Statement
     analytical_statement = DjangoObjectField(AnalyticalStatementType)
     analytical_statements = DjangoPaginatedListObjectField(
-        AnalyticalStatementListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        AnalyticalStatementListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
 
     # Custom entry nodes
@@ -776,24 +788,15 @@ class Query:
     # Report
     analysis_report = DjangoObjectField(AnalysisReportType)
     analysis_reports = DjangoPaginatedListObjectField(
-        AnalysisReportListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        AnalysisReportListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
     analysis_report_upload = DjangoObjectField(AnalysisReportUploadType)
     analysis_report_uploads = DjangoPaginatedListObjectField(
-        AnalysisReportUploadListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        AnalysisReportUploadListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
     analysis_report_snapshot = DjangoObjectField(AnalysisReportSnapshotType)
     analysis_report_snapshots = DjangoPaginatedListObjectField(
-        AnalysisReportSnapshotListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        AnalysisReportSnapshotListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
 
     @staticmethod
@@ -829,17 +832,17 @@ class Query:
         ).values(
             geo_area_id=Cast(
                 models.Func(
-                    models.F('data__value'),
-                    function='jsonb_array_elements_text',
+                    models.F("data__value"),
+                    function="jsonb_array_elements_text",
                 ),
                 output_field=models.IntegerField(),
             )
         )
         geo_area_centroids_map = {
             geo_area_id: centroid
-            for geo_area_id, centroid in GeoArea.objects.filter(
-                id__in=entry_geo_area_id_qs.values('geo_area_id')
-            ).exclude(IsEmpty('centroid')).values_list('id', 'centroid')
+            for geo_area_id, centroid in GeoArea.objects.filter(id__in=entry_geo_area_id_qs.values("geo_area_id"))
+            .exclude(IsEmpty("centroid"))
+            .values_list("id", "centroid")
             if centroid is not None
         }
         return [
@@ -848,10 +851,10 @@ class Query:
                 count=count,
             )
             for geo_area_id, count in (
-                entry_geo_area_id_qs
-                .order_by().values('geo_area_id')
-                .annotate(count=models.Count('*'))
-                .values_list('geo_area_id', 'count')
+                entry_geo_area_id_qs.order_by()
+                .values("geo_area_id")
+                .annotate(count=models.Count("*"))
+                .values_list("geo_area_id", "count")
             )
             if geo_area_id in geo_area_centroids_map
         ]

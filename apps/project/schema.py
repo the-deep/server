@@ -1,203 +1,187 @@
 from typing import List
 
 import graphene
-from django.db import transaction, models
+from analysis.schema import Query as AnalysisQuery
+from ary.schema import Query as AryQuery
+from assessment_registry.dashboard_schema import (
+    Query as AssessmentRegistryDashboardQuery,
+)
+from assessment_registry.schema import ProjectQuery as AssessmentRegistryQuery
+from assisted_tagging.schema import AssistedTaggingQueryType
+from dateutil.relativedelta import relativedelta
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.db import models, transaction
 from django.db.models import QuerySet
 from django.db.models.functions import Cast
 from django.utils import timezone
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
-from dateutil.relativedelta import relativedelta
-from graphene_django import DjangoObjectType, DjangoListField
+from entry.models import Entry
+from entry.schema import Query as EntryQuery
+from export.schema import ProjectQuery as ExportQuery
+from geo.models import Region
+from geo.schema import ProjectScopeQuery as GeoQuery
+from geo.schema import RegionDetailType
 from graphene.types import generic
+from graphene_django import DjangoListField, DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
+from lead.filter_set import LeadsFilterDataInputType
+from lead.models import Lead
+from lead.schema import Query as LeadQuery
+from quality_assurance.schema import Query as QualityAssuranceQuery
+from unified_connector.schema import UnifiedConnectorQueryType
+from user.models import User
+from user.schema import UserType
+from user_resource.schema import UserResourceMixin
 
-
-from utils.graphene.geo_scalars import PointScalar
+from deep.permissions import ProjectPermissions as PP
+from deep.serializers import URLCachedFileField
+from deep.trackers import TrackerAction, track_project
 from utils.graphene.enums import EnumDescription
+from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.geo_scalars import PointScalar
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.types import (
-    CustomDjangoListObjectType,
     ClientIdMixin,
+    CustomDjangoListObjectType,
     DateCountType,
     UserEntityCountType,
     UserEntityDateType,
 )
-from utils.graphene.fields import (
-    DjangoPaginatedListObjectField,
-)
-from deep.permissions import ProjectPermissions as PP
-from deep.serializers import URLCachedFileField
-from deep.trackers import TrackerAction, track_project
-from user_resource.schema import UserResourceMixin
 
-from user.models import User
-from user.schema import UserType
-from lead.schema import Query as LeadQuery
-from entry.schema import Query as EntryQuery
-from export.schema import ProjectQuery as ExportQuery
-from geo.schema import RegionDetailType, ProjectScopeQuery as GeoQuery
-from quality_assurance.schema import Query as QualityAssuranceQuery
-from ary.schema import Query as AryQuery
-from analysis.schema import Query as AnalysisQuery
-from assessment_registry.schema import ProjectQuery as AssessmentRegistryQuery
-from unified_connector.schema import UnifiedConnectorQueryType
-from assisted_tagging.schema import AssistedTaggingQueryType
-from assessment_registry.dashboard_schema import Query as AssessmentRegistryDashboardQuery
-from lead.models import Lead
-from entry.models import Entry
-from geo.models import Region
-
-from lead.filter_set import LeadsFilterDataInputType
-
-from .models import (
-    Project,
-    ProjectRole,
-    ProjectMembership,
-    ProjectUserGroupMembership,
-    ProjectJoinRequest,
-    ProjectOrganization,
-    ProjectStats,
-    RecentActivityType as ActivityTypes,
-    ProjectPinned
-)
+from .activity import project_activity_log
 from .enums import (
-    ProjectPermissionEnum,
-    ProjectStatusEnum,
-    ProjectRoleTypeEnum,
     ProjectJoinRequestStatusEnum,
-    ProjectOrganizationTypeEnum,
     ProjectMembershipBadgeTypeEnum,
+    ProjectOrganizationTypeEnum,
+    ProjectPermissionEnum,
+    ProjectRoleTypeEnum,
+    ProjectStatusEnum,
     RecentActivityTypeEnum,
 )
-
 from .filter_set import (
+    ProjectByRegionGqlFilterSet,
     ProjectGqlFilterSet,
     ProjectMembershipGqlFilterSet,
     ProjectUserGroupMembershipGqlFilterSet,
-    ProjectByRegionGqlFilterSet,
     PublicProjectByRegionGqlFileterSet,
 )
-from .activity import project_activity_log
-from .tasks import generate_viz_stats, get_project_stats
+from .models import (
+    Project,
+    ProjectJoinRequest,
+    ProjectMembership,
+    ProjectOrganization,
+    ProjectPinned,
+    ProjectRole,
+    ProjectStats,
+    ProjectUserGroupMembership,
+)
+from .models import RecentActivityType as ActivityTypes
 from .public_schema import PublicProjectListType
+from .tasks import generate_viz_stats, get_project_stats
 
 
 def get_recent_active_users(project, max_users=3):
     # id, date
     users_activity = project.get_recent_active_users_id_and_date(max_users=max_users)
-    recent_active_users_map = {
-        user.pk: user
-        for user in User.objects.filter(pk__in=[id for id, _ in users_activity])
-    }
-    recent_active_users = [
-        (recent_active_users_map[id], date)
-        for id, date in users_activity
-        if id in recent_active_users_map
-    ]
+    recent_active_users_map = {user.pk: user for user in User.objects.filter(pk__in=[id for id, _ in users_activity])}
+    recent_active_users = [(recent_active_users_map[id], date) for id, date in users_activity if id in recent_active_users_map]
     return [
         {
-            'user_id': user.id,
-            'name': user.get_display_name(),
-            'date': date,
-        } for user, date in recent_active_users
+            "user_id": user.id,
+            "name": user.get_display_name(),
+            "date": date,
+        }
+        for user, date in recent_active_users
     ]
 
 
 def get_top_entity_contributor(project, Entity):
-    contributors = ProjectMembership.objects.filter(
-        project=project,
-    ).annotate(
-        entity_count=models.functions.Coalesce(models.Subquery(
-            Entity.objects.filter(
-                project=project,
-                created_by=models.OuterRef('member'),
-            ).order_by().values('project')
-            .annotate(cnt=models.Count('*')).values('cnt')[:1],
-            output_field=models.IntegerField(),
-        ), 0),
-    ).order_by('-entity_count').select_related('member')[:5]
+    contributors = (
+        ProjectMembership.objects.filter(
+            project=project,
+        )
+        .annotate(
+            entity_count=models.functions.Coalesce(
+                models.Subquery(
+                    Entity.objects.filter(
+                        project=project,
+                        created_by=models.OuterRef("member"),
+                    )
+                    .order_by()
+                    .values("project")
+                    .annotate(cnt=models.Count("*"))
+                    .values("cnt")[:1],
+                    output_field=models.IntegerField(),
+                ),
+                0,
+            ),
+        )
+        .order_by("-entity_count")
+        .select_related("member")[:5]
+    )
 
     return [
         {
-            'name': contributor.member.get_display_name(),
-            'user_id': contributor.member.id,
-            'count': contributor.entity_count,
-        } for contributor in contributors
+            "name": contributor.member.get_display_name(),
+            "user_id": contributor.member.id,
+            "count": contributor.entity_count,
+        }
+        for contributor in contributors
     ]
 
 
 def get_project_stats_summary(self):
-    projects = Project.get_for_member(self.context.request.user).only('id')
+    projects = Project.get_for_member(self.context.request.user).only("id")
     # Lead stats
     leads = Lead.objects.filter(project__in=projects)
-    total_leads_tagged_count = (
-        leads
-        .annotate(entries_count=models.Count('entry'))
-        .filter(entries_count__gt=0).count()
-    )
+    total_leads_tagged_count = leads.annotate(entries_count=models.Count("entry")).filter(entries_count__gt=0).count()
 
     total_leads_tagged_and_controlled_count = (
         leads.annotate(
-            entries_count=models.Count('entry'),
+            entries_count=models.Count("entry"),
             controlled_entries_count=models.Count(
-                'entry',
+                "entry",
                 filter=models.Q(entry__controlled=True),
-            )
-        ).filter(
+            ),
+        )
+        .filter(
             entries_count__gt=0,
-            entries_count=models.F('controlled_entries_count'),
-        ).count()
+            entries_count=models.F("controlled_entries_count"),
+        )
+        .count()
     )
 
     # Entries activity
     recent_projects_id = list(
-        projects.annotate(
-            entries_count=Cast(
-                KeyTextTransform('entries_activity', 'stats_cache'),
-                models.IntegerField()
-            )
-        )
+        projects.annotate(entries_count=Cast(KeyTextTransform("entries_activity", "stats_cache"), models.IntegerField()))
         .filter(entries_count__gt=0)
-        .order_by('-entries_count')
-        .values_list('id', flat=True)[:3]
+        .order_by("-entries_count")
+        .values_list("id", flat=True)[:3]
     )
 
     recent_entries = Entry.objects.filter(
-        project__in=recent_projects_id,
-        created_at__gte=(timezone.now() + relativedelta(months=-3))
+        project__in=recent_projects_id, created_at__gte=(timezone.now() + relativedelta(months=-3))
     )
 
     recent_entries_activity = (
-        recent_entries
-        .order_by('created_at__date')
-        .values('created_at__date').annotate(
-            count=models.Count('*')
-        )
-        .values(
-            'project_id',
-            'count',
-            date=models.Func(models.F('created_at__date'), function='DATE')
-        )
+        recent_entries.order_by("created_at__date")
+        .values("created_at__date")
+        .annotate(count=models.Count("*"))
+        .values("project_id", "count", date=models.Func(models.F("created_at__date"), function="DATE"))
     )
     recent_entries_project_details = (
-        recent_entries
-        .order_by()
-        .values('project')
-        .annotate(count=models.Count('*'))
+        recent_entries.order_by()
+        .values("project")
+        .annotate(count=models.Count("*"))
         .filter(count__gt=0)
-        .values(
-            'count',
-            id=models.F('project'),
-            title=models.F('project__title')
-        )
+        .values("count", id=models.F("project"), title=models.F("project__title"))
     )
     return {
-        'projects_count': projects.count(),
-        'total_leads_count': leads.count(),
-        'total_leads_tagged_count': total_leads_tagged_count,
-        'total_leads_tagged_and_controlled_count': total_leads_tagged_and_controlled_count,
-        'recent_entries_project_details': recent_entries_project_details,
-        'recent_entries_activities': recent_entries_activity
+        "projects_count": projects.count(),
+        "total_leads_count": leads.count(),
+        "total_leads_tagged_count": total_leads_tagged_count,
+        "total_leads_tagged_and_controlled_count": total_leads_tagged_and_controlled_count,
+        "recent_entries_project_details": recent_entries_project_details,
+        "recent_entries_activities": recent_entries_activity,
     }
 
 
@@ -212,22 +196,30 @@ class ProjectExploreStatType(graphene.ObjectType):
     generated_exports_monthly = graphene.Int()
     top_active_projects = graphene.List(
         graphene.NonNull(
-            type('ExploreProjectStatTopActiveProjectsType', (graphene.ObjectType,), {
-                'project_id': graphene.Field(graphene.NonNull(graphene.ID)),
-                'project_title': graphene.String(),
-                'analysis_framework_id': graphene.ID(),
-                'analysis_framework_title': graphene.String(),
-            })
+            type(
+                "ExploreProjectStatTopActiveProjectsType",
+                (graphene.ObjectType,),
+                {
+                    "project_id": graphene.Field(graphene.NonNull(graphene.ID)),
+                    "project_title": graphene.String(),
+                    "analysis_framework_id": graphene.ID(),
+                    "analysis_framework_title": graphene.String(),
+                },
+            )
         )
     )
     top_active_frameworks = graphene.List(
         graphene.NonNull(
-            type('ExploreProjectStatTopActiveFrameworksType', (graphene.ObjectType,), {
-                'analysis_framework_id': graphene.Field(graphene.NonNull(graphene.ID)),
-                'analysis_framework_title': graphene.String(),
-                'project_count': graphene.NonNull(graphene.Int),
-                'source_count': graphene.NonNull(graphene.Int)
-            })
+            type(
+                "ExploreProjectStatTopActiveFrameworksType",
+                (graphene.ObjectType,),
+                {
+                    "analysis_framework_id": graphene.Field(graphene.NonNull(graphene.ID)),
+                    "analysis_framework_title": graphene.String(),
+                    "project_count": graphene.NonNull(graphene.Int),
+                    "source_count": graphene.NonNull(graphene.Int),
+                },
+            )
         )
     )
 
@@ -255,20 +247,24 @@ class ProjectStatType(graphene.ObjectType):
 
     @staticmethod
     def resolve_leads_activity(root, info, **kwargs):
-        return (root.stats_cache or {}).get('leads_activities') or []
+        return (root.stats_cache or {}).get("leads_activities") or []
 
     @staticmethod
     def resolve_entries_activity(root, info, **kwargs):
-        return (root.stats_cache or {}).get('entries_activities') or []
+        return (root.stats_cache or {}).get("entries_activities") or []
 
 
 class ProjectOrganizationType(DjangoObjectType, UserResourceMixin, ClientIdMixin):
     class Meta:
         model = ProjectOrganization
-        only_fields = ('id', 'client_id', 'organization',)
+        only_fields = (
+            "id",
+            "client_id",
+            "organization",
+        )
 
     organization_type = graphene.Field(ProjectOrganizationTypeEnum, required=True)
-    organization_type_display = EnumDescription(source='get_organization_type_display', required=True)
+    organization_type_display = EnumDescription(source="get_organization_type_display", required=True)
 
     @staticmethod
     def resolve_organization(root, info):
@@ -278,7 +274,7 @@ class ProjectOrganizationType(DjangoObjectType, UserResourceMixin, ClientIdMixin
 class ProjectRoleType(DjangoObjectType):
     class Meta:
         model = ProjectRole
-        only_fields = ('id', 'title', 'level')
+        only_fields = ("id", "title", "level")
 
     type = graphene.Field(ProjectRoleTypeEnum, required=True)
 
@@ -287,8 +283,12 @@ class ProjectMembershipType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = ProjectMembership
         only_fields = (
-            'id', 'member', 'linked_group',
-            'role', 'joined_at', 'added_by',
+            "id",
+            "member",
+            "linked_group",
+            "role",
+            "joined_at",
+            "added_by",
         )
 
     badges = graphene.List(graphene.NonNull(ProjectMembershipBadgeTypeEnum))
@@ -298,8 +298,11 @@ class ProjectUserGroupMembershipType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = ProjectUserGroupMembership
         only_fields = (
-            'id', 'usergroup',
-            'role', 'joined_at', 'added_by',
+            "id",
+            "usergroup",
+            "role",
+            "joined_at",
+            "added_by",
         )
 
     badges = graphene.List(graphene.NonNull(ProjectMembershipBadgeTypeEnum))
@@ -309,26 +312,37 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
     class Meta:
         model = Project
         only_fields = (
-            'id', 'title', 'description', 'start_date', 'end_date',
-            'analysis_framework', 'assessment_template',
-            'is_default', 'is_private', 'is_test', 'is_visualization_enabled',
-            'is_assessment_enabled',
-            'created_at', 'created_by',
-            'modified_at', 'modified_by',
+            "id",
+            "title",
+            "description",
+            "start_date",
+            "end_date",
+            "analysis_framework",
+            "assessment_template",
+            "is_default",
+            "is_private",
+            "is_test",
+            "is_visualization_enabled",
+            "is_assessment_enabled",
+            "created_at",
+            "created_by",
+            "modified_at",
+            "modified_by",
         )
 
     current_user_role = graphene.Field(ProjectRoleTypeEnum)
     allowed_permissions = graphene.List(
         graphene.NonNull(
             ProjectPermissionEnum,
-        ), required=True
+        ),
+        required=True,
     )
     stats = graphene.Field(ProjectStatType)
     membership_pending = graphene.Boolean(required=True)
     is_rejected = graphene.Boolean(required=True)
     regions = DjangoListField(RegionDetailType)
     status = graphene.Field(ProjectStatusEnum, required=True)
-    status_display = EnumDescription(source='get_status_display', required=True)
+    status_display = EnumDescription(source="get_status_display", required=True)
     organizations = graphene.List(graphene.NonNull(ProjectOrganizationType))
     has_analysis_framework = graphene.Boolean(required=True)
     has_assessment_template = graphene.Boolean(required=True)
@@ -381,10 +395,7 @@ class ProjectType(UserResourceMixin, DjangoObjectType):
         return info.context.dl.project.public_geo_region.load(root.pk)
 
     def resolve_is_project_pinned(root, info, **kwargs):
-        return ProjectPinned.objects.filter(
-            project=root,
-            user=info.context.request.user
-        ).exists()
+        return ProjectPinned.objects.filter(project=root, user=info.context.request.user).exists()
 
 
 class RecentActivityType(graphene.ObjectType):
@@ -398,31 +409,27 @@ class RecentActivityType(graphene.ObjectType):
     entry_id = graphene.ID()
 
     def resolve_created_by(root, info, **kwargs):
-        id = int(root['created_by'])
+        id = int(root["created_by"])
         return info.context.dl.project.users.load(id)
 
     def resolve_project(root, info, **kwargs):
-        id = int(root['project'])
+        id = int(root["project"])
         return info.context.dl.project.projects.load(id)
 
     def resolve_type_display(root, info, **kwargs):
-        return ActivityTypes(root['type']).label
+        return ActivityTypes(root["type"]).label
 
     def resolve_entry_id(root, info, **kwargs):
-        if root['type'] == ActivityTypes.LEAD:
+        if root["type"] == ActivityTypes.LEAD:
             return
-        return root['entry_id']
+        return root["entry_id"]
 
 
 class AnalysisFrameworkVisibleProjectType(DjangoObjectType):
     class Meta:
         model = Project
         skip_registry = True
-        only_fields = (
-            'id',
-            'title',
-            'is_private'
-        )
+        only_fields = ("id", "title", "is_private")
 
 
 class ProjectMembershipListType(CustomDjangoListObjectType):
@@ -441,9 +448,9 @@ class ProjectVizDataType(DjangoObjectType):
     class Meta:
         model = ProjectStats
         only_fields = (
-            'modified_at',
-            'status',
-            'public_share',
+            "modified_at",
+            "status",
+            "public_share",
         )
 
     data_url = graphene.String()
@@ -457,7 +464,7 @@ class ProjectVizDataType(DjangoObjectType):
         # NOTE: Not changing modified_at if already pending
         if root.status != ProjectStats.Status.PENDING:
             root.status = ProjectStats.Status.PENDING
-            root.save(update_fields=('status',))
+            root.save(update_fields=("status",))
         return root.status
 
     @staticmethod
@@ -493,16 +500,28 @@ class ProjectDetailType(
         model = Project
         skip_registry = True
         only_fields = (
-            'id', 'title', 'description', 'start_date', 'end_date', 'analysis_framework',
-            'category_editor', 'assessment_template', 'data',
-            'created_at', 'created_by',
-            'modified_at', 'modified_by',
-            'is_default', 'is_private', 'is_test', 'is_visualization_enabled',
-            'is_assessment_enabled',
-            'has_publicly_viewable_unprotected_leads',
-            'has_publicly_viewable_restricted_leads',
-            'has_publicly_viewable_confidential_leads',
-            'enable_publicly_viewable_analysis_report_snapshot',
+            "id",
+            "title",
+            "description",
+            "start_date",
+            "end_date",
+            "analysis_framework",
+            "category_editor",
+            "assessment_template",
+            "data",
+            "created_at",
+            "created_by",
+            "modified_at",
+            "modified_by",
+            "is_default",
+            "is_private",
+            "is_test",
+            "is_visualization_enabled",
+            "is_assessment_enabled",
+            "has_publicly_viewable_unprotected_leads",
+            "has_publicly_viewable_restricted_leads",
+            "has_publicly_viewable_confidential_leads",
+            "enable_publicly_viewable_analysis_report_snapshot",
         )
 
     analysis_framework = graphene.Field(AnalysisFrameworkDetailType)
@@ -512,20 +531,14 @@ class ProjectDetailType(
     top_taggers = graphene.List(graphene.NonNull(UserEntityCountType))
 
     user_members = DjangoPaginatedListObjectField(
-        ProjectMembershipListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        ProjectMembershipListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
     user_group_members = DjangoPaginatedListObjectField(
-        ProjectUserGroupMembershipListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        ProjectUserGroupMembershipListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
     is_visualization_available = graphene.Boolean(
         required=True,
-        description='Checks if visualization is enabled and analysis framework is configured.',
+        description="Checks if visualization is enabled and analysis framework is configured.",
     )
     stats = graphene.Field(
         ProjectStatType,
@@ -535,10 +548,7 @@ class ProjectDetailType(
     # Other scoped queries
     unified_connector = graphene.Field(UnifiedConnectorQueryType)
     assisted_tagging = graphene.Field(AssistedTaggingQueryType)
-    is_project_pinned = graphene.Boolean(
-        required=True,
-        description='Check if user have pinned the project'
-    )
+    is_project_pinned = graphene.Boolean(required=True, description="Check if user have pinned the project")
 
     @staticmethod
     def resolve_user_members(root, info, **kwargs):
@@ -590,27 +600,25 @@ class ProjectDetailType(
 
     @staticmethod
     def resolve_is_project_pinned(root, info, **kwargs):
-        return ProjectPinned.objects.filter(
-            project=root,
-            user=info.context.request.user
-        ).exists()
+        return ProjectPinned.objects.filter(project=root, user=info.context.request.user).exists()
 
 
 class UserPinnedProjectType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = ProjectPinned
         only_fields = (
-            'id',
+            "id",
             "project",
             "user",
             "order",
             "client_id",
         )
+
     project = graphene.Field(graphene.NonNull(ProjectDetailType))
 
 
 class ProjectByRegion(graphene.ObjectType):
-    id = graphene.ID(required=True, description='Region\'s ID')
+    id = graphene.ID(required=True, description="Region's ID")
     # NOTE: Annotated by ProjectByRegionGqlFilterSet/PublicProjectByRegionGqlFileterSet
     projects_id = graphene.List(graphene.NonNull(graphene.ID))
     centroid = PointScalar()
@@ -620,11 +628,11 @@ class ProjectJoinRequestType(DjangoObjectType):
     class Meta:
         model = ProjectJoinRequest
         only_fields = (
-            'id',
-            'data',
-            'requested_by',
-            'responded_by',
-            'project',
+            "id",
+            "data",
+            "requested_by",
+            "responded_by",
+            "project",
         )
 
     status = graphene.Field(ProjectJoinRequestStatusEnum, required=True)
@@ -635,8 +643,10 @@ class RegionWithProject(DjangoObjectType):
         model = Region
         skip_registry = True
         only_fields = (
-            'id', 'centroid',
+            "id",
+            "centroid",
         )
+
     # NOTE: Annotated by ProjectByRegionGqlFilterSet/PublicProjectByRegionGqlFileterSet
     projects_id = graphene.List(graphene.NonNull(graphene.ID))
 
@@ -685,10 +695,7 @@ class UserProjectSummaryStatType(graphene.ObjectType):
 class Query:
     project = DjangoObjectField(ProjectDetailType)
     projects = DjangoPaginatedListObjectField(
-        ProjectListType,
-        pagination=NoOrderingPageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        ProjectListType, pagination=NoOrderingPageGraphqlPagination(page_size_query_param="pageSize")
     )
     recent_projects = graphene.List(graphene.NonNull(ProjectDetailType))
     recent_activities = graphene.List(graphene.NonNull(RecentActivityType))
@@ -700,16 +707,10 @@ class Query:
 
     # PUBLIC NODES
     public_projects = DjangoPaginatedListObjectField(
-        PublicProjectListType,
-        pagination=NoOrderingPageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        PublicProjectListType, pagination=NoOrderingPageGraphqlPagination(page_size_query_param="pageSize")
     )
     public_projects_by_region = DjangoPaginatedListObjectField(
-        PublicProjectByRegionListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        PublicProjectByRegionListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )
     user_pinned_projects = DjangoListField(UserPinnedProjectType, required=True)
     user_project_stat_summary = graphene.Field(UserProjectSummaryStatType, required=True)
@@ -733,9 +734,7 @@ class Query:
 
     @staticmethod
     def resolve_projects_by_region(root, info, **kwargs):
-        return Region.objects\
-            .filter(centroid__isnull=False)\
-            .order_by('centroid')
+        return Region.objects.filter(centroid__isnull=False).order_by("centroid")
 
     @staticmethod
     def resolve_project_explore_stats(root, info, **kwargs):

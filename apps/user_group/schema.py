@@ -1,46 +1,48 @@
 import graphene
-
-from graphene_django import DjangoObjectType, DjangoListField
+from graphene_django import DjangoListField, DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.enums import EnumDescription
-from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
 from utils.graphene.fields import DjangoPaginatedListObjectField
+from utils.graphene.types import ClientIdMixin, CustomDjangoListObjectType
 
-from .models import UserGroup, GroupMembership
-from .filters import UserGroupGQFilterSet
 from .enums import GroupMembershipRoleEnum
+from .filters import UserGroupGQFilterSet
+from .models import GroupMembership, UserGroup
 
 
 class GroupMembershipType(ClientIdMixin, DjangoObjectType):
     class Meta:
         model = GroupMembership
         only_fields = (
-            'id', 'member', 'joined_at', 'added_by',
+            "id",
+            "member",
+            "joined_at",
+            "added_by",
         )
 
     role = graphene.Field(GroupMembershipRoleEnum, required=True)
-    role_display = EnumDescription(source='get_role_display', required=True)
+    role_display = EnumDescription(source="get_role_display", required=True)
 
 
 class UserGroupType(DjangoObjectType):
     class Meta:
         model = UserGroup
         only_fields = (
-            'id',
-            'title',
-            'description',
-            'created_at',
-            'created_by',
-            'modified_at',
-            'modified_by',
-            'client_id',
-            'custom_project_fields',
-            'global_crisis_monitoring',
+            "id",
+            "title",
+            "description",
+            "created_at",
+            "created_by",
+            "modified_at",
+            "modified_by",
+            "client_id",
+            "custom_project_fields",
+            "global_crisis_monitoring",
         )
 
     current_user_role = graphene.Field(GroupMembershipRoleEnum)
-    current_user_role_display = EnumDescription(source='get_current_user_role_display')
+    current_user_role_display = EnumDescription(source="get_current_user_role_display")
     memberships_count = graphene.Int(required=True)
     memberships = DjangoListField(GroupMembershipType)
 
@@ -67,8 +69,5 @@ class UserGroupListType(CustomDjangoListObjectType):
 class Query:
     user_group = DjangoObjectField(UserGroupType)
     user_groups = DjangoPaginatedListObjectField(
-        UserGroupListType,
-        pagination=PageGraphqlPagination(
-            page_size_query_param='pageSize'
-        )
+        UserGroupListType, pagination=PageGraphqlPagination(page_size_query_param="pageSize")
     )

@@ -1,28 +1,26 @@
 import graphene
-from django.contrib.auth import login, logout
-from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import login, logout, update_session_auth_hash
 from django.db import models
 
-from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
+from utils.graphene.error_types import CustomErrorType, mutation_is_not_valid
 from utils.graphene.mutation import generate_input_type_for_serializer
 
-from .serializers import (
-    LoginSerializer,
-    RegisterSerializer,
-    GqPasswordResetSerializer as ResetPasswordSerializer,
-    PasswordChangeSerializer,
-    UserMeSerializer,
-    HIDLoginSerializer,
-)
 from .schema import UserMeType
+from .serializers import GqPasswordResetSerializer as ResetPasswordSerializer
+from .serializers import (
+    HIDLoginSerializer,
+    LoginSerializer,
+    PasswordChangeSerializer,
+    RegisterSerializer,
+    UserMeSerializer,
+)
 
-
-LoginInputType = generate_input_type_for_serializer('LoginInputType', LoginSerializer)
-HIDLoginInputType = generate_input_type_for_serializer('HIDLoginInputType', HIDLoginSerializer)
-RegisterInputType = generate_input_type_for_serializer('RegisterInputType', RegisterSerializer)
-ResetPasswordInputType = generate_input_type_for_serializer('ResetPasswordInputType', ResetPasswordSerializer)
-PasswordChangeInputType = generate_input_type_for_serializer('PasswordChangeInputType', PasswordChangeSerializer)
-UserMeInputType = generate_input_type_for_serializer('UserMeInputType', UserMeSerializer)
+LoginInputType = generate_input_type_for_serializer("LoginInputType", LoginSerializer)
+HIDLoginInputType = generate_input_type_for_serializer("HIDLoginInputType", HIDLoginSerializer)
+RegisterInputType = generate_input_type_for_serializer("RegisterInputType", RegisterSerializer)
+ResetPasswordInputType = generate_input_type_for_serializer("ResetPasswordInputType", ResetPasswordSerializer)
+PasswordChangeInputType = generate_input_type_for_serializer("PasswordChangeInputType", PasswordChangeSerializer)
+UserMeInputType = generate_input_type_for_serializer("UserMeInputType", UserMeSerializer)
 
 
 class Login(graphene.Mutation):
@@ -36,20 +34,16 @@ class Login(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, data):
-        serializer = LoginSerializer(data=data, context={'request': info.context.request})
+        serializer = LoginSerializer(data=data, context={"request": info.context.request})
         if errors := mutation_is_not_valid(serializer):
             return Login(
                 errors=errors,
                 ok=False,
-                captcha_required=LoginSerializer.is_captcha_required(email=data['email']),
+                captcha_required=LoginSerializer.is_captcha_required(email=data["email"]),
             )
-        if user := serializer.validated_data.get('user'):
+        if user := serializer.validated_data.get("user"):
             login(info.context.request, user)
-        return Login(
-            result=user,
-            errors=None,
-            ok=True
-        )
+        return Login(result=user, errors=None, ok=True)
 
 
 class LoginWithHID(graphene.Mutation):
@@ -62,16 +56,12 @@ class LoginWithHID(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, data):
-        serializer = HIDLoginSerializer(data=data, context={'request': info.context.request})
+        serializer = HIDLoginSerializer(data=data, context={"request": info.context.request})
         if errors := mutation_is_not_valid(serializer):
             return LoginWithHID(errors=errors, ok=False)
-        if user := serializer.validated_data.get('user'):
+        if user := serializer.validated_data.get("user"):
             login(info.context.request, user)
-        return LoginWithHID(
-            result=user,
-            errors=None,
-            ok=True
-        )
+        return LoginWithHID(result=user, errors=None, ok=True)
 
 
 class Logout(graphene.Mutation):
@@ -93,17 +83,14 @@ class Register(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, data):
-        serializer = RegisterSerializer(data=data, context={'request': info.context.request})
+        serializer = RegisterSerializer(data=data, context={"request": info.context.request})
         if errors := mutation_is_not_valid(serializer):
             return Register(
                 errors=errors,
                 ok=False,
             )
         serializer.save()
-        return Register(
-            errors=None,
-            ok=True
-        )
+        return Register(errors=None, ok=True)
 
 
 class ResetPassword(graphene.Mutation):
@@ -116,17 +103,14 @@ class ResetPassword(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, data):
-        serializer = ResetPasswordSerializer(data=data, context={'request': info.context.request})
+        serializer = ResetPasswordSerializer(data=data, context={"request": info.context.request})
         if errors := mutation_is_not_valid(serializer):
             return ResetPassword(
                 errors=errors,
                 ok=False,
             )
         serializer.save()
-        return ResetPassword(
-            errors=None,
-            ok=True
-        )
+        return ResetPassword(errors=None, ok=True)
 
 
 class ChangeUserPassword(graphene.Mutation):
@@ -138,7 +122,7 @@ class ChangeUserPassword(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, data):
-        serializer = PasswordChangeSerializer(data=data, context={'request': info.context.request})
+        serializer = PasswordChangeSerializer(data=data, context={"request": info.context.request})
         if errors := mutation_is_not_valid(serializer):
             return ChangeUserPassword(errors=errors, ok=False)
         serializer.save()
@@ -159,7 +143,7 @@ class UpdateMe(graphene.Mutation):
         serializer = UserMeSerializer(
             instance=info.context.user,
             data=data,
-            context={'request': info.context.request},
+            context={"request": info.context.request},
         )
         if errors := mutation_is_not_valid(serializer):
             return UpdateMe(errors=errors, ok=False)
@@ -178,40 +162,41 @@ class UserDelete(graphene.Mutation):
 
         current_user = info.context.user
         if current_user.profile.deleted_at:
-            return UserDelete(
-                errors=[
-                    dict(
-                        field='nonFieldErrors',
-                        messages='Already deleted.'
-                    )
-                ]
-            )
+            return UserDelete(errors=[dict(field="nonFieldErrors", messages="Already deleted.")])
 
         def user_member_project_ids(owner=False):
             # Member in Projects
-            project_ids = ProjectMembership.objects.filter(member=current_user).values('project')
+            project_ids = ProjectMembership.objects.filter(member=current_user).values("project")
             extra_filter = {}
             if owner:
                 project_ids = project_ids.filter(role__type=ProjectRole.Type.PROJECT_OWNER)
-                extra_filter['role__type'] = ProjectRole.Type.PROJECT_OWNER
-            return ProjectMembership.objects.filter(
-                member__profile__deleted_at__isnull=True,  # Exclude already deleted users
-                project__in=project_ids,
-                **extra_filter,
-            ).order_by().values('project').annotate(
-                member_count=models.Count('member', distinct=True),
-            ).filter(member_count=1).values_list('project', 'project__title')
+                extra_filter["role__type"] = ProjectRole.Type.PROJECT_OWNER
+            return (
+                ProjectMembership.objects.filter(
+                    member__profile__deleted_at__isnull=True,  # Exclude already deleted users
+                    project__in=project_ids,
+                    **extra_filter,
+                )
+                .order_by()
+                .values("project")
+                .annotate(
+                    member_count=models.Count("member", distinct=True),
+                )
+                .filter(member_count=1)
+                .values_list("project", "project__title")
+            )
 
         only_user_member_projects = user_member_project_ids()
         if only_user_member_projects:
             return UserDelete(
                 errors=[
                     dict(
-                        field='nonFieldErrors',
-                        messages='You are only the member in Projects %s. Choose other members before you delete yourself.'
-                        % ', '.join([f'[{_id}]{title}' for _id, title in only_user_member_projects]),
+                        field="nonFieldErrors",
+                        messages="You are only the member in Projects %s. Choose other members before you delete yourself."
+                        % ", ".join([f"[{_id}]{title}" for _id, title in only_user_member_projects]),
                     )
-                ], ok=False
+                ],
+                ok=False,
             )
 
         # user only the owner in the project
@@ -220,17 +205,18 @@ class UserDelete(graphene.Mutation):
             return UserDelete(
                 errors=[
                     dict(
-                        field='nonFieldErrors',
-                        messages='You are Owner in Projects %s. Choose another Project Owner before you delete yourself.'
-                        % ', '.join([f'[{_id}]{title}' for _id, title in only_user_owner_role_in_projects]),
+                        field="nonFieldErrors",
+                        messages="You are Owner in Projects %s. Choose another Project Owner before you delete yourself."
+                        % ", ".join([f"[{_id}]{title}" for _id, title in only_user_owner_role_in_projects]),
                     )
-                ], ok=False
+                ],
+                ok=False,
             )
         current_user.soft_delete()
         return UserDelete(result=current_user, errors=None, ok=True)
 
 
-class Mutation():
+class Mutation:
     login = Login.Field()
     login_with_hid = LoginWithHID.Field()
     logout = Logout.Field()

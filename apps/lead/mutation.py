@@ -1,50 +1,44 @@
 import graphene
 
+from deep.permissions import ProjectPermissions as PP
+from utils.graphene.error_types import CustomErrorType, mutation_is_not_valid
 from utils.graphene.mutation import (
-    generate_input_type_for_serializer,
-    PsGrapheneMutation,
     PsBulkGrapheneMutation,
     PsDeleteMutation,
+    PsGrapheneMutation,
+    generate_input_type_for_serializer,
 )
-from utils.graphene.error_types import (
-    mutation_is_not_valid,
-    CustomErrorType
-)
-from deep.permissions import ProjectPermissions as PP
 
 from .models import Lead, LeadGroup, UserSavedLeadFilter
-from .schema import LeadType, LeadGroupType, UserSavedLeadFilterType
-from .serializers import (
-    LeadGqSerializer as LeadSerializer,
-    LeadCopyGqSerializer,
-    UserSavedLeadFilterSerializer,
-)
-
+from .schema import LeadGroupType, LeadType, UserSavedLeadFilterType
+from .serializers import LeadCopyGqSerializer
+from .serializers import LeadGqSerializer as LeadSerializer
+from .serializers import UserSavedLeadFilterSerializer
 
 LeadInputType = generate_input_type_for_serializer(
-    'LeadInputType',
+    "LeadInputType",
     serializer_class=LeadSerializer,
 )
 
 
 LeadCopyInputType = generate_input_type_for_serializer(
-    'LeadCopyInputType',
+    "LeadCopyInputType",
     serializer_class=LeadCopyGqSerializer,
 )
 
 UserSavedLeadFilterInputType = generate_input_type_for_serializer(
-    'UserSavedLeadFilterInputType',
+    "UserSavedLeadFilterInputType",
     serializer_class=UserSavedLeadFilterSerializer,
 )
 
 
-class LeadMutationMixin():
+class LeadMutationMixin:
     @classmethod
     def filter_queryset(cls, qs, info):
         return qs.filter(project=info.context.active_project)
 
 
-class LeadGroupMutationMixin():
+class LeadGroupMutationMixin:
     @classmethod
     def filter_queryset(cls, qs, info):
         return qs.filter(project=info.context.active_project)
@@ -53,6 +47,7 @@ class LeadGroupMutationMixin():
 class CreateLead(LeadMutationMixin, PsGrapheneMutation):
     class Arguments:
         data = LeadInputType(required=True)
+
     model = Lead
     serializer_class = LeadSerializer
     result = graphene.Field(LeadType)
@@ -63,6 +58,7 @@ class UpdateLead(LeadMutationMixin, PsGrapheneMutation):
     class Arguments:
         data = LeadInputType(required=True)
         id = graphene.ID(required=True)
+
     model = Lead
     serializer_class = LeadSerializer
     result = graphene.Field(LeadType)
@@ -72,6 +68,7 @@ class UpdateLead(LeadMutationMixin, PsGrapheneMutation):
 class DeleteLead(LeadMutationMixin, PsDeleteMutation):
     class Arguments:
         id = graphene.ID(required=True)
+
     model = Lead
     result = graphene.Field(LeadType)
     permissions = [PP.Permission.DELETE_LEAD]
@@ -80,6 +77,7 @@ class DeleteLead(LeadMutationMixin, PsDeleteMutation):
 class DeleteLeadGroup(LeadGroupMutationMixin, PsDeleteMutation):
     class Arguments:
         id = graphene.ID(required=True)
+
     model = LeadGroup
     result = graphene.Field(LeadGroupType)
     permissions = [PP.Permission.DELETE_LEAD]
@@ -111,7 +109,7 @@ class LeadCopy(graphene.Mutation):
 
     @staticmethod
     def mutate(root, info, data):
-        serializer = LeadCopyGqSerializer(data=data, context={'request': info.context.request})
+        serializer = LeadCopyGqSerializer(data=data, context={"request": info.context.request})
         if errors := mutation_is_not_valid(serializer):
             return LeadCopy(errors=errors, ok=False)
         new_leads = serializer.save()
@@ -121,6 +119,7 @@ class LeadCopy(graphene.Mutation):
 class SaveUserSavedLeadFilter(PsGrapheneMutation):
     class Arguments:
         data = UserSavedLeadFilterInputType(required=True)
+
     model = Lead
     serializer_class = UserSavedLeadFilterSerializer
     result = graphene.Field(UserSavedLeadFilterType)
@@ -132,14 +131,14 @@ class SaveUserSavedLeadFilter(PsGrapheneMutation):
             user=info.context.user,
             project=info.context.active_project,
         )
-        serializer = UserSavedLeadFilterSerializer(instance=instance, data=data, context={'request': info.context.request})
+        serializer = UserSavedLeadFilterSerializer(instance=instance, data=data, context={"request": info.context.request})
         if errors := mutation_is_not_valid(serializer):
             return SaveUserSavedLeadFilter(errors=errors, ok=False)
         updated_instance = serializer.save()
         return SaveUserSavedLeadFilter(result=updated_instance, errors=None, ok=True)
 
 
-class Mutation():
+class Mutation:
     lead_create = CreateLead.Field()
     lead_update = UpdateLead.Field()
     lead_delete = DeleteLead.Field()

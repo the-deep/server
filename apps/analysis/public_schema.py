@@ -1,8 +1,9 @@
 import typing
+
 import graphene
 
-from .schema import AnalysisReportSnapshotType
 from .models import AnalysisReport, AnalysisReportSnapshot
+from .schema import AnalysisReportSnapshotType
 
 
 class Query:

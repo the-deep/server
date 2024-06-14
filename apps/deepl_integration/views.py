@@ -1,21 +1,16 @@
 from typing import Type
-from rest_framework import (
-    views,
-    permissions,
-    response,
-    status,
-    serializers,
-)
+
+from rest_framework import permissions, response, serializers, status, views
 
 from .serializers import (
+    AnalysisAutomaticSummaryCallbackSerializer,
+    AnalysisTopicModelCallbackSerializer,
+    AnalyticalStatementGeoCallbackSerializer,
+    AnalyticalStatementNGramCallbackSerializer,
     AssistedTaggingDraftEntryPredictionCallbackSerializer,
+    AutoAssistedTaggingDraftEntryCallbackSerializer,
     LeadExtractCallbackSerializer,
     UnifiedConnectorLeadExtractCallbackSerializer,
-    AnalysisTopicModelCallbackSerializer,
-    AnalysisAutomaticSummaryCallbackSerializer,
-    AnalyticalStatementNGramCallbackSerializer,
-    AnalyticalStatementGeoCallbackSerializer,
-    AutoAssistedTaggingDraftEntryCallbackSerializer
 )
 
 

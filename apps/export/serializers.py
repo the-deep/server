@@ -1,23 +1,23 @@
+from analysis_framework.models import Exportable, Widget
+from deep_explore.filter_set import ExploreProjectFilterSet
+from deep_explore.schema import ExploreDeepFilterInputType
 from django.db import transaction
-
 from drf_dynamic_fields import DynamicFieldsMixin
+from entry.filter_set import EntriesFilterDataInputType, EntryGQFilterSet
+from lead.filter_set import LeadGQFilterSet, LeadsFilterDataInputType
+from project.filter_set import ProjectGqlFilterSet, ProjectsFilterDataInputType
 from rest_framework import serializers
 
-from utils.graphene.fields import generate_serializer_field_class
 from deep.serializers import (
-    RemoveNullFieldsMixin,
-    ProjectPropertySerializerMixin,
-    StringIDField,
     GraphqlSupportDrfSerializerJSONField,
+    ProjectPropertySerializerMixin,
+    RemoveNullFieldsMixin,
+    StringIDField,
 )
-from lead.filter_set import LeadGQFilterSet, LeadsFilterDataInputType
-from entry.filter_set import EntryGQFilterSet, EntriesFilterDataInputType
-from project.filter_set import ProjectGqlFilterSet, ProjectsFilterDataInputType
-from deep_explore.schema import ExploreDeepFilterInputType
-from deep_explore.filter_set import ExploreProjectFilterSet
-from analysis_framework.models import Widget, Exportable
-from .tasks import export_task, generic_export_task
+from utils.graphene.fields import generate_serializer_field_class
+
 from .models import Export, GenericExport
+from .tasks import export_task, generic_export_task
 
 
 class ExportSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.ModelSerializer):
@@ -27,40 +27,42 @@ class ExportSerializer(RemoveNullFieldsMixin, DynamicFieldsMixin, serializers.Mo
 
     class Meta:
         model = Export
-        exclude = ('filters',)
+        exclude = ("filters",)
 
 
 # ------------------- Graphql Serializers ----------------------------------------
 # ---- [Start] ExportReportLevel Serialisers
 class ExportReportLevelWidgetFourthLevelSerializer(serializers.Serializer):
     """
-     Additional sub-level (sub-column) For matrix2d
+    Additional sub-level (sub-column) For matrix2d
     """
-    id = StringIDField(help_text='Matrix2D: {column-key}-{sub-column}-{row-key}-{sub-row-key}')
-    title = serializers.CharField(help_text='Matrix2D: {sub-column-label}')
+
+    id = StringIDField(help_text="Matrix2D: {column-key}-{sub-column}-{row-key}-{sub-row-key}")
+    title = serializers.CharField(help_text="Matrix2D: {sub-column-label}")
 
 
 class ExportReportLevelWidgetSubSubLevelSerializer(serializers.Serializer):  # Additional sub-level For matrix2d
-    id = StringIDField(help_text='Matrix2D: {column-key}-{row-key}-{sub-row-key}')
-    title = serializers.CharField(help_text='Matrix2D: {sub-row-label}')
+    id = StringIDField(help_text="Matrix2D: {column-key}-{row-key}-{sub-row-key}")
+    title = serializers.CharField(help_text="Matrix2D: {sub-row-label}")
     sublevels = ExportReportLevelWidgetFourthLevelSerializer(
         many=True,
         required=False,
-        help_text='For 2D matrix (sub-column)',
+        help_text="For 2D matrix (sub-column)",
     )
 
 
 class ExportReportLevelWidgetSubLevelSerializer(serializers.Serializer):
-    id = StringIDField(help_text='Matrix1D: {row-key}-{cell-key}, Matrix2D: {column-key}-{row-key}')
-    title = serializers.CharField(help_text='Matrix1D: {cell-label}, Matrix2D: {row-label}')
-    sublevels = ExportReportLevelWidgetSubSubLevelSerializer(many=True, required=False, help_text='For 2D matrix')
+    id = StringIDField(help_text="Matrix1D: {row-key}-{cell-key}, Matrix2D: {column-key}-{row-key}")
+    title = serializers.CharField(help_text="Matrix1D: {cell-label}, Matrix2D: {row-label}")
+    sublevels = ExportReportLevelWidgetSubSubLevelSerializer(many=True, required=False, help_text="For 2D matrix")
 
 
 class ExportReportLevelWidgetLevelSerializer(serializers.Serializer):
-    id = StringIDField(help_text='Matrix1D: {row-key}, Matrix2D: {column-key}')
-    title = serializers.CharField(help_text='Matrix1D: {row-label}, Matrix2D: {column-label}')
+    id = StringIDField(help_text="Matrix1D: {row-key}, Matrix2D: {column-key}")
+    title = serializers.CharField(help_text="Matrix1D: {row-label}, Matrix2D: {column-label}")
     sublevels = ExportReportLevelWidgetSubLevelSerializer(
-        many=True, required=False, help_text='Not required for uncategorized data')
+        many=True, required=False, help_text="Not required for uncategorized data"
+    )
 
 
 class ExportReportLevelWidgetSerializer(serializers.Serializer):
@@ -115,40 +117,43 @@ class ExportReportLevelWidgetSerializer(serializers.Serializer):
         ],
     }
     """
-    id = StringIDField(help_text='Widget ID')
-    levels = ExportReportLevelWidgetLevelSerializer(many=True, required=False, help_text='Widget levels')
+    id = StringIDField(help_text="Widget ID")
+    levels = ExportReportLevelWidgetLevelSerializer(many=True, required=False, help_text="Widget levels")
 
 
 # ---- [End] ExportReportLevel Serialisers
 # ---- [Start] ExportReportStructure Serialisers
 class ExportReportStructureWidgetFourthLevelSerializer(serializers.Serializer):
     """
-     Additional sub-level (sub-column) For matrix2d
+    Additional sub-level (sub-column) For matrix2d
     """
-    id = StringIDField(help_text='Matrix2D: {column-key}-{sub-column}-{row-key}-{sub-row-key}')
+
+    id = StringIDField(help_text="Matrix2D: {column-key}-{sub-column}-{row-key}-{sub-row-key}")
 
 
 class ExportReportStructureWidgetThirdLevelSerializer(serializers.Serializer):
     """
     # Additional sub-level (sub-row) For matrix2d
     """
-    id = StringIDField(help_text='Matrix2D: {column-key}-{row-key}-{sub-row-key}')
+
+    id = StringIDField(help_text="Matrix2D: {column-key}-{row-key}-{sub-row-key}")
     levels = ExportReportStructureWidgetFourthLevelSerializer(
         many=True,
         required=False,
-        help_text='For 2D matrix (sub-column)',
+        help_text="For 2D matrix (sub-column)",
     )
 
 
 class ExportReportStructureWidgetSecondLevelSerializer(serializers.Serializer):
-    id = StringIDField(help_text='Matrix1D: {row-key}-{cell-key}, Matrix2D: {column-key}-{row-key}')
-    levels = ExportReportStructureWidgetThirdLevelSerializer(many=True, required=False, help_text='For 2D matrix')
+    id = StringIDField(help_text="Matrix1D: {row-key}-{cell-key}, Matrix2D: {column-key}-{row-key}")
+    levels = ExportReportStructureWidgetThirdLevelSerializer(many=True, required=False, help_text="For 2D matrix")
 
 
 class ExportReportStructureWidgetFirstLevelSerializer(serializers.Serializer):
-    id = StringIDField(help_text='Matrix1D: {row-key}, Matrix2D: {column-key}')
+    id = StringIDField(help_text="Matrix1D: {row-key}, Matrix2D: {column-key}")
     levels = ExportReportStructureWidgetSecondLevelSerializer(
-        many=True, required=False, help_text='Not required for uncategorized data')
+        many=True, required=False, help_text="Not required for uncategorized data"
+    )
 
 
 class ExportReportStructureWidgetSerializer(serializers.Serializer):
@@ -194,8 +199,10 @@ class ExportReportStructureWidgetSerializer(serializers.Serializer):
         ],
     }
     """
-    id = StringIDField(help_text='Widget ID')
-    levels = ExportReportStructureWidgetFirstLevelSerializer(many=True, required=False, help_text='Widget levels')
+
+    id = StringIDField(help_text="Widget ID")
+    levels = ExportReportStructureWidgetFirstLevelSerializer(many=True, required=False, help_text="Widget levels")
+
 
 # ---- [End] ExportReportStructure Serialisers
 
@@ -206,11 +213,11 @@ class ExportExcelSelectedColumnSerializer(serializers.Serializer):
     static_column = serializers.ChoiceField(choices=Export.StaticColumn.choices, required=False)
 
     def validate(self, data):
-        if data['is_widget']:
-            if data.get('widget_key') is None:
-                raise serializers.ValidationError('widget_key key is required when is widget is True')
-        elif data.get('static_column') is None:
-            raise serializers.ValidationError('static_column is required when is widget is False')
+        if data["is_widget"]:
+            if data.get("widget_key") is None:
+                raise serializers.ValidationError("widget_key key is required when is widget is True")
+        elif data.get("static_column") is None:
+            raise serializers.ValidationError("static_column is required when is widget is False")
         return data
 
 
@@ -219,8 +226,7 @@ class ExportExtraOptionsSerializer(ProjectPropertySerializerMixin, serializers.S
     date_format = serializers.ChoiceField(choices=Export.DateFormat.choices, required=False)
 
     # Excel
-    excel_decoupled = serializers.BooleanField(
-        help_text="Don't group entries tags. Slower export generation.", required=False)
+    excel_decoupled = serializers.BooleanField(help_text="Don't group entries tags. Slower export generation.", required=False)
     excel_columns = ExportExcelSelectedColumnSerializer(
         required=False,
         many=True,
@@ -235,9 +241,11 @@ class ExportExtraOptionsSerializer(ProjectPropertySerializerMixin, serializers.S
     report_text_widget_ids = serializers.ListField(child=StringIDField(), allow_empty=True, required=False)
     report_exporting_widgets = serializers.ListField(child=StringIDField(), allow_empty=True, required=False)
     report_levels = ExportReportLevelWidgetSerializer(
-        required=False, many=True, help_text=ExportReportLevelWidgetSerializer.__doc__)
+        required=False, many=True, help_text=ExportReportLevelWidgetSerializer.__doc__
+    )
     report_structure = ExportReportStructureWidgetSerializer(
-        required=False, many=True, help_text=ExportReportStructureWidgetSerializer.__doc__)
+        required=False, many=True, help_text=ExportReportStructureWidgetSerializer.__doc__
+    )
     report_citation_style = serializers.ChoiceField(choices=Export.CitationStyle.choices, required=False)
 
 
@@ -247,14 +255,14 @@ class UserExportBaseGqlMixin(ProjectPropertySerializerMixin, serializers.ModelSe
     class Meta:
         model = Export
         fields = (
-            'title',
-            'type',  # Data type (entries, assessments, ..)
-            'format',  # xlsx, docx, pdf, ...
-            'export_type',  # excel, report, json, ...
-            'is_preview',
-            'filters',
-            'extra_options',
-            'analysis',
+            "title",
+            "type",  # Data type (entries, assessments, ..)
+            "format",  # xlsx, docx, pdf, ...
+            "export_type",  # excel, report, json, ...
+            "is_preview",
+            "filters",
+            "extra_options",
+            "analysis",
         )
 
     filters = generate_serializer_field_class(LeadsFilterDataInputType, GraphqlSupportDrfSerializerJSONField)()
@@ -272,38 +280,30 @@ class UserExportBaseGqlMixin(ProjectPropertySerializerMixin, serializers.ModelSe
         existing_exports = Export.objects.filter(
             title=title,
             project=self.project,
-            exported_by=self.context['request'].user,
+            exported_by=self.context["request"].user,
         )
         if self.instance:
             existing_exports = existing_exports.exclude(id=self.instance.id)
         if existing_exports.exists():
-            raise serializers.ValidationError(f'Title {title} already exists.')
+            raise serializers.ValidationError(f"Title {title} already exists.")
         return title
 
     def validate_filters(self, filters):
-        filter_set = LeadGQFilterSet(data=filters, request=self.context['request'])
+        filter_set = LeadGQFilterSet(data=filters, request=self.context["request"])
         if not filter_set.is_valid():
             raise serializers.ValidationError(filter_set.errors)
         return filters
 
     def validate_report_text_widget_ids(self, widget_ids):
         if widget_ids:
-            text_widgets_id = self.widget_qs.filter(widget_id=Widget.WidgetType.TEXT).values_list('id', flat=True)
-            return [
-                widget_id
-                for widget_id in widget_ids
-                if widget_id in text_widgets_id
-            ]
+            text_widgets_id = self.widget_qs.filter(widget_id=Widget.WidgetType.TEXT).values_list("id", flat=True)
+            return [widget_id for widget_id in widget_ids if widget_id in text_widgets_id]
         return []
 
     def validate_report_exporting_widgets(self, widget_ids):
         if widget_ids:
-            widgets_id = self.widget_qs.values_list('id', flat=True)
-            return [
-                widget_id
-                for widget_id in widget_ids
-                if widget_id in widgets_id
-            ]
+            widgets_id = self.widget_qs.values_list("id", flat=True)
+            return [widget_id for widget_id in widget_ids if widget_id in widgets_id]
         return []
 
     # TODO: def validate_report_levels(self, widget_ids):
@@ -321,36 +321,32 @@ class UserExportCreateGqlSerializer(UserExportBaseGqlMixin, serializers.ModelSer
     def validate(self, data):
         # NOTE: We only need to check with create logic (as update only have title for now)
         # Validate type, export_type and format
-        data_type = data['type']
-        export_type = data['export_type']
-        _format = data['format']
+        data_type = data["type"]
+        export_type = data["export_type"]
+        _format = data["format"]
         if (data_type, export_type, _format) not in Export.DEFAULT_TITLE_LABEL:
-            raise serializers.ValidationError(f'Unsupported Export request: {(data_type, export_type, _format)}')
+            raise serializers.ValidationError(f"Unsupported Export request: {(data_type, export_type, _format)}")
         return data
 
     def create(self, data):
-        data['title'] = data.get('title') or Export.generate_title(data['type'], data['export_type'], data['format'])
-        data['exported_by'] = self.context['request'].user
-        data['project'] = self.project
+        data["title"] = data.get("title") or Export.generate_title(data["type"], data["export_type"], data["format"])
+        data["exported_by"] = self.context["request"].user
+        data["project"] = self.project
         export = super().create(data)
-        transaction.on_commit(
-            lambda: export.set_task_id(export_task.delay(export.id).id)
-        )
+        transaction.on_commit(lambda: export.set_task_id(export_task.delay(export.id).id))
         return export
 
     def update(self, _):
-        raise serializers.ValidationError('Not allowed using this serializer.')
+        raise serializers.ValidationError("Not allowed using this serializer.")
 
 
 class UserExportUpdateGqlSerializer(UserExportBaseGqlMixin, serializers.ModelSerializer):
     class Meta:
         model = Export
-        fields = (
-            'title',
-        )
+        fields = ("title",)
 
     def create(self, _):
-        raise serializers.ValidationError('Not allowed using this serializer.')
+        raise serializers.ValidationError("Not allowed using this serializer.")
 
 
 class UserGenericExportFiltersGqlSerializer(serializers.Serializer):
@@ -372,10 +368,10 @@ class UserGenericExportCreateGqlSerializer(serializers.ModelSerializer):
     class Meta:
         model = GenericExport
         fields = (
-            'title',
-            'type',  # Data type
-            'format',  # csv, xlsx, docx, pdf, ...
-            'filters',
+            "title",
+            "type",  # Data type
+            "format",  # csv, xlsx, docx, pdf, ...
+            "filters",
         )
 
     filters = UserGenericExportFiltersGqlSerializer()
@@ -385,7 +381,7 @@ class UserGenericExportCreateGqlSerializer(serializers.ModelSerializer):
             filter_data = filter_data.get(filter_key)
             if not filter_data:
                 return
-            filter_set = filter_set(data=filter_data, request=self.context['request'])
+            filter_set = filter_set(data=filter_data, request=self.context["request"])
             if not filter_set.is_valid():
                 return filter_set.errors
 
@@ -393,24 +389,22 @@ class UserGenericExportCreateGqlSerializer(serializers.ModelSerializer):
 
         # Validate each filter data
         for filter_key, FilterSet in [
-            ('project', ProjectGqlFilterSet),
-            ('lead', LeadGQFilterSet),
-            ('entry', EntryGQFilterSet),
-            ('deep_explore', None),
+            ("project", ProjectGqlFilterSet),
+            ("lead", LeadGQFilterSet),
+            ("entry", EntryGQFilterSet),
+            ("deep_explore", None),
         ]:
-            if filter_key == 'deep_explore':
+            if filter_key == "deep_explore":
                 filter_data = filters.get(filter_key) or {}
                 if data_type == GenericExport.DataType.PROJECTS_STATS and not filter_data:
-                    errors[filter_key] = [f'This is required for {data_type}']
+                    errors[filter_key] = [f"This is required for {data_type}"]
                     continue
                 if filterset_errors := _validate_filterset(
                     filter_data,
-                    'project',
+                    "project",
                     ExploreProjectFilterSet,
                 ):
-                    errors[filter_key] = {
-                        'project': filterset_errors
-                    }
+                    errors[filter_key] = {"project": filterset_errors}
                 continue
             # Generic
             if filterset_errors := _validate_filterset(
@@ -424,23 +418,21 @@ class UserGenericExportCreateGqlSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         # Validate type, export_type and format
-        data_type = data['type']
-        _format = data['format']
-        filters = data['filters']
+        data_type = data["type"]
+        _format = data["format"]
+        filters = data["filters"]
         if (data_type, _format) not in GenericExport.DEFAULT_TITLE_LABEL:
-            raise serializers.ValidationError(f'Unsupported Export request: {(data_type, _format)}')
+            raise serializers.ValidationError(f"Unsupported Export request: {(data_type, _format)}")
         if errors := self._validate_filters(data_type, filters):
-            raise serializers.ValidationError({'filters': errors})
+            raise serializers.ValidationError({"filters": errors})
         return data
 
     def create(self, data):
-        data['title'] = data.get('title') or GenericExport.generate_title(data['type'], data['format'])
-        data['exported_by'] = self.context['request'].user
+        data["title"] = data.get("title") or GenericExport.generate_title(data["type"], data["format"])
+        data["exported_by"] = self.context["request"].user
         export = super().create(data)
-        transaction.on_commit(
-            lambda: export.set_task_id(generic_export_task.delay(export.id).id)
-        )
+        transaction.on_commit(lambda: export.set_task_id(generic_export_task.delay(export.id).id))
         return export
 
     def update(self, _):
-        raise serializers.ValidationError('Not allowed using this serializer.')
+        raise serializers.ValidationError("Not allowed using this serializer.")

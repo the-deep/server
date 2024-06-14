@@ -1,16 +1,15 @@
-from utils.graphene.tests import GraphQLSnapShotTestCase
-
-from user_group.models import GroupMembership
-
 from user.factories import UserFactory
 from user_group.factories import UserGroupFactory
+from user_group.models import GroupMembership
+
+from utils.graphene.tests import GraphQLSnapShotTestCase
 
 
 class TestUserGroupMutationSnapShotTestCase(GraphQLSnapShotTestCase):
     factories_used = [UserGroupFactory]
 
     def test_usergroup_membership_bulk(self):
-        query = '''
+        query = """
           mutation MyMutation(
               $id: ID!,
               $ugMembership: [BulkUserGroupMembershipInputType!]!,
@@ -53,7 +52,7 @@ class TestUserGroupMutationSnapShotTestCase(GraphQLSnapShotTestCase):
             }
           }
         }
-        '''
+        """
         creater_user = UserFactory.create()
         user = UserFactory.create()
         low_permission_user = UserFactory.create()
@@ -111,10 +110,11 @@ class TestUserGroupMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         def _query_check(**kwargs):
             return self.query_check(
                 query,
-                mnested=['userGroup'],
-                variables={'id': ug.id, **minput},
+                mnested=["userGroup"],
+                variables={"id": ug.id, **minput},
                 **kwargs,
             )
+
         # ---------- Without login
         _query_check(assert_for_error=True)
         # ---------- With login (with non-member)
@@ -126,9 +126,9 @@ class TestUserGroupMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         # ---------- With login (with higher permission)
         self.force_login(user)
         # ----------------- Some Invalid input
-        response = _query_check()['data']['userGroup']['userGroupMembershipBulk']
-        self.assertMatchSnapshot(response, 'try 1')
+        response = _query_check()["data"]["userGroup"]["userGroupMembershipBulk"]
+        self.assertMatchSnapshot(response, "try 1")
         # ----------------- All valid input
-        minput['ugMembership'].pop(1)
-        response = _query_check()['data']['userGroup']['userGroupMembershipBulk']
-        self.assertMatchSnapshot(response, 'try 2')
+        minput["ugMembership"].pop(1)
+        response = _query_check()["data"]["userGroup"]["userGroupMembershipBulk"]
+        self.assertMatchSnapshot(response, "try 2")

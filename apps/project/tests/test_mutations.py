@@ -1,43 +1,42 @@
-from unittest import mock
 from datetime import timedelta
-from factory import fuzzy
+from unittest import mock
 
-from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
-from user.utils import (
-    send_project_join_request_emails,
-    send_project_accept_email,
-    send_project_reject_email,
-)
-
-from user.models import Feature
-from notification.models import Notification
-from project.models import (
-    get_default_role_id,
-    ProjectRole,
-    ProjectJoinRequest,
-    ProjectMembership,
-    ProjectUserGroupMembership,
-    ProjectStats,
-    ProjectChangeLog,
-)
-
-from user.factories import UserFactory, FeatureFactory
-from lead.factories import LeadFactory
-from entry.factories import EntryFactory, EntryAttributeFactory
 from analysis_framework.factories import AnalysisFrameworkFactory, WidgetFactory
-from user_group.factories import UserGroupFactory
+from entry.factories import EntryAttributeFactory, EntryFactory
+from factory import fuzzy
+from geo.factories import RegionFactory
+from lead.factories import LeadFactory
+from notification.models import Notification
+from organization.factories import OrganizationFactory
 from project.factories import (
     ProjectFactory,
     ProjectJoinRequestFactory,
     ProjectOrganizationFactory,
     ProjectPinnedFactory,
 )
-from organization.factories import OrganizationFactory
-from geo.factories import RegionFactory
-
+from project.models import (
+    Project,
+    ProjectChangeLog,
+    ProjectJoinRequest,
+    ProjectMembership,
+    ProjectOrganization,
+    ProjectRole,
+    ProjectStats,
+    ProjectUserGroupMembership,
+    get_default_role_id,
+)
 from project.tasks import _generate_project_viz_stats, permanently_delete_projects
+from user.factories import FeatureFactory, UserFactory
+from user.models import Feature
+from user.utils import (
+    send_project_accept_email,
+    send_project_join_request_emails,
+    send_project_reject_email,
+)
+from user_group.factories import UserGroupFactory
 
-from project.models import Project, ProjectOrganization
+from utils.graphene.tests import GraphQLSnapShotTestCase, GraphQLTestCase
+
 from . import entry_stats_data
 
 
@@ -57,37 +56,39 @@ class TestProjectGeneralMutationSnapshotTest(GraphQLSnapShotTestCase):
         invalid_stat_config = {}
         valid_stat_config = {}
 
-        for index, (title, widget_identifier, data_identifier, config_kwargs) in enumerate([
-            ('widget 1d', 'widget_1d', 'matrix1dWidget', {}),
-            ('widget 2d', 'widget_2d', 'matrix2dWidget', {}),
-            ('geo widget', 'geo_widget', 'geoWidget', {}),
-            ('reliability widget', 'reliability_widget', 'scaleWidget', {}),
-            ('affected groups widget', 'affected_groups_widget', 'multiselectWidget', {}),
-            ('specific needs groups widget', 'specific_needs_groups_widget', 'multiselectWidget', {}),
-        ]):
+        for index, (title, widget_identifier, data_identifier, config_kwargs) in enumerate(
+            [
+                ("widget 1d", "widget_1d", "matrix1dWidget", {}),
+                ("widget 2d", "widget_2d", "matrix2dWidget", {}),
+                ("geo widget", "geo_widget", "geoWidget", {}),
+                ("reliability widget", "reliability_widget", "scaleWidget", {}),
+                ("affected groups widget", "affected_groups_widget", "multiselectWidget", {}),
+                ("specific needs groups widget", "specific_needs_groups_widget", "multiselectWidget", {}),
+            ]
+        ):
             widget = WidgetFactory.create(
                 analysis_framework=af,
                 section=None,
                 title=title,
                 widget_id=data_identifier,
-                key=f'{data_identifier}-{index}',
-                properties={'data': w_data[data_identifier]},
+                key=f"{data_identifier}-{index}",
+                properties={"data": w_data[data_identifier]},
             )
             EntryAttributeFactory.create(entry=entry, widget=widget, data=a_data[data_identifier])
             valid_stat_config[widget_identifier] = {
-                'pk': widget.pk,
+                "pk": widget.pk,
                 **config_kwargs,
             }
-            invalid_stat_config[widget_identifier] = {'pk': 0}
+            invalid_stat_config[widget_identifier] = {"pk": 0}
 
-        af.properties = {'stats_config': invalid_stat_config}
-        af.save(update_fields=('properties',))
+        af.properties = {"stats_config": invalid_stat_config}
+        af.save(update_fields=("properties",))
 
         project.is_visualization_enabled = True
-        project.save(update_fields=('is_visualization_enabled',))
+        project.save(update_fields=("is_visualization_enabled",))
 
     def test_projects_viz_configuration_update(self):
-        query = '''
+        query = """
             mutation MyMutation($id: ID!, $input: ProjectVizConfigurationInputType!) {
               project(id: $id) {
                 projectVizConfigurationUpdate(data: $input) {
@@ -103,7 +104,7 @@ class TestProjectGeneralMutationSnapshotTest(GraphQLSnapShotTestCase):
                 }
               }
             }
-        '''
+        """
 
         normal_user = UserFactory.create()
         admin_user = UserFactory.create()
@@ -121,8 +122,8 @@ class TestProjectGeneralMutationSnapshotTest(GraphQLSnapShotTestCase):
             return self.query_check(
                 query,
                 minput=minput,
-                mnested=['project'],
-                variables={'id': project.id},
+                mnested=["project"],
+                variables={"id": project.id},
                 **kwargs,
             )
 
@@ -137,46 +138,36 @@ class TestProjectGeneralMutationSnapshotTest(GraphQLSnapShotTestCase):
             ]:
                 self.force_login(user)
                 current_stats = project.project_stats
-                minput['action'] = self.genum(action)
+                minput["action"] = self.genum(action)
                 if assertLogic == self.assert_200:
                     content = _query_check(okay=True)
                 else:
                     _query_check(assert_for_error=True)
                     continue
-                response = content['data']['project']['projectVizConfigurationUpdate']['result']
+                response = content["data"]["project"]["projectVizConfigurationUpdate"]["result"]
                 if assertLogic == self.assert_200:
-                    if action == 'new':
-                        assert response['publicUrl'] != current_stats.token
+                    if action == "new":
+                        assert response["publicUrl"] != current_stats.token
                         # Logout and check if response is okay
                         self.client.logout()
                         rest_response = self.client.get(f"{response['publicUrl']}?format=json")
                         self.assert_200(rest_response)
-                    elif action == 'on':
-                        assert (
-                            response['publicUrl'] is not None
-                        ) or (
-                            response['publicUrl'] == current_stats.token
-                        )
+                    elif action == "on":
+                        assert (response["publicUrl"] is not None) or (response["publicUrl"] == current_stats.token)
                         # Logout and check if response is not okay
                         self.client.logout()
                         rest_response = self.client.get(f"{response['publicUrl']}?format=json")
                         self.assert_200(rest_response)
-                    elif action == 'off':
-                        assert (
-                            response['publicUrl'] is not None
-                        ) or (
-                            response['publicUrl'] == current_stats.token
-                        )
+                    elif action == "off":
+                        assert (response["publicUrl"] is not None) or (response["publicUrl"] == current_stats.token)
                         # Logout and check if response is not okay
                         self.client.logout()
                         rest_response = self.client.get(f"{response['publicUrl']}?format=json")
                         self.assert_403(rest_response)
         # Check Project change logs
         self.assertMatchSnapshot(
-            list(
-                ProjectChangeLog.objects.filter(project=project).order_by('id').values('action', 'diff')
-            ),
-            'project-change-log',
+            list(ProjectChangeLog.objects.filter(project=project).order_by("id").values("action", "diff")),
+            "project-change-log",
         )
 
 
@@ -190,7 +181,7 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
     ]
 
     def test_project_create_mutation(self):
-        query = '''
+        query = """
             mutation MyMutation($input: ProjectCreateInputType!) {
               __typename
               projectCreate(data: $input) {
@@ -224,7 +215,7 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
                 }
               }
             }
-        '''
+        """
 
         user = UserFactory.create()
         af = AnalysisFrameworkFactory.create()
@@ -236,11 +227,11 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
         org1 = OrganizationFactory.create()
 
         minput = dict(
-            title='Project 1',
+            title="Project 1",
             analysisFramework=str(private_af.id),
-            description='Project description 101',
-            startDate='2020-01-01',
-            endDate='2021-01-01',
+            description="Project description 101",
+            startDate="2020-01-01",
+            endDate="2021-01-01",
             status=self.genum(Project.Status.ACTIVE),
             isPrivate=True,
             hasPubliclyViewableUnprotectedLeads=False,
@@ -261,8 +252,8 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
                 minput=minput,
                 **kwargs,
             )
-            if kwargs.get('okay'):
-                project_log = ProjectChangeLog.objects.get(project=response['data']['projectCreate']['result']['id'])
+            if kwargs.get("okay"):
+                project_log = ProjectChangeLog.objects.get(project=response["data"]["projectCreate"]["result"]["id"])
                 assert project_log.action == ProjectChangeLog.Action.PROJECT_CREATE
             return response
 
@@ -274,35 +265,35 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
         response = _query_check(okay=False)
 
         # invalid [private AF with memership] + public project
-        minput['analysisFramework'] = str(private_af_w_membership.pk)
-        minput['isPrivate'] = False
+        minput["analysisFramework"] = str(private_af_w_membership.pk)
+        minput["isPrivate"] = False
         response = _query_check(okay=False)
         # invalid [private AF with memership] + private project + without feature permission
-        minput['isPrivate'] = True
+        minput["isPrivate"] = True
         response = _query_check(okay=False)
         # invalid [private AF with memership] + private project + with feature permission
         private_project_feature.users.add(user)
-        response = _query_check(okay=True)['data']['projectCreate']
-        self.assertMatchSnapshot(response, 'private-af-private-project-success')
+        response = _query_check(okay=True)["data"]["projectCreate"]
+        self.assertMatchSnapshot(response, "private-af-private-project-success")
         # Valid [public AF] + private project
-        minput['title'] = "Project 2"
-        minput['analysisFramework'] = str(af.pk)
-        minput['isPrivate'] = True
-        response = _query_check(okay=True)['data']['projectCreate']
-        self.assertMatchSnapshot(response, 'public-af-private-project-success')
+        minput["title"] = "Project 2"
+        minput["analysisFramework"] = str(af.pk)
+        minput["isPrivate"] = True
+        response = _query_check(okay=True)["data"]["projectCreate"]
+        self.assertMatchSnapshot(response, "public-af-private-project-success")
 
         # Valid [public AF] + private project
-        minput['title'] = "Project 3"
-        minput['analysisFramework'] = str(af.pk)
-        minput['isPrivate'] = False
-        response = _query_check(okay=True)['data']['projectCreate']
-        self.assertMatchSnapshot(response, 'public-af-public-project-success')
+        minput["title"] = "Project 3"
+        minput["analysisFramework"] = str(af.pk)
+        minput["isPrivate"] = False
+        response = _query_check(okay=True)["data"]["projectCreate"]
+        self.assertMatchSnapshot(response, "public-af-public-project-success")
 
-        minput['title'] = 'Project 1'
+        minput["title"] = "Project 1"
         response = _query_check(okay=False)
 
     def test_project_update_mutation(self):
-        query = '''
+        query = """
             mutation MyMutation($projectId: ID!, $input: ProjectUpdateInputType!) {
               __typename
               project(id: $projectId) {
@@ -338,7 +329,7 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
                   }
               }
             }
-        '''
+        """
 
         user = UserFactory.create()
         normal_user = UserFactory.create()
@@ -354,11 +345,11 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
         private_af_w_membership.add_member(user)
 
         public_project = ProjectFactory.create(
-            title='Public Project 101',
+            title="Public Project 101",
             analysis_framework=af,
         )
         private_project = ProjectFactory.create(
-            title='Private Project 101',
+            title="Private Project 101",
             analysis_framework=private_af,
             is_private=True,
         )
@@ -384,7 +375,7 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
         public_project.add_member(normal_user)
 
         public_minput = dict(
-            title=f'{public_project.title} (Updated)',
+            title=f"{public_project.title} (Updated)",
             analysisFramework=str(public_project.analysis_framework.id),
             isTest=True,
             isPrivate=False,
@@ -401,7 +392,7 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
 
         private_minput = dict(
             title=private_project.title,
-            description='Added some description',
+            description="Added some description",
             analysisFramework=str(private_project.analysis_framework.id),
             isPrivate=True,
             organizations=[
@@ -416,8 +407,8 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
             return self.query_check(
                 query,
                 minput=minput,
-                mnested=['project'],
-                variables={'projectId': str(project.pk)},
+                mnested=["project"],
+                variables={"projectId": str(project.pk)},
                 **kwargs,
             )
 
@@ -447,41 +438,41 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
         # WITH ACCESS
         # ----- isPrivate attribute
         # [changing private status) [public project]
-        public_minput['isPrivate'] = True
-        self.assertMatchSnapshot(_public_query_check(okay=False), 'public-project:is-private-change-error')
-        public_minput['isPrivate'] = False
+        public_minput["isPrivate"] = True
+        self.assertMatchSnapshot(_public_query_check(okay=False), "public-project:is-private-change-error")
+        public_minput["isPrivate"] = False
 
         # [changing private status) [public project]
-        private_minput['isPrivate'] = False
-        self.assertMatchSnapshot(_private_query_check(okay=False), 'private-project:is-private-change-error')
-        private_minput['isPrivate'] = True
+        private_minput["isPrivate"] = False
+        self.assertMatchSnapshot(_private_query_check(okay=False), "private-project:is-private-change-error")
+        private_minput["isPrivate"] = True
 
         # ----- AF attribute
         # [changing private status) [public project]
-        public_minput['analysisFramework'] = str(private_af.id)
-        self.assertMatchSnapshot(_public_query_check(okay=False), 'public-project:private-af')
-        public_minput['analysisFramework'] = str(private_af_w_membership.id)
-        self.assertMatchSnapshot(_public_query_check(okay=False), 'public-project:private-af-with-membership')
-        public_minput['analysisFramework'] = str(public_project.analysis_framework_id)
+        public_minput["analysisFramework"] = str(private_af.id)
+        self.assertMatchSnapshot(_public_query_check(okay=False), "public-project:private-af")
+        public_minput["analysisFramework"] = str(private_af_w_membership.id)
+        self.assertMatchSnapshot(_public_query_check(okay=False), "public-project:private-af-with-membership")
+        public_minput["analysisFramework"] = str(public_project.analysis_framework_id)
 
         # [changing private status) [private project]
-        private_minput['analysisFramework'] = str(private_af_2.id)
-        self.assertMatchSnapshot(_private_query_check(okay=False), 'private-project:private-af')
-        private_minput['analysisFramework'] = str(private_af_w_membership.id)
+        private_minput["analysisFramework"] = str(private_af_2.id)
+        self.assertMatchSnapshot(_private_query_check(okay=False), "private-project:private-af")
+        private_minput["analysisFramework"] = str(private_af_w_membership.id)
         _private_query_check(okay=True)
-        private_minput['analysisFramework'] = str(private_project.analysis_framework_id)
+        private_minput["analysisFramework"] = str(private_project.analysis_framework_id)
         # Check Project change logs
         project_log = ProjectChangeLog.objects.get(project=public_project)
         assert project_log.action == ProjectChangeLog.Action.MULTIPLE
-        self.assertMatchSnapshot(project_log.diff, 'public-project:project-change:diff')
-        project_logs = list(ProjectChangeLog.objects.filter(project=private_project).order_by('id'))
+        self.assertMatchSnapshot(project_log.diff, "public-project:project-change:diff")
+        project_logs = list(ProjectChangeLog.objects.filter(project=private_project).order_by("id"))
         assert project_logs[0].action == ProjectChangeLog.Action.MULTIPLE
-        self.assertMatchSnapshot(project_logs[0].diff, 'private-project-0:project-change:diff')
+        self.assertMatchSnapshot(project_logs[0].diff, "private-project-0:project-change:diff")
         assert project_logs[1].action == ProjectChangeLog.Action.FRAMEWORK
-        self.assertMatchSnapshot(project_logs[1].diff, 'private-project-1:project-change:diff')
+        self.assertMatchSnapshot(project_logs[1].diff, "private-project-1:project-change:diff")
 
     def test_project_region_action_mutation(self):
-        query = '''
+        query = """
             mutation MyMutation ($projectId: ID!, $regionsToAdd: [ID!], $regionsToRemove: [ID!]) {
               project(id: $projectId) {
                 projectRegionBulk(regionsToAdd: $regionsToAdd, regionsToRemove: $regionsToRemove) {
@@ -496,27 +487,27 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
                 }
               }
             }
-        '''
+        """
 
         user = UserFactory.create()
         normal_user = UserFactory.create()
         another_user = UserFactory.create()
         af = AnalysisFrameworkFactory.create()
-        project = ProjectFactory.create(title='Project 101', analysis_framework=af)
+        project = ProjectFactory.create(title="Project 101", analysis_framework=af)
         project.add_member(user, role=self.project_role_owner)
         project.add_member(normal_user)
-        region_public_zero = RegionFactory.create(title='public-region-zero')
-        region_public = RegionFactory.create(title='public-region')
-        region_private = RegionFactory.create(title='private-region', public=False)
-        region_private_owner = RegionFactory.create(title='private-region-owner', public=False, created_by=user)
+        region_public_zero = RegionFactory.create(title="public-region-zero")
+        region_public = RegionFactory.create(title="public-region")
+        region_private = RegionFactory.create(title="private-region", public=False)
+        region_private_owner = RegionFactory.create(title="private-region-owner", public=False, created_by=user)
         # Region with project membership
         # -- Normal
-        region_private_with_membership = RegionFactory.create(title='private-region-with-membership', public=False)
+        region_private_with_membership = RegionFactory.create(title="private-region-with-membership", public=False)
         another_project_for_membership = ProjectFactory.create()
         another_project_for_membership.regions.add(region_private_with_membership)
         another_project_for_membership.add_member(user, role=self.project_role_admin)
         # -- Admin
-        region_private_with_membership_admin = RegionFactory.create(title='private-region-with-membership', public=False)
+        region_private_with_membership_admin = RegionFactory.create(title="private-region-with-membership", public=False)
         another_project_for_membership_admin = ProjectFactory.create()
         another_project_for_membership_admin.regions.add(region_private_with_membership_admin)
         another_project_for_membership_admin.add_member(user, role=self.project_role_admin)
@@ -526,11 +517,11 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
         def _query_check(add, remove, **kwargs):
             return self.query_check(
                 query,
-                mnested=['project'],
+                mnested=["project"],
                 variables={
-                    'projectId': str(project.pk),
-                    'regionsToAdd': add,
-                    'regionsToRemove': remove,
+                    "projectId": str(project.pk),
+                    "regionsToAdd": add,
+                    "regionsToRemove": remove,
                 },
                 **kwargs,
             )
@@ -547,10 +538,13 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
         self.force_login(user)
         # Simple checkup
         response = _query_check([], [])
-        self.assertEqual(response['data']['project']['projectRegionBulk'], {
-            'deletedResult': [],
-            'result': [],
-        })
+        self.assertEqual(
+            response["data"]["project"]["projectRegionBulk"],
+            {
+                "deletedResult": [],
+                "result": [],
+            },
+        )
 
         # Add
         response = _query_check(
@@ -564,23 +558,26 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
                 str(region_public_zero.pk),
             ],
         )
-        self.assertEqual(response['data']['project']['projectRegionBulk'], {
-            'deletedResult': [
-                dict(id=str(region_public_zero.pk), title=region_public_zero.title),
-            ],
-            'result': [
-                dict(id=str(region_public.pk), title=region_public.title),
-                dict(id=str(region_private_owner.pk), title=region_private_owner.title),
-                dict(id=str(region_private_with_membership.pk), title=region_private_with_membership.title),
-            ],
-        })
         self.assertEqual(
-            list(project.regions.values_list('id', flat=True).order_by('id')),
+            response["data"]["project"]["projectRegionBulk"],
+            {
+                "deletedResult": [
+                    dict(id=str(region_public_zero.pk), title=region_public_zero.title),
+                ],
+                "result": [
+                    dict(id=str(region_public.pk), title=region_public.title),
+                    dict(id=str(region_private_owner.pk), title=region_private_owner.title),
+                    dict(id=str(region_private_with_membership.pk), title=region_private_with_membership.title),
+                ],
+            },
+        )
+        self.assertEqual(
+            list(project.regions.values_list("id", flat=True).order_by("id")),
             [
                 region_public.pk,
                 region_private_owner.pk,
                 region_private_with_membership.pk,
-            ]
+            ],
         )
 
         # Delete
@@ -593,27 +590,28 @@ class ProjectMutationSnapshotTest(GraphQLSnapShotTestCase):
                 str(region_private_with_membership.pk),
             ],
         )
-        self.assertEqual(response['data']['project']['projectRegionBulk'], {
-            'deletedResult': [
-                dict(id=str(region_public.pk), title=region_public.title),
-                dict(id=str(region_private_owner.pk), title=region_private_owner.title),
-                dict(id=str(region_private_with_membership.pk), title=region_private_with_membership.title),
-            ],
-            'result': [],
-        })
-        self.assertEqual(list(project.regions.values_list('id', flat=True).order_by('id')), [])
+        self.assertEqual(
+            response["data"]["project"]["projectRegionBulk"],
+            {
+                "deletedResult": [
+                    dict(id=str(region_public.pk), title=region_public.title),
+                    dict(id=str(region_private_owner.pk), title=region_private_owner.title),
+                    dict(id=str(region_private_with_membership.pk), title=region_private_with_membership.title),
+                ],
+                "result": [],
+            },
+        )
+        self.assertEqual(list(project.regions.values_list("id", flat=True).order_by("id")), [])
         # Check Project change logs
         self.assertMatchSnapshot(
-            list(
-                ProjectChangeLog.objects.filter(project=project).order_by('id').values('action', 'diff')
-            ),
-            'project-change-log',
+            list(ProjectChangeLog.objects.filter(project=project).order_by("id").values("action", "diff")),
+            "project-change-log",
         )
 
 
 class TestProjectJoinMutation(GraphQLTestCase):
     def setUp(self):
-        self.project_join_mutation = '''
+        self.project_join_mutation = """
             mutation Mutation($input: ProjectJoinRequestInputType!) {
               joinProject(data: $input) {
                 ok
@@ -631,13 +629,10 @@ class TestProjectJoinMutation(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
         super().setUp()
 
-    @mock.patch(
-        'project.serializers.send_project_join_request_emails.delay',
-        side_effect=send_project_join_request_emails.delay
-    )
+    @mock.patch("project.serializers.send_project_join_request_emails.delay", side_effect=send_project_join_request_emails.delay)
     def test_valid_project_join(self, send_project_join_request_email_mock):
         user = UserFactory.create()
         admin_user = UserFactory.create()
@@ -647,15 +642,13 @@ class TestProjectJoinMutation(GraphQLTestCase):
         minput = dict(project=project.id, reason=reason)
         self.force_login(user)
         notification_qs = Notification.objects.filter(
-            receiver=admin_user,
-            project=project,
-            notification_type=Notification.Type.PROJECT_JOIN_REQUEST
+            receiver=admin_user, project=project, notification_type=Notification.Type.PROJECT_JOIN_REQUEST
         )
         old_count = notification_qs.count()
         with self.captureOnCommitCallbacks(execute=True):
             content = self.query_check(self.project_join_mutation, minput=minput, okay=True)
-        self.assertEqual(content['data']['joinProject']['result']['requestedBy']['id'], str(user.id), content)
-        self.assertEqual(content['data']['joinProject']['result']['project']['id'], str(project.id), content)
+        self.assertEqual(content["data"]["joinProject"]["result"]["requestedBy"]["id"], str(user.id), content)
+        self.assertEqual(content["data"]["joinProject"]["result"]["project"]["id"], str(project.id), content)
         send_project_join_request_email_mock.assert_called_once()
         # confirm that the notification is also created
         assert notification_qs.count() > old_count
@@ -668,7 +661,7 @@ class TestProjectJoinMutation(GraphQLTestCase):
         minput = dict(project=project.id, reason=reason)
         self.force_login(user)
         content = self.query_check(self.project_join_mutation, minput=minput, okay=False)
-        self.assertEqual(len(content['data']['joinProject']['errors']), 1, content)
+        self.assertEqual(len(content["data"]["joinProject"]["errors"]), 1, content)
 
     def test_project_join_reason_length(self):
         user = UserFactory.create()
@@ -678,20 +671,20 @@ class TestProjectJoinMutation(GraphQLTestCase):
         self.force_login(user)
         # Invalid
         content = self.query_check(self.project_join_mutation, minput=minput, okay=False)
-        self.assertEqual(len(content['data']['joinProject']['errors']), 1, content)
+        self.assertEqual(len(content["data"]["joinProject"]["errors"]), 1, content)
         # Invalid
-        minput['reason'] = fuzzy.FuzzyText(length=501).fuzz()
+        minput["reason"] = fuzzy.FuzzyText(length=501).fuzz()
         content = self.query_check(self.project_join_mutation, minput=minput, okay=False)
-        self.assertEqual(len(content['data']['joinProject']['errors']), 1, content)
+        self.assertEqual(len(content["data"]["joinProject"]["errors"]), 1, content)
         # Valid (Project 1) max=500
-        minput['reason'] = fuzzy.FuzzyText(length=500).fuzz()
+        minput["reason"] = fuzzy.FuzzyText(length=500).fuzz()
         content = self.query_check(self.project_join_mutation, minput=minput, okay=True)
-        self.assertEqual(content['data']['joinProject']['errors'], None, content)
+        self.assertEqual(content["data"]["joinProject"]["errors"], None, content)
         # Valid (Project 2) min=50
-        minput['reason'] = fuzzy.FuzzyText(length=50).fuzz()
-        minput['project'] = project2.pk
+        minput["reason"] = fuzzy.FuzzyText(length=50).fuzz()
+        minput["project"] = project2.pk
         content = self.query_check(self.project_join_mutation, minput=minput, okay=True)
-        self.assertEqual(content['data']['joinProject']['errors'], None, content)
+        self.assertEqual(content["data"]["joinProject"]["errors"], None, content)
 
     def test_join_private_project(self):
         user = UserFactory.create()
@@ -700,7 +693,7 @@ class TestProjectJoinMutation(GraphQLTestCase):
         minput = dict(project=project.id, reason=reason)
         self.force_login(user)
         content = self.query_check(self.project_join_mutation, minput=minput, okay=False)
-        self.assertEqual(len(content['data']['joinProject']['errors']), 1, content)
+        self.assertEqual(len(content["data"]["joinProject"]["errors"]), 1, content)
 
     def test_already_request_sent_for_project(self):
         user = UserFactory.create()
@@ -716,12 +709,12 @@ class TestProjectJoinMutation(GraphQLTestCase):
         minput = dict(project=project.id, reason=reason)
         self.force_login(user)
         content = self.query_check(self.project_join_mutation, minput=minput, okay=False)
-        self.assertEqual(len(content['data']['joinProject']['errors']), 1, content)
+        self.assertEqual(len(content["data"]["joinProject"]["errors"]), 1, content)
 
 
 class TestProjectJoinDeleteMutation(GraphQLTestCase):
     def setUp(self):
-        self.project_join_request_delete_mutation = '''
+        self.project_join_request_delete_mutation = """
             mutation Mutation($projectId: ID!) {
               projectJoinRequestDelete(projectId: $projectId) {
                 ok
@@ -738,7 +731,7 @@ class TestProjectJoinDeleteMutation(GraphQLTestCase):
                 }
               }
             }
-        '''
+        """
         super().setUp()
 
     def test_delete_project_join_request(self):
@@ -754,13 +747,13 @@ class TestProjectJoinDeleteMutation(GraphQLTestCase):
         old_join_request_count = join_request_qs.count()
 
         self.force_login(user)
-        self.query_check(self.project_join_request_delete_mutation, variables={'projectId': project.id}, okay=True)
+        self.query_check(self.project_join_request_delete_mutation, variables={"projectId": project.id}, okay=True)
         self.assertEqual(join_request_qs.count(), old_join_request_count - 1)
 
 
 class TestProjectJoinAcceptRejectMutation(GraphQLSnapShotTestCase):
     def setUp(self):
-        self.projet_accept_reject_mutation = '''
+        self.projet_accept_reject_mutation = """
             mutation MyMutation ($projectId: ID! $joinRequestId: ID! $input: ProjectAcceptRejectInputType!) {
               project(id: $projectId) {
                 acceptRejectProject(id: $joinRequestId, data: $input) {
@@ -782,37 +775,28 @@ class TestProjectJoinAcceptRejectMutation(GraphQLSnapShotTestCase):
                 }
               }
             }
-        '''
+        """
         super().setUp()
 
-    @mock.patch(
-        'project.serializers.send_project_accept_email.delay',
-        side_effect=send_project_accept_email.delay
-    )
+    @mock.patch("project.serializers.send_project_accept_email.delay", side_effect=send_project_accept_email.delay)
     def test_project_join_request_accept(self, send_project_accept_email_mock):
         user = UserFactory.create()
         user2 = UserFactory.create()
         project = ProjectFactory.create()
         project.add_member(user, role=self.project_role_admin)
         join_request = ProjectJoinRequestFactory.create(
-            requested_by=user2,
-            project=project,
-            role=ProjectRole.get_default_role(),
-            status=ProjectJoinRequest.Status.PENDING
+            requested_by=user2, project=project, role=ProjectRole.get_default_role(), status=ProjectJoinRequest.Status.PENDING
         )
-        minput = dict(status=self.genum(ProjectJoinRequest.Status.ACCEPTED), role='normal')
+        minput = dict(status=self.genum(ProjectJoinRequest.Status.ACCEPTED), role="normal")
 
         # without login
         self.query_check(
             self.projet_accept_reject_mutation,
             minput=minput,
-            variables={'projectId': project.id, 'joinRequestId': join_request.id},
-            assert_for_error=True
+            variables={"projectId": project.id, "joinRequestId": join_request.id},
+            assert_for_error=True,
         )
-        notification_qs = Notification.objects.filter(
-            receiver=user,
-            notification_type=Notification.Type.PROJECT_JOIN_RESPONSE
-        )
+        notification_qs = Notification.objects.filter(receiver=user, notification_type=Notification.Type.PROJECT_JOIN_RESPONSE)
         old_count = notification_qs.count()
 
         # with login
@@ -821,53 +805,41 @@ class TestProjectJoinAcceptRejectMutation(GraphQLSnapShotTestCase):
             content = self.query_check(
                 self.projet_accept_reject_mutation,
                 minput=minput,
-                variables={'projectId': project.id, 'joinRequestId': join_request.id}
+                variables={"projectId": project.id, "joinRequestId": join_request.id},
             )
+        self.assertEqual(content["data"]["project"]["acceptRejectProject"]["result"]["requestedBy"]["id"], str(user2.id), content)
+        self.assertEqual(content["data"]["project"]["acceptRejectProject"]["result"]["respondedBy"]["id"], str(user.id), content)
         self.assertEqual(
-            content['data']['project']['acceptRejectProject']['result']['requestedBy']['id'],
-            str(user2.id), content
-        )
-        self.assertEqual(
-            content['data']['project']['acceptRejectProject']['result']['respondedBy']['id'],
-            str(user.id), content
-        )
-        self.assertEqual(
-            content['data']['project']['acceptRejectProject']['result']['status'],
+            content["data"]["project"]["acceptRejectProject"]["result"]["status"],
             self.genum(ProjectJoinRequest.Status.ACCEPTED),
-            content
+            content,
         )
         # make sure memberships is created
-        self.assertIn(user2.id, ProjectMembership.objects.filter(project=project).values_list('member', flat=True))
+        self.assertIn(user2.id, ProjectMembership.objects.filter(project=project).values_list("member", flat=True))
         assert notification_qs.count() > old_count
         send_project_accept_email_mock.assert_called_once()
         # Check Project change logs
         self.assertMatchSnapshot(
-            list(
-                ProjectChangeLog.objects.filter(project=project).order_by('id').values('action', 'diff')
-            ),
-            'project-change-log',
+            list(ProjectChangeLog.objects.filter(project=project).order_by("id").values("action", "diff")),
+            "project-change-log",
         )
 
-    @mock.patch(
-        'project.serializers.send_project_reject_email.delay',
-        side_effect=send_project_reject_email.delay
-    )
+    @mock.patch("project.serializers.send_project_reject_email.delay", side_effect=send_project_reject_email.delay)
     def test_project_join_request_reject(self, send_project_reject_email_mock):
         user = UserFactory.create()
         user2 = UserFactory.create()
         project = ProjectFactory.create()
         project.add_member(user, role=self.project_role_admin)
-        join_request = ProjectJoinRequestFactory.create(requested_by=user2,
-                                                        project=project,
-                                                        role=ProjectRole.get_default_role(),
-                                                        status=ProjectJoinRequest.Status.PENDING)
+        join_request = ProjectJoinRequestFactory.create(
+            requested_by=user2, project=project, role=ProjectRole.get_default_role(), status=ProjectJoinRequest.Status.PENDING
+        )
         minput = dict(status=self.genum(ProjectJoinRequest.Status.REJECTED))
         # without login
         self.query_check(
             self.projet_accept_reject_mutation,
             minput=minput,
-            variables={'projectId': project.id, 'joinRequestId': join_request.id},
-            assert_for_error=True
+            variables={"projectId": project.id, "joinRequestId": join_request.id},
+            assert_for_error=True,
         )
 
         # with login
@@ -876,12 +848,12 @@ class TestProjectJoinAcceptRejectMutation(GraphQLSnapShotTestCase):
             content = self.query_check(
                 self.projet_accept_reject_mutation,
                 minput=minput,
-                variables={'projectId': project.id, 'joinRequestId': join_request.id}
+                variables={"projectId": project.id, "joinRequestId": join_request.id},
             )
         self.assertEqual(
-            content['data']['project']['acceptRejectProject']['result']['status'],
+            content["data"]["project"]["acceptRejectProject"]["result"]["status"],
             self.genum(ProjectJoinRequest.Status.REJECTED),
-            content
+            content,
         )
         send_project_reject_email_mock.assert_called_once()
         # Check project change logs
@@ -892,7 +864,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
     ENABLE_NOW_PATCHER = True
 
     def _user_membership_bulk(self, user_role):
-        query = '''
+        query = """
           mutation MyMutation(
               $id: ID!,
               $projectMembership: [BulkProjectMembershipInputType!],
@@ -943,7 +915,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
             }
           }
         }
-        '''
+        """
         creater_user = UserFactory.create()
         user = UserFactory.create()
         low_permission_user = UserFactory.create()
@@ -961,7 +933,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         ) = UserFactory.create_batch(8)
 
         project = ProjectFactory.create(created_by=creater_user)
-        user_group = UserGroupFactory.create(title='Group-1')
+        user_group = UserGroupFactory.create(title="Group-1")
         membership1 = project.add_member(member_user1, badges=[ProjectMembership.BadgeType.QA])
         membership2 = project.add_member(member_user2)
         membership_using_user_group = project.add_member(member_user7, linked_group=user_group)
@@ -1012,17 +984,18 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                     clientId="member-user-2-with-user-group",
                     role=self.project_role_member.pk,
                     badges=[self.genum(ProjectMembership.BadgeType.QA)],
-                )
+                ),
             ],
         )
 
         def _query_check(**kwargs):
             return self.query_check(
                 query,
-                mnested=['project'],
-                variables={'id': project.id, **minput},
+                mnested=["project"],
+                variables={"id": project.id, **minput},
                 **kwargs,
             )
+
         # ---------- Without login
         _query_check(assert_for_error=True)
         # ---------- With login (with non-member)
@@ -1034,33 +1007,33 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         # ---------- With login (with higher permission)
         self.force_login(user)
         # ----------------- Some Invalid input
-        response = _query_check()['data']['project']['projectUserMembershipBulk']
-        self.assertMatchSnapshot(response, 'try 1')
+        response = _query_check()["data"]["project"]["projectUserMembershipBulk"]
+        self.assertMatchSnapshot(response, "try 1")
         # ----------------- Another try
-        minput['projectMembership'].pop(1)
-        minput['projectMembership'].extend([
-            # Invalid (changing member)
-            dict(
-                member=member_user6.pk,
-                clientId="member-user-2",
-                role=self.project_role_owner.pk,
-                id=membership2.pk,
-            ),
-            dict(
-                member=member_user2.pk,
-                clientId="member-user-2",
-                role=self.project_role_admin.pk,
-                id=membership2.pk,
-            ),
-        ])
-        response = _query_check()['data']['project']['projectUserMembershipBulk']
-        self.assertMatchSnapshot(response, 'try 2')
+        minput["projectMembership"].pop(1)
+        minput["projectMembership"].extend(
+            [
+                # Invalid (changing member)
+                dict(
+                    member=member_user6.pk,
+                    clientId="member-user-2",
+                    role=self.project_role_owner.pk,
+                    id=membership2.pk,
+                ),
+                dict(
+                    member=member_user2.pk,
+                    clientId="member-user-2",
+                    role=self.project_role_admin.pk,
+                    id=membership2.pk,
+                ),
+            ]
+        )
+        response = _query_check()["data"]["project"]["projectUserMembershipBulk"]
+        self.assertMatchSnapshot(response, "try 2")
         # Check project change logs
         self.assertMatchSnapshot(
-            list(
-                ProjectChangeLog.objects.filter(project=project).order_by('id').values('action', 'diff')
-            ),
-            'project-change-log',
+            list(ProjectChangeLog.objects.filter(project=project).order_by("id").values("action", "diff")),
+            "project-change-log",
         )
 
     def test_user_membership_using_clairvoyan_one_bulk(self):
@@ -1070,7 +1043,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         self._user_membership_bulk(self.project_role_admin)
 
     def _user_group_membership_bulk(self, user_role):
-        query = '''
+        query = """
           mutation MyMutation(
               $id: ID!,
               $projectMembership: [BulkProjectUserGroupMembershipInputType!],
@@ -1121,7 +1094,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
             }
           }
         }
-        '''
+        """
         project = ProjectFactory.create()
 
         def _add_member(usergroup, role=None, badges=[]):
@@ -1143,7 +1116,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
             member_user_group3,
             member_user_group4,
             member_user_group5,
-            member_user_group6
+            member_user_group6,
         ) = UserGroupFactory.create_batch(7)
 
         membership1 = _add_member(member_user_group1, badges=[ProjectMembership.BadgeType.QA])
@@ -1192,40 +1165,41 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         def _query_check(**kwargs):
             return self.query_check(
                 query,
-                mnested=['project'],
-                variables={'id': project.id, **minput},
+                mnested=["project"],
+                variables={"id": project.id, **minput},
                 **kwargs,
             )
+
         # ---------- With login (with higher permission)
         self.force_login(user)
         # ----------------- Some Invalid input
-        response = _query_check()['data']['project']['projectUserGroupMembershipBulk']
-        self.assertMatchSnapshot(response, 'try 1')
+        response = _query_check()["data"]["project"]["projectUserGroupMembershipBulk"]
+        self.assertMatchSnapshot(response, "try 1")
         # ----------------- Another try
-        minput['projectMembership'].pop(1)
-        minput['projectMembership'].extend([
-            # Invalid (changing member)
-            dict(
-                usergroup=member_user_group6.pk,
-                clientId="member-user-2",
-                role=self.project_role_owner.pk,
-                id=membership2.pk,
-            ),
-            dict(
-                usergroup=member_user_group2.pk,
-                clientId="member-user-2",
-                role=self.project_role_admin.pk,
-                id=membership2.pk,
-            ),
-        ])
-        response = _query_check()['data']['project']['projectUserGroupMembershipBulk']
-        self.assertMatchSnapshot(response, 'try 2')
+        minput["projectMembership"].pop(1)
+        minput["projectMembership"].extend(
+            [
+                # Invalid (changing member)
+                dict(
+                    usergroup=member_user_group6.pk,
+                    clientId="member-user-2",
+                    role=self.project_role_owner.pk,
+                    id=membership2.pk,
+                ),
+                dict(
+                    usergroup=member_user_group2.pk,
+                    clientId="member-user-2",
+                    role=self.project_role_admin.pk,
+                    id=membership2.pk,
+                ),
+            ]
+        )
+        response = _query_check()["data"]["project"]["projectUserGroupMembershipBulk"]
+        self.assertMatchSnapshot(response, "try 2")
         # Check project change logs
         self.assertMatchSnapshot(
-            list(
-                ProjectChangeLog.objects.filter(project=project).order_by('id').values('action', 'diff')
-            ),
-            'project-change-log',
+            list(ProjectChangeLog.objects.filter(project=project).order_by("id").values("action", "diff")),
+            "project-change-log",
         )
 
     def test_user_group_membership_using_clairvoyan_one_bulk(self):
@@ -1235,7 +1209,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         self._user_group_membership_bulk(self.project_role_admin)
 
     def test_project_deletion(self):
-        query = '''
+        query = """
             mutation MyMutation($projectId: ID!) {
               __typename
               project(id: $projectId) {
@@ -1249,7 +1223,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                   }
               }
             }
-        '''
+        """
         normal_user = UserFactory.create()
         admin_user = UserFactory.create()
         member_user = UserFactory.create()
@@ -1277,10 +1251,11 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         def _query_check(**kwargs):
             return self.query_check(
                 query,
-                mnested=['project'],
-                variables={'projectId': project.id},
+                mnested=["project"],
+                variables={"projectId": project.id},
                 **kwargs,
             )
+
         # without login
         _query_check(assert_for_error=True)
         _assert_project_soft_delete_status(False)
@@ -1311,17 +1286,13 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
         _assert_project_soft_delete_status(True)
         # Check project change logs
         self.assertMatchSnapshot(
-            list(
-                ProjectChangeLog.objects.filter(project=project).order_by('id').values('action', 'diff')
-            ),
-            'project-change-log',
+            list(ProjectChangeLog.objects.filter(project=project).order_by("id").values("action", "diff")),
+            "project-change-log",
         )
 
     def test_project_deletion_celery_task(self):
         def _get_project_ids():
-            return list(
-                Project.objects.values_list('id', flat=True)
-            )
+            return list(Project.objects.values_list("id", flat=True))
 
         # Check with single project
         project = ProjectFactory.create()
@@ -1334,32 +1305,30 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
 
         # Check with multiple projects
         project1 = ProjectFactory.create(
-            title='Test Project 1',
-            is_deleted=True,
-            deleted_at=self.now_datetime - timedelta(days=32)
+            title="Test Project 1", is_deleted=True, deleted_at=self.now_datetime - timedelta(days=32)
         )
-        project2 = ProjectFactory.create(title='Test Project 2')
+        project2 = ProjectFactory.create(title="Test Project 2")
         project2_1 = ProjectFactory.create(
             title="Test Project 2 [Don't Delete']",
             deleted_at=self.now_datetime - timedelta(days=32),
         )
         project3 = ProjectFactory.create(
-            title='Test Project 3',
+            title="Test Project 3",
             is_deleted=True,
             deleted_at=self.now_datetime - timedelta(days=42),
         )
         project4 = ProjectFactory.create(
-            title='Test Project 4',
+            title="Test Project 4",
             is_deleted=True,
             deleted_at=self.now_datetime - timedelta(days=20),
         )
         project5 = ProjectFactory.create(
-            title='Test Project 5',
+            title="Test Project 5",
             is_deleted=True,
             deleted_at=self.now_datetime - timedelta(days=30),
         )
         project6 = ProjectFactory.create(
-            title='Test Project 6',
+            title="Test Project 6",
             is_deleted=True,
             deleted_at=self.now_datetime - timedelta(days=29),
         )
@@ -1374,7 +1343,7 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
             [
                 project1.id,
                 project3.id,
-            ]
+            ],
         )
         self.assertEqual(
             project_ids,
@@ -1384,11 +1353,11 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 project4.id,
                 project5.id,
                 project6.id,
-            ]
+            ],
         )
 
     def test_create_user_pinned_project(self):
-        query = '''
+        query = """
             mutation MyMutation($project: ID!) {
              createUserPinnedProject(data: {project: $project}) {
              ok
@@ -1405,20 +1374,18 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
             }
          }
         }
-        '''
+        """
         project1 = ProjectFactory.create(
-            title='Test Project 1',
+            title="Test Project 1",
         )
         project2 = ProjectFactory.create(
-            title='Test Project 2',
+            title="Test Project 2",
         )
         member_user = UserFactory.create()
         owner_user = UserFactory.create()
         project1.add_member(member_user, role=self.project_role_member)
         project2.add_member(owner_user, role=self.project_role_owner)
-        minput = dict(
-            project=project1.id
-        )
+        minput = dict(project=project1.id)
 
         def _query_check(**kwargs):
             return self.query_check(
@@ -1426,35 +1393,33 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 variables=minput,
                 **kwargs,
             )
+
         self.force_login(member_user)
-        response = _query_check()['data']['createUserPinnedProject']['result']
-        self.assertEqual(response['clientId'], str(project1.id))
-        self.assertEqual(response['order'], 1)
-        self.assertEqual(response['user']['id'], str(member_user.id))
-        self.assertEqual(response['project']['id'], str(project1.id))
+        response = _query_check()["data"]["createUserPinnedProject"]["result"]
+        self.assertEqual(response["clientId"], str(project1.id))
+        self.assertEqual(response["order"], 1)
+        self.assertEqual(response["user"]["id"], str(member_user.id))
+        self.assertEqual(response["project"]["id"], str(project1.id))
         # pin project which is already pinned by user
-        response = _query_check(assert_for_error=True)['errors']
-        self.assertIn("Project already pinned!!", response[0]['message'])
+        response = _query_check(assert_for_error=True)["errors"]
+        self.assertIn("Project already pinned!!", response[0]["message"])
         # pin another project
-        minput['project'] = project2.id
-        response = _query_check()['data']['createUserPinnedProject']['result']
-        self.assertEqual(response['clientId'], str(project2.id))
-        self.assertEqual(response['order'], 2)
-        self.assertEqual(response['project']['id'], str(project2.id))
+        minput["project"] = project2.id
+        response = _query_check()["data"]["createUserPinnedProject"]["result"]
+        self.assertEqual(response["clientId"], str(project2.id))
+        self.assertEqual(response["order"], 2)
+        self.assertEqual(response["project"]["id"], str(project2.id))
 
     def test_bulk_reorder_pinned_project(self):
-        project1 = ProjectFactory.create(title='Test project 3')
-        project2 = ProjectFactory.create(title='Test project 4')
+        project1 = ProjectFactory.create(title="Test project 3")
+        project2 = ProjectFactory.create(title="Test project 4")
         member_user = UserFactory.create()
         project1.add_member(member_user, role=self.project_role_member)
         project2.add_member(member_user, role=self.project_role_member)
         pinned_project1 = ProjectPinnedFactory.create(project=project1, user=member_user, order=10)
         # pinned_project2 = ProjectPinnedFactory.create(project=project2, user=member_user, order=12)
-        minput = dict(
-            order=14,
-            id=pinned_project1.id
-        )
-        query = '''
+        minput = dict(order=14, id=pinned_project1.id)
+        query = """
               mutation MyMutation($bulkReorder: UserPinnedProjectReOrderInputType!) {
               reorderPinnedProjects(items: $bulkReorder) {
                 errors
@@ -1472,12 +1437,9 @@ class TestProjectMembershipMutation(GraphQLSnapShotTestCase):
                 }
               }
             }
-        '''
+        """
 
         def _query_check(**kwargs):
-            return self.query_check(
-                query,
-                variable=minput,
-                **kwargs
-            )
+            return self.query_check(query, variable=minput, **kwargs)
+
         self.force_login(member_user)

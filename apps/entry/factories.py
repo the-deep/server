@@ -1,14 +1,9 @@
 import factory
 from factory import fuzzy
 from factory.django import DjangoModelFactory
-
 from gallery.factories import FileFactory
 
-from .models import (
-    Entry,
-    Attribute,
-    EntryComment,
-)
+from .models import Attribute, Entry, EntryComment
 
 
 class EntryFactory(DjangoModelFactory):
@@ -22,9 +17,9 @@ class EntryFactory(DjangoModelFactory):
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
         entry = model_class(*args, **kwargs)
-        if getattr(entry, 'project', None) is None:  # Use lead's project if project is not provided
+        if getattr(entry, "project", None) is None:  # Use lead's project if project is not provided
             entry.project = entry.lead.project
-        if getattr(entry, 'analysis_framework', None) is None:  # Use lead's project's AF if AF is not provided
+        if getattr(entry, "analysis_framework", None) is None:  # Use lead's project's AF if AF is not provided
             entry.analysis_framework = entry.lead.project.analysis_framework
         entry.save()
         return entry

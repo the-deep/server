@@ -8,29 +8,29 @@ class Field(models.Model):
     is_required = models.BooleanField(default=True)
 
     # Fields
-    STRING = 'string'
-    NUMBER = 'number'
-    DATE = 'date'
-    DATERANGE = 'daterange'
-    SELECT = 'select'
-    MULTISELECT = 'multiselect'
+    STRING = "string"
+    NUMBER = "number"
+    DATE = "date"
+    DATERANGE = "daterange"
+    SELECT = "select"
+    MULTISELECT = "multiselect"
 
     FIELD_TYPES = (
-        (STRING, 'String'),
-        (NUMBER, 'Number'),
-        (DATE, 'Date'),
-        (DATERANGE, 'Date Range'),
-        (SELECT, 'Select'),
-        (MULTISELECT, 'Multiselect'),
+        (STRING, "String"),
+        (NUMBER, "Number"),
+        (DATE, "Date"),
+        (DATERANGE, "Date Range"),
+        (SELECT, "Select"),
+        (MULTISELECT, "Multiselect"),
     )
 
     # Sources
-    COUNTRIES = 'countries'
-    ORGANIZATIONS = 'organizations'
+    COUNTRIES = "countries"
+    ORGANIZATIONS = "organizations"
 
     SOURCE_TYPES = (
-        (COUNTRIES, 'Countries'),
-        (ORGANIZATIONS, 'Organizations'),
+        (COUNTRIES, "Countries"),
+        (ORGANIZATIONS, "Organizations"),
     )
 
     field_type = models.CharField(
@@ -42,7 +42,8 @@ class Field(models.Model):
     source_type = models.CharField(
         max_length=50,
         choices=SOURCE_TYPES,
-        null=True, blank=True,
+        null=True,
+        blank=True,
         default=None,
     )
 
@@ -54,11 +55,11 @@ class Field(models.Model):
     def get_options(self):
         if self.source_type in [type[0] for type in Field.SOURCE_TYPES]:
             return []
-        return [{'key': x.key, 'title': x.title} for x in self.options.all()]
+        return [{"key": x.key, "title": x.title} for x in self.options.all()]
 
     def get_value(self, raw_value):
         value = raw_value
-        options = {x['key']: x['title'] for x in self.get_options()}
+        options = {x["key"]: x["title"] for x in self.get_options()}
         if self.field_type == Field.SELECT:
             value = options.get(raw_value, raw_value)
         elif self.field_type == Field.MULTISELECT:

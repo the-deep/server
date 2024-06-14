@@ -1,19 +1,14 @@
 import factory
 from factory.django import DjangoModelFactory
 
-from .models import (
-    Project,
-    ProjectJoinRequest,
-    ProjectOrganization,
-    ProjectPinned,
-)
+from .models import Project, ProjectJoinRequest, ProjectOrganization, ProjectPinned
 
 
 class ProjectFactory(DjangoModelFactory):
     class Meta:
         model = Project
 
-    title = factory.Sequence(lambda n: f'Project-{n}')
+    title = factory.Sequence(lambda n: f"Project-{n}")
 
     @factory.post_generation
     def regions(self, create, extracted, **kwargs):

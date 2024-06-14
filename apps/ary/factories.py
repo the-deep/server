@@ -1,9 +1,6 @@
 from factory.django import DjangoModelFactory
 
-from .models import (
-    AssessmentTemplate,
-    Assessment,
-)
+from .models import Assessment, AssessmentTemplate
 
 
 class AssessmentFactory(DjangoModelFactory):

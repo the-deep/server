@@ -13,11 +13,14 @@ class CategoryEditor(UserResource):
         """
         Clone category editor
         """
-        title = overrides.get('title', '{} (cloned)'.format(
-            # Allowing addition of ' (cloned)' to charfield with maxlen 255
-            # by stripping off extra chars
-            self.title[:230]
-        ))
+        title = overrides.get(
+            "title",
+            "{} (cloned)".format(
+                # Allowing addition of ' (cloned)' to charfield with maxlen 255
+                # by stripping off extra chars
+                self.title[:230]
+            ),
+        )
         category_editor = CategoryEditor(
             title=title,
             data=self.data,
@@ -35,9 +38,7 @@ class CategoryEditor(UserResource):
         it's project
         """
         return CategoryEditor.objects.filter(
-            models.Q(project=None) |
-            models.Q(project__members=user) |
-            models.Q(project__user_groups__members=user)
+            models.Q(project=None) | models.Q(project__members=user) | models.Q(project__user_groups__members=user)
         ).distinct()
 
     def can_get(self, user):
@@ -51,10 +52,11 @@ class CategoryEditor(UserResource):
         * it belongs to a project where the user is admin
         """
         import project
+
         return (
-            self.created_by == user or
-            user.is_superuser or
-            project.models.ProjectMembership.objects.filter(
+            self.created_by == user
+            or user.is_superuser
+            or project.models.ProjectMembership.objects.filter(
                 project__in=self.project_set.all(),
                 member=user,
                 role__in=project.models.ProjectRole.get_admin_roles(),

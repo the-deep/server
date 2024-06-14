@@ -1,8 +1,7 @@
-from django.dispatch import receiver
 from django.db.models.signals import post_save
-
+from django.dispatch import receiver
 from project.models import Project, ProjectMembership
-from user.models import User, Profile
+from user.models import Profile, User
 
 
 def assign_to_default_project(user):
@@ -14,7 +13,7 @@ def assign_to_default_project(user):
         ProjectMembership.objects.create(
             member=user,
             project=default_project,
-            role='normal',
+            role="normal",
         )
 
 

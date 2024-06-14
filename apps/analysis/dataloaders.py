@@ -1,8 +1,8 @@
-from promise import Promise
 from collections import defaultdict
 
-from django.utils.functional import cached_property
 from django.db import models
+from django.utils.functional import cached_property
+from promise import Promise
 
 from utils.graphene.dataloaders import DataLoaderWithContext, WithContextMixin
 
@@ -10,28 +10,30 @@ from .models import (
     Analysis,
     AnalysisPillar,
     AnalysisReport,
+    AnalysisReportContainer,
+    AnalysisReportContainerData,
+    AnalysisReportSnapshot,
+    AnalysisReportUpload,
     AnalyticalStatement,
     AnalyticalStatementEntry,
     DiscardedEntry,
     TopicModelCluster,
-    AnalysisReportUpload,
-    AnalysisReportContainerData,
-    AnalysisReportContainer,
-    AnalysisReportSnapshot,
 )
 
 
 class AnalysisPublicationDatesLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        qs = AnalyticalStatementEntry.objects.filter(
-            analytical_statement__analysis_pillar__analysis__in=keys,
-        ).order_by().values('analytical_statement__analysis_pillar__analysis').annotate(
-            published_on_min=models.Min('entry__lead__published_on'),
-            published_on_max=models.Max('entry__lead__published_on'),
-        ).values_list(
-            'published_on_min',
-            'published_on_max',
-            'analytical_statement__analysis_pillar__analysis'
+        qs = (
+            AnalyticalStatementEntry.objects.filter(
+                analytical_statement__analysis_pillar__analysis__in=keys,
+            )
+            .order_by()
+            .values("analytical_statement__analysis_pillar__analysis")
+            .annotate(
+                published_on_min=models.Min("entry__lead__published_on"),
+                published_on_max=models.Max("entry__lead__published_on"),
+            )
+            .values_list("published_on_min", "published_on_max", "analytical_statement__analysis_pillar__analysis")
         )
         _map = {}
         for start_date, end_date, _id in qs:
@@ -45,17 +47,13 @@ class AnalysisPublicationDatesLoader(DataLoaderWithContext):
 
 class AnalysisAnalyzedEntriesLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        _map = Analysis.get_analyzed_entries([
-            Analysis(id=key) for key in keys
-        ])
+        _map = Analysis.get_analyzed_entries([Analysis(id=key) for key in keys])
         return Promise.resolve([_map.get(key, 0) for key in keys])
 
 
 class AnalysisAnalyzedLeadsLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        _map = Analysis.get_analyzed_sources([
-            Analysis(id=key) for key in keys
-        ])
+        _map = Analysis.get_analyzed_sources([Analysis(id=key) for key in keys])
         return Promise.resolve([_map.get(key, 0) for key in keys])
 
 
@@ -88,57 +86,71 @@ class AnalyticalStatementEntriesLoader(DataLoaderWithContext):
 
 class AnalysisPillarsAnalyzedEntriesLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        qs = AnalysisPillar.objects\
-            .filter(id__in=keys)\
+        qs = (
+            AnalysisPillar.objects.filter(id__in=keys)
             .annotate(
                 dragged_entries=models.functions.Coalesce(
                     models.Subquery(
-                        AnalyticalStatement.objects.filter(
-                            analysis_pillar=models.OuterRef('pk')
-                        ).order_by().values('analysis_pillar').annotate(count=models.Count(
-                            'entries',
-                            distinct=True,
-                            filter=models.Q(entries__lead__published_on__lte=models.OuterRef('analysis__end_date'))))
-                        .values('count')[:1],
+                        AnalyticalStatement.objects.filter(analysis_pillar=models.OuterRef("pk"))
+                        .order_by()
+                        .values("analysis_pillar")
+                        .annotate(
+                            count=models.Count(
+                                "entries",
+                                distinct=True,
+                                filter=models.Q(entries__lead__published_on__lte=models.OuterRef("analysis__end_date")),
+                            )
+                        )
+                        .values("count")[:1],
                         output_field=models.IntegerField(),
-                    ), 0),
+                    ),
+                    0,
+                ),
                 discarded_entries=models.functions.Coalesce(
                     models.Subquery(
-                        DiscardedEntry.objects.filter(
-                            analysis_pillar=models.OuterRef('pk')
-                        ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count(
-                            'entry',
-                            distinct=True,
-                            filter=models.Q(entry__lead__published_on__lte=models.OuterRef('analysis__end_date'))))
-                        .values('count')[:1],
+                        DiscardedEntry.objects.filter(analysis_pillar=models.OuterRef("pk"))
+                        .order_by()
+                        .values("analysis_pillar__analysis")
+                        .annotate(
+                            count=models.Count(
+                                "entry",
+                                distinct=True,
+                                filter=models.Q(entry__lead__published_on__lte=models.OuterRef("analysis__end_date")),
+                            )
+                        )
+                        .values("count")[:1],
                         output_field=models.IntegerField(),
-                    ), 0),
-                analyzed_entries=models.F('dragged_entries') + models.F('discarded_entries'),
-            ).values_list('id', 'analyzed_entries')
-        _map = {
-            _id: count
-            for _id, count in qs
-        }
+                    ),
+                    0,
+                ),
+                analyzed_entries=models.F("dragged_entries") + models.F("discarded_entries"),
+            )
+            .values_list("id", "analyzed_entries")
+        )
+        _map = {_id: count for _id, count in qs}
         return Promise.resolve([_map.get(key, 0) for key in keys])
 
 
 class AnalysisStatementAnalyzedEntriesLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        qs = AnalyticalStatement.objects.filter(id__in=keys).annotate(
-            count=models.Count('entries', distinct=True)
-        ).values('id', 'count')
-        _map = {
-            _id: count
-            for _id, count in qs
-        }
+        qs = (
+            AnalyticalStatement.objects.filter(id__in=keys)
+            .annotate(count=models.Count("entries", distinct=True))
+            .values("id", "count")
+        )
+        _map = {_id: count for _id, count in qs}
         return Promise.resolve([_map.get(key, 0) for key in keys])
 
 
 class AnalysisTopicModelClusterEntryLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        qs = TopicModelCluster.entries.through.objects.filter(
-            topicmodelcluster__in=keys,
-        ).select_related('entry').order_by('topicmodelcluster', 'entry_id')
+        qs = (
+            TopicModelCluster.entries.through.objects.filter(
+                topicmodelcluster__in=keys,
+            )
+            .select_related("entry")
+            .order_by("topicmodelcluster", "entry_id")
+        )
         _map = defaultdict(list)
         for cluster_entry in qs:
             _map[cluster_entry.topicmodelcluster_id].append(cluster_entry.entry)
@@ -151,10 +163,7 @@ class AnalysisReportUploadsLoader(DataLoaderWithContext):
         qs = AnalysisReportUpload.objects.filter(
             id__in=keys,
         )
-        _map = {
-            item.pk: item
-            for item in qs
-        }
+        _map = {item.pk: item for item in qs}
         return Promise.resolve([_map.get(key, []) for key in keys])
 
 
@@ -173,7 +182,7 @@ class OrganizationByAnalysisReportLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
         qs = AnalysisReport.organizations.through.objects.filter(
             analysisreport__in=keys,
-        ).select_related('organization')
+        ).select_related("organization")
         _map = defaultdict(list)
         for item in qs:
             _map[item.analysisreport_id].append(item.organization)
@@ -204,13 +213,14 @@ class AnalysisReportContainerByAnalysisReportLoader(DataLoaderWithContext):
 
 class LatestReportSnapshotByAnalysisReportLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        qs = AnalysisReportSnapshot.objects.filter(
-            report__in=keys,
-        ).order_by('report_id', '-published_on').distinct('report_id')
-        _map = {
-            snapshot.report_id: snapshot
-            for snapshot in qs
-        }
+        qs = (
+            AnalysisReportSnapshot.objects.filter(
+                report__in=keys,
+            )
+            .order_by("report_id", "-published_on")
+            .distinct("report_id")
+        )
+        _map = {snapshot.report_id: snapshot for snapshot in qs}
         return Promise.resolve([_map.get(key) for key in keys])
 
 

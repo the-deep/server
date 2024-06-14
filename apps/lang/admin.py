@@ -1,29 +1,32 @@
 from django.contrib import admin
 
 from deep.admin import ReadOnlyMixin
-from .models import (
-    String,
-    Link,
-    LinkCollection,
-)
+
+from .models import Link, LinkCollection, String
 
 
 @admin.register(String)
 class StringAdmin(admin.ModelAdmin):
-    search_fields = ('language', 'value',)
-    list_filter = ('language',)
+    search_fields = (
+        "language",
+        "value",
+    )
+    list_filter = ("language",)
 
 
 @admin.register(LinkCollection)
 class LinkCollectionAdmin(ReadOnlyMixin, admin.ModelAdmin):
-    search_fields = ('key',)
+    search_fields = ("key",)
 
 
 @admin.register(Link)
 class LinkAdmin(admin.ModelAdmin):
-    search_fields = ('key',)
-    autocomplete_fields = ('link_collection', 'string',)
-    list_display = ('key', 'string', 'language', 'link_collection')
+    search_fields = ("key",)
+    autocomplete_fields = (
+        "link_collection",
+        "string",
+    )
+    list_display = ("key", "string", "language", "link_collection")
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(

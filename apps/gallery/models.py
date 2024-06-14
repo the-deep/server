@@ -1,7 +1,8 @@
 import uuid as python_uuid
+
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
-from django.conf import settings
 from django.urls import reverse
 from user_resource.models import UserResource
 
@@ -10,13 +11,12 @@ class File(UserResource):
     uuid = models.UUIDField(default=python_uuid.uuid4, editable=False, unique=True)
     title = models.CharField(max_length=255)
 
-    file = models.FileField(upload_to='gallery/', max_length=255,
-                            null=True, blank=True, default=None)
+    file = models.FileField(upload_to="gallery/", max_length=255, null=True, blank=True, default=None)
     mime_type = models.CharField(max_length=130, blank=True, null=True)
     metadata = models.JSONField(default=None, blank=True, null=True)
 
     is_public = models.BooleanField(default=False)
-    projects = models.ManyToManyField('project.Project', blank=True)
+    projects = models.ManyToManyField("project.Project", blank=True)
 
     def __str__(self):
         return self.title
@@ -35,13 +35,13 @@ class File(UserResource):
         # return self in File.get_for(user)
 
     def get_file_url(self):
-        return '{protocol}://{domain}{url}'.format(
+        return "{protocol}://{domain}{url}".format(
             protocol=settings.HTTP_PROTOCOL,
             domain=settings.DJANGO_API_HOST,
             url=reverse(
-                'gallery_private_url',
-                kwargs={'uuid': self.uuid, 'filename': self.title},
-            )
+                "gallery_private_url",
+                kwargs={"uuid": self.uuid, "filename": self.title},
+            ),
         )
 
     def can_modify(self, user):
@@ -55,4 +55,4 @@ class FilePreview(models.Model):
     extracted = models.BooleanField(default=False)
 
     def __str__(self):
-        return 'Text extracted for {}'.format(self.file)
+        return "Text extracted for {}".format(self.file)

@@ -1,32 +1,28 @@
 import graphene
+from django.core.exceptions import PermissionDenied
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField
-from django.core.exceptions import PermissionDenied
 
 from deep.permissions import UserGroupPermissions as UgP
 from utils.graphene.mutation import (
-    generate_input_type_for_serializer,
     GrapheneMutation,
+    UserGroupBulkGrapheneMutation,
     UserGroupDeleteMutation,
     UserGroupGrapheneMutation,
-    UserGroupBulkGrapheneMutation,
+    generate_input_type_for_serializer,
 )
 
-from .models import UserGroup, GroupMembership
-from .schema import UserGroupType, GroupMembershipType
-from .serializers import (
-    UserGroupGqSerializer,
-    UserGroupMembershipGqlSerializer,
-)
-
+from .models import GroupMembership, UserGroup
+from .schema import GroupMembershipType, UserGroupType
+from .serializers import UserGroupGqSerializer, UserGroupMembershipGqlSerializer
 
 UserGroupInputType = generate_input_type_for_serializer(
-    'UserGroupInputType',
+    "UserGroupInputType",
     serializer_class=UserGroupGqSerializer,
 )
 
 UserGroupMembershipInputType = generate_input_type_for_serializer(
-    'UserGroupMembershipInputType',
+    "UserGroupMembershipInputType",
     serializer_class=UserGroupMembershipGqlSerializer,
 )
 
@@ -34,6 +30,7 @@ UserGroupMembershipInputType = generate_input_type_for_serializer(
 class CreateUserGroup(GrapheneMutation):
     class Arguments:
         data = UserGroupInputType(required=True)
+
     model = UserGroup
     serializer_class = UserGroupGqSerializer
     result = graphene.Field(UserGroupType)
@@ -55,11 +52,11 @@ class UpdateUserGroup(UserGroupGrapheneMutation):
     @classmethod
     def check_permissions(cls, info, **_):
         if info.context.user != info.context.active_ug.created_by:
-            raise PermissionDenied('Only creater have permission to update user group')
+            raise PermissionDenied("Only creater have permission to update user group")
 
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
-        kwargs['id'] = info.context.active_ug.id
+        kwargs["id"] = info.context.active_ug.id
         return super().perform_mutate(root, info, **kwargs)
 
 
@@ -71,11 +68,11 @@ class DeleteUserGroup(UserGroupDeleteMutation):
     @classmethod
     def check_permissions(cls, info, **_):
         if info.context.user != info.context.active_ug.created_by:
-            raise PermissionDenied('Only creater have permission to delete user group')
+            raise PermissionDenied("Only creater have permission to delete user group")
 
     @classmethod
     def perform_mutate(cls, root, info, **kwargs):
-        kwargs['id'] = info.context.active_ug.id
+        kwargs["id"] = info.context.active_ug.id
         return super().perform_mutate(root, info, **kwargs)
 
 
@@ -111,6 +108,7 @@ class UserGroupMutationType(DjangoObjectType):
     """
     This mutation is for other scoped objects
     """
+
     user_group_update = UpdateUserGroup.Field()
     user_group_delete = DeleteUserGroup.Field()
     user_group_membership_bulk = BulkUpdateUserGroupMembership.Field()
@@ -118,7 +116,7 @@ class UserGroupMutationType(DjangoObjectType):
     class Meta:
         model = UserGroup
         skip_registry = True
-        fields = ('id', 'title')
+        fields = ("id", "title")
 
     @staticmethod
     def get_custom_node(_, info, id):
@@ -130,6 +128,6 @@ class UserGroupMutationType(DjangoObjectType):
             raise PermissionDenied()
 
 
-class Mutation():
+class Mutation:
     user_group_create = CreateUserGroup.Field()
     user_group = DjangoObjectField(UserGroupMutationType)

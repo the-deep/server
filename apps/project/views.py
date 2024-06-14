@@ -1,19 +1,26 @@
 import logging
 import uuid
 
-from dateutil.relativedelta import relativedelta
+import ary.serializers as arys
 import django_filters
+from analysis.models import Analysis, AnalyticalStatementEntry, DiscardedEntry
+from dateutil.relativedelta import relativedelta
 from django.conf import settings
-from django.http import Http404
-from django.db import transaction, models
-from django.utils import timezone
-from django.utils.http import urlsafe_base64_decode
-from django.utils.encoding import force_text
 from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.db import models, transaction
 from django.db.models.functions import Cast
+from django.http import Http404
 from django.template.response import TemplateResponse
-from deep.permalinks import Permalink
-from rest_framework.exceptions import PermissionDenied
+from django.utils import timezone
+from django.utils.encoding import force_text
+from django.utils.http import urlsafe_base64_decode
+from docs.utils import mark_as_delete, mark_as_list
+from entry.models import Entry
+from entry.views import ComprehensiveEntriesViewSet
+from geo.models import Region
+from geo.serializers import RegionSerializer
+from lead.models import Lead
+from lead.views import ProjectLeadGroupViewSet
 from rest_framework import (
     exceptions,
     filters,
@@ -24,70 +31,54 @@ from rest_framework import (
     viewsets,
 )
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
-
-from docs.utils import mark_as_list, mark_as_delete
-import ary.serializers as arys
-
-from deep.views import get_frontend_url
-from deep.permissions import (
-    ModifyPermission,
-    IsProjectMember,
-)
-from deep.serializers import URLCachedFileField
-from deep.paginations import SmallSizeSetPagination
 from tabular.models import Field
-
-from user.utils import send_project_join_request_emails
-from user.serializers import SimpleUserSerializer
 from user.models import User
-from lead.models import Lead
-from lead.views import ProjectLeadGroupViewSet
-from geo.models import Region
+from user.serializers import SimpleUserSerializer
+from user.utils import send_project_join_request_emails
 from user_group.models import UserGroup
-from geo.serializers import RegionSerializer
-from entry.models import Entry
-from entry.views import ComprehensiveEntriesViewSet
-from analysis.models import (
-    Analysis,
-    AnalyticalStatementEntry,
-    DiscardedEntry
-)
 
-from .models import (
-    Project,
-    ProjectRole,
-    ProjectMembership,
-    ProjectJoinRequest,
-    ProjectUserGroupMembership,
-    ProjectStats,
-    ProjectOrganization
-)
-from .serializers import (
-    ProjectSerializer,
-    ProjectStatSerializer,
-    ProjectRoleSerializer,
-    ProjectMembershipSerializer,
-    ProjectJoinRequestSerializer,
-    ProjectUserGroupSerializer,
-    ProjectMemberViewSerializer,
-    ProjectRecentActivitySerializer,
-)
-from .permissions import (
-    JoinPermission,
-    AcceptRejectPermission,
-    MembershipModifyPermission,
-    PROJECT_PERMISSIONS,
-)
+from deep.paginations import SmallSizeSetPagination
+from deep.permalinks import Permalink
+from deep.permissions import IsProjectMember, ModifyPermission
+from deep.serializers import URLCachedFileField
+from deep.views import get_frontend_url
+
 from .filter_set import (
     ProjectFilterSet,
-    get_filtered_projects,
     ProjectMembershipFilterSet,
     ProjectUserGroupMembershipFilterSet,
+    get_filtered_projects,
+)
+from .models import (
+    Project,
+    ProjectJoinRequest,
+    ProjectMembership,
+    ProjectOrganization,
+    ProjectRole,
+    ProjectStats,
+    ProjectUserGroupMembership,
+)
+from .permissions import (
+    PROJECT_PERMISSIONS,
+    AcceptRejectPermission,
+    JoinPermission,
+    MembershipModifyPermission,
+)
+from .serializers import (
+    ProjectJoinRequestSerializer,
+    ProjectMembershipSerializer,
+    ProjectMemberViewSerializer,
+    ProjectRecentActivitySerializer,
+    ProjectRoleSerializer,
+    ProjectSerializer,
+    ProjectStatSerializer,
+    ProjectUserGroupSerializer,
 )
 from .tasks import generate_viz_stats
-
 from .token import project_request_token_generator
+
 logger = logging.getLogger(__name__)
 
 
@@ -96,41 +87,34 @@ def _get_viz_data(request, project, can_view_confidential, token=None):
     Util function to trigger and serve Project entry/ary viz data
     """
     if (
-            project.analysis_framework is None or
-            project.analysis_framework.properties is None or
-            project.analysis_framework.properties.get('stats_config') is None
+        project.analysis_framework is None
+        or project.analysis_framework.properties is None
+        or project.analysis_framework.properties.get("stats_config") is None
     ):
         return {
-            'error': f'No configuration provided for current Project: {project.title}, Contact Admin',
+            "error": f"No configuration provided for current Project: {project.title}, Contact Admin",
         }, status.HTTP_404_NOT_FOUND
 
     stats, created = ProjectStats.objects.get_or_create(project=project)
 
-    if token and (
-        not stats.public_share or token != str(stats.token)
-    ):
-        return {
-            'error': 'Token is invalid or sharing is disabled. Please contact project\'s admin.'
-        }, status.HTTP_403_FORBIDDEN
+    if token and (not stats.public_share or token != str(stats.token)):
+        return {"error": "Token is invalid or sharing is disabled. Please contact project's admin."}, status.HTTP_403_FORBIDDEN
 
     stat_file = stats.confidential_file if can_view_confidential else stats.file
-    file_url = (
-        request.build_absolute_uri(URLCachedFileField().to_representation(stat_file))
-        if stat_file else None
-    )
+    file_url = request.build_absolute_uri(URLCachedFileField().to_representation(stat_file)) if stat_file else None
     stats_meta = {
-        'data': file_url,
-        'modified_at': stats.modified_at,
-        'status': stats.status,
-        'public_share': stats.public_share,
-        'public_url': stats.get_public_url(request),
+        "data": file_url,
+        "modified_at": stats.modified_at,
+        "status": stats.status,
+        "public_share": stats.public_share,
+        "public_url": stats.get_public_url(request),
     }
 
     if stats.is_ready():
         return stats_meta, status.HTTP_200_OK
     elif stats.status == ProjectStats.Status.FAILURE:
         return {
-            'error': 'Failed to generate stats, Contact Admin',
+            "error": "Failed to generate stats, Contact Admin",
             **stats_meta,
         }, status.HTTP_200_OK
     transaction.on_commit(lambda: generate_viz_stats.delay(project.pk))
@@ -139,18 +123,19 @@ def _get_viz_data(request, project, can_view_confidential, token=None):
         stats.status = ProjectStats.Status.PENDING
         stats.save()
     return {
-        'message': 'Processing the request, try again later',
+        "message": "Processing the request, try again later",
         **stats_meta,
     }, status.HTTP_202_ACCEPTED
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated,
-                          ModifyPermission]
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
-                       filters.SearchFilter, filters.OrderingFilter)
+    permission_classes = [permissions.IsAuthenticated, ModifyPermission]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
     filterset_class = ProjectFilterSet
-    search_fields = ('title', 'description',)
+    search_fields = (
+        "title",
+        "description",
+    )
 
     def get_queryset(self):
         return get_filtered_projects(self.request.user, self.request.GET)
@@ -168,32 +153,36 @@ class ProjectViewSet(viewsets.ModelViewSet):
         """
         Return project same as get_object without any other filters
         """
-        if self.kwargs.get('pk') is not None:
-            return get_object_or_404(self.get_queryset(), pk=self.kwargs['pk'])
+        if self.kwargs.get("pk") is not None:
+            return get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
         raise Http404
 
     @action(
         detail=False,
-        url_path='recent-activities',
+        url_path="recent-activities",
     )
     def get_recent_activities(self, request, version=None):
-        return response.Response({
-            'results': ProjectRecentActivitySerializer(
-                Project.get_recent_activities(request.user),
-                context={'request': request}, many=True,
-            ).data
-        })
+        return response.Response(
+            {
+                "results": ProjectRecentActivitySerializer(
+                    Project.get_recent_activities(request.user),
+                    context={"request": request},
+                    many=True,
+                ).data
+            }
+        )
 
     """
     Get list of projects that user is member of
     """
+
     @action(
         detail=False,
         permission_classes=[permissions.IsAuthenticated],
-        url_path='member-of',
+        url_path="member-of",
     )
     def get_for_member(self, request, version=None):
-        user = self.request.GET.get('user')
+        user = self.request.GET.get("user")
         projects = Project.get_for_member(user)
 
         if user is None or request.user == user:
@@ -201,9 +190,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
         else:
             projects = Project.get_for_public(request.user, user)
 
-        user_group = request.GET.get('user_group')
+        user_group = request.GET.get("user_group")
         if user_group:
-            user_group = user_group.split(',')
+            user_group = user_group.split(",")
             projects = projects.filter(user_groups__id__in=user_group)
 
         self.page = self.paginate_queryset(projects)
@@ -213,46 +202,44 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Generate project public VIZ URL
     """
+
     @action(
         detail=True,
-        methods=['post'],
-        url_path='public-viz',
+        methods=["post"],
+        url_path="public-viz",
     )
     def generate_public_viz(self, request, pk=None, version=None):
         project = self.get_object()
-        action = request.data.get('action', 'new')
+        action = request.data.get("action", "new")
         stats, created = ProjectStats.objects.get_or_create(project=project)
-        if action == 'new':
+        if action == "new":
             stats.public_share = True
             stats.token = uuid.uuid4()
-        elif action == 'on':
+        elif action == "on":
             stats.public_share = True
             stats.token = stats.token or uuid.uuid4()
-        elif action == 'off':
+        elif action == "off":
             stats.public_share = False
         else:
-            raise exceptions.ValidationError({'action': f'Invalid action {action}'})
-        stats.save(update_fields=['token', 'public_share'])
-        return response.Response({'public_url': stats.get_public_url(request)})
+            raise exceptions.ValidationError({"action": f"Invalid action {action}"})
+        stats.save(update_fields=["token", "public_share"])
+        return response.Response({"public_url": stats.get_public_url(request)})
 
     """
     Get analysis framework for this project
     """
-    @action(
-        detail=True,
-        permission_classes=[permissions.IsAuthenticated],
-        url_path='analysis-framework'
-    )
+
+    @action(detail=True, permission_classes=[permissions.IsAuthenticated], url_path="analysis-framework")
     def get_framework(self, request, pk=None, version=None):
         from analysis_framework.serializers import AnalysisFrameworkSerializer
 
         project = self.get_object()
         if not project.analysis_framework:
-            raise exceptions.NotFound('Resource not found')
+            raise exceptions.NotFound("Resource not found")
 
         serializer = AnalysisFrameworkSerializer(
             project.analysis_framework,
-            context={'request': request},
+            context={"request": request},
         )
 
         return response.Response(serializer.data)
@@ -260,36 +247,39 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Get regions assigned to this project
     """
+
     @action(
         detail=True,
-        url_path='regions',
+        url_path="regions",
         permission_classes=[permissions.IsAuthenticated],
     )
     def get_regions(self, request, pk=None, version=None):
         instance = self.get_object()
         serializer = RegionSerializer(
             instance.regions,
-            many=True, context={'request': request},
+            many=True,
+            context={"request": request},
         )
-        return response.Response({'regions': serializer.data})
+        return response.Response({"regions": serializer.data})
 
     """
     Get assessment template for this project
     """
+
     @action(
         detail=True,
         permission_classes=[permissions.IsAuthenticated],
         serializer_class=arys.AssessmentTemplateSerializer,
-        url_path='assessment-template',
+        url_path="assessment-template",
     )
     def get_assessment_template(self, request, pk=None, version=None):
         project = self.get_object()
         if not project.assessment_template:
-            raise exceptions.NotFound('Resource not found')
+            raise exceptions.NotFound("Resource not found")
 
         serializer = arys.AssessmentTemplateSerializer(
             project.assessment_template,
-            context={'request': request},
+            context={"request": request},
         )
 
         return response.Response(serializer.data)
@@ -298,11 +288,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
     Get status for export:
     -   tabular chart generation status
     """
+
     @action(
         detail=True,
         permission_classes=[permissions.IsAuthenticated],
         serializer_class=ProjectJoinRequestSerializer,
-        url_path='export-status',
+        url_path="export-status",
     )
     def get_export_status(self, request, pk=None, version=None):
         project = self.get_object()
@@ -310,14 +301,16 @@ class ProjectViewSet(viewsets.ModelViewSet):
             cache__image_status=Field.CACHE_PENDING,
             sheet__book__project=project,
         ).count()
-        return response.Response({
-            'tabular_pending_fields_count': fields_pending_count,
-        })
+        return response.Response(
+            {
+                "tabular_pending_fields_count": fields_pending_count,
+            }
+        )
 
     @action(
         detail=True,
         permission_classes=[permissions.IsAuthenticated],
-        url_path='project-viz',
+        url_path="project-viz",
     )
     def get_project_viz_data(self, request, pk=None, version=None):
         """
@@ -325,11 +318,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
         """
         project = self.get_object()
         can_view_confidential = (
-            ProjectMembership.objects
-            .filter(member=request.user, project=project)
-            .annotate(
-                view_all=models.F('role__lead_permissions').bitand(PROJECT_PERMISSIONS.lead.view)
-            )
+            ProjectMembership.objects.filter(member=request.user, project=project)
+            .annotate(view_all=models.F("role__lead_permissions").bitand(PROJECT_PERMISSIONS.lead.view))
             .filter(view_all=PROJECT_PERMISSIONS.lead.view)
             .exists()
         )
@@ -339,34 +329,33 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Join request to this project
     """
+
     @action(
         detail=True,
         permission_classes=[permissions.IsAuthenticated, JoinPermission],
-        methods=['post'],
-        url_path='join',
+        methods=["post"],
+        url_path="join",
     )
     def join_project(self, request, pk=None, version=None):
         project = self.get_object()
 
         # Forbid join requests for private project
-        if (project.is_private):
-            raise PermissionDenied(
-                {'message': "You cannot send join request to the private project"}
-            )
+        if project.is_private:
+            raise PermissionDenied({"message": "You cannot send join request to the private project"})
 
         serializer = ProjectJoinRequestSerializer(
             data={
-                'role': ProjectRole.get_default_role().id,
+                "role": ProjectRole.get_default_role().id,
                 **request.data,
             },
-            context={'request': request, 'project': project}
+            context={"request": request, "project": project},
         )
         serializer.is_valid(raise_exception=True)
         join_request = serializer.save()
 
         serializer = ProjectJoinRequestSerializer(
             join_request,
-            context={'request': request},
+            context={"request": request},
         )
 
         if settings.TESTING:
@@ -379,27 +368,24 @@ class ProjectViewSet(viewsets.ModelViewSet):
             # while the emails are being sent in the background.
             def send_mail():
                 send_project_join_request_emails.delay(join_request.id)
+
             transaction.on_commit(send_mail)
 
-        return response.Response(serializer.data,
-                                 status=status.HTTP_201_CREATED)
+        return response.Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @staticmethod
     def _accept_request(responded_by, join_request, role):
-        if not role or role == 'normal':
+        if not role or role == "normal":
             role = ProjectRole.get_default_role()
-        elif role == 'admin':
+        elif role == "admin":
             role = ProjectRole.get_admin_role()
         else:
             role_qs = ProjectRole.objects.filter(id=role)
             if not role_qs.exists():
-                return response.Response(
-                    {'errors': 'Role id \'{}\' does not exist'.format(role)},
-                    status=status.HTTP_404_NOT_FOUND
-                )
+                return response.Response({"errors": "Role id '{}' does not exist".format(role)}, status=status.HTTP_404_NOT_FOUND)
             role = role_qs.first()
 
-        join_request.status = 'accepted'
+        join_request.status = "accepted"
         join_request.responded_by = responded_by
         join_request.responded_at = timezone.now()
         join_request.role = role
@@ -409,14 +395,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
             project=join_request.project,
             member=join_request.requested_by,
             defaults={
-                'role': role,
-                'added_by': responded_by,
+                "role": role,
+                "added_by": responded_by,
             },
         )
 
     @staticmethod
     def _reject_request(responded_by, join_request):
-        join_request.status = 'rejected'
+        join_request.status = "rejected"
         join_request.responded_by = responded_by
         join_request.responded_at = timezone.now()
         join_request.save()
@@ -425,85 +411,77 @@ class ProjectViewSet(viewsets.ModelViewSet):
     Accept a join request to this project,
     creating the membership while doing so.
     """
+
     @action(
         detail=True,
         permission_classes=[
-            permissions.IsAuthenticated, AcceptRejectPermission,
+            permissions.IsAuthenticated,
+            AcceptRejectPermission,
         ],
-        methods=['post'],
-        url_path=r'requests/(?P<request_id>\d+)/accept',
+        methods=["post"],
+        url_path=r"requests/(?P<request_id>\d+)/accept",
     )
     def accept_request(self, request, pk=None, version=None, request_id=None):
         project = self.get_object()
-        join_request = get_object_or_404(ProjectJoinRequest,
-                                         id=request_id,
-                                         project=project)
+        join_request = get_object_or_404(ProjectJoinRequest, id=request_id, project=project)
 
-        if join_request.status in ['accepted', 'rejected']:
-            raise exceptions.ValidationError(
-                'This request has already been {}'.format(join_request.status)
-            )
+        if join_request.status in ["accepted", "rejected"]:
+            raise exceptions.ValidationError("This request has already been {}".format(join_request.status))
 
-        role = request.data.get('role')
+        role = request.data.get("role")
         ProjectViewSet._accept_request(request.user, join_request, role)
 
         serializer = ProjectJoinRequestSerializer(
             join_request,
-            context={'request': request},
+            context={"request": request},
         )
         return response.Response(serializer.data)
 
     """
     Reject a join request to this project
     """
+
     @action(
         detail=True,
         permission_classes=[
-            permissions.IsAuthenticated, AcceptRejectPermission,
+            permissions.IsAuthenticated,
+            AcceptRejectPermission,
         ],
-        methods=['post'],
-        url_path=r'requests/(?P<request_id>\d+)/reject',
+        methods=["post"],
+        url_path=r"requests/(?P<request_id>\d+)/reject",
     )
     def reject_request(self, request, pk=None, version=None, request_id=None):
         project = self.get_object()
-        join_request = get_object_or_404(ProjectJoinRequest,
-                                         id=request_id,
-                                         project=project)
+        join_request = get_object_or_404(ProjectJoinRequest, id=request_id, project=project)
 
-        if join_request.status in ['accepted', 'rejected']:
-            raise exceptions.ValidationError(
-                'This request has already been {}'.format(join_request.status)
-            )
+        if join_request.status in ["accepted", "rejected"]:
+            raise exceptions.ValidationError("This request has already been {}".format(join_request.status))
 
         ProjectViewSet._reject_request(request.user, join_request)
 
         serializer = ProjectJoinRequestSerializer(
             join_request,
-            context={'request': request},
+            context={"request": request},
         )
         return response.Response(serializer.data)
 
     """
     Cancel a join request to this project
     """
+
     @mark_as_delete()
     @action(
         detail=True,
         permission_classes=[permissions.IsAuthenticated],
-        methods=['post'],
-        url_path=r'join/cancel',
+        methods=["post"],
+        url_path=r"join/cancel",
     )
     def cancel_request(self, request, pk=None, version=None, request_id=None):
         project = self.get_object()
-        join_request = get_object_or_404(ProjectJoinRequest,
-                                         requested_by=request.user,
-                                         status='pending',
-                                         project=project)
+        join_request = get_object_or_404(ProjectJoinRequest, requested_by=request.user, status="pending", project=project)
 
-        if join_request.status in ['accepted', 'rejected']:
-            raise exceptions.ValidationError(
-                'This request has already been {}'.format(join_request.status)
-            )
+        if join_request.status in ["accepted", "rejected"]:
+            raise exceptions.ValidationError("This request has already been {}".format(join_request.status))
 
         join_request.delete()
         return response.Response(status=status.HTTP_204_NO_CONTENT)
@@ -511,13 +489,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Get list of join requests for this project
     """
+
     @mark_as_list()
     @action(
         detail=True,
         permission_classes=[
-            permissions.IsAuthenticated, ModifyPermission,
+            permissions.IsAuthenticated,
+            ModifyPermission,
         ],
-        url_path='requests',
+        url_path="requests",
     )
     def get_requests(self, request, pk=None, version=None):
         project = self.get_object()
@@ -529,29 +509,25 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Comprehensive Entries
     """
-    @action(
-        detail=True,
-        permission_classes=[permissions.IsAuthenticated],
-        methods=['get'],
-        url_path=r'comprehensive-entries',
-    )
-    def comprehensive_entries(self, request, *args, **kwargs):
-        project = self.get_project_object()
-        viewfn = ComprehensiveEntriesViewSet.as_view({'get': 'list'})
-        request._request.GET = request._request.GET.copy()
-        request._request.GET['project'] = project.pk
-        return viewfn(request._request, *args, **kwargs)
 
     @action(
         detail=True,
-        permission_classes=[permissions.IsAuthenticated, IsProjectMember],
-        url_path='members'
+        permission_classes=[permissions.IsAuthenticated],
+        methods=["get"],
+        url_path=r"comprehensive-entries",
     )
+    def comprehensive_entries(self, request, *args, **kwargs):
+        project = self.get_project_object()
+        viewfn = ComprehensiveEntriesViewSet.as_view({"get": "list"})
+        request._request.GET = request._request.GET.copy()
+        request._request.GET["project"] = project.pk
+        return viewfn(request._request, *args, **kwargs)
+
+    @action(detail=True, permission_classes=[permissions.IsAuthenticated, IsProjectMember], url_path="members")
     def get_members(self, request, pk=None, version=None):
         project = self.get_object()
         members = User.objects.filter(
-            models.Q(projectmembership__project=project) |
-            models.Q(usergroup__projectusergroupmembership__project=project)
+            models.Q(projectmembership__project=project) | models.Q(usergroup__projectusergroupmembership__project=project)
         ).distinct()
         self.page = self.paginate_queryset(members)
         serializer = SimpleUserSerializer(self.page, many=True)
@@ -560,37 +536,40 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Project Lead-Groups
     """
+
     @action(
         detail=True,
         permission_classes=[permissions.IsAuthenticated],
-        methods=['get'],
-        url_path=r'lead-groups',
+        methods=["get"],
+        url_path=r"lead-groups",
     )
     def get_lead_groups(self, request, *args, **kwargs):
         project = self.get_project_object()
-        viewfn = ProjectLeadGroupViewSet.as_view({'get': 'list'})
+        viewfn = ProjectLeadGroupViewSet.as_view({"get": "list"})
         request._request.GET = request._request.GET.copy()
-        request._request.GET['project'] = project.pk
+        request._request.GET["project"] = project.pk
         return viewfn(request._request)
 
     """
     Project Questionnaire Meta
     """
+
     @action(
         detail=True,
         permission_classes=[permissions.IsAuthenticated],
-        methods=['get'],
-        url_path=r'questionnaire-meta',
+        methods=["get"],
+        url_path=r"questionnaire-meta",
     )
     def get_questionnaire_meta(self, request, *args, **kwargs):
         project = self.get_project_object()
         af = project.analysis_framework
         meta = {
-            'active_count': project.questionnaire_set.filter(is_archived=False).count(),
-            'archived_count': project.questionnaire_set.filter(is_archived=True).count(),
-            'analysis_framework': af and {
-                'id': af.id,
-                'title': af.title,
+            "active_count": project.questionnaire_set.filter(is_archived=False).count(),
+            "archived_count": project.questionnaire_set.filter(is_archived=True).count(),
+            "analysis_framework": af
+            and {
+                "id": af.id,
+                "title": af.title,
             },
         }
         return response.Response(meta)
@@ -598,72 +577,88 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     Get analysis for this project
     """
-    @action(
-        detail=True,
-        permission_classes=[permissions.IsAuthenticated, IsProjectMember],
-        url_path='analysis-overview'
-    )
+
+    @action(detail=True, permission_classes=[permissions.IsAuthenticated, IsProjectMember], url_path="analysis-overview")
     def get_analysis(self, request, pk=None, version=None):
         project = self.get_object()
         # get all the analysis in the project
         # TODO: Remove this later and let client handle this using graphql
-        analysis_list = Analysis.objects.filter(project=project).values('id', 'title', 'created_at')
+        analysis_list = Analysis.objects.filter(project=project).values("id", "title", "created_at")
 
-        total_sources = Lead.objects\
-            .filter(project=project)\
-            .annotate(entries_count=models.Count('entry'))\
-            .filter(entries_count__gt=0)\
-            .count()
+        total_sources = (
+            Lead.objects.filter(project=project).annotate(entries_count=models.Count("entry")).filter(entries_count__gt=0).count()
+        )
         entries_total = Entry.objects.filter(project=project).count()
-        entries_dragged = AnalyticalStatementEntry.objects\
-            .filter(analytical_statement__analysis_pillar__analysis__project=project)\
-            .order_by().values('entry').distinct()
-        entries_discarded = DiscardedEntry.objects\
-            .filter(analysis_pillar__analysis__project=project)\
-            .order_by().values('entry').distinct()
+        entries_dragged = (
+            AnalyticalStatementEntry.objects.filter(analytical_statement__analysis_pillar__analysis__project=project)
+            .order_by()
+            .values("entry")
+            .distinct()
+        )
+        entries_discarded = (
+            DiscardedEntry.objects.filter(analysis_pillar__analysis__project=project).order_by().values("entry").distinct()
+        )
         total_analyzed_entries = entries_discarded.union(entries_dragged).count()
 
-        sources_discarded = DiscardedEntry.objects\
-            .filter(analysis_pillar__analysis__project=project)\
-            .order_by().values('entry__lead_id').distinct()
-        sources_dragged = AnalyticalStatementEntry.objects\
-            .filter(analytical_statement__analysis_pillar__analysis__project=project)\
-            .order_by().values('entry__lead_id').distinct()
+        sources_discarded = (
+            DiscardedEntry.objects.filter(analysis_pillar__analysis__project=project)
+            .order_by()
+            .values("entry__lead_id")
+            .distinct()
+        )
+        sources_dragged = (
+            AnalyticalStatementEntry.objects.filter(analytical_statement__analysis_pillar__analysis__project=project)
+            .order_by()
+            .values("entry__lead_id")
+            .distinct()
+        )
         total_analyzed_sources = sources_dragged.union(sources_discarded).count()
 
-        lead_qs = Lead.objects\
-            .filter(project=project, authors__organization_type__isnull=False)\
+        lead_qs = (
+            Lead.objects.filter(project=project, authors__organization_type__isnull=False)
             .annotate(
-                entries_count=models.functions.Coalesce(models.Subquery(
-                    AnalyticalStatementEntry.objects.filter(
-                        entry__lead_id=models.OuterRef('pk')
-                    ).order_by().values('entry__lead_id').annotate(count=models.Count('*'))
-                    .values('count')[:1],
-                    output_field=models.IntegerField(),
-                ), 0)
-            ).filter(entries_count__gt=0)
-        authoring_organizations = Lead.objects\
-            .filter(id__in=lead_qs)\
-            .order_by('authors__organization_type').values('authors__organization_type')\
-            .annotate(
-                count=models.Count('id'),
-                organization_type_title=models.functions.Coalesce(
-                    models.F('authors__organization_type__title'),
-                    models.Value(''),
-                )).values(
-                'count',
-                'organization_type_title',
-                organization_type_id=models.F('authors__organization_type'),
+                entries_count=models.functions.Coalesce(
+                    models.Subquery(
+                        AnalyticalStatementEntry.objects.filter(entry__lead_id=models.OuterRef("pk"))
+                        .order_by()
+                        .values("entry__lead_id")
+                        .annotate(count=models.Count("*"))
+                        .values("count")[:1],
+                        output_field=models.IntegerField(),
+                    ),
+                    0,
+                )
             )
+            .filter(entries_count__gt=0)
+        )
+        authoring_organizations = (
+            Lead.objects.filter(id__in=lead_qs)
+            .order_by("authors__organization_type")
+            .values("authors__organization_type")
+            .annotate(
+                count=models.Count("id"),
+                organization_type_title=models.functions.Coalesce(
+                    models.F("authors__organization_type__title"),
+                    models.Value(""),
+                ),
+            )
+            .values(
+                "count",
+                "organization_type_title",
+                organization_type_id=models.F("authors__organization_type"),
+            )
+        )
 
-        return response.Response({
-            'analysis_list': analysis_list,
-            'entries_total': entries_total,
-            'analyzed_entries_count': total_analyzed_entries,
-            'sources_total': total_sources,
-            'analyzed_source_count': total_analyzed_sources,
-            'authoring_organizations': authoring_organizations
-        })
+        return response.Response(
+            {
+                "analysis_list": analysis_list,
+                "entries_total": entries_total,
+                "analyzed_entries_count": total_analyzed_entries,
+                "sources_total": total_sources,
+                "analyzed_source_count": total_analyzed_sources,
+                "authoring_organizations": authoring_organizations,
+            }
+        )
 
 
 class ProjectStatViewSet(ProjectViewSet):
@@ -673,20 +668,20 @@ class ProjectStatViewSet(ProjectViewSet):
         return ProjectStatSerializer
 
     def get_queryset(self):
-        return get_filtered_projects(
-            self.request.user, self.request.GET,
-            annotate=True,
-        ).prefetch_related(
-            'regions', 'organizations',
-        ).select_related(
-            'created_by__profile', 'modified_by__profile'
+        return (
+            get_filtered_projects(
+                self.request.user,
+                self.request.GET,
+                annotate=True,
+            )
+            .prefetch_related(
+                "regions",
+                "organizations",
+            )
+            .select_related("created_by__profile", "modified_by__profile")
         )
 
-    @action(
-        detail=False,
-        permission_classes=[permissions.IsAuthenticated],
-        url_path='recent'
-    )
+    @action(detail=False, permission_classes=[permissions.IsAuthenticated], url_path="recent")
     def get_recent_projects(self, request, *args, **kwargs):
         # Only pull project data for which user is member of
         qs = self.get_queryset().filter(Project.get_query_for_member(request.user))
@@ -699,67 +694,68 @@ class ProjectStatViewSet(ProjectViewSet):
             ).data
         )
 
-    @action(
-        detail=False,
-        permission_classes=[permissions.IsAuthenticated],
-        url_path='summary'
-    )
+    @action(detail=False, permission_classes=[permissions.IsAuthenticated], url_path="summary")
     def get_projects_summary(self, request, pk=None, version=None):
         projects = Project.get_for_member(request.user)
         # Lead stats
         leads = Lead.objects.filter(project__in=projects)
-        total_leads_tagged_count = leads.annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
-        total_leads_tagged_and_controlled_count = leads.annotate(
-            entries_count=models.Count('entry'),
-            controlled_entries_count=models.Count(
-                'entry', filter=models.Q(entry__controlled=True)
-            ),
-        ).filter(entries_count__gt=0, entries_count=models.F('controlled_entries_count')).count()
+        total_leads_tagged_count = leads.annotate(entries_count=models.Count("entry")).filter(entries_count__gt=0).count()
+        total_leads_tagged_and_controlled_count = (
+            leads.annotate(
+                entries_count=models.Count("entry"),
+                controlled_entries_count=models.Count("entry", filter=models.Q(entry__controlled=True)),
+            )
+            .filter(entries_count__gt=0, entries_count=models.F("controlled_entries_count"))
+            .count()
+        )
         # Entries activity
         recent_projects_id = list(
-            projects.annotate(
-                entries_count=Cast(KeyTextTransform('entries_activity', 'stats_cache'), models.IntegerField())
-            ).filter(entries_count__gt=0).order_by('-entries_count').values_list('id', flat=True)[:3])
+            projects.annotate(entries_count=Cast(KeyTextTransform("entries_activity", "stats_cache"), models.IntegerField()))
+            .filter(entries_count__gt=0)
+            .order_by("-entries_count")
+            .values_list("id", flat=True)[:3]
+        )
         recent_entries = Entry.objects.filter(
-            project__in=recent_projects_id,
-            created_at__gte=(timezone.now() + relativedelta(months=-3))
+            project__in=recent_projects_id, created_at__gte=(timezone.now() + relativedelta(months=-3))
         )
         recent_entries_activity = {
-            'projects': (
-                recent_entries.order_by().values('project')
-                .annotate(count=models.Count('*'))
+            "projects": (
+                recent_entries.order_by()
+                .values("project")
+                .annotate(count=models.Count("*"))
                 .filter(count__gt=0)
-                .values('count', id=models.F('project'), title=models.F('project__title'))
+                .values("count", id=models.F("project"), title=models.F("project__title"))
             ),
-            'activities': (
-                recent_entries.order_by('project', 'created_at__date').values('project', 'created_at__date')
-                .annotate(count=models.Count('*'))
-                .values('project', 'count', date=models.Func(models.F('created_at__date'), function='DATE'))
+            "activities": (
+                recent_entries.order_by("project", "created_at__date")
+                .values("project", "created_at__date")
+                .annotate(count=models.Count("*"))
+                .values("project", "count", date=models.Func(models.F("created_at__date"), function="DATE"))
             ),
         }
-        return response.Response({
-            'projects_count': projects.count(),
-            'total_leads_count': leads.count(),
-            'total_leads_tagged_count': total_leads_tagged_count,
-            'total_leads_tagged_and_controlled_count': total_leads_tagged_and_controlled_count,
-            'recent_entries_activity': recent_entries_activity,
-        })
+        return response.Response(
+            {
+                "projects_count": projects.count(),
+                "total_leads_count": leads.count(),
+                "total_leads_tagged_count": total_leads_tagged_count,
+                "total_leads_tagged_and_controlled_count": total_leads_tagged_and_controlled_count,
+                "recent_entries_activity": recent_entries_activity,
+            }
+        )
 
 
 class ProjectMembershipViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectMembershipSerializer
-    permission_classes = [permissions.IsAuthenticated,
-                          ModifyPermission, MembershipModifyPermission]
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
-                       filters.SearchFilter, filters.OrderingFilter)
+    permission_classes = [permissions.IsAuthenticated, ModifyPermission, MembershipModifyPermission]
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
     filterset_class = ProjectMembershipFilterSet
 
     def get_serializer(self, *args, **kwargs):
-        data = kwargs.get('data')
-        list = data and data.get('list')
+        data = kwargs.get("data")
+        list = data and data.get("list")
         if list:
-            kwargs.pop('data')
-            kwargs.pop('many', None)
+            kwargs.pop("data")
+            kwargs.pop("many", None)
             return super().get_serializer(
                 data=list,
                 many=True,
@@ -772,47 +768,47 @@ class ProjectMembershipViewSet(viewsets.ModelViewSet):
         )
 
     def finalize_response(self, request, response, *args, **kwargs):
-        if request.method == 'POST' and isinstance(response.data, list):
+        if request.method == "POST" and isinstance(response.data, list):
             response.data = {
-                'results': response.data,
+                "results": response.data,
             }
         return super().finalize_response(
-            request, response,
-            *args, **kwargs,
+            request,
+            response,
+            *args,
+            **kwargs,
         )
 
     def get_queryset(self):
-        return ProjectMembership.get_for(self.request.user).filter(project=self.kwargs['project_id']).select_related(
-            'role'
-        )
+        return ProjectMembership.get_for(self.request.user).filter(project=self.kwargs["project_id"]).select_related("role")
 
 
 class ProjectOptionsView(views.APIView):
     """
     Options for various attributes related to project
     """
+
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, version=None):
-        project_query = request.GET.get('project')
-        fields_query = request.GET.get('fields')
+        project_query = request.GET.get("project")
+        fields_query = request.GET.get("fields")
 
         projects = None
         if project_query:
-            projects = Project.get_for(request.user).filter(
-                id__in=project_query.split(',')
-            )
+            projects = Project.get_for(request.user).filter(id__in=project_query.split(","))
 
         fields = None
         if fields_query:
-            fields = fields_query.split(',')
+            fields = fields_query.split(",")
 
         options = {
-            'project_organization_types': [
+            "project_organization_types": [
                 {
-                    'key': s[0],
-                    'value': s[1],
-                } for s in ProjectOrganization.Type.choices
+                    "key": s[0],
+                    "value": s[1],
+                }
+                for s in ProjectOrganization.Type.choices
             ],
         }
 
@@ -821,57 +817,54 @@ class ProjectOptionsView(views.APIView):
                 qs = qs.filter(project=p)
             return qs
 
-        if (fields is None or 'regions' in fields):
+        if fields is None or "regions" in fields:
             if projects:
                 project_regions = _filter_by_projects(Region.objects, projects).distinct()
             else:
                 project_regions = Region.objects.none()
             user_regions = Region.get_for(request.user)
-            regions = Region.objects.filter(id__in=(project_regions | user_regions).values('id')).distinct()
+            regions = Region.objects.filter(id__in=(project_regions | user_regions).values("id")).distinct()
             # regions = regions1.union(regions2).distinct()
 
-            options['regions'] = [
+            options["regions"] = [
                 {
-                    'key': region.id,
-                    'value': region.get_verbose_title(),
-                } for region in regions
+                    "key": region.id,
+                    "value": region.get_verbose_title(),
+                }
+                for region in regions
             ]
 
-        if (fields is None or 'user_groups' in fields):
+        if fields is None or "user_groups" in fields:
             if projects:
                 project_user_groups = _filter_by_projects(UserGroup.objects, projects).distinct()
             else:
                 project_user_groups = UserGroup.objects.none()
-            user_user_groups = UserGroup.get_modifiable_for(request.user)\
-                .distinct()
-            user_groups = UserGroup.objects.filter(id__in=(project_user_groups | user_user_groups).values('id')).distinct()
+            user_user_groups = UserGroup.get_modifiable_for(request.user).distinct()
+            user_groups = UserGroup.objects.filter(id__in=(project_user_groups | user_user_groups).values("id")).distinct()
             # user_groups = user_groups1.union(user_groups2)
 
-            options['user_groups'] = user_groups.distinct().annotate(
-                key=models.F('id'),
-                value=models.F('title')
-            ).values('key', 'value')
+            options["user_groups"] = (
+                user_groups.distinct().annotate(key=models.F("id"), value=models.F("title")).values("key", "value")
+            )
 
-        if (fields is None or 'involvement' in fields):
-            options['involvement'] = [
-                {'key': 'my_projects', 'value': 'My projects'},
-                {'key': 'not_my_projects', 'value': 'Not my projects'}
+        if fields is None or "involvement" in fields:
+            options["involvement"] = [
+                {"key": "my_projects", "value": "My projects"},
+                {"key": "not_my_projects", "value": "Not my projects"},
             ]
-        options['project_status'] = [
-            {
-                'key': value,
-                'value': label
-            } for value, label in Project.Status.choices
-        ]
+        options["project_status"] = [{"key": value, "value": label} for value, label in Project.Status.choices]
         return response.Response(options)
 
 
 def accept_project_confirm(
-    request, uidb64, pidb64, token,
-    template_name='project/project_join_request_confirm.html',
+    request,
+    uidb64,
+    pidb64,
+    token,
+    template_name="project/project_join_request_confirm.html",
 ):
-    accept = request.GET.get('accept', 'True').lower() == 'true'
-    role = request.GET.get('role', 'normal')
+    accept = request.GET.get("accept", "True").lower() == "true"
+    role = request.GET.get("role", "normal")
     try:
         uid = force_text(urlsafe_base64_decode(uidb64))
         pid = force_text(urlsafe_base64_decode(pidb64))
@@ -888,27 +881,26 @@ def accept_project_confirm(
         join_request = None
 
     request_data = {
-        'join_request': join_request,
-        'will_responded_by': user,
+        "join_request": join_request,
+        "will_responded_by": user,
     }
     context = {
-        'title': 'Project Join Request',
-        'success': True,
-        'accept': accept,
-        'role': role,
-        'frontend_url': get_frontend_url(''),
-        'join_request': join_request,
-        'project_url': Permalink.project(join_request.project.id) if join_request else None,
+        "title": "Project Join Request",
+        "success": True,
+        "accept": accept,
+        "role": role,
+        "frontend_url": get_frontend_url(""),
+        "join_request": join_request,
+        "project_url": Permalink.project(join_request.project.id) if join_request else None,
     }
 
-    if (join_request and user) is not None and\
-            project_request_token_generator.check_token(request_data, token):
+    if (join_request and user) is not None and project_request_token_generator.check_token(request_data, token):
         if accept:
             ProjectViewSet._accept_request(user, join_request, role)
         else:
             ProjectViewSet._reject_request(user, join_request)
     else:
-        context['success'] = False
+        context["success"] = False
 
     return TemplateResponse(request, template_name, context)
 
@@ -916,18 +908,15 @@ def accept_project_confirm(
 class ProjectRoleViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ProjectRoleSerializer
     permission_classes = [permissions.IsAuthenticated]
-    queryset = ProjectRole.objects.order_by('level')
+    queryset = ProjectRole.objects.order_by("level")
 
 
 class ProjectUserGroupViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectUserGroupSerializer
     permission_classes = [permissions.IsAuthenticated, ModifyPermission]
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,
-                       filters.SearchFilter, filters.OrderingFilter)
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
     queryset = ProjectUserGroupMembership.objects.all()
     filterset_class = ProjectUserGroupMembershipFilterSet
 
     def get_queryset(self):
-        return ProjectUserGroupMembership.objects.filter(project=self.kwargs['project_id']).select_related(
-            'role'
-        )
+        return ProjectUserGroupMembership.objects.filter(project=self.kwargs["project_id"]).select_related("role")

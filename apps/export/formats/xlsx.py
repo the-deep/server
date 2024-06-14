@@ -1,16 +1,10 @@
 from collections import OrderedDict
 
-
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.writer.excel import save_virtual_workbook
 
-from utils.common import (
-    get_valid_xml_string,
-    parse_date,
-    parse_time,
-    parse_number,
-)
+from utils.common import get_valid_xml_string, parse_date, parse_number, parse_time
 
 
 def xstr(value):
@@ -23,6 +17,7 @@ class WorkBook:
     """
     An xlsx workbook
     """
+
     def __init__(self):
         self.wb = Workbook()
 
@@ -37,15 +32,15 @@ class WorkBook:
 
 
 COL_TYPES = {
-    'date': 'dd-mm-yyyy',
-    'time': 'HH:MM',
-    'number': '',
+    "date": "dd-mm-yyyy",
+    "time": "HH:MM",
+    "number": "",
 }
 
 TYPE_CONVERTERS = {
-    'date': lambda x: parse_date(x) or x,
-    'time': lambda x: parse_time(x) or x,
-    'number': lambda x: parse_number(x) or x,
+    "date": lambda x: parse_date(x) or x,
+    "time": lambda x: parse_time(x) or x,
+    "number": lambda x: parse_number(x) or x,
 }
 
 
@@ -53,6 +48,7 @@ class WorkSheet:
     """
     A worksheet inside a workbook
     """
+
     def __init__(self, ws):
         self.ws = ws
 
@@ -78,9 +74,9 @@ class WorkSheet:
     def set_col_types(self, col_types):
         for col_index, col_type in col_types.items():
             for cell_t in self.ws.iter_rows(
-                    min_row=2,
-                    min_col=col_index + 1,
-                    max_col=col_index + 1,
+                min_row=2,
+                min_col=col_index + 1,
+                max_col=col_index + 1,
             ):
                 if len(cell_t) < 1:
                     continue
@@ -92,6 +88,7 @@ class RowsBuilder:
     """
     Rows builder to build rows that permute with new rows
     """
+
     def __init__(self, split_sheet=None, group_sheet=None, split=True):
         self.rows = [[]]
         self.group_rows = []
@@ -121,7 +118,7 @@ class RowsBuilder:
         num = len(values)
 
         if num == 0:
-            self.add_value('')
+            self.add_value("")
             return self
 
         if num == 1:
@@ -141,7 +138,7 @@ class RowsBuilder:
                 for j in range(0, len(oldrows)):
                     self.rows[i * len(oldrows) + j].append(values[i])
 
-        self.group_rows.append(', '.join(values))
+        self.group_rows.append(", ".join(values))
 
         return self
 
@@ -156,7 +153,7 @@ class RowsBuilder:
         num = len(values)
 
         if num == 0:
-            self.add_value_list([''] * col_span)
+            self.add_value_list([""] * col_span)
             return self
 
         if num == 1:
@@ -181,10 +178,12 @@ class RowsBuilder:
         # Convert each zipped to list and convert overall to list as well
         for column in list(map(list, zip(*values))):
             # Make sure each column only contains unique values
-            self.group_rows.append(', '.join(
-                # sorted(list(dict.fromkeys(column)))
-                list(OrderedDict.fromkeys(filter(lambda x: x not in [None, ''], column)))
-            ))
+            self.group_rows.append(
+                ", ".join(
+                    # sorted(list(dict.fromkeys(column)))
+                    list(OrderedDict.fromkeys(filter(lambda x: x not in [None, ""], column)))
+                )
+            )
 
         return self
 

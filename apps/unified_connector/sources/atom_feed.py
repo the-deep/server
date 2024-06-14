@@ -1,35 +1,33 @@
 import time
+
 import feedparser
 import requests
-from rest_framework import serializers
-
-from lead.models import Lead
 from connector.utils import ConnectorWrapper
+from lead.models import Lead
+from rest_framework import serializers
 
 from .rss_feed import RssFeed
 
 
 @ConnectorWrapper
 class AtomFeed(RssFeed):
-    title = 'Atom Feed'
-    key = 'atom-feed'
+    title = "Atom Feed"
+    key = "atom-feed"
 
     def get_content(self, url, params):
         resp = requests.get(url)
         return resp.content
 
     def query_fields(self, params):
-        if not params or not params.get('feed-url'):
+        if not params or not params.get("feed-url"):
             return []
 
-        feed_url = params['feed-url']
+        feed_url = params["feed-url"]
         feed = feedparser.parse(feed_url)
         items = feed.entries
 
-        if feed.get('bozo_exception'):
-            raise serializers.ValidationError({
-                'feed-url': 'Could not fetch/parse atom feed'
-            })
+        if feed.get("bozo_exception"):
+            raise serializers.ValidationError({"feed-url": "Could not fetch/parse atom feed"})
 
         if not items:
             return []
@@ -44,18 +42,18 @@ class AtomFeed(RssFeed):
                     fields[key] = {}  # Ignore this fields
                 else:
                     fields[key] = {
-                        'key': key,
-                        'label': key.replace('_', ' ').title(),
+                        "key": key,
+                        "label": key.replace("_", " ").title(),
                     }
 
         return [option for option in fields.values() if option]
 
     def fetch(self, params):
         results = []
-        if not params or not params.get('feed-url'):
+        if not params or not params.get("feed-url"):
             return results, 0
 
-        feed_url = params['feed-url']
+        feed_url = params["feed-url"]
         content = self.get_content(feed_url, {})
 
         feed = feedparser.parse(content)
@@ -66,7 +64,7 @@ class AtomFeed(RssFeed):
 
         for item in limited_items:
             data = {
-                'source_type': Lead.SourceType.RSS,
+                "source_type": Lead.SourceType.RSS,
                 **{
                     lead_field: (item or {}).get(params.get(param_key))
                     for lead_field, param_key in self._option_lead_field_map.items()

@@ -2,7 +2,7 @@ import datetime
 
 from lead.models import Lead
 
-HUMANITARIAN_RESPONSE_MOCK_DATA_RAW = '''
+HUMANITARIAN_RESPONSE_MOCK_DATA_RAW = """
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
    <body class="html not-front not-logged-in one-sidebar sidebar-first page-documents page-documents-table i18n-en" >
@@ -160,61 +160,61 @@ HUMANITARIAN_RESPONSE_MOCK_DATA_RAW = '''
         </div>
    </body>
 </html>
-'''
+"""
 
 HUMANITARIAN_RESPONSE_MOCK_EXCEPTED_LEADS = [
     {
-        'id': 'https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/compte_rendu_-_avril_2021.pdf',
-        'title': 'Compte rendu – avril 2021',
-        'published_on': datetime.date(2028, 4, 28),
-        'url': 'https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/compte_rendu_-_avril_2021.pdf',
-        'source_raw': 'Humanitarian Response',
-        'author_raw': 'Humanitarian Response',
-        'source_type': Lead.SourceType.WEBSITE
+        "id": "https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/compte_rendu_-_avril_2021.pdf",
+        "title": "Compte rendu – avril 2021",
+        "published_on": datetime.date(2028, 4, 28),
+        "url": "https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/compte_rendu_-_avril_2021.pdf",
+        "source_raw": "Humanitarian Response",
+        "author_raw": "Humanitarian Response",
+        "source_type": Lead.SourceType.WEBSITE,
     },
     {
-        'id': 'https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/compte_rendu_-_janvier_2021.pdf',
-        'title': 'Compte rendu – janvier 2021',
-        'published_on': datetime.date(2027, 1, 27),
-        'url': 'https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/compte_rendu_-_janvier_2021.pdf',
-        'source_raw': 'Humanitarian Response',
-        'author_raw': 'Humanitarian Response',
-        'source_type': Lead.SourceType.WEBSITE
+        "id": "https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/compte_rendu_-_janvier_2021.pdf",
+        "title": "Compte rendu – janvier 2021",
+        "published_on": datetime.date(2027, 1, 27),
+        "url": "https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/compte_rendu_-_janvier_2021.pdf",
+        "source_raw": "Humanitarian Response",
+        "author_raw": "Humanitarian Response",
+        "source_type": Lead.SourceType.WEBSITE,
     },
     {
-        'id': 'https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/2021-12_sudan_2022_humanitarian_response_plan_january_-_december_2022.pdf',
-        'title': 'Sudan 2022 Humanitarian Response Plan (January - December 2022)',
-        'published_on': datetime.date(2022, 12, 20),
-        'url': 'https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/2021-12_sudan_2022_humanitarian_response_plan_january_-_december_2022.pdf',
-        'source_raw': 'Humanitarian Response',
-        'author_raw': 'Humanitarian Response',
-        'source_type': Lead.SourceType.WEBSITE
+        "id": "https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/2021-12_sudan_2022_humanitarian_response_plan_january_-_december_2022.pdf",
+        "title": "Sudan 2022 Humanitarian Response Plan (January - December 2022)",
+        "published_on": datetime.date(2022, 12, 20),
+        "url": "https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/2021-12_sudan_2022_humanitarian_response_plan_january_-_december_2022.pdf",
+        "source_raw": "Humanitarian Response",
+        "author_raw": "Humanitarian Response",
+        "source_type": Lead.SourceType.WEBSITE,
     },
     {
-        'id': 'https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/10_27_2021_bay_south-west_wash_cluster_meeting_minutes.pdf',
-        'title': '10_27_2021_Bay_South-West WASH Cluster Meeting Minutes',
-        'published_on': datetime.date(2022, 10, 27),
-        'url': 'https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/10_27_2021_bay_south-west_wash_cluster_meeting_minutes.pdf',
-        'source_raw': 'Humanitarian Response',
-        'author_raw': 'Humanitarian Response',
-        'source_type': Lead.SourceType.WEBSITE
+        "id": "https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/10_27_2021_bay_south-west_wash_cluster_meeting_minutes.pdf",
+        "title": "10_27_2021_Bay_South-West WASH Cluster Meeting Minutes",
+        "published_on": datetime.date(2022, 10, 27),
+        "url": "https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/10_27_2021_bay_south-west_wash_cluster_meeting_minutes.pdf",
+        "source_raw": "Humanitarian Response",
+        "author_raw": "Humanitarian Response",
+        "source_type": Lead.SourceType.WEBSITE,
     },
     {
-        'id': 'https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/flood_rna.zip',
-        'title': 'NWS AAWG - Flood RNA - 2021',
-        'published_on': datetime.date(2022, 10, 15),
-        'url': 'https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/flood_rna.zip',
-        'source_raw': 'Humanitarian Response',
-        'author_raw': 'Humanitarian Response',
-        'source_type': Lead.SourceType.WEBSITE
+        "id": "https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/flood_rna.zip",
+        "title": "NWS AAWG - Flood RNA - 2021",
+        "published_on": datetime.date(2022, 10, 15),
+        "url": "https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/flood_rna.zip",
+        "source_raw": "Humanitarian Response",
+        "author_raw": "Humanitarian Response",
+        "source_type": Lead.SourceType.WEBSITE,
     },
     {
-        'id': 'https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/chapeau_isp_-_cameroon_sept_2021_v2.pdf',
-        'title': 'Cameroon: Chapeau - Information Sharing Protocols for Data Responsibility, September 2021',
-        'published_on': datetime.date(2022, 10, 3),
-        'url': 'https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/chapeau_isp_-_cameroon_sept_2021_v2.pdf',
-        'source_raw': 'Humanitarian Response',
-        'author_raw': 'Humanitarian Response',
-        'source_type': Lead.SourceType.WEBSITE
-    }
+        "id": "https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/chapeau_isp_-_cameroon_sept_2021_v2.pdf",
+        "title": "Cameroon: Chapeau - Information Sharing Protocols for Data Responsibility, September 2021",
+        "published_on": datetime.date(2022, 10, 3),
+        "url": "https://www.humanitarianresponse.info/sites/www.humanitarianresponse.info/files/documents/files/chapeau_isp_-_cameroon_sept_2021_v2.pdf",
+        "source_raw": "Humanitarian Response",
+        "author_raw": "Humanitarian Response",
+        "source_type": Lead.SourceType.WEBSITE,
+    },
 ]

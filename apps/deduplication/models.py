@@ -1,11 +1,10 @@
-import pickle
-from django.db import models
-
 import logging
+import pickle
 
-from apps.user_resource.models import UserResourceCreated
+from django.db import models
 from project.models import Project
 
+from apps.user_resource.models import UserResourceCreated
 
 logger = logging.getLogger(__name__)
 
@@ -69,16 +68,10 @@ class LSHIndex(UserResourceCreated):
 
     def load_index(self):
         """This sets the attribute index if pickle is present"""
-        if (
-            hasattr(self, "index_pickle") and
-            self.index_pickle is not None and
-            self.pickle_version is not None
-        ):
+        if hasattr(self, "index_pickle") and self.index_pickle is not None and self.pickle_version is not None:
             supported_formats = pickle.compatible_formats
             if self.pickle_version not in supported_formats:
-                logger.warn(
-                    "Pickle versions not compatible, setting index to None"
-                )
+                logger.warn("Pickle versions not compatible, setting index to None")
                 self._index = None
             else:
                 self._index = pickle.loads(self.index_pickle)
@@ -88,9 +81,7 @@ class LSHIndex(UserResourceCreated):
 
     @property
     def index(self):
-        if not self._index_loaded or (
-            self._index is None and self.index_pickle is not None
-        ):
+        if not self._index_loaded or (self._index is None and self.index_pickle is not None):
             self.load_index()
         return self._index
 

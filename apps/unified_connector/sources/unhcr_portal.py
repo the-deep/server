@@ -1,15 +1,14 @@
-import json
 import copy
-import requests
 import datetime
+import json
 
+import requests
 from bs4 import BeautifulSoup as Soup
-
-from utils.common import deep_date_format
 from connector.utils import ConnectorWrapper
 
-from .base import Source
+from utils.common import deep_date_format
 
+from .base import Source
 
 COUNTRIES_OPTIONS = [
     {"label": "All", "key": ""},
@@ -217,37 +216,32 @@ COUNTRIES_OPTIONS = [
 
 def _format_date_or_none(iso_datestr):
     try:
-        return deep_date_format(datetime.datetime.strptime(iso_datestr, '%Y-%m-%d'))
+        return deep_date_format(datetime.datetime.strptime(iso_datestr, "%Y-%m-%d"))
     except Exception:
         return None
 
 
 @ConnectorWrapper
 class UNHCRPortal(Source):
-    URL = 'https://data2.unhcr.org/en/search'
-    title = 'UNHCR Portal'
-    key = 'unhcr-portal'
+    URL = "https://data2.unhcr.org/en/search"
+    title = "UNHCR Portal"
+    key = "unhcr-portal"
     options = [
+        {"key": "country", "field_type": "select", "title": "Country", "options": COUNTRIES_OPTIONS},
         {
-            'key': 'country',
-            'field_type': 'select',
-            'title': 'Country',
-            'options': COUNTRIES_OPTIONS
+            "key": "date_from",
+            "field_type": "date",
+            "title": "From",
         },
         {
-            'key': 'date_from',
-            'field_type': 'date',
-            'title': 'From',
-        },
-        {
-            'key': 'date_to',
-            'field_type': 'date',
-            'title': 'To',
+            "key": "date_to",
+            "field_type": "date",
+            "title": "To",
         },
     ]
     params = {
-        'type[]': [
-            'document',
+        "type[]": [
+            "document",
             # NOTE: for now have only documents as results, other do not seem
             # to be parsable
             # 'link', 'news', 'highlight'
@@ -261,16 +255,16 @@ class UNHCRPortal(Source):
         results = []
         updated_params = copy.deepcopy(params)
 
-        country = updated_params.pop('country', None)
-        date_from = _format_date_or_none(updated_params.pop('date_from', None))
-        date_to = _format_date_or_none(updated_params.pop('date_to', None))
+        country = updated_params.pop("country", None)
+        date_from = _format_date_or_none(updated_params.pop("date_from", None))
+        date_to = _format_date_or_none(updated_params.pop("date_to", None))
         if country:
-            updated_params['country_json'] = json.dumps({'0': country})
-            updated_params['country'] = country
+            updated_params["country_json"] = json.dumps({"0": country})
+            updated_params["country"] = country
         if date_from:
-            updated_params['date_from'] = date_from
+            updated_params["date_from"] = date_from
         if date_to:
-            updated_params['date_to'] = date_to
+            updated_params["date_to"] = date_to
 
         updated_params.update(self.params)  # type is default
 
@@ -278,47 +272,38 @@ class UNHCRPortal(Source):
         while True:
             if page > self.UNIFIED_CONNECTOR_SOURCE_MAX_PAGE_NUMBER:
                 break
-            updated_params['page'] = page
+            updated_params["page"] = page
             content = self.get_content(self.URL, updated_params)
-            soup = Soup(content, 'html.parser')
-            contents = soup.findAll('ul', {'class': 'searchResults'})
+            soup = Soup(content, "html.parser")
+            contents = soup.findAll("ul", {"class": "searchResults"})
             if not contents:
                 return results, 0
 
             content = contents[0]
-            items = content.findAll('li', {'class': ['searchResultItem']})
+            items = content.findAll("li", {"class": ["searchResultItem"]})
 
             for item in items:
-                itemcontent = item.find(
-                    'div',
-                    {'class': ['searchResultItem_content', 'media_body']}
-                )
-                urlcontent = item.find(
-                    'div',
-                    {'class': 'searchResultItem_download'}
-                )
-                datecontent = item.find(
-                    'span',
-                    {'class': 'searchResultItem_date'}
-                )
-                title = itemcontent.find('a').get_text()
-                pdfurl = urlcontent.find('a')['href']
-                raw_date = datecontent.find('b').get_text()  # 4 July 2018
-                date = datetime.datetime.strptime(raw_date, '%d %B %Y')
+                itemcontent = item.find("div", {"class": ["searchResultItem_content", "media_body"]})
+                urlcontent = item.find("div", {"class": "searchResultItem_download"})
+                datecontent = item.find("span", {"class": "searchResultItem_date"})
+                title = itemcontent.find("a").get_text()
+                pdfurl = urlcontent.find("a")["href"]
+                raw_date = datecontent.find("b").get_text()  # 4 July 2018
+                date = datetime.datetime.strptime(raw_date, "%d %B %Y")
                 data = {
-                    'title': title and title.strip(),
-                    'published_on': date.date(),
-                    'url': pdfurl,
-                    'source': 'UNHCR Portal',
-                    'author': '',
-                    'source_type': '',
+                    "title": title and title.strip(),
+                    "published_on": date.date(),
+                    "url": pdfurl,
+                    "source": "UNHCR Portal",
+                    "author": "",
+                    "source_type": "",
                 }
                 results.append(data)
-            footer = soup.find('div', {'class': 'pgSearch_results_footer'})
+            footer = soup.find("div", {"class": "pgSearch_results_footer"})
             if not footer:
                 break
-            next_url = footer.find('a', {'rel': 'next'})
-            if next_url and next_url['href']:
+            next_url = footer.find("a", {"rel": "next"})
+            if next_url and next_url["href"]:
                 page += 1
             else:
                 break

@@ -2,26 +2,26 @@ import copy
 import json
 from datetime import timedelta
 
-from django.db import models
-from django.db.models.functions import JSONObject
-from django.db import connection as django_db_connection
-from django.utils.translation import gettext_lazy as _
-from django.utils import timezone
+from deepl_integration.models import DeeplTrackBaseModel
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MaxValueValidator, MinValueValidator
-
-from utils.common import generate_sha256
-from deep.number_generator import client_id_generator
-from deep.filter_set import get_dummy_request
-from project.mixins import ProjectEntityMixin
-from user.models import User
-from project.models import Project
+from django.db import connection as django_db_connection
+from django.db import models
+from django.db.models.functions import JSONObject
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from entry.models import Entry
-from lead.models import Lead
-from user_resource.models import UserResource
-from organization.models import Organization
 from gallery.models import File
-from deepl_integration.models import DeeplTrackBaseModel
+from lead.models import Lead
+from organization.models import Organization
+from project.mixins import ProjectEntityMixin
+from project.models import Project
+from user.models import User
+from user_resource.models import UserResource
+
+from deep.filter_set import get_dummy_request
+from deep.number_generator import client_id_generator
+from utils.common import generate_sha256
 
 
 class Analysis(UserResource, ProjectEntityMixin):
@@ -37,11 +37,7 @@ class Analysis(UserResource, ProjectEntityMixin):
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField()
     # added to keep the track of cloned analysis
-    cloned_from = models.ForeignKey(
-        'Analysis',
-        on_delete=models.SET_NULL,
-        null=True, blank=True
-    )
+    cloned_from = models.ForeignKey("Analysis", on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -82,13 +78,9 @@ class Analysis(UserResource, ProjectEntityMixin):
         analysis_cloned.save()
         # Clone pillars
         cloned_pillars = [
-            _get_clone_pillar(analysis_pillar, analysis_cloned.pk)
-            for analysis_pillar in self.analysispillar_set.all()
+            _get_clone_pillar(analysis_pillar, analysis_cloned.pk) for analysis_pillar in self.analysispillar_set.all()
         ]
-        cloned_pillar_id_map = {
-            pillar.cloned_from_id: pillar.id
-            for pillar in AnalysisPillar.objects.bulk_create(cloned_pillars)
-        }
+        cloned_pillar_id_map = {pillar.cloned_from_id: pillar.id for pillar in AnalysisPillar.objects.bulk_create(cloned_pillars)}
 
         # Clone discarded entries
         DiscardedEntry.objects.bulk_create(
@@ -110,8 +102,7 @@ class Analysis(UserResource, ProjectEntityMixin):
             for statement in AnalyticalStatement.objects.filter(analysis_pillar__analysis=self)
         ]
         cloned_statement_id_map = {
-            statement.cloned_from_id: statement.id
-            for statement in AnalyticalStatement.objects.bulk_create(cloned_statements)
+            statement.cloned_from_id: statement.id for statement in AnalyticalStatement.objects.bulk_create(cloned_statements)
         }
 
         # Clone statement entries
@@ -120,9 +111,7 @@ class Analysis(UserResource, ProjectEntityMixin):
                 statement_entry,
                 cloned_statement_id_map[statement_entry.analytical_statement_id],  # Use newly cloned statement id
             )
-            for statement_entry in AnalyticalStatementEntry.objects.filter(
-                analytical_statement__analysis_pillar__analysis=self
-            )
+            for statement_entry in AnalyticalStatementEntry.objects.filter(analytical_statement__analysis_pillar__analysis=self)
         ]
         AnalyticalStatementEntry.objects.bulk_create(cloned_statement_entries)
 
@@ -135,28 +124,29 @@ class Analysis(UserResource, ProjectEntityMixin):
         if len(analysis_ids) == 0:
             return {}
 
-        leads_dragged = AnalyticalStatement.objects\
-            .filter(analysis_pillar__analysis__in=analysis_ids)\
-            .order_by().values('analysis_pillar__analysis', 'entries__lead_id')
-        leads_discarded = DiscardedEntry.objects\
-            .filter(analysis_pillar__analysis__in=analysis_ids)\
-            .order_by().values('analysis_pillar__analysis', 'entry__lead_id')
+        leads_dragged = (
+            AnalyticalStatement.objects.filter(analysis_pillar__analysis__in=analysis_ids)
+            .order_by()
+            .values("analysis_pillar__analysis", "entries__lead_id")
+        )
+        leads_discarded = (
+            DiscardedEntry.objects.filter(analysis_pillar__analysis__in=analysis_ids)
+            .order_by()
+            .values("analysis_pillar__analysis", "entry__lead_id")
+        )
         union_query = leads_dragged.union(leads_discarded).query
 
         # NOTE: Django ORM union isn't allowed inside annotation
         with django_db_connection.cursor() as cursor:
-            raw_sql = f'''
+            raw_sql = f"""
                 SELECT
                     u.analysis_id,
                     COUNT(DISTINCT(u.lead_id))
                 FROM ({union_query}) as u
                 GROUP BY u.analysis_id
-            '''
+            """
             cursor.execute(raw_sql)
-            return {
-                analysis_id: lead_count
-                for analysis_id, lead_count in cursor.fetchall()
-            }
+            return {analysis_id: lead_count for analysis_id, lead_count in cursor.fetchall()}
 
     @classmethod
     def get_analyzed_entries(cls, analysis_list):
@@ -165,34 +155,35 @@ class Analysis(UserResource, ProjectEntityMixin):
         if len(analysis_ids) == 0:
             return {}
 
-        entries_dragged = AnalyticalStatementEntry.objects\
-            .filter(
+        entries_dragged = (
+            AnalyticalStatementEntry.objects.filter(
                 analytical_statement__analysis_pillar__analysis__in=analysis_ids,
-                entry__lead__published_on__lte=models.F('analytical_statement__analysis_pillar__analysis__end_date')
-            )\
-            .order_by().values('analytical_statement__analysis_pillar__analysis', 'entry')
-        entries_discarded = DiscardedEntry.objects\
-            .filter(
+                entry__lead__published_on__lte=models.F("analytical_statement__analysis_pillar__analysis__end_date"),
+            )
+            .order_by()
+            .values("analytical_statement__analysis_pillar__analysis", "entry")
+        )
+        entries_discarded = (
+            DiscardedEntry.objects.filter(
                 analysis_pillar__analysis__in=analysis_ids,
-                entry__lead__published_on__lte=models.F('analysis_pillar__analysis__end_date')
-            )\
-            .order_by().values('analysis_pillar__analysis', 'entry')
+                entry__lead__published_on__lte=models.F("analysis_pillar__analysis__end_date"),
+            )
+            .order_by()
+            .values("analysis_pillar__analysis", "entry")
+        )
         union_query = entries_dragged.union(entries_discarded).query
 
         # NOTE: Django ORM union isn't allowed inside annotation
         with django_db_connection.cursor() as cursor:
-            raw_sql = f'''
+            raw_sql = f"""
                 SELECT
                     u.analysis_id,
                     COUNT(DISTINCT(u.entry_id))
                 FROM ({union_query}) as u
                 GROUP BY u.analysis_id
-            '''
+            """
             cursor.execute(raw_sql)
-            return {
-                analysis_id: entry_count
-                for analysis_id, entry_count in cursor.fetchall()
-            }
+            return {analysis_id: entry_count for analysis_id, entry_count in cursor.fetchall()}
 
     @classmethod
     def annotate_for_analysis_summary(cls, project_id, queryset, user):
@@ -200,71 +191,95 @@ class Analysis(UserResource, ProjectEntityMixin):
         This is used by AnalysisSummarySerializer and AnalysisViewSet.get_summary
         """
         # NOTE: Using the entries  and lead in the project for total entries and leads in analysis level
-        total_sources = Lead.objects\
-            .filter(project=project_id)\
-            .annotate(entries_count=models.Count('entry'))\
-            .filter(entries_count__gt=0)\
+        total_sources = (
+            Lead.objects.filter(project=project_id)
+            .annotate(entries_count=models.Count("entry"))
+            .filter(entries_count__gt=0)
             .count()
+        )
         total_entries = Entry.objects.filter(project=project_id).count()
 
         # Prefetch for AnalysisSummaryPillarSerializer.
         analysispillar_prefetch = models.Prefetch(
-            'analysispillar_set',
+            "analysispillar_set",
             queryset=(
                 AnalysisPillar.objects.select_related(
-                    'assignee',
-                    'assignee__profile',
+                    "assignee",
+                    "assignee__profile",
                 ).annotate(
-                    dragged_entries=models.functions.Coalesce(models.Subquery(
-                        AnalyticalStatement.objects.filter(
-                            analysis_pillar=models.OuterRef('pk')
-                        ).order_by().values('analysis_pillar').annotate(count=models.Count(
-                            'entries',
-                            distinct=True,
-                            filter=models.Q(entries__lead__published_on__lte=models.OuterRef('analysis__end_date'))))
-                        .values('count')[:1],
-                        output_field=models.IntegerField(),
-                    ), 0),
-                    discarded_entries=models.functions.Coalesce(models.Subquery(
-                        DiscardedEntry.objects.filter(
-                            analysis_pillar=models.OuterRef('pk')
-                        ).order_by().values('analysis_pillar').annotate(count=models.Count(
-                            'entry',
-                            distinct=True,
-                            filter=models.Q(entry__lead__published_on__lte=models.OuterRef('analysis__end_date'))))
-                        .values('count')[:1],
-                        output_field=models.IntegerField(),
-                    ), 0),
-                    analyzed_entries=models.F('dragged_entries') + models.F('discarded_entries')
+                    dragged_entries=models.functions.Coalesce(
+                        models.Subquery(
+                            AnalyticalStatement.objects.filter(analysis_pillar=models.OuterRef("pk"))
+                            .order_by()
+                            .values("analysis_pillar")
+                            .annotate(
+                                count=models.Count(
+                                    "entries",
+                                    distinct=True,
+                                    filter=models.Q(entries__lead__published_on__lte=models.OuterRef("analysis__end_date")),
+                                )
+                            )
+                            .values("count")[:1],
+                            output_field=models.IntegerField(),
+                        ),
+                        0,
+                    ),
+                    discarded_entries=models.functions.Coalesce(
+                        models.Subquery(
+                            DiscardedEntry.objects.filter(analysis_pillar=models.OuterRef("pk"))
+                            .order_by()
+                            .values("analysis_pillar")
+                            .annotate(
+                                count=models.Count(
+                                    "entry",
+                                    distinct=True,
+                                    filter=models.Q(entry__lead__published_on__lte=models.OuterRef("analysis__end_date")),
+                                )
+                            )
+                            .values("count")[:1],
+                            output_field=models.IntegerField(),
+                        ),
+                        0,
+                    ),
+                    analyzed_entries=models.F("dragged_entries") + models.F("discarded_entries"),
                 )
             ),
         )
 
         publication_date_subquery = models.Subquery(
             AnalyticalStatementEntry.objects.filter(
-                analytical_statement__analysis_pillar__analysis=models.OuterRef('pk'),
-            ).order_by().values('analytical_statement__analysis_pillar__analysis').annotate(
-                published_on_min=models.Min('entry__lead__published_on'),
-                published_on_max=models.Max('entry__lead__published_on'),
-            ).annotate(
+                analytical_statement__analysis_pillar__analysis=models.OuterRef("pk"),
+            )
+            .order_by()
+            .values("analytical_statement__analysis_pillar__analysis")
+            .annotate(
+                published_on_min=models.Min("entry__lead__published_on"),
+                published_on_max=models.Max("entry__lead__published_on"),
+            )
+            .annotate(
                 publication_date=JSONObject(
-                    start_date=models.F('published_on_min'),
-                    end_date=models.F('published_on_max'),
+                    start_date=models.F("published_on_min"),
+                    end_date=models.F("published_on_max"),
                 )
-            ).values('publication_date')[:1],
+            )
+            .values("publication_date")[:1],
             output_field=models.JSONField(),
         )
 
-        return queryset.select_related(
-            'team_lead',
-            'team_lead__profile',
-        ).prefetch_related(
-            analysispillar_prefetch,
-        ).annotate(
-            team_lead_name=models.F('team_lead__username'),
-            total_entries=models.Value(total_entries, output_field=models.IntegerField()),
-            total_sources=models.Value(total_sources, output_field=models.IntegerField()),
-            publication_date=publication_date_subquery,
+        return (
+            queryset.select_related(
+                "team_lead",
+                "team_lead__profile",
+            )
+            .prefetch_related(
+                analysispillar_prefetch,
+            )
+            .annotate(
+                team_lead_name=models.F("team_lead__username"),
+                total_entries=models.Value(total_entries, output_field=models.IntegerField()),
+                total_sources=models.Value(total_sources, output_field=models.IntegerField()),
+                publication_date=publication_date_subquery,
+            )
         )
 
 
@@ -273,20 +288,10 @@ class AnalysisPillar(UserResource):
     main_statement = models.TextField(blank=True)
     information_gap = models.TextField(blank=True)
     filters = models.JSONField(blank=True, null=True, default=None)
-    assignee = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE
-    )
-    analysis = models.ForeignKey(
-        Analysis,
-        on_delete=models.CASCADE
-    )
+    assignee = models.ForeignKey(User, on_delete=models.CASCADE)
+    analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
     # added to keep the track of cloned analysispillar
-    cloned_from = models.ForeignKey(
-        'AnalysisPillar',
-        on_delete=models.SET_NULL,
-        null=True, blank=True
-    )
+    cloned_from = models.ForeignKey("AnalysisPillar", on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -305,7 +310,7 @@ class AnalysisPillar(UserResource):
             project=self.analysis.project_id,
             lead__published_on__lte=self.analysis.end_date,
         )
-        discarded_entries_qs = DiscardedEntry.objects.filter(analysis_pillar=self).values('entry')
+        discarded_entries_qs = DiscardedEntry.objects.filter(analysis_pillar=self).values("entry")
         if only_discarded:
             return _queryset.filter(id__in=discarded_entries_qs)
         return _queryset.exclude(id__in=discarded_entries_qs)
@@ -313,65 +318,66 @@ class AnalysisPillar(UserResource):
     @classmethod
     def annotate_for_analysis_pillar_summary(cls, qs):
         analytical_statement_prefech = models.Prefetch(
-            'analyticalstatement_set',
-            queryset=(
-                AnalyticalStatement.objects.annotate(
-                    entries_count=models.Count('entries', distinct=True)
-                )
-            )
+            "analyticalstatement_set",
+            queryset=(AnalyticalStatement.objects.annotate(entries_count=models.Count("entries", distinct=True))),
         )
 
-        return qs\
-            .prefetch_related(analytical_statement_prefech)\
-            .annotate(
-                dragged_entries=models.functions.Coalesce(
-                    models.Subquery(
-                        AnalyticalStatement.objects.filter(
-                            analysis_pillar=models.OuterRef('pk')
-                        ).order_by().values('analysis_pillar').annotate(count=models.Count(
-                            'entries',
+        return qs.prefetch_related(analytical_statement_prefech).annotate(
+            dragged_entries=models.functions.Coalesce(
+                models.Subquery(
+                    AnalyticalStatement.objects.filter(analysis_pillar=models.OuterRef("pk"))
+                    .order_by()
+                    .values("analysis_pillar")
+                    .annotate(
+                        count=models.Count(
+                            "entries",
                             distinct=True,
-                            filter=models.Q(entries__lead__published_on__lte=models.OuterRef('analysis__end_date'))))
-                        .values('count')[:1],
-                        output_field=models.IntegerField(),
-                    ), 0),
-                discarded_entries=models.functions.Coalesce(
-                    models.Subquery(
-                        DiscardedEntry.objects.filter(
-                            analysis_pillar=models.OuterRef('pk')
-                        ).order_by().values('analysis_pillar__analysis').annotate(count=models.Count(
-                            'entry',
+                            filter=models.Q(entries__lead__published_on__lte=models.OuterRef("analysis__end_date")),
+                        )
+                    )
+                    .values("count")[:1],
+                    output_field=models.IntegerField(),
+                ),
+                0,
+            ),
+            discarded_entries=models.functions.Coalesce(
+                models.Subquery(
+                    DiscardedEntry.objects.filter(analysis_pillar=models.OuterRef("pk"))
+                    .order_by()
+                    .values("analysis_pillar__analysis")
+                    .annotate(
+                        count=models.Count(
+                            "entry",
                             distinct=True,
-                            filter=models.Q(entry__lead__published_on__lte=models.OuterRef('analysis__end_date'))))
-                        .values('count')[:1],
-                        output_field=models.IntegerField(),
-                    ), 0),
-                analyzed_entries=models.F('dragged_entries') + models.F('discarded_entries'),
-            )
+                            filter=models.Q(entry__lead__published_on__lte=models.OuterRef("analysis__end_date")),
+                        )
+                    )
+                    .values("count")[:1],
+                    output_field=models.IntegerField(),
+                ),
+                0,
+            ),
+            analyzed_entries=models.F("dragged_entries") + models.F("discarded_entries"),
+        )
 
 
 class DiscardedEntry(models.Model):
     """
     Discarded entries for AnalysisPillar
     """
-    class TagType(models.IntegerChoices):
-        REDUNDANT = 0, _('Redundant')
-        TOO_OLD = 1, _('Too old')
-        ANECDOTAL = 2, _('Anecdotal')
-        OUTLIER = 3, _('Outlier')
 
-    analysis_pillar = models.ForeignKey(
-        AnalysisPillar,
-        on_delete=models.CASCADE
-    )
-    entry = models.ForeignKey(
-        Entry,
-        on_delete=models.CASCADE
-    )
+    class TagType(models.IntegerChoices):
+        REDUNDANT = 0, _("Redundant")
+        TOO_OLD = 1, _("Too old")
+        ANECDOTAL = 2, _("Anecdotal")
+        OUTLIER = 3, _("Outlier")
+
+    analysis_pillar = models.ForeignKey(AnalysisPillar, on_delete=models.CASCADE)
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
     tag = models.IntegerField(choices=TagType.choices)
 
     class Meta:
-        unique_together = ('entry', 'analysis_pillar')
+        unique_together = ("entry", "analysis_pillar")
 
     def can_get(self, user):
         return self.analysis_pillar.can_get(user)
@@ -383,7 +389,7 @@ class DiscardedEntry(models.Model):
         return self.can_modify(user)
 
     def __str__(self):
-        return f'{self.analysis_pillar} - {self.entry}'
+        return f"{self.analysis_pillar} - {self.entry}"
 
 
 class AnalyticalStatement(UserResource):
@@ -391,27 +397,20 @@ class AnalyticalStatement(UserResource):
     title = models.CharField(max_length=150, blank=True, null=True)
     entries = models.ManyToManyField(
         Entry,
-        through='AnalyticalStatementEntry',
-        through_fields=('analytical_statement', 'entry'),
+        through="AnalyticalStatementEntry",
+        through_fields=("analytical_statement", "entry"),
         blank=True,
     )
-    analysis_pillar = models.ForeignKey(
-        AnalysisPillar,
-        on_delete=models.CASCADE
-    )
+    analysis_pillar = models.ForeignKey(AnalysisPillar, on_delete=models.CASCADE)
     include_in_report = models.BooleanField(default=False)
     order = models.IntegerField()
     report_text = models.TextField(blank=True)
     information_gaps = models.TextField(blank=True)
     # added to keep the track of cloned analysisstatement
-    cloned_from = models.ForeignKey(
-        'AnalyticalStatement',
-        on_delete=models.SET_NULL,
-        null=True, blank=True
-    )
+    cloned_from = models.ForeignKey("AnalyticalStatement", on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta:
-        ordering = ('order',)
+        ordering = ("order",)
 
     def can_get(self, user):
         return self.analysis_pillar.can_get(user)
@@ -424,14 +423,8 @@ class AnalyticalStatement(UserResource):
 
 
 class AnalyticalStatementEntry(UserResource):
-    entry = models.ForeignKey(
-        Entry,
-        on_delete=models.CASCADE
-    )
-    analytical_statement = models.ForeignKey(
-        AnalyticalStatement,
-        on_delete=models.CASCADE
-    )
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+    analytical_statement = models.ForeignKey(AnalyticalStatement, on_delete=models.CASCADE)
     order = models.IntegerField()
 
     def can_get(self, user):
@@ -441,12 +434,12 @@ class AnalyticalStatementEntry(UserResource):
         return self.analytical_statement.can_modify(user)
 
     class Meta:
-        ordering = ('order',)
+        ordering = ("order",)
 
 
 # NLP Trigger Model -- Used as cache and tracking async data calculation
 def entries_file_upload_to(instance, filename: str) -> str:
-    return f'analysis/{type(instance).__name__.lower()}/entries/{filename}'
+    return f"analysis/{type(instance).__name__.lower()}/entries/{filename}"
 
 
 class TopicModel(UserResource, DeeplTrackBaseModel):
@@ -456,12 +449,13 @@ class TopicModel(UserResource, DeeplTrackBaseModel):
     additional_filters = models.JSONField(default=dict)
     widget_tags = ArrayField(models.CharField(max_length=100), default=list)
 
-    topicmodelcluster_set: models.QuerySet['TopicModelCluster']
+    topicmodelcluster_set: models.QuerySet["TopicModelCluster"]
 
     @staticmethod
     def _get_entries_qs(analysis_pillar, entry_filters):
         # Loading here to make sure models are loaded before filters
         from entry.filter_set import EntryGQFilterSet
+
         dummy_request = get_dummy_request(active_project=analysis_pillar.analysis.project)
         return EntryGQFilterSet(
             queryset=analysis_pillar.get_entries_qs(),  # Queryset from AnalysisPillar
@@ -483,7 +477,7 @@ class TopicModelCluster(models.Model):
 class EntriesCollectionNlpTriggerBase(UserResource, DeeplTrackBaseModel):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     entries_id = ArrayField(models.IntegerField())
-    entries_hash = models.CharField(max_length=256, db_index=True)   # Generated using entries_id
+    entries_hash = models.CharField(max_length=256, db_index=True)  # Generated using entries_id
     entries_file = models.FileField(upload_to=entries_file_upload_to, max_length=255)
 
     CACHE_THRESHOLD_HOURS = 3
@@ -495,16 +489,20 @@ class EntriesCollectionNlpTriggerBase(UserResource, DeeplTrackBaseModel):
     def get_existing(cls, entries_id):
         threshold = timezone.now() - timedelta(hours=cls.CACHE_THRESHOLD_HOURS)
         entries_hash = cls.get_entry_hash(entries_id)
-        return cls.objects.filter(
-            entries_hash=entries_hash,
-            created_at__gte=threshold,
-        ).exclude(
-            status__in=[
-                cls.Status.STARTED,
-                cls.Status.FAILED,
-                cls.Status.SEND_FAILED,
-            ],
-        ).first()
+        return (
+            cls.objects.filter(
+                entries_hash=entries_hash,
+                created_at__gte=threshold,
+            )
+            .exclude(
+                status__in=[
+                    cls.Status.STARTED,
+                    cls.Status.FAILED,
+                    cls.Status.SEND_FAILED,
+                ],
+            )
+            .first()
+        )
 
     @staticmethod
     def get_valid_entries_id(project_id, entries_id):
@@ -512,7 +510,9 @@ class EntriesCollectionNlpTriggerBase(UserResource, DeeplTrackBaseModel):
             Entry.objects.filter(
                 project=project_id,
                 id__in=entries_id,
-            ).order_by('id').values_list('id', flat=True)
+            )
+            .order_by("id")
+            .values_list("id", flat=True)
         )
 
     @staticmethod
@@ -544,7 +544,7 @@ class AnalyticalStatementGeoEntry(models.Model):
     task = models.ForeignKey(
         AnalyticalStatementGeoTask,
         on_delete=models.CASCADE,
-        related_name='entry_geos',
+        related_name="entry_geos",
     )
     entry = models.ForeignKey(Entry, on_delete=models.CASCADE, related_name="+")
     data = models.JSONField(default=list)
@@ -554,7 +554,7 @@ class AnalyticalStatementGeoEntry(models.Model):
 class AnalysisReport(UserResource):
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
     is_public = models.BooleanField(
-        help_text="A report should be public for \"shareable link\" to be accessible by",
+        help_text='A report should be public for "shareable link" to be accessible by',
         default=False,
     )
     slug = models.CharField(
@@ -580,18 +580,18 @@ class AnalysisReport(UserResource):
             queryset = queryset.filter(report__slug=slug)
         if report_id is not None:
             queryset = queryset.filter(report_id=report_id)
-        return queryset.order_by('-published_on').first()
+        return queryset.order_by("-published_on").first()
 
 
 class AnalysisReportUpload(models.Model):
     class Type(models.IntegerChoices):
-        CSV = 1, 'CSV'
-        XLSX = 2, 'XLSX'
-        GEOJSON = 3, 'GeoJson'
-        IMAGE = 4, 'Image'
+        CSV = 1, "CSV"
+        XLSX = 2, "XLSX"
+        GEOJSON = 3, "GeoJson"
+        IMAGE = 4, "Image"
 
     report = models.ForeignKey(AnalysisReport, on_delete=models.CASCADE)
-    file = models.ForeignKey(File, on_delete=models.PROTECT, related_name='+')
+    file = models.ForeignKey(File, on_delete=models.PROTECT, related_name="+")
     # NOTE: No validation required. Client will send this information
     type = models.SmallIntegerField(choices=Type.choices)
     metadata = models.JSONField(default=dict)
@@ -599,15 +599,15 @@ class AnalysisReportUpload(models.Model):
 
 class AnalysisReportContainer(models.Model):
     class ContentType(models.IntegerChoices):
-        TEXT = 1, 'Text'
-        HEADING = 2, 'Heading'
-        IMAGE = 3, 'Image'
-        URL = 4, 'URL'
-        TIMELINE_CHART = 5, 'Timeline Chart'
-        KPI = 6, 'KPIs'
-        BAR_CHART = 7, 'Bar Chart'
-        MAP = 8, 'Map'
-        LINE_CHART = 9, 'Line Chart'
+        TEXT = 1, "Text"
+        HEADING = 2, "Heading"
+        IMAGE = 3, "Image"
+        URL = 4, "URL"
+        TIMELINE_CHART = 5, "Timeline Chart"
+        KPI = 6, "KPIs"
+        BAR_CHART = 7, "Bar Chart"
+        MAP = 8, "Map"
+        LINE_CHART = 9, "Line Chart"
 
     report = models.ForeignKey(AnalysisReport, on_delete=models.CASCADE)
     row = models.SmallIntegerField()
@@ -636,4 +636,4 @@ class AnalysisReportSnapshot(UserResource):
     report = models.ForeignKey(AnalysisReport, on_delete=models.CASCADE)
     published_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     published_on = models.DateTimeField(auto_now_add=True)
-    report_data_file = models.FileField(upload_to='analysis_report_snapshot/')
+    report_data_file = models.FileField(upload_to="analysis_report_snapshot/")

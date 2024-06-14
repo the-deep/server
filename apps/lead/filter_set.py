@@ -1,36 +1,38 @@
-import graphene
 import django_filters
+import graphene
 from django.db import models
 from django.db.models.functions import Coalesce
+from entry.filter_set import (
+    EntriesFilterDataInputType,
+    EntriesFilterDataType,
+    EntryGQFilterSet,
+)
+from entry.models import Entry
+from organization.models import OrganizationType
+from project.models import Project
+from user.models import User
+from user_resource.filters import UserResourceFilterSet, UserResourceGqlFilterSet
 
 from deep.filter_set import DjangoFilterCSVWidget, generate_type_for_filter_set
-from user_resource.filters import UserResourceFilterSet
 from utils.graphene.filters import (
-    NumberInFilter,
-    MultipleInputFilter,
-    SimpleInputFilter,
-    IDListFilter,
-    IDFilter,
     DateGteFilter,
     DateLteFilter,
+    IDFilter,
+    IDListFilter,
+    MultipleInputFilter,
+    NumberInFilter,
+    SimpleInputFilter,
 )
 
-from project.models import Project
-from organization.models import OrganizationType
-from user.models import User
-from entry.models import Entry
-from entry.filter_set import EntryGQFilterSet, EntriesFilterDataInputType, EntriesFilterDataType
-from user_resource.filters import UserResourceGqlFilterSet
-
-from .models import Lead, LeadGroup, LeadDuplicates
 from .enums import (
     LeadConfidentialityEnum,
-    LeadStatusEnum,
+    LeadExtractionStatusEnum,
+    LeadOrderingEnum,
     LeadPriorityEnum,
     LeadSourceTypeEnum,
-    LeadOrderingEnum,
-    LeadExtractionStatusEnum,
+    LeadStatusEnum,
 )
+from .models import Lead, LeadDuplicates, LeadGroup
 
 
 class LeadFilterSet(django_filters.FilterSet):
@@ -44,33 +46,38 @@ class LeadFilterSet(django_filters.FilterSet):
     """
 
     class Exists(models.TextChoices):
-        ENTRIES_EXISTS = 'entries_exists', 'Entry Exists'
-        ASSESSMENT_EXISTS = 'assessment_exists', 'Assessment Exists'
-        ENTRIES_DO_NOT_EXIST = 'entries_do_not_exist', 'Entries do not exist'
-        ASSESSMENT_DOES_NOT_EXIST = 'assessment_does_not_exist', 'Assessment does not exist'
+        ENTRIES_EXISTS = "entries_exists", "Entry Exists"
+        ASSESSMENT_EXISTS = "assessment_exists", "Assessment Exists"
+        ENTRIES_DO_NOT_EXIST = "entries_do_not_exist", "Entries do not exist"
+        ASSESSMENT_DOES_NOT_EXIST = "assessment_does_not_exist", "Assessment does not exist"
 
     class CustomFilter(models.TextChoices):
-        EXCLUDE_EMPTY_FILTERED_ENTRIES = 'exclude_empty_filtered_entries', 'exclude empty filtered entries'
+        EXCLUDE_EMPTY_FILTERED_ENTRIES = "exclude_empty_filtered_entries", "exclude empty filtered entries"
         EXCLUDE_EMPTY_CONTROLLED_FILTERED_ENTRIES = (
-            'exclude_empty_controlled_filtered_entries', 'exclude empty controlled filtered entries'
+            "exclude_empty_controlled_filtered_entries",
+            "exclude empty controlled filtered entries",
         )
 
-    search = django_filters.CharFilter(method='search_filter')
+    search = django_filters.CharFilter(method="search_filter")
 
     published_on__lt = django_filters.DateFilter(
-        field_name='published_on', lookup_expr='lt',
+        field_name="published_on",
+        lookup_expr="lt",
     )
     published_on__gt = django_filters.DateFilter(
-        field_name='published_on', lookup_expr='gt',
+        field_name="published_on",
+        lookup_expr="gt",
     )
     published_on__lte = django_filters.DateFilter(
-        field_name='published_on', lookup_expr='lte',
+        field_name="published_on",
+        lookup_expr="lte",
     )
     published_on__gte = django_filters.DateFilter(
-        field_name='published_on', lookup_expr='gte',
+        field_name="published_on",
+        lookup_expr="gte",
     )
     project = django_filters.CharFilter(
-        method='project_filter',
+        method="project_filter",
     )
     confidentiality = django_filters.MultipleChoiceFilter(
         choices=Lead.Confidentiality.choices,
@@ -89,78 +96,78 @@ class LeadFilterSet(django_filters.FilterSet):
         widget=django_filters.widgets.CSVWidget,
     )
     classified_doc_id = NumberInFilter(
-        field_name='leadpreview__classified_doc_id',
-        lookup_expr='in',
+        field_name="leadpreview__classified_doc_id",
+        lookup_expr="in",
         widget=django_filters.widgets.CSVWidget,
     )
     created_at = django_filters.DateTimeFilter(
-        field_name='created_at',
-        input_formats=['%Y-%m-%d%z'],
+        field_name="created_at",
+        input_formats=["%Y-%m-%d%z"],
     )
     created_at__lt = django_filters.DateTimeFilter(
-        field_name='created_at',
-        lookup_expr='lt',
-        input_formats=['%Y-%m-%d%z'],
+        field_name="created_at",
+        lookup_expr="lt",
+        input_formats=["%Y-%m-%d%z"],
     )
     created_at__gte = django_filters.DateTimeFilter(
-        field_name='created_at', lookup_expr='gte',
-        input_formats=['%Y-%m-%d%z'],
+        field_name="created_at",
+        lookup_expr="gte",
+        input_formats=["%Y-%m-%d%z"],
     )
     created_at__lte = django_filters.DateTimeFilter(
-        field_name='created_at',
-        lookup_expr='lte',
-        input_formats=['%Y-%m-%d%z'],
+        field_name="created_at",
+        lookup_expr="lte",
+        input_formats=["%Y-%m-%d%z"],
     )
     exists = django_filters.ChoiceFilter(
-        label='Exists Choice',
-        choices=Exists.choices, method='exists_filter',
+        label="Exists Choice",
+        choices=Exists.choices,
+        method="exists_filter",
     )
     emm_entities = django_filters.CharFilter(
-        method='emm_entities_filter',
+        method="emm_entities_filter",
     )
 
     emm_keywords = django_filters.CharFilter(
-        method='emm_keywords_filter',
+        method="emm_keywords_filter",
     )
 
     emm_risk_factors = django_filters.CharFilter(
-        method='emm_risk_factors_filter',
+        method="emm_risk_factors_filter",
     )
 
     ordering = django_filters.CharFilter(
-        method='ordering_filter',
+        method="ordering_filter",
     )
 
     authoring_organization_types = django_filters.ModelMultipleChoiceFilter(
-        method='authoring_organization_types_filter',
+        method="authoring_organization_types_filter",
         widget=DjangoFilterCSVWidget,
         queryset=OrganizationType.objects.all(),
     )
     # used in export
     custom_filters = django_filters.ChoiceFilter(
-        label='Filtered Exists Choice',
-        choices=CustomFilter.choices, method='filtered_exists_filter',
+        label="Filtered Exists Choice",
+        choices=CustomFilter.choices,
+        method="filtered_exists_filter",
     )
 
     class Meta:
         model = Lead
         fields = {
-            **{
-                x: ['exact']
-                for x in ['id', 'text', 'url']
-            },
-            'emm_entities': ['exact'],
+            **{x: ["exact"] for x in ["id", "text", "url"]},
+            "emm_entities": ["exact"],
             # 'emm_keywords': ['exact'],
             # 'emm_risk_factors': ['exact'],
-            'created_at': ['exact', 'lt', 'gt', 'lte', 'gte'],
-            'published_on': ['exact', 'lt', 'gt', 'lte', 'gte'],
+            "created_at": ["exact", "lt", "gt", "lte", "gte"],
+            "published_on": ["exact", "lt", "gt", "lte", "gte"],
         }
 
         filter_overrides = {
             models.CharField: {
-                'filter_class': django_filters.CharFilter,
-                'extra': lambda f: {
-                    'lookup_expr': 'icontains',
+                "filter_class": django_filters.CharFilter,
+                "extra": lambda f: {
+                    "lookup_expr": "icontains",
                 },
             },
         }
@@ -173,7 +180,7 @@ class LeadFilterSet(django_filters.FilterSet):
         filter_data = {}
         for key, value in raw_filter_data.items():
             if isinstance(value, list):
-                filter_data[key] = ','.join([str(x) for x in value])
+                filter_data[key] = ",".join([str(x) for x in value])
             else:
                 filter_data[key] = value
         return filter_data
@@ -184,17 +191,20 @@ class LeadFilterSet(django_filters.FilterSet):
             return qs
         return qs.filter(
             # By title
-            models.Q(title__icontains=value) |
+            models.Q(title__icontains=value)
+            |
             # By source
-            models.Q(source_raw__icontains=value) |
-            models.Q(source__title__icontains=value) |
-            models.Q(source__parent__title__icontains=value) |
+            models.Q(source_raw__icontains=value)
+            | models.Q(source__title__icontains=value)
+            | models.Q(source__parent__title__icontains=value)
+            |
             # By author
-            models.Q(author__title__icontains=value) |
-            models.Q(author__parent__title__icontains=value) |
-            models.Q(author_raw__icontains=value) |
-            models.Q(authors__title__icontains=value) |
-            models.Q(authors__parent__title__icontains=value) |
+            models.Q(author__title__icontains=value)
+            | models.Q(author__parent__title__icontains=value)
+            | models.Q(author_raw__icontains=value)
+            | models.Q(authors__title__icontains=value)
+            | models.Q(authors__parent__title__icontains=value)
+            |
             # By URL
             models.Q(url__icontains=value)
         ).distinct()
@@ -202,7 +212,7 @@ class LeadFilterSet(django_filters.FilterSet):
     def project_filter(self, qs, name, value):
         # NOTE: @bewakes used this because normal project filter
         # was giving problem with post filter
-        project_ids = value.split(',')
+        project_ids = value.split(",")
         return qs.filter(project_id__in=project_ids)
 
     def exists_filter(self, qs, name, value):
@@ -217,40 +227,35 @@ class LeadFilterSet(django_filters.FilterSet):
         return qs
 
     def emm_entities_filter(self, qs, name, value):
-        splitted = [x for x in value.split(',') if x]
+        splitted = [x for x in value.split(",") if x]
         return qs.filter(emm_entities__in=splitted)
 
     def emm_keywords_filter(self, qs, name, value):
-        splitted = [x for x in value.split(',') if x]
+        splitted = [x for x in value.split(",") if x]
         return qs.filter(emm_triggers__emm_keyword__in=splitted)
 
     def emm_risk_factors_filter(self, qs, name, value):
-        splitted = [x for x in value.split(',') if x]
+        splitted = [x for x in value.split(",") if x]
         return qs.filter(emm_triggers__emm_risk_factor__in=splitted)
 
     def ordering_filter(self, qs, name, value):
         # NOTE: @bewakes used this because normal ordering filter
         # was giving problem with post filter
         # Just clean the order_by fields
-        orderings = [x.strip() for x in value.split(',') if x.strip()]
+        orderings = [x.strip() for x in value.split(",") if x.strip()]
 
         for ordering in orderings:
-            if ordering == '-page_count':
-                qs = qs.order_by(models.F('leadpreview__page_count').desc(nulls_last=True))
-            elif ordering == 'page_count':
-                qs = qs.order_by(models.F('leadpreview__page_count').asc(nulls_first=True))
+            if ordering == "-page_count":
+                qs = qs.order_by(models.F("leadpreview__page_count").desc(nulls_last=True))
+            elif ordering == "page_count":
+                qs = qs.order_by(models.F("leadpreview__page_count").asc(nulls_first=True))
             else:
                 qs = qs.order_by(ordering)
         return qs
 
     def authoring_organization_types_filter(self, qs, name, value):
         if value:
-            qs = qs.annotate(
-                organization_types=Coalesce(
-                    'authors__parent__organization_type',
-                    'authors__organization_type'
-                )
-            )
+            qs = qs.annotate(organization_types=Coalesce("authors__parent__organization_type", "authors__organization_type"))
             if isinstance(value[0], OrganizationType):
                 return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
             return qs.filter(organization_types__in=value).distinct()
@@ -277,13 +282,13 @@ class LeadGroupFilterSet(UserResourceFilterSet):
 
     class Meta:
         model = LeadGroup
-        fields = ['id', 'title']
+        fields = ["id", "title"]
 
         filter_overrides = {
             models.CharField: {
-                'filter_class': django_filters.CharFilter,
-                'extra': lambda f: {
-                    'lookup_expr': 'icontains',
+                "filter_class": django_filters.CharFilter,
+                "extra": lambda f: {
+                    "lookup_expr": "icontains",
                 },
             },
         }
@@ -291,56 +296,54 @@ class LeadGroupFilterSet(UserResourceFilterSet):
 
 # ------------------------------ Graphql filters -----------------------------------
 class LeadGQFilterSet(UserResourceGqlFilterSet):
-    ids = IDListFilter(method='filter_leads_id', help_text='Empty ids are ignored.')
+    ids = IDListFilter(method="filter_leads_id", help_text="Empty ids are ignored.")
     exclude_provided_leads_id = django_filters.BooleanFilter(
-        method='filter_exclude_provided_leads_id', help_text='Only used when ids are provided.')
+        method="filter_exclude_provided_leads_id", help_text="Only used when ids are provided."
+    )
     created_by = IDListFilter()
     modified_by = IDListFilter()
-    source_types = MultipleInputFilter(LeadSourceTypeEnum, field_name='source_type')
-    priorities = MultipleInputFilter(LeadPriorityEnum, field_name='priority')
+    source_types = MultipleInputFilter(LeadSourceTypeEnum, field_name="source_type")
+    priorities = MultipleInputFilter(LeadPriorityEnum, field_name="priority")
     confidentiality = SimpleInputFilter(LeadConfidentialityEnum)
-    statuses = MultipleInputFilter(LeadStatusEnum, field_name='status')
-    extraction_status = SimpleInputFilter(LeadExtractionStatusEnum, field_name='extraction_status')
-    assignees = IDListFilter(field_name='assignee')
-    authoring_organization_types = IDListFilter(method='authoring_organization_types_filter')
-    author_organizations = IDListFilter(method='authoring_organizations_filter')
-    source_organizations = IDListFilter(method='source_organizations_filter')
+    statuses = MultipleInputFilter(LeadStatusEnum, field_name="status")
+    extraction_status = SimpleInputFilter(LeadExtractionStatusEnum, field_name="extraction_status")
+    assignees = IDListFilter(field_name="assignee")
+    authoring_organization_types = IDListFilter(method="authoring_organization_types_filter")
+    author_organizations = IDListFilter(method="authoring_organizations_filter")
+    source_organizations = IDListFilter(method="source_organizations_filter")
     # Filter-only enum filter
-    has_entries = django_filters.BooleanFilter(method='filter_has_entries', help_text='Lead has entries.')
-    has_assessment = django_filters.BooleanFilter(method='filter_has_assessment', help_text='Lead has assessment.')
-    is_assessment = django_filters.BooleanFilter(field_name='is_assessment_lead')
-    entries_filter_data = SimpleInputFilter(EntriesFilterDataInputType, method='filtered_entries_filter_data')
+    has_entries = django_filters.BooleanFilter(method="filter_has_entries", help_text="Lead has entries.")
+    has_assessment = django_filters.BooleanFilter(method="filter_has_assessment", help_text="Lead has assessment.")
+    is_assessment = django_filters.BooleanFilter(field_name="is_assessment_lead")
+    entries_filter_data = SimpleInputFilter(EntriesFilterDataInputType, method="filtered_entries_filter_data")
 
-    search = django_filters.CharFilter(method='search_filter')
+    search = django_filters.CharFilter(method="search_filter")
 
     published_on = django_filters.DateFilter()
-    published_on_gte = DateGteFilter(field_name='published_on')
-    published_on_lte = DateLteFilter(field_name='published_on')
+    published_on_gte = DateGteFilter(field_name="published_on")
+    published_on_lte = DateLteFilter(field_name="published_on")
 
-    emm_entities = django_filters.CharFilter(method='emm_entities_filter')
-    emm_keywords = django_filters.CharFilter(method='emm_keywords_filter')
-    emm_risk_factors = django_filters.CharFilter(method='emm_risk_factors_filter')
+    emm_entities = django_filters.CharFilter(method="emm_entities_filter")
+    emm_keywords = django_filters.CharFilter(method="emm_keywords_filter")
+    emm_risk_factors = django_filters.CharFilter(method="emm_risk_factors_filter")
 
     # duplicates
-    has_duplicates = django_filters.BooleanFilter(method='has_duplicates_filter', help_text='Has duplicate leads')
-    duplicates_of = IDFilter(method='duplicates_of_filter')
+    has_duplicates = django_filters.BooleanFilter(method="has_duplicates_filter", help_text="Has duplicate leads")
+    duplicates_of = IDFilter(method="duplicates_of_filter")
 
-    ordering = MultipleInputFilter(LeadOrderingEnum, method='ordering_filter')
+    ordering = MultipleInputFilter(LeadOrderingEnum, method="ordering_filter")
 
     class Meta:
         model = Lead
         fields = {
-            **{
-                x: ['exact']
-                for x in ['text', 'url']
-            },
+            **{x: ["exact"] for x in ["text", "url"]},
         }
 
         filter_overrides = {
             models.CharField: {
-                'filter_class': django_filters.CharFilter,
-                'extra': lambda _: {
-                    'lookup_expr': 'icontains',
+                "filter_class": django_filters.CharFilter,
+                "extra": lambda _: {
+                    "lookup_expr": "icontains",
                 },
             },
         }
@@ -352,9 +355,9 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
     @property
     def active_project(self) -> Project:
         if self.request is None:
-            raise Exception(f'{self.request=} should be defined')
+            raise Exception(f"{self.request=} should be defined")
         if self.request.active_project is None:
-            raise Exception(f'{self.request.active_project=} should be defined')
+            raise Exception(f"{self.request.active_project=} should be defined")
         return self.request.active_project
 
     # Filters methods
@@ -364,23 +367,26 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
             return qs
         return qs.filter(
             # By title
-            models.Q(title__icontains=value) |
+            models.Q(title__icontains=value)
+            |
             # By source
-            models.Q(source_raw__icontains=value) |
-            models.Q(source__title__icontains=value) |
-            models.Q(source__parent__title__icontains=value) |
+            models.Q(source_raw__icontains=value)
+            | models.Q(source__title__icontains=value)
+            | models.Q(source__parent__title__icontains=value)
+            |
             # By author
-            models.Q(author__title__icontains=value) |
-            models.Q(author__parent__title__icontains=value) |
-            models.Q(author_raw__icontains=value) |
-            models.Q(authors__title__icontains=value) |
-            models.Q(authors__parent__title__icontains=value) |
+            models.Q(author__title__icontains=value)
+            | models.Q(author__parent__title__icontains=value)
+            | models.Q(author_raw__icontains=value)
+            | models.Q(authors__title__icontains=value)
+            | models.Q(authors__parent__title__icontains=value)
+            |
             # By URL
             models.Q(url__icontains=value)
         ).distinct()
 
     def ordering_filter(self, qs, name, value):
-        active_entry_count_field = self.custom_context.get('active_entry_count_field')
+        active_entry_count_field = self.custom_context.get("active_entry_count_field")
         for ordering in value:
             # Custom for entries count (use filter or normal entry count)
             if active_entry_count_field and ordering in [
@@ -390,37 +396,32 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
                 if ordering == LeadOrderingEnum.ASC_ENTRIES_COUNT:
                     qs = qs.order_by(active_entry_count_field)
                 else:
-                    qs = qs.order_by(f'-{active_entry_count_field}')
+                    qs = qs.order_by(f"-{active_entry_count_field}")
             # Custom for page count with nulls_last
             elif ordering == LeadOrderingEnum.DESC_PAGE_COUNT:
-                qs = qs.order_by(models.F('leadpreview__page_count').desc(nulls_last=True))
+                qs = qs.order_by(models.F("leadpreview__page_count").desc(nulls_last=True))
             elif ordering == LeadOrderingEnum.ASC_PAGE_COUNT:
-                qs = qs.order_by(models.F('leadpreview__page_count').asc(nulls_first=True))
+                qs = qs.order_by(models.F("leadpreview__page_count").asc(nulls_first=True))
             # For remaining
             else:
                 qs = qs.order_by(ordering)
         return qs
 
     def emm_entities_filter(self, qs, name, value):
-        splitted = [x for x in value.split(',') if x]
+        splitted = [x for x in value.split(",") if x]
         return qs.filter(emm_entities__in=splitted)
 
     def emm_keywords_filter(self, qs, name, value):
-        splitted = [x for x in value.split(',') if x]
+        splitted = [x for x in value.split(",") if x]
         return qs.filter(emm_triggers__emm_keyword__in=splitted)
 
     def emm_risk_factors_filter(self, qs, name, value):
-        splitted = [x for x in value.split(',') if x]
+        splitted = [x for x in value.split(",") if x]
         return qs.filter(emm_triggers__emm_risk_factor__in=splitted)
 
     def authoring_organization_types_filter(self, qs, name, value):
         if value:
-            qs = qs.annotate(
-                organization_types=Coalesce(
-                    'authors__parent__organization_type',
-                    'authors__organization_type'
-                )
-            )
+            qs = qs.annotate(organization_types=Coalesce("authors__parent__organization_type", "authors__organization_type"))
             if isinstance(value[0], OrganizationType):
                 return qs.filter(organization_types__in=[ot.id for ot in value]).distinct()
             return qs.filter(organization_types__in=value).distinct()
@@ -428,13 +429,13 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
 
     def authoring_organizations_filter(self, qs, _, value):
         if value:
-            qs = qs.annotate(authoring_organizations=Coalesce('authors__parent_id', 'authors__id'))
+            qs = qs.annotate(authoring_organizations=Coalesce("authors__parent_id", "authors__id"))
             return qs.filter(authoring_organizations__in=value).distinct()
         return qs
 
     def source_organizations_filter(self, qs, _, value):
         if value:
-            qs = qs.annotate(source_organizations=Coalesce('source__parent_id', 'source__id'))
+            qs = qs.annotate(source_organizations=Coalesce("source__parent_id", "source__id"))
             return qs.filter(source_organizations__in=value).distinct()
         return qs
 
@@ -445,7 +446,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
     def filter_leads_id(self, qs, _, value):
         if value is None:
             return qs
-        if self.data.get('exclude_provided_leads_id'):
+        if self.data.get("exclude_provided_leads_id"):
             return qs.exclude(id__in=value)
         return qs.filter(id__in=value)
 
@@ -468,30 +469,32 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
 
     def filter_queryset(self, qs):
         def _entry_subquery(entry_qs: models.QuerySet):
-            subquery_qs = entry_qs.\
-                filter(
+            subquery_qs = (
+                entry_qs.filter(
                     project=self.active_project,
                     analysis_framework=self.active_project.analysis_framework_id,
-                    lead=models.OuterRef('pk'),
-                )\
-                .values('lead').order_by()\
-                .annotate(count=models.Count('id'))\
-                .values('count')
+                    lead=models.OuterRef("pk"),
+                )
+                .values("lead")
+                .order_by()
+                .annotate(count=models.Count("id"))
+                .values("count")
+            )
             return Coalesce(
-                models.Subquery(
-                    subquery_qs[:1],
-                    output_field=models.IntegerField()
-                ), 0,
+                models.Subquery(subquery_qs[:1], output_field=models.IntegerField()),
+                0,
             )
 
         # Pre-annotate required fields for entries count (w/wo filters)
-        entries_filter_data = self.data.get('entries_filter_data')
-        has_entries = self.data.get('has_entries')
+        entries_filter_data = self.data.get("entries_filter_data")
+        has_entries = self.data.get("has_entries")
         has_entries_count_ordering = any(
-            ordering in [
+            ordering
+            in [
                 LeadOrderingEnum.ASC_ENTRIES_COUNT,
                 LeadOrderingEnum.DESC_ENTRIES_COUNT,
-            ] for ordering in self.data.get('ordering') or []
+            ]
+            for ordering in self.data.get("ordering") or []
         )
 
         # With filter
@@ -501,30 +504,25 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
                     EntryGQFilterSet(
                         data={
                             **entries_filter_data,
-                            'from_subquery': True,
+                            "from_subquery": True,
                         },
                         request=self.request,
                     ).qs
                 )
             )
-            self.custom_context['active_entry_count_field'] = 'filtered_entry_count'
+            self.custom_context["active_entry_count_field"] = "filtered_entry_count"
         # Without filter
-        if has_entries is not None or (
-            entries_filter_data is None and has_entries_count_ordering
-        ):
-            self.custom_context['active_entry_count_field'] = self.custom_context.\
-                get('active_entry_count_field', 'entry_count')
-            qs = qs.annotate(
-                entry_count=_entry_subquery(Entry.objects.all())
-            )
+        if has_entries is not None or (entries_filter_data is None and has_entries_count_ordering):
+            self.custom_context["active_entry_count_field"] = self.custom_context.get("active_entry_count_field", "entry_count")
+            qs = qs.annotate(entry_count=_entry_subquery(Entry.objects.all()))
         # Call super function
         return super().filter_queryset(qs)
 
     def duplicates_of_filter(self, qs, _, lead_id: int):
         if lead_id is None:
             return qs
-        dup_qs1 = LeadDuplicates.objects.filter(source_lead=lead_id).values_list('target_lead', flat=True)
-        dup_qs2 = LeadDuplicates.objects.filter(target_lead=lead_id).values_list('source_lead', flat=True)
+        dup_qs1 = LeadDuplicates.objects.filter(source_lead=lead_id).values_list("target_lead", flat=True)
+        dup_qs2 = LeadDuplicates.objects.filter(target_lead=lead_id).values_list("source_lead", flat=True)
         return qs.filter(pk__in=dup_qs1.union(dup_qs2))
 
     def has_duplicates_filter(self, qs, _, val: bool):
@@ -540,7 +538,7 @@ class LeadGQFilterSet(UserResourceGqlFilterSet):
 
 
 class LeadGroupGQFilterSet(UserResourceGqlFilterSet):
-    search = django_filters.CharFilter(method='filter_title')
+    search = django_filters.CharFilter(method="filter_title")
 
     class Meta:
         model = LeadGroup
@@ -554,10 +552,10 @@ class LeadGroupGQFilterSet(UserResourceGqlFilterSet):
 
 LeadsFilterDataType, LeadsFilterDataInputType = generate_type_for_filter_set(
     LeadGQFilterSet,
-    'lead.schema.LeadListType',
-    'LeadsFilterDataType',
-    'LeadsFilterDataInputType',
+    "lead.schema.LeadListType",
+    "LeadsFilterDataType",
+    "LeadsFilterDataInputType",
     custom_new_fields_map={
-        'entries_filter_data': graphene.Field(EntriesFilterDataType),
+        "entries_filter_data": graphene.Field(EntriesFilterDataType),
     },
 )
