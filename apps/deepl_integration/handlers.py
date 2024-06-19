@@ -3,7 +3,7 @@ import json
 import copy
 import requests
 import logging
-from typing import List, Type
+from typing import Dict, List, Type
 from functools import reduce
 from urllib.parse import urlparse
 
@@ -30,7 +30,7 @@ from assisted_tagging.models import (
 )
 from unified_connector.models import (
     ConnectorLead,
-    ConnectorLeadPreviewImage,
+    ConnectorLeadPreviewAttachment,
     ConnectorSource,
     UnifiedConnector,
 )
@@ -706,6 +706,7 @@ class LeadExtractionHandler(BaseHandler):
         return lead
 
     @staticmethod
+    @transaction.atomic
     def save_lead_data_using_connector_lead(
         lead: Lead,
         connector_lead: ConnectorLead,
@@ -724,11 +725,16 @@ class LeadExtractionHandler(BaseHandler):
         )
         # Save extracted images as LeadPreviewAttachment instances
         # TODO: The logic is same for unified_connector leads as well. Maybe have a single func?
-        for connector_lead_preview_image in connector_lead.preview_images.all():
-            lead_image = LeadPreviewAttachment(lead=lead)
-            lead_image.file.save(
-                connector_lead_preview_image.image.name,
-                connector_lead_preview_image.image,
+        for connector_lead_attachment in connector_lead.preview_images.all():
+            lead_attachment = LeadPreviewAttachment(lead=lead)
+            lead_attachment.order = connector_lead_attachment.order
+            lead_attachment.file.save(
+                connector_lead_attachment.file.name,
+                connector_lead_attachment.file,
+            )
+            lead_attachment.file_preview.save(
+                connector_lead_attachment.file_preview.name,
+                connector_lead_attachment.file_preview
             )
         lead.update_extraction_status(Lead.ExtractionStatus.SUCCESS)
         return True
@@ -742,7 +748,8 @@ class UnifiedConnectorLeadHandler(BaseHandler):
     def save_data(
         connector_lead: ConnectorLead,
         text_source_uri: str,
-        images_uri: List[str],
+        images_uri: List[Dict],
+        table_uri: List[Dict],
         word_count: int,
         page_count: int,
         text_extraction_id: str,
@@ -751,16 +758,54 @@ class UnifiedConnectorLeadHandler(BaseHandler):
         connector_lead.word_count = word_count
         connector_lead.page_count = page_count
         connector_lead.text_extraction_id = text_extraction_id
-        image_base_path = f'{connector_lead.pk}'
+
+        attachment_base_path = f'{connector_lead.pk}'
         for image_uri in images_uri:
-            lead_image = ConnectorLeadPreviewImage(connector_lead=connector_lead)
-            image_obj = RequestHelper(url=image_uri, ignore_error=True).get_file()
-            if image_obj:
-                lead_image.image.save(
-                    os.path.join(image_base_path, os.path.basename(urlparse(image_uri).path)),
-                    image_obj,
+            for image in image_uri['images']:
+                image_obj = RequestHelper(url=image, ignore_error=True).get_file()
+                if image_obj:
+                    connector_lead_attachment = ConnectorLeadPreviewAttachment(connector_lead=connector_lead)
+                    connector_lead_attachment.file.save(
+                        os.path.join(
+                            attachment_base_path,
+                            os.path.basename(
+                                urlparse(image).path
+                            )
+                        ),
+                        image_obj,
+                    )
+                    connector_lead_attachment.page_number = image_uri['page_number']
+                    connector_lead_attachment.type = ConnectorLeadPreviewAttachment.ConnectorAttachmentFileType.IMAGE
+                    connector_lead_attachment.file_preview = connector_lead_attachment.file
+                    connector_lead_attachment.save()
+
+        for table in table_uri:
+            table_img = RequestHelper(url=table['image_link'], ignore_error=True).get_file()
+            table_attachment = RequestHelper(url=table['content_link'], ignore_error=True).get_file()
+            if table_img:
+                connector_lead_attachment = ConnectorLeadPreviewAttachment(connector_lead=connector_lead)
+                connector_lead_attachment.file_preview.save(
+                    os.path.join(
+                        attachment_base_path,
+                        os.path.basename(
+                            urlparse(table['image_link']).path
+                        )
+                    ),
+                    table_img,
                 )
-                lead_image.save()
+                connector_lead_attachment.page_number = table['page_number']
+                connector_lead_attachment.type = ConnectorLeadPreviewAttachment.ConnectorAttachmentFileType.XLSX
+                connector_lead_attachment.file.save(
+                    os.path.join(
+                        attachment_base_path,
+                        os.path.basename(
+                            urlparse(table['content_link']).path
+                        )
+                    ),
+                    table_attachment,
+                )
+                connector_lead_attachment.save()
+
         connector_lead.update_extraction_status(ConnectorLead.ExtractionStatus.SUCCESS, commit=False)
         connector_lead.save()
         return connector_lead

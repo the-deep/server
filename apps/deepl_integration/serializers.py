@@ -143,9 +143,13 @@ class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSeria
     Serialize deepl extractor
     """
     # Data fields
-    images_path = serializers.ListField(
-        child=serializers.CharField(allow_blank=True),
-        required=False, default=[],
+    images_path = serializers.ListSerializer(
+        child=ImagePathSerializer(required=True),
+        required=False
+    )
+    tables_path = serializers.ListSerializer(
+        child=TablePathSerializer(required=True),
+        required=False
     )
     text_path = serializers.CharField(required=False, allow_null=True)
     total_words_count = serializers.IntegerField(required=False, default=0, allow_null=True)
@@ -175,6 +179,7 @@ class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSeria
                 connector_lead,
                 data['text_path'],
                 data.get('images_path', [])[:10],  # TODO: Support for more images, to much image will error.
+                data['tables_path'],
                 data['total_words_count'],
                 data['total_pages'],
                 data['text_extraction_id'],

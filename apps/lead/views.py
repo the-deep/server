@@ -433,8 +433,10 @@ class LeadOptionsView(views.APIView):
             # Dynamic Options
 
             'lead_groups': LeadGroup.objects.filter(project_filter, id__in=lead_groups_id).distinct(),
-            'members': _filter_users_by_projects_memberships(members_qs, projects)\
-                                    .prefetch_related('profile').distinct(),
+            'members': _filter_users_by_projects_memberships(
+                members_qs,
+                projects,
+            ).prefetch_related('profile').distinct(),
             'organizations': Organization.objects.filter(id__in=organizations_id).distinct(),
 
             # EMM specific options

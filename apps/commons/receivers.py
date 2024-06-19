@@ -7,14 +7,14 @@ from lead.models import (
     LeadPreview,
     LeadPreviewAttachment,
 )
-from unified_connector.models import ConnectorLeadPreviewImage
+from unified_connector.models import ConnectorLeadPreviewAttachment
 
 
 # Lead
 @receiver(models.signals.post_delete, sender=LeadPreview)
 @receiver(models.signals.post_delete, sender=LeadPreviewAttachment)
 # Unified Connector
-@receiver(models.signals.post_delete, sender=ConnectorLeadPreviewImage)
+@receiver(models.signals.post_delete, sender=ConnectorLeadPreviewAttachment)
 def cleanup_file_on_instance_delete(sender, instance, **kwargs):
     files = []
     for field in instance._meta.get_fields():

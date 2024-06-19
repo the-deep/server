@@ -10,7 +10,6 @@ from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin, File
 from utils.graphene.fields import DjangoPaginatedListObjectField, DjangoListField
 from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
-from deep.serializers import URLCachedFileField
 from lead.models import Lead
 from user.schema import UserType
 
@@ -155,6 +154,7 @@ class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
         return info.context.dl.entry.verified_by_count.load(root.pk)
 
     @staticmethod
+    # NOTE: Client might not need this field so we have not refactor the dataloader
     def resolve_canonical_preview_image(root, info, **_):
         return info.context.dl.entry.entry_image_preview_url.load(root.pk)
 
