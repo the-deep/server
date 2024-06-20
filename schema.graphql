@@ -4103,7 +4103,6 @@ type EntryType {
   reviewCommentsCount: Int!
   draftEntry: ID
   entryAttachment: EntryAttachmentType
-  canonicalPreviewImage: String
 }
 
 scalar EnumDescription

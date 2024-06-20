@@ -1,5 +1,4 @@
 from collections import defaultdict
-from deep.serializers import URLCachedFileField
 from promise import Promise
 from django.utils.functional import cached_property
 from django.db import models
@@ -120,27 +119,6 @@ class EntryVerifiedByCountLoader(DataLoaderWithContext):
         return Promise.resolve([counts.get(key, 0) for key in keys])
 
 
-class EntryImageUrlLoader(DataLoaderWithContext):
-    def batch_load_fn(self, keys):
-        entry_qs = Entry.objects.filter(id__in=keys)
-        entry_dict = {entry.id: entry for entry in entry_qs}
-        results = []
-        for key in keys:
-            entry = entry_dict.get(key)
-            if entry.entry_type == Entry.TagType.IMAGE:
-                url = self.context.request.build_absolute_uri(
-                    URLCachedFileField.name_to_representation(entry.image)
-                )
-            elif entry.entry_type == Entry.TagType.ATTACHMENT:
-                url = self.context.request.build_absolute_uri(
-                    URLCachedFileField.name_to_representation(entry.entry_attachment.file)
-                )
-            else:
-                url = None
-            results.append(url)
-        return Promise.resolve(results)
-
-
 class DataLoaders(WithContextMixin):
     @cached_property
     def entry(self):
@@ -173,7 +151,3 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def verified_by_count(self):
         return EntryVerifiedByCountLoader(context=self.context)
-
-    @cached_property
-    def entry_image_preview_url(self):
-        return EntryImageUrlLoader(context=self.context)

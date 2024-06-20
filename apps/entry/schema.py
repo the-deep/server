@@ -118,7 +118,6 @@ class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     review_comments_count = graphene.Int(required=True)
     draft_entry = graphene.ID(source="draft_entry_id")
     entry_attachment = graphene.Field(EntryAttachmentType, required=False)
-    canonical_preview_image = graphene.String(required=False)
 
     # project_labels TODO:
     # tabular_field TODO:
@@ -152,11 +151,6 @@ class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
         if has_prefetched(root, 'verified_by'):
             return len(root.verified_by.all())
         return info.context.dl.entry.verified_by_count.load(root.pk)
-
-    @staticmethod
-    # NOTE: Client might not need this field so we have not refactor the dataloader
-    def resolve_canonical_preview_image(root, info, **_):
-        return info.context.dl.entry.entry_image_preview_url.load(root.pk)
 
 
 class EntryListType(CustomDjangoListObjectType):
