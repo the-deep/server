@@ -125,7 +125,7 @@ class LeadExtractCallbackSerializer(DeeplServerBaseCallbackSerializer):
                 lead,
                 data['text_path'],
                 data.get('images_path', [])[:10],   # TODO: Support for more images, too much image will error.
-                data.get('tables_path', []),
+                data.get('tables_path', [])[:10],
                 data.get('total_words_count'),
                 data.get('total_pages'),
                 data.get('text_extraction_id'),

@@ -736,6 +736,7 @@ class LeadExtractionHandler(BaseHandler):
                 connector_lead_attachment.file_preview.name,
                 connector_lead_attachment.file_preview
             )
+            lead_attachment.save()
         lead.update_extraction_status(Lead.ExtractionStatus.SUCCESS)
         return True
 

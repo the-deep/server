@@ -5,6 +5,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from deep.middleware import get_current_user
+from unified_connector.models import ConnectorLeadPreviewAttachment
 from utils.common import parse_number
 from project.mixins import ProjectEntityMixin
 from project.permissions import PROJECT_PERMISSIONS
@@ -31,6 +32,8 @@ class EntryAttachment(models.Model):
     LEAD_TO_ENTRY_TYPE = {
         LeadPreviewAttachment.AttachmentFileType.XLSX: EntryFileType.XLSX,
         LeadPreviewAttachment.AttachmentFileType.IMAGE: EntryFileType.IMAGE,
+        ConnectorLeadPreviewAttachment.ConnectorAttachmentFileType.XLSX: EntryFileType.XLSX,
+        ConnectorLeadPreviewAttachment.ConnectorAttachmentFileType.IMAGE: EntryFileType.IMAGE
     }
     assert len(list(LeadPreviewAttachment.AttachmentFileType)) == len(LEAD_TO_ENTRY_TYPE.keys()), \
         'Make sure to sync LEAD_TO_ENTRY_TYPE with LeadPreviewAttachment.AttachmentFileType'
