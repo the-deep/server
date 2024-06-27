@@ -8,6 +8,7 @@ def set_file_preview(apps, schema_editor):
     for connector_lead_attachment in connector_lead_attachments:
         connector_lead_attachment.file_preview = connector_lead_attachment.file
         connector_lead_attachment.type = 2  # default type is image
+        connector_lead_attachment.save(updated_fields=['file_preview','type'])
 
 
 class Migration(migrations.Migration):
@@ -35,7 +36,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='connectorleadpreviewattachment',
             name='type',
-            field=models.PositiveSmallIntegerField(choices=[(1, 'XLSX'), (2, 'Image')])
+            field=models.PositiveSmallIntegerField(choices=[(1, 'XLSX'), (2, 'Image')], default=1)
         ),
         migrations.RunPython(
             set_file_preview,

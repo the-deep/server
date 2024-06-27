@@ -9,6 +9,7 @@ def set_file_preview(apps, schema_editor):
     for lead_attachment in lead_attachments:
         lead_attachment.file_preview = lead_attachment.file
         lead_attachment.type = 2  # default type is image
+        lead_attachment.save(updated_fields=['file_preview','type'])
 
 
 class Migration(migrations.Migration):
@@ -36,7 +37,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='leadpreviewattachment',
             name='type',
-            field=models.PositiveSmallIntegerField(choices=[(1, 'XLSX'), (2, 'Image')],max_length=20)
+            field=models.PositiveSmallIntegerField(choices=[(1, 'XLSX'), (2, 'Image')], default=1)
         ),
         migrations.RunPython(
             set_file_preview,
