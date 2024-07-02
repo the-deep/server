@@ -5,11 +5,10 @@ from django.db import migrations, models
 
 def set_file_preview(apps, schema_editor):
     LeadPreviewAttachment = apps.get_model('lead', 'LeadPreviewAttachment')
-    lead_attachments = LeadPreviewAttachment.objects.all()
-    for lead_attachment in lead_attachments:
-        lead_attachment.file_preview = lead_attachment.file
-        lead_attachment.type = 2  # default type is image
-        lead_attachment.save(updated_fields=['file_preview','type'])
+    LeadPreviewAttachment.objects.update(
+        file_preview=models.F('file'),
+        type=2,
+    )
 
 
 class Migration(migrations.Migration):
@@ -31,16 +30,16 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='leadpreviewattachment',
-            name='file_preview',
-            field=models.FileField(upload_to='lead-preview/attachments-preview/')
-        ),
-        migrations.AddField(
-            model_name='leadpreviewattachment',
             name='type',
             field=models.PositiveSmallIntegerField(choices=[(1, 'XLSX'), (2, 'Image')], default=1)
         ),
         migrations.RunPython(
             set_file_preview,
             reverse_code=migrations.RunPython.noop,
-        )
+        ),
+        migrations.AlterField(
+            model_name='leadpreviewattachment',
+            name='file_preview',
+            field=models.FileField(upload_to='lead-preview/attachments-preview/')
+        ),
     ]

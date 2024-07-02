@@ -2,13 +2,13 @@
 
 from django.db import migrations, models
 
+
 def set_file_preview(apps, schema_editor):
     ConnectorLeadPreviewAttachment = apps.get_model('unified_connector', 'ConnectorLeadPreviewAttachment')
-    connector_lead_attachments = ConnectorLeadPreviewAttachment.objects.all()
-    for connector_lead_attachment in connector_lead_attachments:
-        connector_lead_attachment.file_preview = connector_lead_attachment.file
-        connector_lead_attachment.type = 2  # default type is image
-        connector_lead_attachment.save(updated_fields=['file_preview','type'])
+    ConnectorLeadPreviewAttachment.objects.update(
+        file_preview=models.F('file'),
+        type=2,
+    )
 
 
 class Migration(migrations.Migration):

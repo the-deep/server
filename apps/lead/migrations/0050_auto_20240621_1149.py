@@ -19,4 +19,10 @@ class Migration(migrations.Migration):
             old_name='LeadPreviewImage',
             new_name='LeadPreviewAttachment'
         ),
+
+        migrations.AddField(
+            model_name='leadpreviewattachment',
+            name='file_preview',
+            field=models.FileField(upload_to='lead-preview/attachments-preview/', null=True)
+        ),
     ]
