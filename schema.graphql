@@ -4263,6 +4263,7 @@ enum ExportExcelSelectedStaticColumnEnum {
   ENTRY_ID
   LEAD_ENTRY_ID
   ENTRY_EXCERPT
+  LEAD_ENTRY_ENTRY_ATTACHMENT_FILE_PREVIEW
 }
 
 enum ExportExportTypeEnum {

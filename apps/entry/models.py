@@ -3,6 +3,10 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.conf import settings
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from deep.middleware import get_current_user
 from unified_connector.models import ConnectorLeadPreviewAttachment
@@ -21,6 +25,7 @@ from analysis_framework.models import (
     Exportable,
 )
 from assisted_tagging.models import DraftEntry
+from gallery.enums import ModuleTypeEnum
 
 
 class EntryAttachment(models.Model):
@@ -65,6 +70,19 @@ class EntryAttachment(models.Model):
             entry_attachment.file_preview.save(lead_attachment_file_preview_name, lead_attachment.file_preview)
         entry_attachment.save()
         return entry_attachment
+
+    def get_file_url(self):
+        return '{protocol}://{domain}{url}'.format(
+            protocol=settings.HTTP_PROTOCOL,
+            domain=settings.DJANGO_API_HOST,
+            url=reverse(
+                'external_private_url',
+                kwargs={
+                    'module': ModuleTypeEnum.ENTRY_ATTACHMENT.value,
+                    'identifier': urlsafe_base64_encode(force_bytes(self.id))
+                }
+            )
+        )
 
 
 class Entry(UserResource, ProjectEntityMixin):

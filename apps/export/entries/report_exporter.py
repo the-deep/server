@@ -592,6 +592,8 @@ class ReportExporter:
                 if h_stats.get(key):
                     image_text += f', {key.title()} values: {h_stats.get(key)}' if h_stats.get(key) else ''
 
+        if entry.entry_type == Entry.TagType.ATTACHMENT:
+            image = entry.entry_attachment.file_preview
         if image:
             self.doc.add_image(image)
             if image_text:

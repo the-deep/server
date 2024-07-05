@@ -146,6 +146,7 @@ class Export(ExportBaseModel):
         ENTRY_ID = 'entry_id', 'Entry Id'
         LEAD_ENTRY_ID = 'lead_entry_id', 'Source-Entry Id'
         ENTRY_EXCERPT = 'entry_excerpt', 'Modified Excerpt, Original Excerpt'
+        LEAD_ENTRY_ENTRY_ATTACHMENT_FILE_PREVIEW = 'lead_entry_entry_attachment_file_preview', 'EntryAttachment Url'
 
     # Used by extra options for Report
     class CitationStyle(models.IntegerChoices):

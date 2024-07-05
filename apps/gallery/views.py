@@ -7,6 +7,7 @@ from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from django.shortcuts import redirect, get_object_or_404
 
+from gallery.enums import ModuleTypeEnum
 from rest_framework import (
     views,
     viewsets,
@@ -24,7 +25,7 @@ from deep.permissions import ModifyPermission
 from deep.permalinks import Permalink
 from project.models import Project
 from lead.models import Lead
-from entry.models import Entry
+from entry.models import Entry, EntryAttachment
 from user_resource.filters import UserResourceFilterSet
 
 from utils.extractor.formats import (
@@ -80,6 +81,24 @@ class PrivateFileView(views.APIView):
                 ),
             ),
         )
+
+
+class AttachmentFileView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, module=None, identifier=None):
+
+        if module == ModuleTypeEnum.ENTRY_ATTACHMENT.value:
+            id = force_text(urlsafe_base64_decode(identifier))
+            qs = get_object_or_404(EntryAttachment, id=id)
+            if qs:
+                return redirect(request.build_absolute_uri(qs.file.url))
+            return response.Response({
+                'error': 'File doesn\'t exists',
+            }, status=status.HTTP_404_NOT_FOUND)
+        return response.Response({
+            'error': 'Access Forbidden, Contact Admin',
+        }, status=status.HTTP_403_FORBIDDEN)
 
 
 class DeprecatedPrivateFileView(views.APIView):

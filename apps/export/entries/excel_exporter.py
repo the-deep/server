@@ -272,6 +272,8 @@ class ExcelExporter:
             if self.modified_excerpt_exists:
                 return [entry_excerpt, entry.dropped_excerpt]
             return entry_excerpt
+        elif exportable == Export.StaticColumn.LEAD_ENTRY_ENTRY_ATTACHMENT_FILE_PREVIEW:
+            return f'{entry.entry_attachment.get_file_url()}'
 
     def add_entries_from_excel_data(self, rows, data, export_data):
         export_type = data.get('type')
