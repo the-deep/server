@@ -6,11 +6,15 @@ from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
+from rest_framework import status
+
 from deep.tests import TestCase
 from gallery.models import File, FilePreview
 from lead.models import Lead
 from project.models import Project
-from entry.models import Entry
+from entry.models import Entry, EntryAttachment
+from user.models import User
+from gallery.enums import PrivateFileModuleType
 
 
 class GalleryTests(TestCase):
@@ -205,3 +209,38 @@ class GalleryTests(TestCase):
         return response.data['id']
 
     # NOTE: Test for files
+
+
+class PrivateAttachmentFileViewTest(TestCase):
+    def setUp(self):
+        # Create a test user
+        self.user = User.objects.create_user(username='testuser', password='testpassword')
+
+        # Create a test entry attachment
+        self.project = Project.objects.create()
+        self.lead = Lead.objects.create(project=Project)
+        self.attachment = EntryAttachment.objects.create()
+        self.entry = Entry.objects.create(
+            lead=self.lead,
+            project=self.project,
+            entry=self.attachment
+        )
+        self.url = reverse('private_attachment_file_view', kwargs={
+            'module': PrivateFileModuleType.ENTRY_ATTACHMENT.value,
+            'identifier': urlsafe_base64_encode(force_bytes(self.attachment.id)),
+        })
+
+    def test_access_by_authenticated_user(self):
+        self.authenticate()
+        response = self.client.get(self.url)
+        self.assert_200(response)
+
+    def test_access_forbidden(self):
+        self.authenticate()
+        invalid_url = reverse('private_attachment_file_view', kwargs={
+            'module': PrivateFileModuleType.ENTRY_ATTACHMENT.value,
+            'identifier': urlsafe_base64_encode(force_bytes(999999)),
+        })
+        response = self.client.get(invalid_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.data['error'], "Access Forbidden Or File doesn't exists, Contact Admin")

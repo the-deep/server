@@ -25,7 +25,7 @@ from analysis_framework.models import (
     Exportable,
 )
 from assisted_tagging.models import DraftEntry
-from gallery.enums import ModuleTypeEnum
+from gallery.enums import PrivateFileModuleType
 
 
 class EntryAttachment(models.Model):
@@ -78,7 +78,7 @@ class EntryAttachment(models.Model):
             url=reverse(
                 'external_private_url',
                 kwargs={
-                    'module': ModuleTypeEnum.ENTRY_ATTACHMENT.value,
+                    'module': PrivateFileModuleType.ENTRY_ATTACHMENT.value,
                     'identifier': urlsafe_base64_encode(force_bytes(self.id))
                 }
             )

@@ -7,7 +7,7 @@ def set_file_preview(apps, schema_editor):
     LeadPreviewAttachment = apps.get_model('lead', 'LeadPreviewAttachment')
     LeadPreviewAttachment.objects.update(
         file_preview=models.F('file'),
-        type=2,
+        type=2,  # default type is Image
     )
 
 

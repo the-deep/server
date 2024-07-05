@@ -3936,7 +3936,7 @@ type EntriesFilterDataType {
 
 type EntryAttachmentType {
   id: ID!
-  leadAttachmentId: ID!
+  leadAttachmentId: ID
   file: FileFieldType!
   filePreview: FileFieldType!
   entryFileType: EntryFileType!

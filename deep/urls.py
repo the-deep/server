@@ -26,7 +26,7 @@ from user.views import (
     unsubscribe_email,
 )
 from gallery.views import (
-    AttachmentFileView,
+    PrivateAttachmentFileView,
     FileView,
     FileViewSet,
     GoogleDriveFileViewSet,
@@ -438,7 +438,7 @@ urlpatterns = [
     ),
     path(
         'external/private-file/<str:module>/<str:identifier>',
-        AttachmentFileView.as_view(),
+        PrivateAttachmentFileView.as_view(),
         name='external_private_url',
     ),
     re_path(

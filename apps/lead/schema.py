@@ -61,6 +61,15 @@ def get_lead_qs(info):
     return Lead.objects.none()
 
 
+def get_lead_preview_attachment(info):
+    lead_attachment_qs = LeadPreviewAttachment.objects.filter(
+        lead__project=info.context.active_project
+    ).order_by('-page_number')
+    if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
+        return lead_attachment_qs
+    return LeadPreviewAttachment.objects.none()
+
+
 def get_lead_group_qs(info):
     lead_group_qs = LeadGroup.objects.filter(project=info.context.active_project)
     if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
@@ -231,6 +240,10 @@ class LeadPreviewAttachmentType(DjangoObjectType):
             'order',
             'page_number',
         )
+
+    @staticmethod
+    def get_custom_queryset(queryset, info, **kwargs):
+        return get_lead_preview_attachment(info)
 
 
 class LeadEmmTriggerType(DjangoObjectType):
@@ -522,6 +535,10 @@ class Query:
     @staticmethod
     def resolve_leads(root, info, **kwargs) -> QuerySet:
         return get_lead_qs(info)
+
+    @staticmethod
+    def resolve_lead_preview_attachments(root, info, **kwargs) -> QuerySet:
+        return get_lead_preview_attachment(info)
 
     @staticmethod
     def resolve_lead_groups(root, info, **kwargs) -> QuerySet:

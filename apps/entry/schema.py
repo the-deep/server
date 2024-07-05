@@ -86,7 +86,7 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
 
 
 class EntryAttachmentType(DjangoObjectType):
-    lead_attachment_id = graphene.ID(required=True)
+    lead_attachment_id = graphene.ID(required=False)
     file = graphene.Field(FileFieldType, required=True)
     file_preview = graphene.Field(FileFieldType, required=True)
     entry_file_type = graphene.Field(EntryAttachmentTypeEnum, required=True)

@@ -7,7 +7,7 @@ def set_file_preview(apps, schema_editor):
     ConnectorLeadPreviewAttachment = apps.get_model('unified_connector', 'ConnectorLeadPreviewAttachment')
     ConnectorLeadPreviewAttachment.objects.update(
         file_preview=models.F('file'),
-        type=2,
+        type=2,  # default type is image
     )
 
 

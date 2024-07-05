@@ -7,7 +7,7 @@ from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from django.shortcuts import redirect, get_object_or_404
 
-from gallery.enums import ModuleTypeEnum
+from gallery.enums import PrivateFileModuleType 
 from rest_framework import (
     views,
     viewsets,
@@ -83,21 +83,20 @@ class PrivateFileView(views.APIView):
         )
 
 
-class AttachmentFileView(views.APIView):
+class PrivateAttachmentFileView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, module=None, identifier=None):
-
-        if module == ModuleTypeEnum.ENTRY_ATTACHMENT.value:
-            id = force_text(urlsafe_base64_decode(identifier))
-            qs = get_object_or_404(EntryAttachment, id=id)
-            if qs:
-                return redirect(request.build_absolute_uri(qs.file.url))
-            return response.Response({
-                'error': 'File doesn\'t exists',
-            }, status=status.HTTP_404_NOT_FOUND)
+        id = force_text(urlsafe_base64_decode(identifier))
+        user = request.user
+        obj = None
+        if module == PrivateFileModuleType.ENTRY_ATTACHMENT.value:
+            obj = get_object_or_404(EntryAttachment, id=id)
+            obj.entry.get_for(user)
+        if obj:
+            return redirect(request.build_absolute_uri(obj.file.url))
         return response.Response({
-            'error': 'Access Forbidden, Contact Admin',
+            'error': 'Access Forbidden Or File does\'t exists, Contact Admin',
         }, status=status.HTTP_403_FORBIDDEN)
 
 
