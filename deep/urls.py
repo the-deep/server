@@ -437,7 +437,7 @@ urlpatterns = [
         name='deprecated_gallery_private_url',
     ),
     path(
-        'external/private-file/<str:module>/<str:identifier>',
+        'external/private-file/<str:module>/<str:identifier>/<filename:filename>',
         PrivateAttachmentFileView.as_view(),
         name='external_private_url',
     ),

@@ -1,20 +1,24 @@
 import os
 import tempfile
 
+from analysis_framework.factories import AnalysisFrameworkFactory
 from django.urls import reverse
 from django.conf import settings
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
-from rest_framework import status
+from entry.factories import EntryAttachmentFactory, EntryFactory
+from lead.factories import LeadFactory
 
 from deep.tests import TestCase
 from gallery.models import File, FilePreview
 from lead.models import Lead
 from project.models import Project
-from entry.models import Entry, EntryAttachment
-from user.models import User
+from entry.models import Entry
+from user.factories import UserFactory
+from project.factories import ProjectFactory
 from gallery.enums import PrivateFileModuleType
+from utils.graphene.tests import GraphQLTestCase
 
 
 class GalleryTests(TestCase):
@@ -211,36 +215,139 @@ class GalleryTests(TestCase):
     # NOTE: Test for files
 
 
-class PrivateAttachmentFileViewTest(TestCase):
+class PrivateAttachmentFileViewTest(GraphQLTestCase):
     def setUp(self):
+        super().setUp()
         # Create a test user
-        self.user = User.objects.create_user(username='testuser', password='testpassword')
 
+        self.member_user = UserFactory.create()
+        self.member_user1 = UserFactory.create()
+        self.normal_user = UserFactory.create()
+        self.af = AnalysisFrameworkFactory.create()
         # Create a test entry attachment
-        self.project = Project.objects.create()
-        self.lead = Lead.objects.create(project=Project)
-        self.attachment = EntryAttachment.objects.create()
-        self.entry = Entry.objects.create(
+        # for normal user
+        self.project = ProjectFactory.create()
+        self.project.add_member(self.member_user1, role=self.project_role_reader_non_confidential)
+        # for member user
+        self.project1 = ProjectFactory.create()
+        self.project1.add_member(self.member_user, role=self.project_role_admin)
+
+        self.lead = LeadFactory.create(project=self.project)
+        # UNPROTECTED lead
+        self.lead1 = LeadFactory.create(
+            project=self.project1,
+            confidentiality=Lead.Confidentiality.UNPROTECTED
+        )
+        # RESTRICTED lead
+        self.lead2 = LeadFactory.create(
+            project=self.project1,
+            confidentiality=Lead.Confidentiality.RESTRICTED
+        )
+        # CONFIDENTIAL lead
+        self.lead3 = LeadFactory.create(
+            project=self.project1,
+            confidentiality=Lead.Confidentiality.CONFIDENTIAL
+        )
+
+        self.attachment = EntryAttachmentFactory.create()
+        self.attachment1 = EntryAttachmentFactory.create()
+        self.attachment2 = EntryAttachmentFactory.create()
+        self.attachment3 = EntryAttachmentFactory.create()
+        self.attachment4 = EntryAttachmentFactory.create()
+
+        self.entry = EntryFactory.create(
+            analysis_framework=self.af,
             lead=self.lead,
             project=self.project,
-            entry=self.attachment
+            entry_attachment=self.attachment3
         )
-        self.url = reverse('private_attachment_file_view', kwargs={
+        self.entry1 = EntryFactory.create(
+            analysis_framework=self.af,
+            lead=self.lead1,
+            project=self.project1,
+            entry_attachment=self.attachment
+        )
+        self.entry1 = EntryFactory.create(
+            analysis_framework=self.af,
+            lead=self.lead3,
+            project=self.project1,
+            entry_attachment=self.attachment1
+        )
+
+        self.entry2 = EntryFactory.create(
+            analysis_framework=self.af,
+            lead=self.lead,
+            project=self.project1,
+            entry_attachment=self.attachment2
+        )
+
+        self.entry3 = EntryFactory.create(
+            analysis_framework=self.af,
+            lead=self.lead1,
+            project=self.project,
+            entry_attachment=self.attachment4
+        )
+
+        self.url1 = reverse('external_private_url', kwargs={
             'module': PrivateFileModuleType.ENTRY_ATTACHMENT.value,
-            'identifier': urlsafe_base64_encode(force_bytes(self.attachment.id)),
+            'identifier': urlsafe_base64_encode(force_bytes(self.entry.id)),
+            'filename': "test.pdf"
         })
 
-    def test_access_by_authenticated_user(self):
-        self.authenticate()
-        response = self.client.get(self.url)
-        self.assert_200(response)
+        self.url2 = reverse('external_private_url', kwargs={
+            'module': PrivateFileModuleType.ENTRY_ATTACHMENT.value,
+            'identifier': urlsafe_base64_encode(force_bytes(self.entry1.id)),
+            'filename': "test.pdf"
+        })
+
+        self.url3 = reverse('external_private_url', kwargs={
+            'module': PrivateFileModuleType.ENTRY_ATTACHMENT.value,
+            'identifier': urlsafe_base64_encode(force_bytes(self.entry2.id)),
+            'filename': "test.pdf"
+        })
+
+        self.url4 = reverse('external_private_url', kwargs={
+            'module': PrivateFileModuleType.ENTRY_ATTACHMENT.value,
+            'identifier': urlsafe_base64_encode(force_bytes(self.entry.id)),
+            'filename': "test.pdf"
+        })
+
+        self.url5 = reverse('external_private_url', kwargs={
+            'module': PrivateFileModuleType.ENTRY_ATTACHMENT.value,
+            'identifier': urlsafe_base64_encode(force_bytes(self.entry3.id)),
+            'filename': "test.pdf"
+        })
+
+    def test_without_login(self):
+        response = self.client.get(self.url1)
+        self.assertEqual(401, response.status_code)
+
+    def test_access_by_normal_user(self):
+        self.force_login(self.normal_user)
+        response = self.client.get(self.url2)
+        self.assertEqual(403, response.status_code)
+
+    def test_access_by_non_member_user(self):
+        self.force_login(self.member_user)
+        response = self.client.get(self.url4)
+        self.assertEqual(403, response.status_code)
+
+    def test_access_by_member_user(self):
+        self.force_login(self.member_user)
+        response = self.client.get(self.url2)
+        self.assertEqual(302, response.status_code)
+
+    def test_with_memeber_non_confidential_access(self):
+        self.force_login(self.member_user1)
+        response = self.client.get(self.url5)
+        self.assertEqual(302, response.status_code)
 
     def test_access_forbidden(self):
-        self.authenticate()
-        invalid_url = reverse('private_attachment_file_view', kwargs={
+        self.force_login(self.member_user)
+        invalid_url = reverse('external_private_url', kwargs={
             'module': PrivateFileModuleType.ENTRY_ATTACHMENT.value,
             'identifier': urlsafe_base64_encode(force_bytes(999999)),
+            'filename': 'test.pdf'
         })
         response = self.client.get(invalid_url)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertEqual(response.data['error'], "Access Forbidden Or File doesn't exists, Contact Admin")
+        self.assertEqual(404, response.status_code)
