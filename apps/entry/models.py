@@ -1,16 +1,18 @@
+import os
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 from deep.middleware import get_current_user
+from unified_connector.models import ConnectorLeadPreviewAttachment
 from utils.common import parse_number
 from project.mixins import ProjectEntityMixin
 from project.permissions import PROJECT_PERMISSIONS
 from gallery.models import File
 from user.models import User
 from user_resource.models import UserResource
-from lead.models import Lead
+from lead.models import Lead, LeadPreviewAttachment
 from notification.models import Assignment
 from analysis_framework.models import (
     AnalysisFramework,
@@ -19,6 +21,50 @@ from analysis_framework.models import (
     Exportable,
 )
 from assisted_tagging.models import DraftEntry
+
+
+class EntryAttachment(models.Model):
+    # The entry will make reference to it as entry_attachment.
+    class EntryFileType(models.IntegerChoices):
+        XLSX = 1, 'XLSX'
+        IMAGE = 2, 'Image'
+
+    LEAD_TO_ENTRY_TYPE = {
+        LeadPreviewAttachment.AttachmentFileType.XLSX: EntryFileType.XLSX,
+        LeadPreviewAttachment.AttachmentFileType.IMAGE: EntryFileType.IMAGE,
+        ConnectorLeadPreviewAttachment.ConnectorAttachmentFileType.XLSX: EntryFileType.XLSX,
+        ConnectorLeadPreviewAttachment.ConnectorAttachmentFileType.IMAGE: EntryFileType.IMAGE
+    }
+    assert len(list(LeadPreviewAttachment.AttachmentFileType)) == len(LEAD_TO_ENTRY_TYPE.keys()), \
+        'Make sure to sync LEAD_TO_ENTRY_TYPE with LeadPreviewAttachment.AttachmentFileType'
+
+    lead_attachment = models.ForeignKey(LeadPreviewAttachment, on_delete=models.SET_NULL, null=True)
+    entry_file_type = models.PositiveSmallIntegerField(
+        choices=EntryFileType.choices,
+        default=EntryFileType.XLSX,
+    )
+    file = models.FileField(upload_to='entry/attachment/')
+    file_preview = models.FileField(upload_to='entry/attachment-preview')
+
+    def __str__(self):
+        return f'{self.file}'
+
+    @classmethod
+    def clone_from_lead_attachment(cls, lead_attachment: LeadPreviewAttachment) -> 'EntryAttachment':
+        lead_attachment_file_name = os.path.basename(lead_attachment.file.name)
+        lead_attachment_file_preview_name = os.path.basename(lead_attachment.file_preview.name)
+        entry_attachment = EntryAttachment.objects.create(
+            lead_attachment_id=lead_attachment.pk,
+            entry_file_type=cls.LEAD_TO_ENTRY_TYPE[lead_attachment.type],
+        )
+        if lead_attachment.type == LeadPreviewAttachment.AttachmentFileType.IMAGE:
+            entry_attachment.file.save(lead_attachment_file_name, lead_attachment.file)
+            entry_attachment.file_preview = entry_attachment.file
+        else:
+            entry_attachment.file.save(lead_attachment_file_name, lead_attachment.file)
+            entry_attachment.file_preview.save(lead_attachment_file_preview_name, lead_attachment.file_preview)
+        entry_attachment.save()
+        return entry_attachment
 
 
 class Entry(UserResource, ProjectEntityMixin):
@@ -30,8 +76,9 @@ class Entry(UserResource, ProjectEntityMixin):
     """
 
     class TagType(models.TextChoices):
-        EXCERPT = 'excerpt', 'Excerpt',
-        IMAGE = 'image', 'Image',
+        EXCERPT = 'excerpt', 'Excerpt'
+        IMAGE = 'image', 'Image'
+        ATTACHMENT = 'attachment', 'Attachment'
         DATA_SERIES = 'dataSeries', 'Data Series'  # NOTE: data saved as tabular_field id
 
     lead = models.ForeignKey(Lead, on_delete=models.CASCADE)
@@ -47,6 +94,7 @@ class Entry(UserResource, ProjectEntityMixin):
     image = models.ForeignKey(File, on_delete=models.SET_NULL, null=True, blank=True)
     image_raw = models.TextField(blank=True)
     tabular_field = models.ForeignKey('tabular.Field', on_delete=models.CASCADE, null=True, blank=True)
+    entry_attachment = models.OneToOneField(EntryAttachment, on_delete=models.CASCADE, null=True, blank=True)
 
     dropped_excerpt = models.TextField(blank=True)  # NOTE: Original Exceprt. Modified version is stored in excerpt
     excerpt_modified = models.BooleanField(default=False)

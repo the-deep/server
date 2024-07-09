@@ -17,7 +17,7 @@ from gallery.models import File
 from gallery.serializers import FileSerializer, SimpleFileSerializer
 from project.models import Project
 from lead.serializers import LeadSerializer
-from lead.models import Lead, LeadPreviewImage
+from lead.models import Lead, LeadPreviewAttachment
 from analysis_framework.serializers import AnalysisFrameworkSerializer
 from geo.models import GeoArea, Region
 from geo.serializers import SimpleRegionSerializer
@@ -33,6 +33,7 @@ from .models import (
     EntryCommentText,
     ExportData,
     FilterData,
+    EntryAttachment,
     # Entry Grouping
     ProjectEntryLabel,
     LeadEntryGroup,
@@ -211,7 +212,7 @@ class EntrySerializer(RemoveNullFieldsMixin,
     lead_image = serializers.PrimaryKeyRelatedField(
         required=False,
         write_only=True,
-        queryset=LeadPreviewImage.objects.all()
+        queryset=LeadPreviewAttachment.objects.all()
     )
     # NOTE: Provided by annotate `annotate_comment_count`
     verified_by_count = serializers.IntegerField(read_only=True)
@@ -591,13 +592,12 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
             ' This will be changed into gallery image and supplied back in image field.'
         )
     )
-    lead_image = serializers.PrimaryKeyRelatedField(
+    lead_attachment = serializers.PrimaryKeyRelatedField(
         required=False,
         write_only=True,
-        queryset=LeadPreviewImage.objects.all(),
+        queryset=LeadPreviewAttachment.objects.all(),
         help_text=(
-            'This is used to add images from Lead Preview Images.'
-            ' This will be changed into gallery image and supplied back in image field.'
+            'This is used to add attachment from Lead Preview Attachment.'
         )
     )
 
@@ -611,7 +611,7 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
             'entry_type',
             'image',
             'image_raw',
-            'lead_image',
+            'lead_attachment',
             'tabular_field',
             'excerpt',
             'dropped_excerpt',
@@ -641,15 +641,25 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
         - Raw image (base64) are saved as deep gallery files
         """
         request = self.context['request']
-        image = data.get('image')
         image_raw = data.pop('image_raw', None)
-        lead_image = data.pop('lead_image', None)
+        lead_attachment = data.pop('lead_attachment', None)
 
         # ---------------- Lead
-        lead = data['lead']
+        lead = data.get('lead')
         if self.instance and lead != self.instance.lead:
             raise serializers.ValidationError({
                 'lead': 'Changing lead is not allowed'
+            })
+        # validate entry tag type
+        entry_type = data.get('entry_type')
+        if entry_type and entry_type == Entry.TagType.ATTACHMENT and lead_attachment is None:
+            raise serializers.ValidationError({
+                'lead_attachment': f'LeadPreviewAttachment is required with entry_tag is {entry_type}'
+            })
+
+        elif entry_type and entry_type == Entry.TagType.EXCERPT and data.get('excerpt') is None:
+            raise serializers.ValidationError({
+                'excerpt': f'EXCERPT is required when entry_tag is {entry_type}'
             })
 
         # ----------------- Validate Draft entry if provided
@@ -673,25 +683,18 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
         else:  # For update, set entry's AF with active AF
             data['analysis_framework_id'] = active_af_id
 
+        if lead_attachment:
+            data.pop('excerpt', None)  # removing excerpt when lead attachment is send
+            if lead_attachment.lead != lead:
+                raise serializers.ValidationError({
+                    'lead_attachment': f'You don\'t have permission to attach lead attachment: {lead_attachment}',
+                })
+
+            data['entry_attachment'] = EntryAttachment.clone_from_lead_attachment(lead_attachment)
+
         # ---------------- Set/validate image properly
-        # If gallery file is provided make sure user owns the file
-        if image:
-            if (
-                (self.instance and self.instance.image) != image and
-                not image.is_public and
-                image.created_by != request.user
-            ):
-                raise serializers.ValidationError({
-                    'image': f'You don\'t have permission to attach image: {image}',
-                })
-        # If lead image is provided make sure lead are same
-        elif lead_image:
-            if lead_image.lead != lead:
-                raise serializers.ValidationError({
-                    'lead_image': f'You don\'t have permission to attach lead image: {lead_image}',
-                })
-            data['image'] = lead_image.clone_as_deep_file(request.user)
         elif image_raw:
+            data.pop('excerpt', None)
             generated_image = base64_to_deep_image(image_raw, lead, request.user)
             if isinstance(generated_image, File):
                 data['image'] = generated_image

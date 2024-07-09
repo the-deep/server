@@ -1,5 +1,4 @@
 from collections import defaultdict
-
 from promise import Promise
 from django.utils.functional import cached_property
 from django.db import models

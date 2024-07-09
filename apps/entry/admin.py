@@ -9,6 +9,7 @@ from deep.admin import query_buttons
 from entry.models import (
     Entry,
     Attribute,
+    EntryAttachment,
     FilterData,
     ExportData,
     EntryComment,
@@ -61,7 +62,7 @@ class EntryAdmin(VersionAdmin):
     )
     autocomplete_fields = (
         'lead', 'project', 'created_by', 'modified_by', 'analysis_framework', 'tabular_field',
-        'image', 'controlled_changed_by', 'verified_by',
+        'image', 'controlled_changed_by', 'verified_by', 'entry_attachment',
     )
     ordering = ('project', 'created_by', 'created_at')
 
@@ -84,6 +85,11 @@ class ProjectEntryLabelAdmin(VersionAdmin):
         AutocompleteFilterFactory('Project', 'project'),
     )
     list_display = ('__str__', 'color')
+
+
+@admin.register(EntryAttachment)
+class EntryAttachmentAdmin(VersionAdmin):
+    search_fields = ['entry_file_type',]
 
 
 reversion.register(LeadEntryGroup)

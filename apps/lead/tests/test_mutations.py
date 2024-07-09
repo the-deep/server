@@ -13,7 +13,7 @@ from lead.factories import (
     LeadGroupFactory,
     LeadEMMTriggerFactory,
     LeadPreviewFactory,
-    LeadPreviewImageFactory,
+    LeadPreviewAttachmentFactory,
 )
 
 
@@ -517,7 +517,7 @@ class TestLeadCopyMutation(GraphQLTestCase):
 
         # Generating Foreign elements for wa_lead1
         wa_lead1_preview = LeadPreviewFactory.create(lead=wa_lead1, text_extract='This is a random text extarct')
-        wa_lead1_image_preview = LeadPreviewImageFactory.create(lead=wa_lead1, file='test-file-123')
+        wa_lead1_attachment_preview = LeadPreviewAttachmentFactory.create(lead=wa_lead1, file='test-file-123')
         LeadEMMTriggerFactory.create(
             lead=wa_lead1,
             emm_keyword='emm1',
@@ -611,7 +611,7 @@ class TestLeadCopyMutation(GraphQLTestCase):
         self.assertEqual(copied_lead1.confidentiality, wa_lead1.confidentiality)
         # lets check for the foreign key field copy
         self.assertEqual(copied_lead1.leadpreview.text_extract, wa_lead1_preview.text_extract)
-        self.assertEqual(list(copied_lead1.images.values_list('file', flat=True)), [wa_lead1_image_preview.file.name])
+        self.assertEqual(list(copied_lead1.images.values_list('file', flat=True)), [wa_lead1_attachment_preview.file.name])
         self.assertEqual(
             list(copied_lead1.emm_triggers.values('emm_keyword', 'emm_risk_factor', 'count')),
             list(wa_lead1.emm_triggers.values('emm_keyword', 'emm_risk_factor', 'count')),

@@ -48,7 +48,7 @@ from .models import (
     Lead,
     EMMEntity,
     LeadEMMTrigger,
-    LeadPreviewImage,
+    LeadPreviewAttachment,
 )
 from .serializers import (
     raise_or_return_existing_lead,
@@ -433,8 +433,10 @@ class LeadOptionsView(views.APIView):
             # Dynamic Options
 
             'lead_groups': LeadGroup.objects.filter(project_filter, id__in=lead_groups_id).distinct(),
-            'members': _filter_users_by_projects_memberships(members_qs, projects)\
-                                    .prefetch_related('profile').distinct(),
+            'members': _filter_users_by_projects_memberships(
+                members_qs,
+                projects,
+            ).prefetch_related('profile').distinct(),
             'organizations': Organization.objects.filter(id__in=organizations_id).distinct(),
 
             # EMM specific options
@@ -812,7 +814,7 @@ class LeadCopyView(BaseCopyView):
         lead.authors.set(authors)
 
         # Clone Many to one Fields
-        LeadPreviewImage.objects.bulk_create([
+        LeadPreviewAttachment.objects.bulk_create([
             _get_clone_ready(image, lead) for image in preview_images
         ])
         LeadEMMTrigger.objects.bulk_create([

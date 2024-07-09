@@ -3,6 +3,8 @@ import datetime
 from factory import fuzzy
 from factory.django import DjangoModelFactory
 
+from django.core.files.base import ContentFile
+
 from project.factories import ProjectFactory
 from gallery.factories import FileFactory
 from .models import (
@@ -11,7 +13,7 @@ from .models import (
     LeadGroup,
     LeadEMMTrigger,
     LeadPreview,
-    LeadPreviewImage,
+    LeadPreviewAttachment,
     UserSavedLeadFilter,
 )
 
@@ -84,9 +86,33 @@ class LeadPreviewFactory(DjangoModelFactory):
         model = LeadPreview
 
 
-class LeadPreviewImageFactory(DjangoModelFactory):
+class LeadPreviewAttachmentFactory(DjangoModelFactory):
+    sequence_number = factory.Sequence(lambda n: n)
+
     class Meta:
-        model = LeadPreviewImage
+        model = LeadPreviewAttachment
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        sequence_number = kwargs.pop('sequence_number')
+        instance = super()._create(model_class, *args, **kwargs)
+        instance.file.save(
+            f'example_{instance.id}_{sequence_number}.png',
+            ContentFile(
+                factory.django.ImageField()._make_data(
+                    {'width': 1024, 'height': 768}
+                ),
+            ),
+        )
+        instance.file_preview.save(
+            f'example_{instance.id}_{sequence_number}_preview.png',
+            ContentFile(
+                factory.django.ImageField()._make_data(
+                    {'width': 1024, 'height': 768}
+                ),
+            ),
+        )
+        return instance
 
 
 class UserSavedLeadFilterFactory(DjangoModelFactory):

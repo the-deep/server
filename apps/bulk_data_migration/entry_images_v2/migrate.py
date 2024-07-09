@@ -3,7 +3,7 @@ from django.conf import settings
 
 from utils.common import parse_number
 
-from lead.models import LeadPreviewImage
+from lead.models import LeadPreviewAttachment
 from entry.models import Entry
 from gallery.models import File
 
@@ -34,7 +34,7 @@ def _get_file_from_s3_url(entry, string):
         return
     # NOTE: For lead-preview generate gallery files
     if file_path.startswith('lead-preview/'):
-        lead_preview = LeadPreviewImage.objects.filter(file=file_path).first()
+        lead_preview = LeadPreviewAttachment.objects.filter(file=file_path).first()
         if lead_preview and lead_preview.file and lead_preview.file.storage.exists(lead_preview.file.name):
             return lead_preview.clone_as_deep_file(entry.created_by)
         return

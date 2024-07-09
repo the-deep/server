@@ -7,7 +7,7 @@ from admin_auto_filters.filters import AutocompleteFilterFactory
 from .tasks import extract_from_lead
 from .models import (
     Lead, LeadGroup,
-    LeadPreview, LeadPreviewImage,
+    LeadPreview, LeadPreviewAttachment,
     EMMEntity,
 )
 
@@ -16,8 +16,8 @@ class LeadPreviewInline(admin.StackedInline):
     model = LeadPreview
 
 
-class LeadPreviewImageInline(admin.TabularInline):
-    model = LeadPreviewImage
+class LeadPreviewAttachmentInline(admin.TabularInline):
+    model = LeadPreviewAttachment
     extra = 0
 
 
@@ -42,7 +42,7 @@ trigger_lead_extract.short_description = 'Trigger lead extraction'
 
 @admin.register(Lead)
 class LeadAdmin(VersionAdmin):
-    inlines = [LeadPreviewInline, LeadPreviewImageInline]
+    inlines = [LeadPreviewInline, LeadPreviewAttachmentInline]
     search_fields = ['title']
     list_filter = (
         AutocompleteFilterFactory('Project', 'project'),

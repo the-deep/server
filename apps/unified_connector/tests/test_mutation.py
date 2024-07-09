@@ -12,7 +12,7 @@ from deep.tests import TestCase
 from unified_connector.models import (
     ConnectorLead,
     ConnectorSource,
-    ConnectorLeadPreviewImage,
+    ConnectorLeadPreviewAttachment
 )
 from deepl_integration.handlers import UnifiedConnectorLeadHandler
 from deepl_integration.serializers import DeeplServerBaseCallbackSerializer
@@ -492,7 +492,23 @@ class UnifiedConnectorCallbackApiTest(TestCase):
         # ------ Extraction FAILED
         data = dict(
             client_id='some-random-client-id',
-            images_path=['https://example.com/sample-file-1.jpg'],
+            images_path=[
+                {
+                    'page_number': 1,
+                    'images': [
+                        'http://random.com/image1.jpeg',
+                        'http://random.com/image2.jpeg'
+                    ],
+                }
+            ],
+            tables_path=[
+                {
+                    "page_number": 1,
+                    "order": 0,
+                    "image_link": "http://random.com/timetable.png",
+                    "content_link": "http://random.com/table_timetable.xlsx"
+                }
+            ],
             text_path='https://example.com/url-where-data-is-fetched-from-mock-response',
             total_words_count=100,
             total_pages=10,
@@ -520,7 +536,16 @@ class UnifiedConnectorCallbackApiTest(TestCase):
         # ------ Extraction SUCCESS
         data = dict(
             client_id='some-random-client-id',
-            images_path=['https://example.com/sample-file-1.jpg', 'https://example.com/sample-file-2.jpg'],
+            images_path=[
+                {
+                    'page_number': 1,
+                    'images': [
+                        'http://random.com/image1.jpeg',
+                        'http://random.com/image2.jpeg'
+                    ],
+                }
+            ],
+            tables_path=[],
             text_path='https://example.com/url-where-data-is-fetched-from-mock-response',
             total_words_count=100,
             total_pages=10,
@@ -542,8 +567,8 @@ class UnifiedConnectorCallbackApiTest(TestCase):
         assert connector_lead2.page_count == 10
 
         _check_connector_lead_status(connector_lead2, ConnectorLead.ExtractionStatus.SUCCESS)
-        preview_image_qs = ConnectorLeadPreviewImage.objects.filter(connector_lead=connector_lead2)
-        preview_image = preview_image_qs.first()
+        preview_attachment_qs = ConnectorLeadPreviewAttachment.objects.filter(connector_lead=connector_lead2)
+        preview_attachment = preview_attachment_qs.first()
         self.assertEqual(connector_lead2.simplified_text, SAMPLE_SIMPLIFIED_TEXT)
-        self.assertEqual(preview_image_qs.count(), 2)
-        self.assertIsNotNone(preview_image and preview_image.image.name)
+        self.assertEqual(preview_attachment_qs.count(), 2)
+        self.assertIsNotNone(preview_attachment and preview_attachment.file)

@@ -11,7 +11,7 @@ from organization.models import Organization
 
 from organization.dataloaders import OrganizationLoader
 
-from .models import Lead, LeadPreview, LeadGroup
+from .models import Lead, LeadPreview, LeadGroup, LeadPreviewAttachment
 from assisted_tagging.models import DraftEntry
 from assessment_registry.models import AssessmentRegistry
 
@@ -24,6 +24,15 @@ class LeadPreviewLoader(DataLoaderWithContext):
             for lead_preview in lead_preview_qs
         }
         return Promise.resolve([_map.get(key) for key in keys])
+
+
+class LeadPreviewAttachmentLoader(DataLoaderWithContext):
+    def batch_load_fn(self, keys):
+        lead_preview_attachment_qs = LeadPreviewAttachment.objects.filter(lead__in=keys)
+        lead_preview_attachments = defaultdict(list)
+        for lead_preview_attachment in lead_preview_attachment_qs:
+            lead_preview_attachments[lead_preview_attachment.lead_id].append(lead_preview_attachment)
+        return Promise.resolve([lead_preview_attachments.get(key) for key in keys])
 
 
 class EntriesCountLoader(DataLoaderWithContext):
@@ -136,6 +145,10 @@ class DataLoaders(WithContextMixin):
     @cached_property
     def lead_preview(self):
         return LeadPreviewLoader(context=self.context)
+
+    @cached_property
+    def lead_preview_attachment(self):
+        return LeadPreviewAttachmentLoader(context=self.context)
 
     @cached_property
     def entries_count(self):

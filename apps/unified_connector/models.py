@@ -49,7 +49,7 @@ class ConnectorLead(models.Model):
     )
 
     def __init__(self, *args, **kwargs):
-        self.preview_images: models.QuerySet[ConnectorLeadPreviewImage]
+        self.preview_images: models.QuerySet[ConnectorLeadPreviewAttachment]
         super().__init__(*args, **kwargs)
 
     @classmethod
@@ -78,9 +78,20 @@ class ConnectorLead(models.Model):
             self.save(update_fields=('extraction_status',))
 
 
-class ConnectorLeadPreviewImage(models.Model):
+class ConnectorLeadPreviewAttachment(models.Model):
+    class ConnectorAttachmentFileType(models.IntegerChoices):
+        XLSX = 1, 'XLSX'
+        IMAGE = 2, 'Image'
+
     connector_lead = models.ForeignKey(ConnectorLead, on_delete=models.CASCADE, related_name='preview_images')
-    image = models.FileField(upload_to='connector-lead/preview-images/', max_length=255)
+    order = models.IntegerField(default=0)
+    page_number = models.IntegerField(default=0)
+    type = models.PositiveSmallIntegerField(
+        choices=ConnectorAttachmentFileType.choices,
+        default=ConnectorAttachmentFileType.XLSX
+    )
+    file = models.FileField(upload_to='connector-lead/attachments/')
+    file_preview = models.FileField(upload_to='connector-lead/attachments-preview/')
 
 
 class UnifiedConnector(UserResource):

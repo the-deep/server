@@ -6,7 +6,7 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.common import has_prefetched
 from utils.graphene.enums import EnumDescription
-from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
+from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin, FileFieldType
 from utils.graphene.fields import DjangoPaginatedListObjectField, DjangoListField
 from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
@@ -20,8 +20,9 @@ from geo.schema import ProjectGeoAreaType
 from .models import (
     Entry,
     Attribute,
+    EntryAttachment,
 )
-from .enums import EntryTagTypeEnum
+from .enums import EntryAttachmentTypeEnum, EntryTagTypeEnum
 from .filter_set import EntryGQFilterSet
 
 
@@ -84,6 +85,19 @@ class AttributeType(ClientIdMixin, DjangoObjectType):
             )
 
 
+class EntryAttachmentType(DjangoObjectType):
+    lead_attachment_id = graphene.ID(required=False)
+    file = graphene.Field(FileFieldType, required=True)
+    file_preview = graphene.Field(FileFieldType, required=True)
+    entry_file_type = graphene.Field(EntryAttachmentTypeEnum, required=True)
+
+    class Meta:
+        model = EntryAttachment
+        only_fields = (
+            'id',
+        )
+
+
 class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     class Meta:
         model = Entry
@@ -103,6 +117,7 @@ class EntryType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
     verified_by_count = graphene.Int(required=True)
     review_comments_count = graphene.Int(required=True)
     draft_entry = graphene.ID(source="draft_entry_id")
+    entry_attachment = graphene.Field(EntryAttachmentType, required=False)
 
     # project_labels TODO:
     # tabular_field TODO:

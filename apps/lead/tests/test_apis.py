@@ -37,7 +37,7 @@ from entry.models import (
 from lead.models import (
     Lead,
     LeadPreview,
-    LeadPreviewImage,
+    LeadPreviewAttachment,
     EMMEntity,
     LeadEMMTrigger,
     LeadGroup,
@@ -811,7 +811,7 @@ class LeadTests(TestCase):
 
         # Generating Foreign elements for lead1
         self.create(LeadPreview, lead=lead1, text_extract=lead1_text_extract)
-        self.create(LeadPreviewImage, lead=lead1, file=lead1_preview_file)
+        self.create(LeadPreviewAttachment, lead=lead1, file=lead1_preview_file)
         emm_trigger = self.create(
             LeadEMMTrigger, lead=lead1, emm_keyword=emm_keyword, emm_risk_factor=emm_risk_factor, count=emm_count)
         lead1.emm_entities.set([self.create(EMMEntity, name=emm_entity_name)])
@@ -1797,7 +1797,23 @@ class TestExtractorCallback(TestCase):
 
         data = {
             'client_id': LeadExtractionHandler.get_client_id(self.lead),
-            'images_path': ['http://random.com/image1.jpeg', 'http://random.com/image1.jpeg'],
+            'images_path': [
+                {
+                    'page_number': 1,
+                    'images': [
+                        'http://random.com/image1.jpeg',
+                        'http://random.com/image2.jpeg'
+                    ],
+                }
+            ],
+            'tables_path': [
+                {
+                    "page_number": 1,
+                    "order": 0,
+                    "image_link": "http://random.com/timetable.png",
+                    "content_link": "http://random.com/table_timetable.xlsx"
+                }
+            ],
             'text_path': 'http://random.com/extracted_file.txt',
             'url': 'http://random.com/pdf_file.pdf',
             'total_words_count': 300,
@@ -1812,7 +1828,7 @@ class TestExtractorCallback(TestCase):
         self.lead.refresh_from_db()
         self.assertEqual(self.lead.extraction_status, Lead.ExtractionStatus.FAILED)
         self.assertEqual(LeadPreview.objects.filter(lead=self.lead).count(), 0)
-        self.assertEqual(LeadPreviewImage.objects.filter(lead=self.lead).count(), 0)
+        self.assertEqual(LeadPreviewAttachment.objects.filter(lead=self.lead).count(), 0)
 
         data['status'] = DeeplServerBaseCallbackSerializer.Status.SUCCESS.value
         # After callback [Success]
@@ -1826,7 +1842,10 @@ class TestExtractorCallback(TestCase):
         self.assertEqual(lead_preview.text_extract, 'Extracted text')
         self.assertEqual(lead_preview.word_count, 300)
         self.assertEqual(lead_preview.page_count, 4)
-        self.assertEqual(LeadPreviewImage.objects.filter(lead=self.lead).count(), 2)
+        self.assertEqual(LeadPreviewAttachment.objects.filter(lead=self.lead).count(), 3)
+        self.assertEqual(LeadPreviewAttachment.objects.filter(
+            lead=self.lead, type=LeadPreviewAttachment.AttachmentFileType.IMAGE).count(), 2
+        )
 
         index_lead_func.assert_called_once_with(self.lead.id)
 

@@ -15,6 +15,8 @@ from entry.models import Entry, ExportData, ProjectEntryLabel, LeadEntryGroup
 from lead.models import Lead
 from export.models import Export
 
+from gallery.utils import get_private_file_url
+from gallery.enums import PrivateFileModuleType
 logger = logging.getLogger(__name__)
 
 
@@ -272,6 +274,12 @@ class ExcelExporter:
             if self.modified_excerpt_exists:
                 return [entry_excerpt, entry.dropped_excerpt]
             return entry_excerpt
+        elif exportable == Export.StaticColumn.LEAD_ENTRY_ENTRY_ATTACHMENT_FILE_PREVIEW:
+            return get_private_file_url(
+                PrivateFileModuleType.ENTRY_ATTACHMENT,
+                entry.id,
+                entry.entry_attachment.file.name
+            )
 
     def add_entries_from_excel_data(self, rows, data, export_data):
         export_type = data.get('type')
@@ -492,7 +500,7 @@ class ExcelExporter:
             for group_label in entry.entrygrouplabel_set.all():
                 key = (group_label.group.lead_id, group_label.group_id)
                 entries_sheet_name = 'Grouped Entries' if self.decoupled else 'Entries'
-                link = f'#\'{entries_sheet_name}\'!A{i+2}'
+                link = f'#\'{entries_sheet_name}\'!A{i + 2}'
                 self.group_label_matrix[key][group_label.label_id] = get_hyperlink(link, entry.excerpt[:50])
 
             lead = entry.lead

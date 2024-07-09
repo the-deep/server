@@ -396,7 +396,7 @@ class GeoArea(models.Model):
         if value:
             filters = models.Q(id__in=list(value))
             for i in range(level - 1):
-                filters |= models.Q(**{f"{'parent__'*i}parent__in": value})
+                filters |= models.Q(**{f"{'parent__' * i}parent__in": value})
             return cls.objects.filter(filters)
         return cls.objects.none()
 

@@ -37,7 +37,7 @@ from .models import (
     Lead,
     LeadEMMTrigger,
     LeadGroup,
-    LeadPreviewImage,
+    LeadPreviewAttachment,
     UserSavedLeadFilter,
 )
 
@@ -288,9 +288,11 @@ class LeadSerializer(
         return lead
 
 
-class LeadPreviewImageSerializer(RemoveNullFieldsMixin,
-                                 DynamicFieldsMixin,
-                                 serializers.ModelSerializer):
+class LeadPreviewAttachmentSerializer(
+    RemoveNullFieldsMixin,
+    DynamicFieldsMixin,
+    serializers.ModelSerializer
+):
     """
     Serializer for lead preview image
     """
@@ -298,7 +300,7 @@ class LeadPreviewImageSerializer(RemoveNullFieldsMixin,
     file = URLCachedFileField(read_only=True)
 
     class Meta:
-        model = LeadPreviewImage
+        model = LeadPreviewAttachment
         fields = ('id', 'file',)
 
 
@@ -310,7 +312,7 @@ class LeadPreviewSerializer(RemoveNullFieldsMixin,
 
     text = serializers.CharField(source='leadpreview.text_extract',
                                  read_only=True)
-    images = LeadPreviewImageSerializer(many=True, read_only=True)
+    images = LeadPreviewAttachmentSerializer(many=True, read_only=True)
     classified_doc_id = serializers.IntegerField(
         source='leadpreview.classified_doc_id',
         read_only=True,
@@ -634,7 +636,7 @@ class LeadCopyGqSerializer(ProjectPropertySerializerMixin, serializers.Serialize
         new_lead.authors.set(authors)
 
         # Clone Many to one Fields
-        LeadPreviewImage.objects.bulk_create([
+        LeadPreviewAttachment.objects.bulk_create([
             _get_clone_ready(image, new_lead) for image in preview_images
         ])
         LeadEMMTrigger.objects.bulk_create([

@@ -7,6 +7,8 @@ from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from django.shortcuts import redirect, get_object_or_404
 
+from gallery.enums import PrivateFileModuleType
+from gallery.utils import check_private_confidential_level_permission
 from rest_framework import (
     views,
     viewsets,
@@ -82,6 +84,31 @@ class PrivateFileView(views.APIView):
         )
 
 
+class PrivateAttachmentFileView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, module=None, identifier=None, filename=None):
+        id = force_text(urlsafe_base64_decode(identifier))
+        user = request.user
+        obj = None
+        if module == PrivateFileModuleType.ENTRY_ATTACHMENT.value:
+            entry = get_object_or_404(Entry, id=id)
+            if not entry.project.is_member(user):
+                return response.Response({
+                    'error': 'Unauthorized for the content'
+                }, status.HTTP_403_FORBIDDEN)
+            if not check_private_confidential_level_permission(user, entry.project, entry.lead.confidentiality):
+                return response.Response({
+                    'error': 'Access Denied'
+                }, status.HTTP_403_FORBIDDEN)
+            obj = entry.entry_attachment
+        if obj:
+            return redirect(request.build_absolute_uri(obj.file.url))
+        return response.Response({
+            'error': 'Access Forbidden Or File does\'t exists, Contact Admin',
+        }, status=status.HTTP_403_FORBIDDEN)
+
+
 class DeprecatedPrivateFileView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -116,6 +143,7 @@ class PublicFileView(View):
     """
     NOTE: Public File API is deprecated.
     """
+
     def get(self, request, fidb64=None, token=None, filename=None):
         file_id = force_text(urlsafe_base64_decode(fidb64))
         file = get_object_or_404(File, id=file_id)

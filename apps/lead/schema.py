@@ -8,7 +8,7 @@ from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 from utils.graphene.enums import EnumDescription
-from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin
+from utils.graphene.types import CustomDjangoListObjectType, ClientIdMixin, FileFieldType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 
 from user.models import User
@@ -33,9 +33,11 @@ from .models import (
     LeadEMMTrigger,
     EMMEntity,
     UserSavedLeadFilter,
+    LeadPreviewAttachment,
 )
 from .enums import (
     LeadConfidentialityEnum,
+    LeadPreviewAttachmentTypeEnum,
     LeadStatusEnum,
     LeadPriorityEnum,
     LeadSourceTypeEnum,
@@ -45,6 +47,7 @@ from .enums import (
 from .filter_set import (
     LeadGQFilterSet,
     LeadGroupGQFilterSet,
+    LeadPreviewAttachmentGQFilterSet,
 )
 
 
@@ -56,6 +59,15 @@ def get_lead_qs(info):
     elif PP.check_permission(info, PP.Permission.VIEW_ONLY_UNPROTECTED_LEAD):
         return lead_qs.filter(confidentiality=Lead.Confidentiality.UNPROTECTED)
     return Lead.objects.none()
+
+
+def get_lead_preview_attachment(info):
+    lead_attachment_qs = LeadPreviewAttachment.objects.filter(
+        lead__project=info.context.active_project
+    ).order_by('-page_number')
+    if PP.check_permission(info, PP.Permission.VIEW_ALL_LEAD):
+        return lead_attachment_qs
+    return LeadPreviewAttachment.objects.none()
 
 
 def get_lead_group_qs(info):
@@ -214,6 +226,24 @@ class LeadPreviewType(DjangoObjectType):
             # 'classified_doc_id',
             # 'classification_status',
         )
+
+
+class LeadPreviewAttachmentType(DjangoObjectType):
+    file = graphene.Field(FileFieldType, required=True)
+    file_preview = graphene.Field(FileFieldType, required=True)
+    type = graphene.Field(LeadPreviewAttachmentTypeEnum, required=True)
+
+    class Meta:
+        model = LeadPreviewAttachment
+        only_fields = (
+            'id',
+            'order',
+            'page_number',
+        )
+
+    @staticmethod
+    def get_custom_queryset(queryset, info, **kwargs):
+        return get_lead_preview_attachment(info)
 
 
 class LeadEmmTriggerType(DjangoObjectType):
@@ -412,6 +442,9 @@ class LeadType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
         if root.attachment_id:
             return info.context.dl.deep_gallery.file.load(root.attachment_id)
 
+    def resolve_lead_preview_attachment(root, info, **kwargs):
+        return info.context.dl.lead.lead_preview_attachment.load(root.pk)
+
 
 class DraftEntryCountByLead(graphene.ObjectType):
     undiscarded_draft_entry = graphene.Int(required=False)
@@ -453,6 +486,12 @@ class LeadListType(CustomDjangoListObjectType):
         filterset_class = LeadGQFilterSet
 
 
+class LeadPreviewAttachmentListType(CustomDjangoListObjectType):
+    class Meta:
+        model = LeadPreviewAttachment
+        filterset_class = LeadPreviewAttachmentGQFilterSet
+
+
 class Query:
     lead = DjangoObjectField(LeadDetailType)
     leads = DjangoPaginatedListObjectField(
@@ -480,6 +519,13 @@ class Query:
             page_size_query_param='pageSize'
         )
     )
+    lead_preview_attachments = DjangoPaginatedListObjectField(
+        LeadPreviewAttachmentListType,
+        pagination=PageGraphqlPagination(
+            page_size_query_param='pageSize',
+        )
+    )
+
     # TODO: Add Pagination
     emm_keywords = graphene.List(graphene.NonNull(EmmKeyWordType))
     emm_risk_factors = graphene.List(graphene.NonNull(EmmKeyRiskFactorType))
@@ -489,6 +535,10 @@ class Query:
     @staticmethod
     def resolve_leads(root, info, **kwargs) -> QuerySet:
         return get_lead_qs(info)
+
+    @staticmethod
+    def resolve_lead_preview_attachments(root, info, **kwargs) -> QuerySet:
+        return get_lead_preview_attachment(info)
 
     @staticmethod
     def resolve_lead_groups(root, info, **kwargs) -> QuerySet:

@@ -26,6 +26,7 @@ from user.views import (
     unsubscribe_email,
 )
 from gallery.views import (
+    PrivateAttachmentFileView,
     FileView,
     FileViewSet,
     GoogleDriveFileViewSet,
@@ -434,6 +435,11 @@ urlpatterns = [
         'deprecated-private-file/<uuid:uuid>/<filename:filename>',
         DeprecatedPrivateFileView.as_view(),
         name='deprecated_gallery_private_url',
+    ),
+    path(
+        'external/private-file/<str:module>/<str:identifier>/<filename:filename>',
+        PrivateAttachmentFileView.as_view(),
+        name='external_private_url',
     ),
     re_path(
         r'^public-file/(?P<fidb64>[0-9A-Za-z]+)/(?P<token>.+)/(?P<filename>.*)$',

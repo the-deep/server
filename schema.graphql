@@ -1576,7 +1576,9 @@ type AppEnumCollection {
   LeadSourceType: [AppEnumCollectionLeadSourceType!]
   LeadExtractionStatus: [AppEnumCollectionLeadExtractionStatus!]
   LeadAutoEntryExtractionStatus: [AppEnumCollectionLeadAutoEntryExtractionStatus!]
+  LeadPreviewAttachmentType: [AppEnumCollectionLeadPreviewAttachmentType!]
   EntryEntryType: [AppEnumCollectionEntryEntryType!]
+  EntryAttachmentEntryFileType: [AppEnumCollectionEntryAttachmentEntryFileType!]
   ExportFormat: [AppEnumCollectionExportFormat!]
   ExportStatus: [AppEnumCollectionExportStatus!]
   ExportType: [AppEnumCollectionExportType!]
@@ -1922,6 +1924,12 @@ type AppEnumCollectionDraftEntryType {
   description: String
 }
 
+type AppEnumCollectionEntryAttachmentEntryFileType {
+  enum: EntryFileType!
+  label: String!
+  description: String
+}
+
 type AppEnumCollectionEntryEntryType {
   enum: EntryTagTypeEnum!
   label: String!
@@ -2020,6 +2028,12 @@ type AppEnumCollectionLeadConfidentiality {
 
 type AppEnumCollectionLeadExtractionStatus {
   enum: LeadExtractionStatusEnum!
+  label: String!
+  description: String
+}
+
+type AppEnumCollectionLeadPreviewAttachmentType {
+  enum: LeadPreviewAttachmentTypeEnum!
   label: String!
   description: String
 }
@@ -3263,7 +3277,7 @@ input BulkEntryInputType {
   entryType: EntryTagTypeEnum
   image: ID
   imageRaw: String
-  leadImage: ID
+  leadAttachment: ID
   tabularField: ID
   excerpt: String
   droppedExcerpt: String
@@ -3920,6 +3934,19 @@ type EntriesFilterDataType {
   filterableData: [EntryFilterDataType!]
 }
 
+type EntryAttachmentType {
+  id: ID!
+  leadAttachmentId: ID
+  file: FileFieldType!
+  filePreview: FileFieldType!
+  entryFileType: EntryFileType!
+}
+
+enum EntryFileType {
+  XLSX
+  IMAGE
+}
+
 input EntryFilterDataInputType {
   filterKey: ID!
   value: String
@@ -3963,7 +3990,7 @@ input EntryInputType {
   entryType: EntryTagTypeEnum
   image: ID
   imageRaw: String
-  leadImage: ID
+  leadAttachment: ID
   tabularField: ID
   excerpt: String
   droppedExcerpt: String
@@ -4045,6 +4072,7 @@ enum EntryReviewCommentTypeEnum {
 enum EntryTagTypeEnum {
   EXCERPT
   IMAGE
+  ATTACHMENT
   DATA_SERIES
 }
 
@@ -4074,6 +4102,7 @@ type EntryType {
   verifiedByCount: Int!
   reviewCommentsCount: Int!
   draftEntry: ID
+  entryAttachment: EntryAttachmentType
 }
 
 scalar EnumDescription
@@ -4234,6 +4263,7 @@ enum ExportExcelSelectedStaticColumnEnum {
   ENTRY_ID
   LEAD_ENTRY_ID
   ENTRY_EXCERPT
+  LEAD_ENTRY_ENTRY_ATTACHMENT_FILE_PREVIEW
 }
 
 enum ExportExportTypeEnum {
@@ -4685,6 +4715,27 @@ enum LeadOrderingEnum {
   DESC_PRIORITY
   DESC_PAGE_COUNT
   DESC_ENTRIES_COUNT
+}
+
+type LeadPreviewAttachmentListType {
+  results: [LeadPreviewAttachmentType!]
+  totalCount: Int
+  page: Int
+  pageSize: Int
+}
+
+type LeadPreviewAttachmentType {
+  id: ID!
+  order: Int!
+  pageNumber: Int!
+  file: FileFieldType!
+  filePreview: FileFieldType!
+  type: LeadPreviewAttachmentTypeEnum!
+}
+
+enum LeadPreviewAttachmentTypeEnum {
+  XLSX
+  IMAGE
 }
 
 type LeadPreviewType {
@@ -5246,6 +5297,7 @@ type ProjectDetailType {
   leadGroups(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): LeadGroupListType
   emmEntities(name: String, page: Int = 1, ordering: String, pageSize: Int): EmmEntityListType
   leadEmmTriggers(lead: ID, emmKeyword: String, emmRiskFactor: String, count: Int, page: Int = 1, ordering: String, pageSize: Int): LeadEmmTriggerListType
+  leadPreviewAttachments(lead: ID, pageNumber: Int, excludeAttachmentIds: [ID!], createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], type: [LeadPreviewAttachmentTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): LeadPreviewAttachmentListType
   emmKeywords: [EmmKeyWordType!]
   emmRiskFactors: [EmmKeyRiskFactorType!]
   userSavedLeadFilter: UserSavedLeadFilterType
