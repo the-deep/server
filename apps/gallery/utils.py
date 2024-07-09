@@ -23,7 +23,7 @@ def get_private_file_url(private_file_module_type: PrivateFileModuleType, id: in
     )
 
 
-def check_private_condifential_level_permission(user, project, level):
+def check_private_confidential_level_permission(user, project, level):
     permission = PP.get_permissions(project, user)
     if PP.Permission.VIEW_ENTRY in permission:
         if PP.Permission.VIEW_ALL_LEAD in permission:

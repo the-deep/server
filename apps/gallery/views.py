@@ -8,7 +8,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.shortcuts import redirect, get_object_or_404
 
 from gallery.enums import PrivateFileModuleType
-from gallery.utils import check_private_condifential_level_permission
+from gallery.utils import check_private_confidential_level_permission
 from rest_framework import (
     views,
     viewsets,
@@ -97,7 +97,7 @@ class PrivateAttachmentFileView(views.APIView):
                 return response.Response({
                     'error': 'Unauthorized for the content'
                 }, status.HTTP_403_FORBIDDEN)
-            if not check_private_condifential_level_permission(user, entry.project, entry.lead.confidentiality):
+            if not check_private_confidential_level_permission(user, entry.project, entry.lead.confidentiality):
                 return response.Response({
                     'error': 'Access Denied'
                 }, status.HTTP_403_FORBIDDEN)
