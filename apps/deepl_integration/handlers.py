@@ -1042,9 +1042,12 @@ class AnalysisAutomaticSummaryHandler(NewNlpServerBaseHandler):
         data: dict,
     ):
         data_url = data['presigned_s3_url']
-        summary_text = RequestHelper(url=data_url, custom_error_handler=custom_error_handler).get_text()
+        summary_data = RequestHelper(url=data_url, custom_error_handler=custom_error_handler).json()
         a_summary.status = AutomaticSummary.Status.SUCCESS
-        a_summary.summary = summary_text
+        a_summary.summary = summary_data.get('summary', '')
+        a_summary.analytical_statement = summary_data.get('analytical_statement', '')
+        a_summary.information_gap = summary_data.get('info_gaps', '')
+
         a_summary.save()
 
 

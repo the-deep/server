@@ -451,6 +451,8 @@ class AnalysisAutomaticSummaryType(UserResourceMixin, DjangoObjectType):
         only_fields = (
             'id',
             'summary',
+            'analytical_statement',
+            'information_gap'
         )
 
     status = graphene.Field(AutomaticSummaryStatusEnum, required=True)

@@ -48,6 +48,8 @@ input AnalysisAutomaticSummaryCreateInputType {
 type AnalysisAutomaticSummaryType {
   id: ID!
   summary: String!
+  analyticalStatement: String!
+  informationGap: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
@@ -1496,6 +1498,8 @@ input AnalyticalStatementGqlInputType {
   includeInReport: Boolean
   order: Int!
   clonedFrom: ID
+  isStatementNlpTriggered: Boolean
+  isInformationGapsNlpTriggered: Boolean
   entries: [AnalyticalEntriesGqlInputType!]
   clientId: String
 }
