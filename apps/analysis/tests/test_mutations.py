@@ -514,14 +514,18 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         ]
 
         # -- Callback test (Mocking NLP part)
-        SAMPLE_SUMMARY_TEXT = 'SAMPLE SUMMARY TEXT'
-        RequestHelperMock.return_value.get_text.return_value = SAMPLE_SUMMARY_TEXT
+        SAMPLE_SUMMARY_JSON = {
+            "summary": "Sample summary text",
+            "info_gaps": "Sample Info gaps",
+            "analytical_statement": "Sample Analytical Statement"
+        }
+        RequestHelperMock.return_value.json.return_value = SAMPLE_SUMMARY_JSON
 
         callback_url = '/api/v1/callback/analysis-automatic-summary/'
 
         data = {
             'client_id': 'invalid-id',
-            'presigned_s3_url': 'https://random-domain.com/random-url.txt',
+            'presigned_s3_url': 'https://random-domain.com/random-url.json',
             'status': DeeplServerBaseCallbackSerializer.Status.SUCCESS.value,
         }
         response = self.client.post(callback_url, data)
@@ -534,12 +538,12 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
 
         a_summary.refresh_from_db()
         assert a_summary.status == AutomaticSummary.Status.SUCCESS.value
-        assert a_summary.summary == SAMPLE_SUMMARY_TEXT
+        assert a_summary.summary == SAMPLE_SUMMARY_JSON['summary']
 
         # -- Check existing instance if provided until threshold is over
         response_result = _mutation_check(minput, okay=True)['data']['project']['triggerAnalysisAutomaticSummary']['result']
         assert response_result['id'] == a_summary_id
-        assert response_result['summary'] == SAMPLE_SUMMARY_TEXT
+        assert response_result['summary'] == SAMPLE_SUMMARY_JSON['summary']
 
         a_summary.created_at = self.PATCHER_NOW_VALUE -\
             datetime.timedelta(hours=AutomaticSummary.CACHE_THRESHOLD_HOURS + 1)
@@ -547,7 +551,7 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
 
         response_result = _mutation_check(minput, okay=True)['data']['project']['triggerAnalysisAutomaticSummary']['result']
         assert response_result['id'] != a_summary_id
-        assert response_result['summary'] != SAMPLE_SUMMARY_TEXT
+        assert response_result['summary'] != SAMPLE_SUMMARY_JSON['summary']
 
         # With failed status
         data['status'] = DeeplServerBaseCallbackSerializer.Status.FAILED.value
