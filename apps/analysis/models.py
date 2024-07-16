@@ -403,8 +403,6 @@ class AnalyticalStatement(UserResource):
     order = models.IntegerField()
     report_text = models.TextField(blank=True)
     information_gaps = models.TextField(blank=True)
-    is_statement_nlp_triggered = models.BooleanField(default=False)
-    is_information_gaps_nlp_triggered = models.BooleanField(default=False)
     # added to keep the track of cloned analysisstatement
     cloned_from = models.ForeignKey(
         'AnalyticalStatement',
@@ -528,8 +526,8 @@ class EntriesCollectionNlpTriggerBase(UserResource, DeeplTrackBaseModel):
 
 class AutomaticSummary(EntriesCollectionNlpTriggerBase):
     summary = models.TextField()
-    analytical_statement = models.TextField(blank=True)
-    information_gap = models.TextField(blank=True)
+    analytical_statement = models.TextField()
+    information_gap = models.TextField()
     widget_tags = ArrayField(models.CharField(max_length=100), default=list)
 
 

@@ -1498,8 +1498,6 @@ input AnalyticalStatementGqlInputType {
   includeInReport: Boolean
   order: Int!
   clonedFrom: ID
-  isStatementNlpTriggered: Boolean
-  isInformationGapsNlpTriggered: Boolean
   entries: [AnalyticalEntriesGqlInputType!]
   clientId: String
 }

@@ -90,6 +90,8 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
                 id
                 status
                 summary
+                informationGap
+                analyticalStatement
               }
             }
           }
@@ -539,11 +541,15 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         a_summary.refresh_from_db()
         assert a_summary.status == AutomaticSummary.Status.SUCCESS.value
         assert a_summary.summary == SAMPLE_SUMMARY_JSON['summary']
+        assert a_summary.information_gap == SAMPLE_SUMMARY_JSON['info_gaps']
+        assert a_summary.analytical_statement == SAMPLE_SUMMARY_JSON['analytical_statement']
 
         # -- Check existing instance if provided until threshold is over
         response_result = _mutation_check(minput, okay=True)['data']['project']['triggerAnalysisAutomaticSummary']['result']
         assert response_result['id'] == a_summary_id
         assert response_result['summary'] == SAMPLE_SUMMARY_JSON['summary']
+        assert response_result['informationGap'] == SAMPLE_SUMMARY_JSON['info_gaps']
+        assert response_result['analyticalStatement'] == SAMPLE_SUMMARY_JSON['analytical_statement']
 
         a_summary.created_at = self.PATCHER_NOW_VALUE -\
             datetime.timedelta(hours=AutomaticSummary.CACHE_THRESHOLD_HOURS + 1)

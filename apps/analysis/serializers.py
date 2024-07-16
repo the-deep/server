@@ -308,8 +308,6 @@ class AnalyticalStatementGqlSerializer(
             'include_in_report',
             'order',
             'cloned_from',
-            'is_statement_nlp_triggered',
-            'is_information_gaps_nlp_triggered',
             # Custom
             'entries',
             'client_id',
