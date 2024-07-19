@@ -50,7 +50,7 @@ def node_cache(cache_key):
     )
 
 
-def get_global_filters(_filter: dict, date_field="created_at"):
+def get_global_filters(_filter: dict, date_field="publication_date"):
     return {
         f"{date_field}__gte": _filter["date_from"],
         f"{date_field}__lte": _filter["date_to"],
@@ -532,7 +532,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         ).values('focus').order_by('focus').annotate(
             count=Count('id')
         ).values('focus', 'count').annotate(
-            date=TruncDay('created_at')
+            date=TruncDay('publication_date')
         ).values('focus', 'count', 'date')
 
     @staticmethod
@@ -543,7 +543,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         ).values('affected_group').order_by('affected_group').annotate(
             count=Count('id')
         ).values('affected_group', 'count').annotate(
-            date=TruncDay('created_at')
+            date=TruncDay('publication_date')
         ).values('affected_group', 'count', 'date')
 
     @staticmethod
@@ -554,7 +554,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         ).values('sector').order_by('sector').annotate(
             count=Count('id')
         ).values('sector', 'count').annotate(
-            date=TruncDay('created_at')
+            date=TruncDay('publication_date')
         ).values('sector', 'count', 'date')
 
     @staticmethod
@@ -565,7 +565,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
         ).values('protection_management').order_by('protection_management').annotate(
             count=Count('id')
         ).values('protection_management', 'count').annotate(
-            date=TruncDay('created_at')
+            date=TruncDay('publication_date')
         ).values('protection_management', 'count', 'date')
 
     @staticmethod
@@ -604,7 +604,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @node_cache(CacheKey.AssessmentDashboard.ASSESSMENT_AFFECTED_GROUP_AND_GEOAREA)
     def resolve_assessment_per_affected_group_and_geoarea(root: AssessmentDashboardStat, info):
         return (
-            root.assessment_registry_qs.values("locations", date=TruncDay("created_at"))
+            root.assessment_registry_qs.values("locations", date=TruncDay("publication_date"))
             .annotate(
                 geo_area=models.F("locations"),
                 count=Count("id"),
@@ -637,7 +637,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
             AssessmentRegistryOrganization.objects.filter(
                 organization_type=AssessmentRegistryOrganization.Type.LEAD_ORGANIZATION
             )
-            .values(date=TruncDay("assessment_registry__created_at"))
+            .values(date=TruncDay("assessment_registry__publication_date"))
             .filter(assessment_registry__in=root.assessment_registry_qs)
             .annotate(count=Count("organization"))
             .values("organization", "count", "date")
@@ -648,7 +648,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @node_cache(CacheKey.AssessmentDashboard.ASSESSMENT_PER_DATA_COLLECTION_TECHNIQUE)
     def resolve_assessment_per_datatechnique(root: AssessmentDashboardStat, info):
         return (
-            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__created_at"))
+            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__publication_date"))
             .annotate(count=Count("data_collection_technique"))
             .values("data_collection_technique", "count", "date")
             .order_by("data_collection_technique")
@@ -658,7 +658,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @node_cache(CacheKey.AssessmentDashboard.ASSESSMENT_PER_UNIT_ANALYSIS)
     def resolve_assessment_per_unit_of_analysis(root: AssessmentDashboardStat, info):
         return (
-            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__created_at"))
+            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__publication_date"))
             .annotate(count=Count("unit_of_analysis"))
             .values("unit_of_analysis", "count", "date")
             .order_by("unit_of_analysis")
@@ -668,7 +668,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @node_cache(CacheKey.AssessmentDashboard.ASSESSMENT_PER_UNIT_REPORTING)
     def resolve_assessment_per_unit_of_reporting(root: AssessmentDashboardStat, info):
         return (
-            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__created_at"))
+            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__publication_date"))
             .annotate(count=Count("unit_of_reporting"))
             .values("unit_of_reporting", "count", "date")
             .order_by("unit_of_reporting")
@@ -678,7 +678,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @node_cache(CacheKey.AssessmentDashboard.ASSESSMENT_PER_SAMPLE_APPROACH)
     def resolve_assessment_per_sampling_approach(root: AssessmentDashboardStat, info):
         return (
-            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__created_at"))
+            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__publication_date"))
             .annotate(count=Count("sampling_approach"))
             .values("sampling_approach", "count", "date")
             .order_by("sampling_approach")
@@ -688,7 +688,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @node_cache(CacheKey.AssessmentDashboard.ASSESSMENT_PER_PROXIMITY)
     def resolve_assessment_per_proximity(root: AssessmentDashboardStat, info):
         return (
-            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__created_at"))
+            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__publication_date"))
             .annotate(count=Count("proximity"))
             .values("proximity", "count", "date")
             .order_by("proximity")
@@ -698,7 +698,7 @@ class AssessmentDashboardStatisticsType(graphene.ObjectType):
     @node_cache(CacheKey.AssessmentDashboard.SAMPLE_SIZE_PER_DATA_COLLECTION_TECHNIQUE)
     def resolve_sample_size_per_data_collection_technique(root: AssessmentDashboardStat, info):
         return (
-            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__created_at"))
+            root.methodology_attribute_qs.values(date=TruncDay("assessment_registry__publication_date"))
             .annotate(sampling_size=Sum("sampling_size"))
             .values("sampling_size", "data_collection_technique", "date")
             .order_by("data_collection_technique")
