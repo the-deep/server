@@ -102,13 +102,16 @@ class BulkUpdateAnalysisFrameworkMembership(AfBulkGrapheneMutation):
         )
 
 
-class CloneAnalysisFramework(AfGrapheneMutation):
+class CloneAnalysisFramework(GrapheneMutation):
     class Arguments:
         data = AnalysisFrameworkCloneInputType(required=True)
 
     result = graphene.Field(AnalysisFrameworkDetailType)
     serializer_class = AnalysisFrameworkCloneSerializer
-    permissions = [AfP.Permission.CAN_CLONE_FRAMEWORK]
+
+    @classmethod
+    def check_permissions(cls, info, **_):
+        return True  # NOTE: Checking permissions in serializer
 
 
 class AnalysisFrameworkMutationType(DjangoObjectType):
@@ -117,7 +120,6 @@ class AnalysisFrameworkMutationType(DjangoObjectType):
     """
     analysis_framework_update = UpdateAnalysisFramework.Field()
     analysis_framework_membership_bulk = BulkUpdateAnalysisFrameworkMembership.Field()
-    analysis_framework_clone = CloneAnalysisFramework.Field()
 
     class Meta:
         model = AnalysisFramework
@@ -136,4 +138,5 @@ class AnalysisFrameworkMutationType(DjangoObjectType):
 
 class Mutation(object):
     analysis_framework_create = CreateAnalysisFramework.Field()
+    analysis_framework_clone = CloneAnalysisFramework.Field()
     analysis_framework = DjangoObjectField(AnalysisFrameworkMutationType)

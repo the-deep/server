@@ -712,9 +712,25 @@ class AnalysisFrameworkMembershipGqlSerializer(TempClientIdMixin, serializers.Mo
 
 
 class AnalysisFrameworkCloneSerializer(serializers.Serializer):
+    af_id = IntegerIDField(required=True)
     title = serializers.CharField(required=True)
     description = serializers.CharField(required=False)
     project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all(), required=False)
+
+    def validate_af_id(self, af_id):
+        af = (
+            AnalysisFramework
+            .get_for_gq(self.context['request'].user, only_member=False)
+            .filter(pk=af_id)
+            .first()
+        )
+        if af is None:
+            raise serializers.ValidationError('Analysis Framework does not exist')
+        if not af.can_clone(self.context['request'].user):
+            raise serializers.ValidationError(
+                'User does not have permission to modify the AF'
+            )
+        return af
 
     def validate_project(self, project):
         if not project.can_modify(self.context['request'].user):
@@ -722,8 +738,13 @@ class AnalysisFrameworkCloneSerializer(serializers.Serializer):
         return project
 
     def create(self, validated_data):
-        af = self.context['request'].active_af
-        new_af = af.clone(self.context['request'].user, validated_data)
+        # NOTE: af is an obj, check validate_af_id
+        af = validated_data['af_id']
+        new_af = af.clone(
+            self.context['request'].user,
+            title=validated_data['title'],
+            description=validated_data.get('description')
+        )
         new_af.add_member(self.context['request'].user, new_af.get_or_create_owner_role())
 
         if project := validated_data.get('project'):

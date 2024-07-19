@@ -108,7 +108,8 @@ class AnalysisFrameworkCloneView(views.APIView):
 
         new_af = analysis_framework.clone(
             request.user,
-            request.data or {},
+            title=cloned_title,
+            description=request.data.get('description'),
         )
         # Set the requesting user as owner member, don't create other memberships of old framework
         new_af.add_member(request.user, new_af.get_or_create_owner_role())

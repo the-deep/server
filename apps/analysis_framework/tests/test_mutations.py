@@ -786,18 +786,16 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
 
     def test_analysis_framework_clone(self):
         query = '''
-            mutation MyMutation ($id: ID!, $input: AnalysisFrameworkCloneInputType!) {
+            mutation MyMutation ($input: AnalysisFrameworkCloneInputType!) {
               __typename
-              analysisFramework (id: $id ) {
-                analysisFrameworkClone(data: $input) {
-                  ok
-                  errors
-                  result {
-                    id
-                    title
-                    description
-                    clonedFrom
-                  }
+              analysisFrameworkClone(data: $input) {
+                ok
+                errors
+                result {
+                  id
+                  title
+                  description
+                  clonedFrom
                 }
               }
             }
@@ -815,65 +813,60 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         private_af = AnalysisFrameworkFactory.create(created_by=member_user, title='AF Private Orginal', is_private=True)
         private_af.add_member(low_permission_user)
 
-        minput = dict(
+        public_minput = dict(
             title='AF (TEST)',
             description='Af description',
+            afId=af.id,
+        )
+        private_minput = dict(
+            title='AF (TEST)',
+            description='Af description',
+            afId=private_af.id,
         )
 
         def _public_af_query_check(**kwargs):
             return self.query_check(
                 query,
-                minput=minput,
-                mnested=['analysisFramework'],
-                variables={'id': af.id},
+                minput=public_minput,
                 **kwargs,
             )
 
         def _private_af_query_check(**kwargs):
             return self.query_check(
                 query,
-                minput=minput,
-                mnested=['analysisFramework'],
-                variables={'id': private_af.id},
+                minput=private_minput,
                 **kwargs,
             )
 
         # ---------- Without login
         _public_af_query_check(assert_for_error=True)
-        # ---------- With login
+
+        # ---------- With login (with non access member) on public AF
         self.force_login(non_member_user)
-        # ---------- Let's Clone a new AF (Using create test data)
-        _public_af_query_check(assert_for_error=True)
-
-        # ---------- With login (with access member)
-        self.force_login(member_user)
         response = _public_af_query_check()
-        self.assertEqual(response['data']['analysisFramework']['analysisFrameworkClone']['result']['clonedFrom'], str(af.id))
+        self.assertEqual(response['data']['analysisFrameworkClone']['result']['clonedFrom'], str(af.id))
 
-        # adding project to the input
-        minput['project'] = project.id
+        # adding project to the inputs
+        public_minput['project'] = project.id
+        private_minput['project'] = project.id
 
         # with Login (non project member)
         self.force_login(non_member_user)
-        _public_af_query_check(assert_for_error=True)
-
-        # with Login (project member with no permission on AF)
-        self.force_login(low_permission_user)
-        _public_af_query_check(assert_for_error=True)
+        _public_af_query_check(okay=False)
 
         # with Login (project member with no permission on Private AF)
         self.force_login(member_user)
-        _private_af_query_check(assert_for_error=True)
+        _private_af_query_check(okay=False)
 
         # With Login (project member with permission on Public AF)
         self.force_login(member_user)
-        response = _public_af_query_check()['data']['analysisFramework']
+        response = _public_af_query_check()['data']
         project.refresh_from_db()
         self.assertEqual(str(project.analysis_framework_id), response['analysisFrameworkClone']['result']['id'])
 
         # with Login (project member with permission on Private AF)
         private_af.add_member(member_user, role=self.af_owner)
-        response = _private_af_query_check()['data']['analysisFramework']
+        response = _private_af_query_check()['data']
         project.refresh_from_db()
         self.assertEqual(str(project.analysis_framework_id), response['analysisFrameworkClone']['result']['id'])
 

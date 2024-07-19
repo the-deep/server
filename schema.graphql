@@ -58,6 +58,7 @@ type AnalysisAutomaticSummaryType {
 }
 
 input AnalysisFrameworkCloneInputType {
+  afId: ID!
   title: String!
   description: String
   project: ID
@@ -148,7 +149,6 @@ type AnalysisFrameworkMutationType {
   title: String!
   analysisFrameworkUpdate(data: AnalysisFrameworkInputType!): UpdateAnalysisFramework
   analysisFrameworkMembershipBulk(deleteIds: [ID!], items: [BulkAnalysisFrameworkMembershipInputType!]): BulkUpdateAnalysisFrameworkMembership
-  analysisFrameworkClone(data: AnalysisFrameworkCloneInputType!): CloneAnalysisFramework
 }
 
 enum AnalysisFrameworkPermission {
@@ -5066,6 +5066,7 @@ type Mutation {
   updateMe(data: UserMeInputType!): UpdateMe
   deleteUser: UserDelete
   analysisFrameworkCreate(data: AnalysisFrameworkInputType!): CreateAnalysisFramework
+  analysisFrameworkClone(data: AnalysisFrameworkCloneInputType!): CloneAnalysisFramework
   analysisFramework(id: ID!): AnalysisFrameworkMutationType
 }
 
