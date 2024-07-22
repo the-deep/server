@@ -48,6 +48,8 @@ input AnalysisAutomaticSummaryCreateInputType {
 type AnalysisAutomaticSummaryType {
   id: ID!
   summary: String!
+  analyticalStatement: String!
+  informationGap: String!
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType

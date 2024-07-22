@@ -526,6 +526,8 @@ class EntriesCollectionNlpTriggerBase(UserResource, DeeplTrackBaseModel):
 
 class AutomaticSummary(EntriesCollectionNlpTriggerBase):
     summary = models.TextField()
+    analytical_statement = models.TextField()
+    information_gap = models.TextField()
     widget_tags = ArrayField(models.CharField(max_length=100), default=list)
 
 
