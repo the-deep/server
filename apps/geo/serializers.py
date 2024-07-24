@@ -186,6 +186,8 @@ class RegionGqSerializer(UserResourceSerializer, TempClientIdMixin):
 
 class AdminLevelGqlSerializer(UserResourceSerializer):
     region = serializers.PrimaryKeyRelatedField(queryset=Region.objects.all())
+    parent_code_prop = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    parent_name_prop = serializers.CharField(required=False, allow_null=True, allow_blank=True)
 
     class Meta:
         model = AdminLevel
@@ -206,9 +208,7 @@ class AdminLevelGqlSerializer(UserResourceSerializer):
     def validate(self, data):
         region = data.get('region', (self.instance and self.instance.region))
         if not region.can_modify(self.context['request'].user):
-            raise serializers.ValidationError('You don\'t have the access to the region')
-        if data['region'].is_published:
-            raise serializers.ValidationError('The region has been published. Changes are not allowed')
+            raise serializers.ValidationError('You don\'t have the access to the region or region is published')
         return data
 
     def create(self, validated_data):
@@ -219,8 +219,6 @@ class AdminLevelGqlSerializer(UserResourceSerializer):
         return admin_level
 
     def update(self, instance, validated_data):
-        if 'region' in validated_data and instance.region_id != validated_data['region'].id:
-            raise serializers.ValidationError("Admin Level is not associated with the region")
         admin_level = super().update(
             instance,
             validated_data,

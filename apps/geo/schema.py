@@ -76,7 +76,7 @@ class RegionDetailType(RegionType):
             'centroid', 'is_published',
         )
 
-    admin_levels = graphene.List(graphene.NonNull(AdminLevelType))
+    admin_levels = graphene.List(graphene.NonNull(AdminLevelType), required=True)
 
     @staticmethod
     def resolve_admin_levels(root, info, **kwargs):

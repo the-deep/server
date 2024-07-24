@@ -1,11 +1,12 @@
 import graphene
+from django.utils.translation import gettext
 
 from geo.models import Region, AdminLevel
 from geo.schema import RegionType, RegionDetailType, AdminLevelType
 from geo.serializers import RegionGqSerializer, AdminLevelGqlSerializer
 
 from utils.graphene.error_types import CustomErrorType
-from utils.graphene.mutation import GrapheneMutation, generate_input_type_for_serializer
+from utils.graphene.mutation import DeleteMutation, GrapheneMutation, generate_input_type_for_serializer
 
 RegionInputType = generate_input_type_for_serializer(
     'RegionInputType',
@@ -57,6 +58,33 @@ class UpdateAdminLevel(GrapheneMutation):
         return True  # global permission is always True
 
 
+class DeleteAdminLevel(DeleteMutation):
+    class Arguments:
+        admin_level_id = graphene.ID(required=True)
+
+    errors = graphene.List(graphene.NonNull(CustomErrorType))
+    ok = graphene.Boolean()
+    result = graphene.Field(AdminLevelType)
+
+    @staticmethod
+    def mutate(root, info, admin_level_id):
+        admin_level_qs = AdminLevel.objects.filter(
+            id=admin_level_id,
+            region__is_published=False
+        )
+        if not admin_level_qs:
+            return DeleteAdminLevel(errors=[
+                dict(
+                    field='nonFieldErrors',
+                    messages=gettext(
+                        'You should be Region owner to delete admin level or region is published'
+                    ),
+                )
+            ], ok=False)
+        admin_level_qs.delete()
+        return DeleteAdminLevel(result=admin_level_qs, errors=None, ok=True)
+
+
 class PublishRegion(graphene.Mutation):
     class Arguments:
         id = graphene.ID(required=True)
@@ -81,14 +109,13 @@ class PublishRegion(graphene.Mutation):
             ], ok=False)
         instance.is_published = True
         instance.save(update_fields=['is_published'])
-        # instance.save(update_fields=('is_published'))
         return PublishRegion(result=instance, errors=None, ok=True)
 
 
 class Mutation():
     create_region = CreateRegion.Field()
     create_admin_level = CreateAdminLevel.Field()
-    update_admin_level = UpdateAdminLevel.Field()
     publish_region = PublishRegion.Field()
     create_admin_level = CreateAdminLevel.Field()
     update_admin_level = UpdateAdminLevel.Field()
+    delete_admin_level = DeleteAdminLevel.Field()
