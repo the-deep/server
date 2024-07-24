@@ -281,6 +281,16 @@ type AnalysisFrameworkVisibleProjectType {
   isPrivate: Boolean!
 }
 
+input AnalysisInputType {
+  id: ID
+  title: String!
+  teamLead: ID!
+  startDate: Date
+  endDate: Date!
+  clonedFrom: ID
+  analysisPillar: [AnalysisPillarGqlInputType!]
+}
+
 type AnalysisListType {
   results: [AnalysisType!]
   totalCount: Int
@@ -323,6 +333,18 @@ type AnalysisPillarEntryListType {
   totalCount: Int
   page: Int
   pageSize: Int
+}
+
+input AnalysisPillarGqlInputType {
+  title: String!
+  mainStatement: String
+  informationGap: String
+  filters: GenericScalar
+  assignee: ID!
+  analysis: ID!
+  clonedFrom: ID
+  statements: [AnalyticalStatementGqlInputType!]
+  clientId: String
 }
 
 type AnalysisPillarListType {
@@ -3279,11 +3301,27 @@ enum AutomaticSummaryStatusEnum {
   SEND_FAILED
 }
 
+type BulkAnalysis {
+  errors: [[GenericScalar!]]
+  result: [AnalysisType]
+  deletedResult: [AnalysisType!]
+}
+
 input BulkAnalysisFrameworkMembershipInputType {
   id: ID
   member: ID!
   role: ID
   clientId: String
+}
+
+input BulkAnalysisInputType {
+  id: ID
+  title: String!
+  teamLead: ID!
+  startDate: Date
+  endDate: Date!
+  clonedFrom: ID
+  analysisPillar: [AnalysisPillarGqlInputType!]
 }
 
 type BulkEntry {
@@ -3568,6 +3606,12 @@ type CreateAdminLevel {
   result: AdminLevelType
 }
 
+type CreateAnalysis {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisType
+}
+
 type CreateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
@@ -3703,6 +3747,12 @@ type DeleteAdminLevel {
   errors: [GenericScalar!]
   ok: Boolean
   result: AdminLevelType
+}
+
+type DeleteAnalysis {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisType
 }
 
 type DeleteAnalysisPillarDiscardedEntry {
@@ -5473,6 +5523,10 @@ type ProjectMutationType {
   analysisReportSnapshotCreate(data: AnalysisReportSnapshotInputType!): CreateAnalysisReportSnapshot
   analysisReportUploadCreate(data: AnalysisReportUploadInputType!): CreateAnalysisReportUpload
   analysisReportUploadDelete(id: ID!): DeleteAnalysisReportUpload
+  analysisCreate(data: AnalysisInputType!): CreateAnalysis
+  analysisUpdate(data: AnalysisInputType!, id: ID!): UpdateAnalysis
+  analysisDelete(id: ID!): DeleteAnalysis
+  analysisBulk(deleteIds: [ID!], items: [BulkAnalysisInputType!]): BulkAnalysis
   exportCreate(data: ExportCreateInputType!): CreateUserExport
   exportUpdate(data: ExportUpdateInputType!, id: ID!): UpdateUserExport
   exportCancel(id: ID!): CancelUserExport
@@ -6372,6 +6426,12 @@ type UpdateAdminLevel {
   errors: [GenericScalar!]
   ok: Boolean
   result: AdminLevelType
+}
+
+type UpdateAnalysis {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisType
 }
 
 type UpdateAnalysisFramework {

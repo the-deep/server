@@ -409,7 +409,7 @@ class DiscardedEntryGqlSerializer(serializers.ModelSerializer):
         return data
 
 
-class AnalysisGqlSerializer(UserResourceSerializer):
+class AnalysisGqlSerializer(UserResourceSerializer, ProjectPropertySerializerMixin):
     id = IntegerIDField(required=False)
     analysis_pillar = AnalysisPillarGqlSerializer(many=True, source='analysispillar_set', required=False)
     start_date = serializers.DateField(required=False, allow_null=True)
@@ -420,10 +420,10 @@ class AnalysisGqlSerializer(UserResourceSerializer):
             'id',
             'title',
             'team_lead',
-            'project',
             'start_date',
             'end_date',
             'cloned_from',
+            'analysis_pillar',
         )
 
     def validate_project(self, project):
@@ -432,6 +432,7 @@ class AnalysisGqlSerializer(UserResourceSerializer):
         return project
 
     def validate(self, data):
+        data['project'] = self.project
         start_date = data.get('start_date')
         end_date = data.get('end_date')
         if start_date and start_date > end_date:

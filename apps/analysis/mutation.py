@@ -4,6 +4,7 @@ from utils.graphene.mutation import (
     generate_input_type_for_serializer,
     PsGrapheneMutation,
     PsDeleteMutation,
+    PsBulkGrapheneMutation,
 )
 from deep.permissions import ProjectPermissions as PP
 
@@ -17,6 +18,7 @@ from .models import (
     AnalysisReport,
     AnalysisReportUpload,
     AnalysisReportSnapshot,
+    Analysis,
 )
 from .schema import (
     get_analysis_pillar_qs,
@@ -31,6 +33,7 @@ from .schema import (
     AnalysisReportType,
     AnalysisReportUploadType,
     AnalysisReportSnapshotType,
+    AnalysisType,
 )
 from .serializers import (
     AnalysisPillarGqlSerializer,
@@ -42,6 +45,7 @@ from .serializers import (
     AnalysisReportSerializer,
     AnalysisReportSnapshotSerializer,
     AnalysisReportUploadSerializer,
+    AnalysisGqlSerializer,
 )
 
 
@@ -84,7 +88,7 @@ AnalyticalStatementGeoTaskInputType = generate_input_type_for_serializer(
 )
 
 
-# Analysi Report
+# Analysis Report
 AnalysisReportInputType = generate_input_type_for_serializer(
     'AnalysisReportInputType',
     serializer_class=AnalysisReportSerializer,
@@ -103,6 +107,11 @@ AnalysisReportSnapshotInputType = generate_input_type_for_serializer(
 AnalysisReportUploadInputType = generate_input_type_for_serializer(
     'AnalysisReportUploadInputType',
     serializer_class=AnalysisReportUploadSerializer,
+)
+
+AnalysisInputType = generate_input_type_for_serializer(
+    'AnalysisInputType',
+    serializer_class=AnalysisGqlSerializer,
 )
 
 
@@ -269,6 +278,45 @@ class DeleteAnalysisReportUpload(AnalysisReportUploadMutationMixin, PsDeleteMuta
     result = graphene.Field(AnalysisReportUploadType)
 
 
+class CreateAnalysis(RequiredPermissionMixin, PsGrapheneMutation):
+    class Arguments:
+        data = AnalysisInputType(required=True)
+    model = Analysis
+    serializer_class = AnalysisGqlSerializer
+    result = graphene.Field(AnalysisType)
+
+
+class UpdateAnalysis(RequiredPermissionMixin, PsGrapheneMutation):
+    class Arguments:
+        data = AnalysisInputType(required=True)
+        id = graphene.ID(required=True)
+    model = Analysis
+    serializer_class = AnalysisGqlSerializer
+    result = graphene.Field(AnalysisType)
+
+
+class DeleteAnalysis(RequiredPermissionMixin, PsDeleteMutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+    model = Analysis
+    result = graphene.Field(AnalysisType)
+
+
+class BulkAnalysisInputType(AnalysisInputType):
+    id = graphene.ID()
+
+
+class BulkAnalysis(RequiredPermissionMixin, PsBulkGrapheneMutation):
+    class Arguments:
+        items = graphene.List(graphene.NonNull(BulkAnalysisInputType))
+        delete_ids = graphene.List(graphene.NonNull(graphene.ID))
+
+    result = graphene.List(AnalysisType)
+    deleted_result = graphene.List(graphene.NonNull(AnalysisType))
+    model = Analysis
+    serializer_class = AnalysisGqlSerializer
+
+
 class Mutation():
     # Analysis Pillar
     analysis_pillar_update = UpdateAnalysisPillar.Field()
@@ -289,3 +337,8 @@ class Mutation():
     # -- Uploads
     analysis_report_upload_create = CreateAnalysisReportUpload.Field()
     analysis_report_upload_delete = DeleteAnalysisReportUpload.Field()
+    # Analysis
+    analysis_create = CreateAnalysis.Field()
+    analysis_update = UpdateAnalysis.Field()
+    analysis_delete = DeleteAnalysis.Field()
+    analysis_bulk = BulkAnalysis.Field()
