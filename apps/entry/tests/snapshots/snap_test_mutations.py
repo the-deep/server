@@ -261,7 +261,7 @@ snapshots['TestEntryMutation::test_entry_create lead-preview-attachment-success'
                         'leadAttachmentId': '1'
                     },
                     'entryType': 'ATTACHMENT',
-                    'excerpt': '',
+                    'excerpt': 'This is a text',
                     'highlightHidden': False,
                     'id': '3',
                     'image': None,
