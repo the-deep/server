@@ -200,7 +200,7 @@ class AnalysisPillarType(ClientIdMixin, UserResourceMixin, DjangoObjectType):
         )
 
     assignee = graphene.Field(UserType, required=True)
-    analysis = graphene.ID(source='analysis_id', required=True)
+    analysis_id = graphene.ID(source='analysis_id', required=True)
     cloned_from = graphene.ID(source='cloned_from_id')
     analyzed_entries_count = graphene.Int(required=True)
 
