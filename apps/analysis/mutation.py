@@ -4,7 +4,6 @@ from utils.graphene.mutation import (
     generate_input_type_for_serializer,
     PsGrapheneMutation,
     PsDeleteMutation,
-    PsBulkGrapheneMutation,
 )
 from deep.permissions import ProjectPermissions as PP
 
@@ -278,7 +277,13 @@ class DeleteAnalysisReportUpload(AnalysisReportUploadMutationMixin, PsDeleteMuta
     result = graphene.Field(AnalysisReportUploadType)
 
 
-class CreateAnalysis(RequiredPermissionMixin, PsGrapheneMutation):
+class AnalysisMutationMixin(RequiredPermissionMixin):
+    @classmethod
+    def filter_queryset(cls, qs, info):
+        return qs.filter(project=info.context.active_project)
+
+
+class CreateAnalysis(AnalysisMutationMixin, PsGrapheneMutation):
     class Arguments:
         data = AnalysisInputType(required=True)
     model = Analysis
@@ -286,7 +291,7 @@ class CreateAnalysis(RequiredPermissionMixin, PsGrapheneMutation):
     result = graphene.Field(AnalysisType)
 
 
-class UpdateAnalysis(RequiredPermissionMixin, PsGrapheneMutation):
+class UpdateAnalysis(AnalysisMutationMixin, PsGrapheneMutation):
     class Arguments:
         data = AnalysisInputType(required=True)
         id = graphene.ID(required=True)
@@ -295,26 +300,11 @@ class UpdateAnalysis(RequiredPermissionMixin, PsGrapheneMutation):
     result = graphene.Field(AnalysisType)
 
 
-class DeleteAnalysis(RequiredPermissionMixin, PsDeleteMutation):
+class DeleteAnalysis(AnalysisMutationMixin, PsDeleteMutation):
     class Arguments:
         id = graphene.ID(required=True)
     model = Analysis
     result = graphene.Field(AnalysisType)
-
-
-class BulkAnalysisInputType(AnalysisInputType):
-    id = graphene.ID()
-
-
-class BulkAnalysis(RequiredPermissionMixin, PsBulkGrapheneMutation):
-    class Arguments:
-        items = graphene.List(graphene.NonNull(BulkAnalysisInputType))
-        delete_ids = graphene.List(graphene.NonNull(graphene.ID))
-
-    result = graphene.List(AnalysisType)
-    deleted_result = graphene.List(graphene.NonNull(AnalysisType))
-    model = Analysis
-    serializer_class = AnalysisGqlSerializer
 
 
 class Mutation():
@@ -341,4 +331,3 @@ class Mutation():
     analysis_create = CreateAnalysis.Field()
     analysis_update = UpdateAnalysis.Field()
     analysis_delete = DeleteAnalysis.Field()
-    analysis_bulk = BulkAnalysis.Field()

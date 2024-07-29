@@ -282,12 +282,10 @@ type AnalysisFrameworkVisibleProjectType {
 }
 
 input AnalysisInputType {
-  id: ID
   title: String!
   teamLead: ID!
   startDate: Date
   endDate: Date!
-  clonedFrom: ID
   analysisPillar: [AnalysisPillarGqlInputType!]
 }
 
@@ -336,6 +334,7 @@ type AnalysisPillarEntryListType {
 }
 
 input AnalysisPillarGqlInputType {
+  id: ID
   title: String!
   mainStatement: String
   informationGap: String
@@ -366,7 +365,7 @@ type AnalysisPillarType {
   modifiedBy: UserType
   clientId: ID!
   assignee: UserType!
-  analysis: ID!
+  analysisId: ID!
   clonedFrom: ID
   analyzedEntriesCount: Int!
   statements: [AnalyticalStatementType!]
@@ -375,6 +374,7 @@ type AnalysisPillarType {
 }
 
 input AnalysisPillarUpdateInputType {
+  id: ID
   title: String
   mainStatement: String
   informationGap: String
@@ -3301,27 +3301,11 @@ enum AutomaticSummaryStatusEnum {
   SEND_FAILED
 }
 
-type BulkAnalysis {
-  errors: [[GenericScalar!]]
-  result: [AnalysisType]
-  deletedResult: [AnalysisType!]
-}
-
 input BulkAnalysisFrameworkMembershipInputType {
   id: ID
   member: ID!
   role: ID
   clientId: String
-}
-
-input BulkAnalysisInputType {
-  id: ID
-  title: String!
-  teamLead: ID!
-  startDate: Date
-  endDate: Date!
-  clonedFrom: ID
-  analysisPillar: [AnalysisPillarGqlInputType!]
 }
 
 type BulkEntry {
@@ -5526,7 +5510,6 @@ type ProjectMutationType {
   analysisCreate(data: AnalysisInputType!): CreateAnalysis
   analysisUpdate(data: AnalysisInputType!, id: ID!): UpdateAnalysis
   analysisDelete(id: ID!): DeleteAnalysis
-  analysisBulk(deleteIds: [ID!], items: [BulkAnalysisInputType!]): BulkAnalysis
   exportCreate(data: ExportCreateInputType!): CreateUserExport
   exportUpdate(data: ExportUpdateInputType!, id: ID!): UpdateUserExport
   exportCancel(id: ID!): CancelUserExport
