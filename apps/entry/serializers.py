@@ -684,7 +684,6 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
             data['analysis_framework_id'] = active_af_id
 
         if lead_attachment:
-            data.pop('excerpt', None)  # removing excerpt when lead attachment is send
             if lead_attachment.lead != lead:
                 raise serializers.ValidationError({
                     'lead_attachment': f'You don\'t have permission to attach lead attachment: {lead_attachment}',
@@ -694,7 +693,6 @@ class EntryGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserR
 
         # ---------------- Set/validate image properly
         elif image_raw:
-            data.pop('excerpt', None)
             generated_image = base64_to_deep_image(image_raw, lead, request.user)
             if isinstance(generated_image, File):
                 data['image'] = generated_image
