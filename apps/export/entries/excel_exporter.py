@@ -275,11 +275,13 @@ class ExcelExporter:
                 return [entry_excerpt, entry.dropped_excerpt]
             return entry_excerpt
         elif exportable == Export.StaticColumn.LEAD_ENTRY_ENTRY_ATTACHMENT_FILE_PREVIEW:
-            return get_private_file_url(
-                PrivateFileModuleType.ENTRY_ATTACHMENT,
-                entry.id,
-                entry.entry_attachment.file.name
-            )
+            if entry.entry_attachment:
+                return get_private_file_url(
+                    PrivateFileModuleType.ENTRY_ATTACHMENT,
+                    entry.id,
+                    entry.entry_attachment.file.name
+                )
+            return None
 
     def add_entries_from_excel_data(self, rows, data, export_data):
         export_type = data.get('type')
