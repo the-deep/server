@@ -17,6 +17,8 @@ from export.models import Export, GenericExport, export_upload_to
 from export.tasks import get_export_filename
 from export.serializers import UserExportCreateGqlSerializer
 
+from entry.models import Entry
+
 
 class TestExportMutationSchema(GraphQLTestCase):
     CREATE_EXPORT_QUERY = '''
@@ -798,6 +800,13 @@ class TestGenericExportMutationSchema(GraphQLSnapShotTestCase):
         self.project, *_ = ProjectFactory.create_batch(2, analysis_framework=self.af)
         self.lead = LeadFactory.create(project=self.project)
         EntryFactory.create_batch(10, lead=self.lead, project=self.project, analysis_framework=self.af)
+        EntryFactory.create_batch(
+            10,
+            lead=self.lead,
+            project=self.project,
+            analysis_framework=self.af,
+            entry_type=Entry.TagType.ATTACHMENT
+        )
         # User with role
         self.user = UserFactory.create()
         # -- Some other data which shouldn't be visible in exports
