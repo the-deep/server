@@ -5457,7 +5457,7 @@ type ProjectMutationType {
   id: ID!
   title: String!
   createAssessmentRegistry(data: AssessmentRegistryCreateInputType!): CreateAssessmentRegistry
-  updateAssessmentRegistry(data: AssessmentRegistryCreateInputType!, id: ID): UpdateAssessmentRegistry
+  updateAssessmentRegistry(data: AssessmentRegistryCreateInputType!, id: ID!): UpdateAssessmentRegistry
   deleteAssessmentRegistry(id: ID!): DeleteAssessmentRegistry
   analysisPillarUpdate(data: AnalysisPillarUpdateInputType!, id: ID!): UpdateAnalysisPillar
   discardedEntryCreate(data: DiscardedEntryCreateInputType!): CreateAnalysisPillarDiscardedEntry
