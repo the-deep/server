@@ -21,12 +21,7 @@ from .models import (
     Filter,
     Exportable,
 )
-
-
-class AnalysisFrameworkMemebershipInline(admin.TabularInline):
-    model = AnalysisFrameworkMembership
-    extra = 0
-    autocomplete_fields = ('added_by', 'member',)
+from admin_auto_filters.filters import AutocompleteFilterFactory
 
 
 class WidgetInline(StackedInline):
@@ -70,7 +65,7 @@ for model in [Section, Widget, Filter, Exportable, FrameworkQuestion]:
 @admin.register(AnalysisFramework)
 class AnalysisFrameworkAdmin(VersionAdmin):
     readonly_fields = ['is_private']
-    inlines = [AnalysisFrameworkMemebershipInline, SectionInline, WidgetInline]
+    inlines = [SectionInline, WidgetInline]
     search_fields = ('title',)
     list_filter = ('is_private', 'assisted_tagging_enabled',)
     custom_inlines = [
@@ -119,3 +114,22 @@ class AnalysisFrameworkRoleAdmin(admin.ModelAdmin):
 @admin.register(AnalysisFrameworkTag)
 class AnalysisFrameworkTagAdmin(admin.ModelAdmin):
     list_display = ('id', 'title',)
+
+
+@admin.register(AnalysisFrameworkMembership)
+class AnalysisFrameworkMembershipAdmin(admin.ModelAdmin):
+    search_fields = ('framework__title',)
+    autocomplete_fields = ('added_by', 'member',)
+    serch_fields = ['analysis_framework__title']
+    list_display = ['framework', 'member', 'role']
+    list_filter = (
+        AutocompleteFilterFactory('Project', 'framework__project'),
+        AutocompleteFilterFactory('AnalysisFramework', 'framework'),
+        'framework__is_private'
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        # editing an existing object
+        if obj:
+            return self.readonly_fields + ('framework', )
+        return self.readonly_fields
