@@ -61,12 +61,6 @@ def trigger_project_stat_cache_calc():
     return action
 
 
-class ProjectMembershipInline(admin.TabularInline):
-    model = ProjectMembership
-    extra = 0
-    autocomplete_fields = ('added_by', 'linked_group', 'member',)
-
-
 class ProjectUserGroupMembershipInline(admin.TabularInline):
     model = ProjectUserGroupMembership
     extra = 0
@@ -108,8 +102,7 @@ class ProjectAdmin(VersionAdmin):
         'is_deleted',
     )
     actions = [trigger_project_stat_cache_calc()]
-    inlines = [ProjectMembershipInline,
-               ProjectUserGroupMembershipInline,
+    inlines = [ProjectUserGroupMembershipInline,
                ProjectJoinRequestInline,
                ProjectOrganizationInline]
 
@@ -219,3 +212,19 @@ class ProjectChangeLogAdmin(admin.ModelAdmin):
 @admin.register(ProjectPinned)
 class ProjectPinnedAdmin(admin.ModelAdmin):
     list_display = ('id', 'project', 'user', 'order')
+
+
+@admin.register(ProjectMembership)
+class ProjectMembershipAdmin(admin.ModelAdmin):
+    search_fields = ['project__title']
+    autocomplete_fields = ('added_by', 'linked_group', 'member', 'project')
+    list_filter = (
+        AutocompleteFilterFactory('Project', 'project'),
+    )
+    list_display = ['project', 'member']
+
+    def get_readonly_fields(self, request, obj=None):
+        # editing an existing object
+        if obj:
+            return self.readonly_fields + ('project', )
+        return self.readonly_fields
