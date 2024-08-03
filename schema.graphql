@@ -128,6 +128,13 @@ type AnalysisFrameworkListType {
   pageSize: Int
 }
 
+input AnalysisFrameworkMembershipCreateInputType {
+  member: ID!
+  framework: ID!
+  role: ID!
+  addedBy: ID
+}
+
 type AnalysisFrameworkMembershipType {
   id: ID!
   member: UserType!
@@ -3541,6 +3548,12 @@ type CreateAnalysisFramework {
   result: AnalysisFrameworkDetailType
 }
 
+type CreateAnalysisFrameworkMembership {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisFrameworkMembershipType
+}
+
 type CreateAnalysisPillarDiscardedEntry {
   errors: [GenericScalar!]
   ok: Boolean
@@ -5054,6 +5067,8 @@ type Mutation {
   deleteUser: UserDelete
   analysisFrameworkCreate(data: AnalysisFrameworkInputType!): CreateAnalysisFramework
   analysisFramework(id: ID!): AnalysisFrameworkMutationType
+  analysisFrameworkMembershipCreate(data: AnalysisFrameworkMembershipCreateInputType!): CreateAnalysisFrameworkMembership
+  analysisFrameworkMembershipUpdate(data: AnalysisFrameworkMembershipCreateInputType!, id: ID!): UpdateAnalysisFrameworkMembership
 }
 
 type NotificationListType {
@@ -6305,6 +6320,12 @@ type UpdateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
   result: AnalysisFrameworkDetailType
+}
+
+type UpdateAnalysisFrameworkMembership {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisFrameworkMembershipType
 }
 
 type UpdateAnalysisPillar {

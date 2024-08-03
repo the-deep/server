@@ -784,6 +784,54 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         response = _query_check()['data']['analysisFramework']['analysisFrameworkMembershipBulk']
         self.assertMatchSnapshot(response, 'try 2')
 
+    def test_analysis_framework_membership_create(self):
+        query = '''
+          mutation MyMutation($input: AnalysisFrameworkMembershipCreateInputType!) {
+            __typename
+              analysisFrameworkMembershipCreate(data: $input) {
+                ok
+                errors
+                result {
+                  id
+                  clientId
+                  joinedAt
+                  addedBy {
+                    id
+                    displayName
+                  }
+                  role {
+                    id
+                    title
+                  }
+                  member {
+                    id
+                    displayName
+                  }
+                }
+            }
+          }
+        '''
+        user = UserFactory.create()
+        af = AnalysisFrameworkFactory.create(created_by=user)
+        minput = dict(
+            framework=af.id,
+            member=UserFactory.create().id,
+            role=self.af_owner.pk,
+        )
+
+        def _query_check(**kwargs):
+            return self.query_check(
+                query,
+                minput=minput,
+                **kwargs
+            )
+        # ---------- Without login
+        _query_check(assert_for_error=True)
+        # ---------- With login
+        self.force_login(user)
+        response = _query_check()
+        self.assertMatchSnapshot(response, 'success')
+
     @mock.patch('analysis_framework.serializers.AfWidgetLimit')
     def test_widgets_limit(self, AfWidgetLimitMock):
         query = '''
