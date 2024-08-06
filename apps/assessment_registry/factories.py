@@ -10,6 +10,7 @@ from assessment_registry.models import (
     Question,
     Answer,
     AssessmentRegistry,
+    AssessmentRegistryOrganization,
     MethodologyAttribute,
     AdditionalDocument,
     ScoreRating,
@@ -215,3 +216,10 @@ class AssessmentRegistryFactory(DjangoModelFactory):
                 self.bg_countries.add(  # pyright: ignore [reportGeneralTypeIssues]
                     country
                 )
+
+
+class AssessmentRegistryOrganizationFactory(DjangoModelFactory):
+    organization_type = fuzzy.FuzzyChoice(_choices(AssessmentRegistryOrganization.Type))
+
+    class Meta:
+        model = AssessmentRegistryOrganization
