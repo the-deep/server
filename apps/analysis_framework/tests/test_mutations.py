@@ -784,6 +784,92 @@ class TestAnalysisFrameworkMutationSnapShotTestCase(GraphQLSnapShotTestCase):
         response = _query_check()['data']['analysisFramework']['analysisFrameworkMembershipBulk']
         self.assertMatchSnapshot(response, 'try 2')
 
+    def test_analysis_framework_clone(self):
+        query = '''
+            mutation MyMutation ($input: AnalysisFrameworkCloneInputType!) {
+              __typename
+              analysisFrameworkClone(data: $input) {
+                ok
+                errors
+                result {
+                  id
+                  title
+                  description
+                  clonedFrom
+                }
+              }
+            }
+        '''
+
+        member_user = UserFactory.create()
+        non_member_user = UserFactory.create()
+        low_permission_user = UserFactory.create()
+
+        project = ProjectFactory.create()
+        project.add_member(member_user)
+        project.add_member(low_permission_user)
+        af = AnalysisFrameworkFactory.create(created_by=member_user, title='AF Orginal')
+        af.add_member(member_user, role=self.af_owner)
+        private_af = AnalysisFrameworkFactory.create(created_by=member_user, title='AF Private Orginal', is_private=True)
+        private_af.add_member(low_permission_user)
+
+        public_minput = dict(
+            title='AF (TEST)',
+            description='Af description',
+            afId=af.id,
+        )
+        private_minput = dict(
+            title='AF (TEST)',
+            description='Af description',
+            afId=private_af.id,
+        )
+
+        def _public_af_query_check(**kwargs):
+            return self.query_check(
+                query,
+                minput=public_minput,
+                **kwargs,
+            )
+
+        def _private_af_query_check(**kwargs):
+            return self.query_check(
+                query,
+                minput=private_minput,
+                **kwargs,
+            )
+
+        # ---------- Without login
+        _public_af_query_check(assert_for_error=True)
+
+        # ---------- With login (with non access member) on public AF
+        self.force_login(non_member_user)
+        response = _public_af_query_check()
+        self.assertEqual(response['data']['analysisFrameworkClone']['result']['clonedFrom'], str(af.id))
+
+        # adding project to the inputs
+        public_minput['project'] = project.id
+        private_minput['project'] = project.id
+
+        # with Login (non project member)
+        self.force_login(non_member_user)
+        _public_af_query_check(okay=False)
+
+        # with Login (project member with no permission on Private AF)
+        self.force_login(member_user)
+        _private_af_query_check(okay=False)
+
+        # With Login (project member with permission on Public AF)
+        self.force_login(member_user)
+        response = _public_af_query_check()['data']
+        project.refresh_from_db()
+        self.assertEqual(str(project.analysis_framework_id), response['analysisFrameworkClone']['result']['id'])
+
+        # with Login (project member with permission on Private AF)
+        private_af.add_member(member_user, role=self.af_owner)
+        response = _private_af_query_check()['data']
+        project.refresh_from_db()
+        self.assertEqual(str(project.analysis_framework_id), response['analysisFrameworkClone']['result']['id'])
+
     @mock.patch('analysis_framework.serializers.AfWidgetLimit')
     def test_widgets_limit(self, AfWidgetLimitMock):
         query = '''

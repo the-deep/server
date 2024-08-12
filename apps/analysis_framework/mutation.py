@@ -17,6 +17,7 @@ from .models import (
     AnalysisFrameworkMembership,
 )
 from .serializers import (
+    AnalysisFrameworkCloneSerializer,
     AnalysisFrameworkGqlSerializer as AnalysisFrameworkSerializer,
     AnalysisFrameworkMembershipGqlSerializer as AnalysisFrameworkMembershipSerializer,
 )
@@ -34,6 +35,11 @@ AnalysisFrameworkInputType = generate_input_type_for_serializer(
 AnalysisFrameworkMembershipInputType = generate_input_type_for_serializer(
     'AnalysisFrameworkMembershipInputType',
     serializer_class=AnalysisFrameworkMembershipSerializer,
+)
+
+AnalysisFrameworkCloneInputType = generate_input_type_for_serializer(
+    'AnalysisFrameworkCloneInputType',
+    serializer_class=AnalysisFrameworkCloneSerializer,
 )
 
 
@@ -96,6 +102,18 @@ class BulkUpdateAnalysisFrameworkMembership(AfBulkGrapheneMutation):
         )
 
 
+class CloneAnalysisFramework(GrapheneMutation):
+    class Arguments:
+        data = AnalysisFrameworkCloneInputType(required=True)
+
+    result = graphene.Field(AnalysisFrameworkDetailType)
+    serializer_class = AnalysisFrameworkCloneSerializer
+
+    @classmethod
+    def check_permissions(cls, info, **_):
+        return True  # NOTE: Checking permissions in serializer
+
+
 class AnalysisFrameworkMutationType(DjangoObjectType):
     """
     This mutation is for other scoped objects
@@ -120,4 +138,5 @@ class AnalysisFrameworkMutationType(DjangoObjectType):
 
 class Mutation(object):
     analysis_framework_create = CreateAnalysisFramework.Field()
+    analysis_framework_clone = CloneAnalysisFramework.Field()
     analysis_framework = DjangoObjectField(AnalysisFrameworkMutationType)

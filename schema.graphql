@@ -57,6 +57,13 @@ type AnalysisAutomaticSummaryType {
   status: AutomaticSummaryStatusEnum!
 }
 
+input AnalysisFrameworkCloneInputType {
+  afId: ID!
+  title: String!
+  description: String
+  project: ID
+}
+
 type AnalysisFrameworkDetailType {
   id: ID!
   title: String!
@@ -3406,6 +3413,12 @@ type ChangeUserPassword {
   ok: Boolean
 }
 
+type CloneAnalysisFramework {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisFrameworkDetailType
+}
+
 type CollectionTechniqueCountType {
   dataCollectionTechnique: AssessmentRegistryDataCollectionTechniqueTypeEnum!
   dataCollectionTechniqueDisplay: EnumDescription!
@@ -5053,6 +5066,7 @@ type Mutation {
   updateMe(data: UserMeInputType!): UpdateMe
   deleteUser: UserDelete
   analysisFrameworkCreate(data: AnalysisFrameworkInputType!): CreateAnalysisFramework
+  analysisFrameworkClone(data: AnalysisFrameworkCloneInputType!): CloneAnalysisFramework
   analysisFramework(id: ID!): AnalysisFrameworkMutationType
 }
 

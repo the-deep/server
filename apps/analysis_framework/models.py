@@ -1,5 +1,5 @@
 import copy
-from typing import Union
+from typing import Union, Optional
 
 from django.db import models
 from django.core.exceptions import ValidationError
@@ -63,15 +63,13 @@ class AnalysisFramework(UserResource):
     def __str__(self):
         return self.title
 
-    def clone(self, user, overrides={}):
+    def clone(self, user, title: Optional[str] = None, description: Optional[str] = None):
         """
         Clone analysis framework along with all widgets,
         filters and exportables
         """
-        title = overrides.get(
-            'title', '{} (cloned)'.format(self.title[:230])
-        )  # Strip off extra chars from title
-        description = overrides.get('description', '')
+        title = title or "{} (cloned)".format(self.title[:230])  # Strip off extra chars from title
+        description = description or ""
         clone_analysis_framework = AnalysisFramework(
             title=title,
             description=description,

@@ -14,7 +14,7 @@ before_install:
 
   - env > .env
   - mv travis-docker-compose.yml docker-compose.yml
-  - docker-compose pull && docker pull ${DOCKER_IMAGE_SERVER_B} || true
+  - docker compose pull && docker pull ${DOCKER_IMAGE_SERVER_B} || true
   - |
     docker build\
     --cache-from $(get_image ${DOCKER_IMAGE_SERVER_B} ${DOCKER_IMAGE_SERVER})\
@@ -24,12 +24,12 @@ before_script:
   - /tmp/cc-test-reporter before-build
 
 script:
-  - docker-compose run server /code/scripts/run_tests.sh
+  - docker compose run server /code/scripts/run_tests.sh
 
 after_success:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - /tmp/cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
-  - docker-compose push server
+  - docker compose push server
   - docker push ${DOCKER_IMAGE_SERVER_B}
 
 deploy:
