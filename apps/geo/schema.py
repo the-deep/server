@@ -34,7 +34,7 @@ def get_geo_area_queryset_for_project_geo_area_type(queryset=None, defer_fields=
     return _queryset
 
 
-class AdminLevelType(DjangoObjectType):
+class AdminLevelType(DjangoObjectType, ClientIdMixin):
     class Meta:
         model = AdminLevel
         only_fields = (

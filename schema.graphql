@@ -34,7 +34,7 @@ input AdminLevelInputType {
   parentCodeProp: String
   parentNameProp: String
   geoShapeFile: ID
-  boundsFile: Upload
+  clientId: String
 }
 
 type AdminLevelType {
@@ -48,6 +48,7 @@ type AdminLevelType {
   geoShapeFile: GalleryFileType
   tolerance: Float!
   staleGeoAreas: Boolean!
+  clientId: ID!
   parent: ID
   geojsonFile: FileFieldType
   boundsFile: FileFieldType
@@ -5072,8 +5073,9 @@ type MissingPredictionReviewType {
 
 type Mutation {
   createRegion(data: RegionInputType!): CreateRegion
-  publishRegion(id: ID!): PublishRegion
+  updateRegion(data: RegionInputType!, id: ID!): UpdateRegion
   createAdminLevel(data: AdminLevelInputType!): CreateAdminLevel
+  publishRegion(id: ID!): PublishRegion
   updateAdminLevel(data: AdminLevelInputType!, id: ID!): UpdateAdminLevel
   deleteAdminLevel(adminLevelId: ID!): DeleteAdminLevel
   organizationCreate(data: OrganizationInputType!): OrganizationCreate
@@ -6453,6 +6455,12 @@ type UpdateProjectVizConfiguration {
   errors: [GenericScalar!]
   ok: Boolean
   result: ProjectVizDataType
+}
+
+type UpdateRegion {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: RegionDetailType
 }
 
 type UpdateUnifiedConnector {
