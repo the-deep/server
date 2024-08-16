@@ -3,7 +3,7 @@ from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
 from django.db import models
 
-from utils.graphene.types import CustomDjangoListObjectType, FileFieldType
+from utils.graphene.types import ClientIdMixin, CustomDjangoListObjectType, FileFieldType
 from utils.graphene.fields import DjangoPaginatedListObjectField
 from utils.graphene.pagination import NoOrderingPageGraphqlPagination
 
@@ -34,7 +34,7 @@ def get_geo_area_queryset_for_project_geo_area_type(queryset=None, defer_fields=
     return _queryset
 
 
-class AdminLevelType(DjangoObjectType):
+class AdminLevelType(DjangoObjectType, ClientIdMixin):
     class Meta:
         model = AdminLevel
         only_fields = (
@@ -52,7 +52,7 @@ class AdminLevelType(DjangoObjectType):
         return get_users_adminlevel_qs(info)
 
 
-class RegionType(DjangoObjectType):
+class RegionType(DjangoObjectType, ClientIdMixin):
     class Meta:
         model = Region
         only_fields = (
@@ -76,7 +76,7 @@ class RegionDetailType(RegionType):
             'centroid', 'is_published',
         )
 
-    admin_levels = graphene.List(graphene.NonNull(AdminLevelType))
+    admin_levels = graphene.List(graphene.NonNull(AdminLevelType), required=True)
 
     @staticmethod
     def resolve_admin_levels(root, info, **kwargs):

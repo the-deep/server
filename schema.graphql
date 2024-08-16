@@ -24,6 +24,19 @@ type AdditionalDocumentType {
   externalLink: String
 }
 
+input AdminLevelInputType {
+  region: ID!
+  parent: ID
+  title: String!
+  level: Int
+  nameProp: String
+  codeProp: String
+  parentCodeProp: String
+  parentNameProp: String
+  geoShapeFile: ID
+  clientId: String
+}
+
 type AdminLevelType {
   id: ID!
   title: String!
@@ -35,6 +48,7 @@ type AdminLevelType {
   geoShapeFile: GalleryFileType
   tolerance: Float!
   staleGeoAreas: Boolean!
+  clientId: ID!
   parent: ID
   geojsonFile: FileFieldType
   boundsFile: FileFieldType
@@ -3548,6 +3562,12 @@ type ConnectorSourceType {
   statusDisplay: EnumDescription!
 }
 
+type CreateAdminLevel {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AdminLevelType
+}
+
 type CreateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
@@ -3626,6 +3646,12 @@ type CreateProjectJoin {
   result: ProjectJoinRequestType
 }
 
+type CreateRegion {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: RegionDetailType
+}
+
 type CreateUnifiedConnector {
   errors: [GenericScalar!]
   ok: Boolean
@@ -3672,6 +3698,12 @@ type DateCountType {
 scalar DateTime
 
 scalar Decimal
+
+type DeleteAdminLevel {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AdminLevelType
+}
 
 type DeleteAnalysisPillarDiscardedEntry {
   errors: [GenericScalar!]
@@ -5040,6 +5072,12 @@ type MissingPredictionReviewType {
 }
 
 type Mutation {
+  createRegion(data: RegionInputType!): CreateRegion
+  updateRegion(data: RegionInputType!, id: ID!): UpdateRegion
+  createAdminLevel(data: AdminLevelInputType!): CreateAdminLevel
+  publishRegion(id: ID!): PublishRegion
+  updateAdminLevel(data: AdminLevelInputType!, id: ID!): UpdateAdminLevel
+  deleteAdminLevel(adminLevelId: ID!): DeleteAdminLevel
   organizationCreate(data: OrganizationInputType!): OrganizationCreate
   createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType!): AssessmentRegistryCreateIssue
   fileUpload(data: FileUploadInputType!): UploadFile
@@ -5816,6 +5854,12 @@ type PublicProjectWithMembershipData {
   isRejected: Boolean!
 }
 
+type PublishRegion {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: RegionType
+}
+
 type Query {
   assessmentRegSummaryIssue(id: ID!): AssessmentRegistrySummaryIssueType
   assessmentRegSummaryIssues(label: String, parent: ID, subPillar: AssessmentRegistrySummarySubPillarTypeEnum, subDimension: AssessmentRegistrySummarySubDimensionTypeEnum, search: String, isParent: Boolean, page: Int = 1, ordering: String, pageSize: Int): AssessmentRegistrySummaryIssueListType
@@ -5909,7 +5953,15 @@ type RegionDetailType {
   populationData: GenericScalar
   mediaSources: GenericScalar
   centroid: PointScalar
-  adminLevels: [AdminLevelType!]
+  clientId: ID!
+  adminLevels: [AdminLevelType!]!
+}
+
+input RegionInputType {
+  title: String!
+  code: String!
+  project: ID!
+  clientId: String
 }
 
 type RegionListType {
@@ -5951,6 +6003,7 @@ type RegionType {
   populationData: GenericScalar
   mediaSources: GenericScalar
   centroid: PointScalar
+  clientId: ID!
 }
 
 type RegionWithProject {
@@ -6315,6 +6368,12 @@ input UnifiedConnectorWithSourceInputType {
   sources: [ConnectorSourceGqInputType!]
 }
 
+type UpdateAdminLevel {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AdminLevelType
+}
+
 type UpdateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
@@ -6396,6 +6455,12 @@ type UpdateProjectVizConfiguration {
   errors: [GenericScalar!]
   ok: Boolean
   result: ProjectVizDataType
+}
+
+type UpdateRegion {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: RegionDetailType
 }
 
 type UpdateUnifiedConnector {

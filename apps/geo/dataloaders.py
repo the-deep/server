@@ -18,7 +18,7 @@ class AdminLevelLoader(DataLoaderWithContext):
         _map = defaultdict(list)
         for adminlevel in adminlevel_qs:
             _map[adminlevel.region_id].append(adminlevel)
-        return Promise.resolve([_map.get(key) for key in keys])
+        return Promise.resolve([_map.get(key, []) for key in keys])
 
 
 class AssessmentRegistryGeoAreaLoader(DataLoaderWithContext):

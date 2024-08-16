@@ -2,7 +2,11 @@ from django.conf import settings
 from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
 
-from deep.serializers import RemoveNullFieldsMixin, URLCachedFileField
+from deep.serializers import (
+    RemoveNullFieldsMixin,
+    TempClientIdMixin,
+    URLCachedFileField,
+)
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
 from geo.models import (
@@ -148,3 +152,79 @@ class GeoAreaSerializer(serializers.ModelSerializer):
             'region_title', 'admin_level_level', 'admin_level_title',
             'parent'
         )
+
+
+class RegionGqSerializer(UserResourceSerializer, TempClientIdMixin):
+    project = serializers.PrimaryKeyRelatedField(
+        queryset=Project.objects.all(),
+        help_text="Project is only used while creating region"
+    )
+
+    class Meta:
+        model = Region
+        fields = ['title', 'code', 'project', 'client_id']
+
+    def validate_project(self, project):
+        if not project.can_modify(self.context['request'].user):
+            raise serializers.ValidationError('You Don\'t have permission in project')
+        return project
+
+    def validate(self, data):
+        if self.instance and self.instance.is_published:
+            raise serializers.ValidationError('Published region can\'t be changed. Please contact Admin')
+        return data
+
+    def create(self, validated_data):
+        project = validated_data.pop('project')
+        region = super().create(validated_data)
+        project.regions.add(region)
+        return region
+
+
+class AdminLevelGqlSerializer(UserResourceSerializer, TempClientIdMixin):
+    region = serializers.PrimaryKeyRelatedField(queryset=Region.objects.all())
+    parent_code_prop = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    parent_name_prop = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+
+    class Meta:
+        model = AdminLevel
+        fields = [
+            'region',
+            'parent',
+            'title',
+            'level',
+            'name_prop',
+            'code_prop',
+            'parent_code_prop',
+            'parent_name_prop',
+            'geo_shape_file',
+            'client_id',
+        ]
+
+    def validate(self, data):
+        region = data.get('region', (self.instance and self.instance.region))
+        if region.created_by != self.context['request'].user:
+            raise serializers.ValidationError('You don\'t have the access to the region')
+        if region.is_published:
+            raise serializers.ValidationError('Published region can\'t be changed. Please contact Admin')
+        return data
+
+    def create(self, validated_data):
+        admin_level = super().create(validated_data)
+
+        transaction.on_commit(lambda: load_geo_areas.delay(admin_level.region_id))
+
+        return admin_level
+
+    def update(self, instance, validated_data):
+        admin_level = super().update(
+            instance,
+            validated_data,
+        )
+        region = admin_level.region
+        region.modified_by = self.context['request'].user
+        region.save(update_fields=('modified_by', 'modified_at',))
+
+        transaction.on_commit(lambda: load_geo_areas.delay(region.id))
+
+        return admin_level
