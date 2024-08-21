@@ -279,7 +279,7 @@ class AssessmentRegistrySerializer(UserResourceSerializer, ProjectPropertySerial
             question_list.append(question)
 
     def validate_lead(self, lead):
-        if lead.project != self.project:
+        if lead.project_id != self.project.id:
             raise serializers.ValidationError('Only Source from current Project are allowed')
         return lead
 
