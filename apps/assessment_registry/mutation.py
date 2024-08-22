@@ -57,7 +57,7 @@ class CreateAssessmentRegistry(PsGrapheneMutation):
 class UpdateAssessmentRegistry(AssessmentRegsitryMutationMixin, PsGrapheneMutation):
     class Arguments:
         data = AssessmentRegistryCreateInputType(required=True)
-        id = graphene.ID(required=False)
+        id = graphene.ID(required=True)
 
     result = graphene.Field(AssessmentRegistryType)
     serializer_class = AssessmentRegistrySerializer

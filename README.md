@@ -10,7 +10,7 @@ Add this to your `.git/hooks/pre-commit` to generate latest graphql schema befor
 #!/bin/sh
 
 echo "pre-commit: Generating graphql schema."
-if [ -z `docker ps -q --no-trunc | grep $(docker-compose ps -q web)` ]; then
+if [ -z `docker ps -q --no-trunc | grep $(docker compose ps -q web)` ]; then
     docker compose run --rm web ./manage.py graphql_schema --out schema.graphql
 else
     docker compose exec -T web ./manage.py graphql_schema --out schema.graphql

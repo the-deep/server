@@ -1,17 +1,21 @@
-from utils.graphene.tests import GraphQLTestCase
+from utils.graphene.tests import GraphQLTestCase, GraphQLSnapShotTestCase
 
 from organization.factories import OrganizationFactory
 from geo.factories import GeoAreaFactory, AdminLevelFactory, RegionFactory
 from gallery.factories import FileFactory
 from project.factories import ProjectFactory
+from project.models import ProjectOrganization
 from user.factories import UserFactory
 from lead.factories import LeadFactory
 from assessment_registry.factories import (
+    AssessmentRegistryFactory,
+    AssessmentRegistryOrganizationFactory,
     QuestionFactory,
     SummaryIssueFactory,
 )
 from assessment_registry.models import (
     AssessmentRegistry,
+    AssessmentRegistryOrganization,
     MethodologyAttribute,
     AdditionalDocument,
     ScoreRating,
@@ -296,3 +300,333 @@ class TestAssessmentRegistryMutation(GraphQLTestCase):
         self.assertIsNotNone(data['summarySubDimensionIssue'])
         self.assertEqual(data['metadataComplete'], True)
         self.assertIsNotNone(data['protectionRisks'])
+
+
+class TestAssessmentRegistryMutationSnapShotTestCase(GraphQLSnapShotTestCase):
+    UPDATE_ASSESSMENT_REGISTRY_QUERY = '''
+            mutation MyMutation(
+                $projectId: ID!,
+                $input: AssessmentRegistryCreateInputType!,
+                $assessmentRegistryId: ID!
+            ) {
+              project(id: $projectId) {
+                updateAssessmentRegistry(data: $input, id: $assessmentRegistryId) {
+                  ok
+                  errors
+                  result {
+                    id
+                    affectedGroups
+                    bgPreparedness
+                    bgCountries {
+                      id
+                    }
+                    bgCrisisStartDate
+                    bgCrisisType
+                    confidentiality
+                    confidentialityDisplay
+                    coordinatedJoint
+                    coordinatedJointDisplay
+                    costEstimatesUsd
+                    createdAt
+                    dataCollectionEndDate
+                    dataCollectionStartDate
+                    dataCollectionTechniques
+                    detailsType
+                    detailsTypeDisplay
+                    externalSupport
+                    externalSupportDisplay
+                    family
+                    familyDisplay
+                    metadataComplete
+                    focuses
+                    frequency
+                    frequencyDisplay
+                    language
+                    limitations
+                    modifiedAt
+                    noOfPages
+                    objectives
+                    protectionInfoMgmts
+                    protectionRisks
+                    publicationDate
+                    sampling
+                    sectors
+                    status
+                    focusComplete
+                    lead {
+                      id
+                    }
+                    methodologyAttributes {
+                      unitOfReportingDisplay
+                      unitOfReporting
+                      unitOfAnalysis
+                      unitOfAnalysisDisplay
+                      samplingApproach
+                      samplingAppraochDisplay
+                      proximity
+                      proximityDisplay
+                      id
+                      dataCollectionTechniqueDisplay
+                      dataCollectionTechnique
+                    }
+                    methodologyComplete
+                    additionalDocuments {
+                      documentType
+                      documentTypeDisplay
+                      externalLink
+                      id
+                      file {
+                        id
+                        mimeType
+                        metadata
+                      }
+                    }
+                    additionalDocumentComplete
+                    cna {
+                      answer
+                      id
+                      question {
+                        id
+                        question
+                        sector
+                        subSector
+                        sectorDisplay
+                        subSectorDisplay
+                      }
+                    }
+                    cnaComplete
+                    summaryDimensionMeta {
+                      id
+                      percentageInNeed
+                    }
+                    summarySubDimensionIssue {
+                      id
+                    }
+                    summaryPillarMeta {
+                      id
+                      totalPeopleAssessed
+                    }
+                    summarySubPillarIssue {
+                      id
+                    }
+                    summaryComplete
+                  }
+                }
+              }
+            }
+    '''
+
+    def setUp(self):
+        super().setUp()
+        # Users with different roles
+        self.non_member_user, self.readonly_member_user, self.member_user = UserFactory.create_batch(3)
+        self.project = ProjectFactory.create()
+        # leads
+        self.lead1, self.lead2 = LeadFactory.create_batch(2, project=self.project)
+        self.lead3 = LeadFactory.create()
+        # organizations
+        self.organization1, self.organization2 = OrganizationFactory.create_batch(2)
+        # region
+        self.region = RegionFactory.create()
+        self.question = QuestionFactory.create(
+            sector=Question.QuestionSector.RELEVANCE.value,
+            sub_sector=Question.QuestionSubSector.RELEVANCE.value,
+            question="test question"
+        )
+        self.project.add_member(self.readonly_member_user, role=self.project_role_reader)
+        self.project.add_member(self.member_user, role=self.project_role_member)
+        self.assessment_registry = AssessmentRegistryFactory.create(
+            project=self.project,
+            lead=self.lead1,
+            bg_crisis_type=AssessmentRegistry.CrisisType.EARTH_QUAKE,
+            bg_preparedness=AssessmentRegistry.PreparednessType.WITH_PREPAREDNESS,
+            confidentiality=AssessmentRegistry.ConfidentialityType.UNPROTECTED,
+            coordinated_joint=AssessmentRegistry.CoordinationType.COORDINATED,
+            status=AssessmentRegistry.StatusType.PLANNED,
+            details_type=AssessmentRegistry.Type.INITIAL,
+            external_support=AssessmentRegistry.ExternalSupportType.EXTERNAL_SUPPORT_RECIEVED,
+            family=AssessmentRegistry.FamilyType.DISPLACEMENT_TRAKING_MATRIX,
+            frequency=AssessmentRegistry.FrequencyType.ONE_OFF,
+            language=[
+                AssessmentRegistry.Language.ENGLISH,
+                AssessmentRegistry.Language.SPANISH,
+            ],
+            bg_countries=[self.region.id],
+            metadata_complete=True,
+            additional_document_complete=True,
+            focus_complete=True,
+            methodology_complete=True,
+            summary_complete=True,
+            cna_complete=True,
+            score_complete=True,
+            bg_crisis_start_date='2019-07-03',
+            data_collection_start_date='2020-02-16',
+            data_collection_end_date='2020-09-06',
+            publication_date='2021-06-21',
+            focuses=[
+                AssessmentRegistry.FocusType.CONTEXT,
+                AssessmentRegistry.FocusType.HUMANITERIAN_ACCESS,
+                AssessmentRegistry.FocusType.DISPLACEMENT
+            ],
+            sectors=[
+                AssessmentRegistry.SectorType.HEALTH,
+                AssessmentRegistry.SectorType.SHELTER,
+                AssessmentRegistry.SectorType.WASH,
+            ],
+            protection_info_mgmts=[AssessmentRegistry.ProtectionInfoType.PROTECTION_MONITORING],
+            affected_groups=[AssessmentRegistry.AffectedGroupType.ALL_AFFECTED],
+        )
+        self.stakeholders = AssessmentRegistryOrganizationFactory.create(
+            organization_type=AssessmentRegistryOrganization.Type.LEAD_ORGANIZATION,
+            organization=self.organization1,
+            assessment_registry=self.assessment_registry
+        )
+        self.minput = dict(
+            bgCrisisType=self.genum(AssessmentRegistry.CrisisType.LANDSLIDE),
+            bgPreparedness=self.genum(AssessmentRegistry.PreparednessType.WITHOUT_PREPAREDNESS),
+            confidentiality=self.genum(AssessmentRegistry.ConfidentialityType.CONFIDENTIAL),
+            coordinatedJoint=self.genum(AssessmentRegistry.CoordinationType.HARMONIZED),
+            status=self.genum(AssessmentRegistry.StatusType.ONGOING),
+            detailsType=self.genum(AssessmentRegistry.Type.MONITORING),
+            externalSupport=self.genum(AssessmentRegistry.ExternalSupportType.NO_EXTERNAL_SUPPORT_RECEIVED),
+            family=self.genum(AssessmentRegistry.FamilyType.HUMANITARIAN_NEEDS_OVERVIEW),
+            frequency=self.genum(AssessmentRegistry.FrequencyType.REGULAR),
+            lead=self.lead2.id,
+            language=[
+                self.genum(AssessmentRegistry.Language.ENGLISH),
+                self.genum(AssessmentRegistry.Language.FRENCH)
+            ],
+            bgCountries=[self.region.id],
+            scoreRatings=[
+                dict(
+                    scoreType=self.genum(ScoreRating.ScoreCriteria.ASSUMPTIONS),
+                    rating=self.genum(ScoreRating.RatingType.VERY_POOR),
+                    reason="test"
+                ),
+                dict(
+                    scoreType=self.genum(ScoreRating.ScoreCriteria.RELEVANCE),
+                    rating=self.genum(ScoreRating.RatingType.VERY_POOR),
+                    reason="test"
+                )
+            ],
+            scoreAnalyticalDensity=[
+                dict(
+                    sector=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
+                    analysisLevelCovered=[
+                        self.genum(ScoreAnalyticalDensity.AnalysisLevelCovered.ISSUE_UNMET_NEEDS_ARE_DETAILED),
+                        self.genum(ScoreAnalyticalDensity.AnalysisLevelCovered.ISSUE_UNMET_NEEDS_ARE_PRIORITIZED_RANKED),
+                    ],
+                    figureProvided=[
+                        self.genum(ScoreAnalyticalDensity.FigureProvidedByAssessment.TOTAL_POP_IN_THE_ASSESSED_AREAS),
+                    ],
+                    score=1,
+                ),
+                dict(
+                    sector=self.genum(AssessmentRegistry.SectorType.SHELTER),
+                    analysisLevelCovered=[],
+                    score=2
+                )
+            ],
+            stakeholders=[
+                dict(
+                    organization=self.stakeholders.id,
+                    organizationType=self.genum(ProjectOrganization.Type.LEAD_ORGANIZATION),
+                ),
+                dict(
+                    organization=self.stakeholders.id,
+                    organizationType=self.genum(ProjectOrganization.Type.INTERNATIONAL_PARTNER),
+                ),
+            ],
+            cna=[
+                dict(
+                    answer=True,
+                    question=self.question.id,
+                )
+            ],
+        )
+
+    def test_assessment_registry_update(self):
+        """
+        This test makes sure only valid users can update AssessmentRegistry
+        """
+        def _query_check(minput, **kwargs):
+            return self.query_check(
+                self.UPDATE_ASSESSMENT_REGISTRY_QUERY,
+                minput=minput,
+                variables={'projectId': self.project.id, 'assessmentRegistryId': self.assessment_registry.id},
+                **kwargs
+            )
+
+        # -- Without login
+        _query_check(self.minput, assert_for_error=True)
+
+        # -- With login (non-member)
+        self.force_login(self.non_member_user)
+        _query_check(self.minput, assert_for_error=True)
+
+        # --- member user (read-only)
+        self.force_login(self.readonly_member_user)
+        _query_check(self.minput, assert_for_error=True)
+
+        # --- member user
+        self.force_login(self.member_user)
+
+        # Valid input
+        response = _query_check(self.minput)
+        self.assertMatchSnapshot(response, 'success')
+
+        # Invalid inputs
+        self.minput['scoreRatings'] = [
+            dict(
+                scoreType=self.genum(ScoreRating.ScoreCriteria.ASSUMPTIONS),
+                rating=self.genum(ScoreRating.RatingType.VERY_POOR),
+                reason="test"
+            ),
+            dict(
+                scoreType=self.genum(ScoreRating.ScoreCriteria.ASSUMPTIONS),
+                rating=self.genum(ScoreRating.RatingType.VERY_POOR),
+                reason="test"
+            )
+        ]
+        self.minput['scoreAnalyticalDensity'] = [
+            dict(
+                sector=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
+                analysisLevelCovered=[
+                    self.genum(ScoreAnalyticalDensity.AnalysisLevelCovered.ISSUE_UNMET_NEEDS_ARE_DETAILED),
+                    self.genum(ScoreAnalyticalDensity.AnalysisLevelCovered.ISSUE_UNMET_NEEDS_ARE_PRIORITIZED_RANKED),
+                ],
+                figureProvided=[
+                    self.genum(ScoreAnalyticalDensity.FigureProvidedByAssessment.TOTAL_POP_IN_THE_ASSESSED_AREAS),
+                ],
+                score=1,
+            ),
+            dict(
+                sector=self.genum(AssessmentRegistry.SectorType.FOOD_SECURITY),
+                analysisLevelCovered=[],
+                score=1,
+            )
+        ]
+        self.minput['stakeholders'] = [
+            dict(
+                organization=self.stakeholders.id,
+                organizationType=self.genum(ProjectOrganization.Type.LEAD_ORGANIZATION),
+            ),
+            dict(
+                organization=self.stakeholders.id,
+                organizationType=self.genum(ProjectOrganization.Type.LEAD_ORGANIZATION),
+            ),
+        ]
+        self.minput['cna'] = [
+            dict(
+                answer=True,
+                question=self.question.id,
+            ),
+            dict(
+                answer=True,
+                question=self.question.id,
+            ),
+        ]
+        self.minput['lead'] = self.lead3.id
+
+        response = _query_check(self.minput, okay=False)
+        self.assertMatchSnapshot(response, "error")
