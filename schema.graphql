@@ -5488,7 +5488,7 @@ type ProjectMutationType {
   leadCreate(data: LeadInputType!): CreateLead
   leadUpdate(data: LeadInputType!, id: ID!): UpdateLead
   leadDelete(id: ID!): DeleteLead
-  leadBulk(items: [BulkLeadInputType!]): BulkLead
+  leadBulk(deleteIds: [ID!], items: [BulkLeadInputType!]): BulkLead
   leadGroupDelete(id: ID!): DeleteLeadGroup
   leadCopy(data: LeadCopyInputType!): LeadCopy
   leadFilterSave(data: UserSavedLeadFilterInputType!): SaveUserSavedLeadFilter

@@ -389,6 +389,69 @@ class TestLeadBulkMutationSchema(GraphQLSnapShotTestCase):
         self.assertMatchSnapshot(response, 'success')
         self.assertEqual(lead_count + 2, Lead.objects.count())
 
+    def test_lead_bulk_delete_validation(self):
+        query = '''
+            mutation MyMutation ($projectId: ID! $input: [ID!]) {
+              project(id: $projectId) {
+                leadBulk(deleteIds: $input) {
+                    errors
+                    deletedResult {
+                        id
+                        title
+                    }
+                }
+              }
+            }
+        '''
+
+        project = ProjectFactory.create()
+        non_member_user = UserFactory.create()
+        read_only_member_user = UserFactory.create()
+        member_user = UserFactory.create()
+        project.add_member(member_user, role=self.project_role_member)
+        project.add_member(read_only_member_user, role=self.project_role_reader_non_confidential)
+
+        lead1, lead2, _ = LeadFactory.create_batch(3, project=project)
+
+        lead_count = Lead.objects.count()
+
+        minput = [
+            str(lead1.pk),
+            str(lead2.pk),
+        ]
+
+        def _query_check(**kwargs):
+            return self.query_check(query, minput=minput, variables={'projectId': project.pk}, **kwargs)
+
+        # Error without login
+        _query_check(assert_for_error=True)
+
+        # -- With login (non-member)
+        self.force_login(non_member_user)
+        _query_check(assert_for_error=True)
+        self.assertEqual(lead_count, Lead.objects.count())
+
+        # --- login as read-only member
+        self.force_login(read_only_member_user)
+        _query_check(assert_for_error=True)
+        self.assertEqual(lead_count, Lead.objects.count())
+
+        # --- login (member)
+        self.force_login(member_user)
+        # Success with normal lead (with project membership)
+        result = _query_check()['data']['project']['leadBulk']
+        self.assertEqual(
+            result,
+            {
+                'errors': [],
+                'deletedResult': [
+                    dict(id=str(lead1.pk), title=lead1.title),
+                    dict(id=str(lead2.pk), title=lead2.title),
+                ],
+            },
+        )
+        self.assertEqual(1, Lead.objects.count())
+
 
 class TestLeadGroupMutation(GraphQLTestCase):
     def test_lead_group_delete(self):

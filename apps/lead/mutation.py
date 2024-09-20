@@ -92,6 +92,7 @@ class BulkLeadInputType(LeadInputType):
 class BulkLead(LeadMutationMixin, PsBulkGrapheneMutation):
     class Arguments:
         items = graphene.List(graphene.NonNull(BulkLeadInputType))
+        delete_ids = graphene.List(graphene.NonNull(graphene.ID))
 
     result = graphene.List(LeadType)
     deleted_result = graphene.List(graphene.NonNull(LeadType))
