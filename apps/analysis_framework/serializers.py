@@ -580,6 +580,12 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
             # Overwriting AF on save
             serializer.save(analysis_framework=af)
 
+    def _delete_exportable_widgets(self, af):
+        exportable_qs = Exportable.objects.filter(
+            analysis_framework=af
+        )
+        exportable_qs.delete()
+
     def _delete_old_prediction_tags_mapping(self, af, prediction_tags_mapping):
         current_ids = [
             mapping['id']
@@ -643,6 +649,8 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
         validated_data.pop('prediction_tags_mapping', None)
         secondary_tagging = self.initial_data.get('secondary_tagging', None)
         prediction_tags_mapping = self.initial_data.get('prediction_tags_mapping', None)
+
+        self._delete_exportable_widgets(instance)
         # Update AF
         instance = super().update(instance, validated_data)
         # Update secondary_tagging
