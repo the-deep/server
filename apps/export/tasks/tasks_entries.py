@@ -123,7 +123,7 @@ def export_entries(export):
 
     elif export_type == Export.ExportType.JSON:
         export_data = JsonExporter(is_preview=is_preview)\
-            .load_exportables(exportables)\
+            .load_exportables(exportables, project.analysis_framework)\
             .add_entries(entries_qs)\
             .export()
 
