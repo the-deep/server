@@ -85,58 +85,6 @@ class RegionSerializer(RemoveNullFieldsMixin,
         return region
 
 
-class AdminLevelSerializer(RemoveNullFieldsMixin,
-                           DynamicFieldsMixin, serializers.ModelSerializer):
-    """
-    Admin Level Model Serializer
-    """
-    geo_shape_file_details = SimpleFileSerializer(source='geo_shape_file', read_only=True)
-
-    geojson_file = URLCachedFileField(required=False, read_only=True)
-    bounds_file = URLCachedFileField(required=False, read_only=True)
-
-    class Meta:
-        model = AdminLevel
-        exclude = ('geo_area_titles',)
-
-    # Validations
-    def validate_region(self, region):
-        if not region.can_modify(self.context['request'].user):
-            raise serializers.ValidationError('Invalid region')
-        return region
-
-    def create(self, validated_data):
-        admin_level = super().create(validated_data)
-        admin_level.stale_geo_areas = True
-        admin_level.save()
-
-        region = admin_level.region
-        region.modified_by = self.context['request'].user
-        region.save()
-
-        if not settings.TESTING:
-            transaction.on_commit(lambda: load_geo_areas.delay(region.id))
-
-        return admin_level
-
-    def update(self, instance, validated_data):
-        admin_level = super().update(
-            instance,
-            validated_data,
-        )
-        admin_level.stale_geo_areas = True
-        admin_level.save()
-
-        region = admin_level.region
-        region.modified_by = self.context['request'].user
-        region.save()
-
-        if not settings.TESTING:
-            transaction.on_commit(lambda: load_geo_areas.delay(region.id))
-
-        return admin_level
-
-
 class GeoAreaSerializer(serializers.ModelSerializer):
     label = serializers.CharField()
     key = serializers.CharField()

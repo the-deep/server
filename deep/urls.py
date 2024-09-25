@@ -60,9 +60,7 @@ from project.views import (
     accept_project_confirm,
 )
 from geo.views import (
-    AdminLevelViewSet,
     RegionCloneView,
-    RegionViewSet,
     GeoAreasLoadTriggerView,
     GeoJsonView,
     GeoBoundsView,
@@ -268,10 +266,6 @@ router.register(r'projects/(?P<project_id>\d+)/project-usergroups', ProjectUserG
                 basename='project_usergroup')
 
 # Geo routers
-router.register(r'regions', RegionViewSet,
-                basename='region')
-router.register(r'admin-levels', AdminLevelViewSet,
-                basename='admin_level')
 router.register(r'projects/(?P<project_id>\d+)/geo-area', GeoAreaView,
                 basename='geo_area')
 
