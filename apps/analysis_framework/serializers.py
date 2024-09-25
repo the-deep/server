@@ -580,12 +580,6 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
             # Overwriting AF on save
             serializer.save(analysis_framework=af)
 
-    # def _delete_exportable_widgets(self, af):
-    #     exportable_qs = Exportable.objects.filter(
-    #         analysis_framework=af
-    #     )
-    #     exportable_qs.delete()
-
     def _delete_old_prediction_tags_mapping(self, af, prediction_tags_mapping):
         current_ids = [
             mapping['id']
@@ -663,7 +657,6 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
             owner_role = instance.get_or_create_owner_role()
             instance.add_member(instance.created_by, owner_role)
 
-        # self._delete_exportable_widgets(instance)
         ProjectChangeManager.log_framework_update(instance.pk, self.context['request'].user)
         self._post_save(instance)
         return instance
