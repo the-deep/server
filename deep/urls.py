@@ -112,10 +112,7 @@ from quality_assurance.views import (
     EntryReviewCommentViewSet,
 )
 from analysis_framework.views import (
-    AnalysisFrameworkCloneView,
     AnalysisFrameworkViewSet,
-    PrivateAnalysisFrameworkRoleViewSet,
-    PublicAnalysisFrameworkRoleViewSet,
     AnalysisFrameworkMembershipViewSet,
     ExportableViewSet,
     FilterViewSet,
@@ -331,11 +328,6 @@ router.register(r'analysis-framework-exportables', ExportableViewSet,
                 basename='analysis_framework_exportable')
 router.register(r'framework-memberships', AnalysisFrameworkMembershipViewSet,
                 basename='framework_memberships')
-router.register(r'private-framework-roles', PrivateAnalysisFrameworkRoleViewSet,
-                basename='framework_roles')
-router.register(r'public-framework-roles', PublicAnalysisFrameworkRoleViewSet,
-                basename='framework_roles')
-
 # Assessment registry
 router.register(r'assessments', AssessmentViewSet,
                 basename='assessment')
@@ -547,8 +539,6 @@ urlpatterns = [
     # Clone apis
     re_path(get_api_path(r'clone-region/(?P<region_id>\d+)/$'),
             RegionCloneView.as_view()),
-    re_path(get_api_path(r'clone-analysis-framework/(?P<af_id>\d+)/$'),
-            AnalysisFrameworkCloneView.as_view()),
     re_path(get_api_path(r'clone-category-editor/(?P<ce_id>\d+)/$'),
             CategoryEditorCloneView.as_view()),
 

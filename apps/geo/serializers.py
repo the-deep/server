@@ -1,11 +1,9 @@
-from django.conf import settings
 from django.db import transaction
 from drf_dynamic_fields import DynamicFieldsMixin
 
 from deep.serializers import (
     RemoveNullFieldsMixin,
     TempClientIdMixin,
-    URLCachedFileField,
 )
 from rest_framework import serializers
 from user_resource.serializers import UserResourceSerializer
@@ -16,7 +14,6 @@ from geo.models import (
 )
 from geo.tasks import load_geo_areas
 from project.models import Project
-from gallery.serializers import SimpleFileSerializer
 
 
 class SimpleRegionSerializer(RemoveNullFieldsMixin,
