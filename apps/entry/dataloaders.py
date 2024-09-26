@@ -15,6 +15,7 @@ from .models import (
     Attribute,
     EntryGroupLabel,
 )
+from geo.models import GeoArea
 
 
 class EntryLoader(DataLoaderWithContext):
@@ -52,7 +53,9 @@ class EntryProjectLabelsLoader(DataLoaderWithContext):
 
 class AttributeGeoSelectedOptionsLoader(DataLoaderWithContext):
     def batch_load_fn(self, keys):
-        geo_area_qs = get_geo_area_queryset_for_project_geo_area_type().filter(
+        geo_area_qs = get_geo_area_queryset_for_project_geo_area_type(
+            queryset=GeoArea.get_for_project(self.context.active_project)
+        ).filter(
             id__in={id for ids in keys for id in ids}
         ).defer('polygons')
         geo_area_map = {
