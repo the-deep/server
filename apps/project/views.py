@@ -1,7 +1,6 @@
 import logging
 import uuid
 
-from dateutil.relativedelta import relativedelta
 import django_filters
 from django.conf import settings
 from django.http import Http404
@@ -9,8 +8,6 @@ from django.db import transaction, models
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_text
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
-from django.db.models.functions import Cast
 from django.template.response import TemplateResponse
 from deep.permalinks import Permalink
 from rest_framework.exceptions import PermissionDenied
@@ -35,7 +32,6 @@ from deep.permissions import (
     IsProjectMember,
 )
 from deep.serializers import URLCachedFileField
-from deep.paginations import SmallSizeSetPagination
 from tabular.models import Field
 
 from user.utils import send_project_join_request_emails
@@ -65,7 +61,6 @@ from .models import (
 )
 from .serializers import (
     ProjectSerializer,
-    ProjectStatSerializer,
     ProjectMembershipSerializer,
     ProjectJoinRequestSerializer,
     ProjectUserGroupSerializer,
@@ -662,86 +657,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             'sources_total': total_sources,
             'analyzed_source_count': total_analyzed_sources,
             'authoring_organizations': authoring_organizations
-        })
-
-
-class ProjectStatViewSet(ProjectViewSet):
-    pagination_class = SmallSizeSetPagination
-
-    def get_serializer_class(self):
-        return ProjectStatSerializer
-
-    def get_queryset(self):
-        return get_filtered_projects(
-            self.request.user, self.request.GET,
-            annotate=True,
-        ).prefetch_related(
-            'regions', 'organizations',
-        ).select_related(
-            'created_by__profile', 'modified_by__profile'
-        )
-
-    @action(
-        detail=False,
-        permission_classes=[permissions.IsAuthenticated],
-        url_path='recent'
-    )
-    def get_recent_projects(self, request, *args, **kwargs):
-        # Only pull project data for which user is member of
-        qs = self.get_queryset().filter(Project.get_query_for_member(request.user))
-        recent_projects = Project.get_recent_active_projects(request.user, qs)
-        return response.Response(
-            self.get_serializer_class()(
-                recent_projects,
-                context=self.get_serializer_context(),
-                many=True,
-            ).data
-        )
-
-    @action(
-        detail=False,
-        permission_classes=[permissions.IsAuthenticated],
-        url_path='summary'
-    )
-    def get_projects_summary(self, request, pk=None, version=None):
-        projects = Project.get_for_member(request.user)
-        # Lead stats
-        leads = Lead.objects.filter(project__in=projects)
-        total_leads_tagged_count = leads.annotate(entries_count=models.Count('entry')).filter(entries_count__gt=0).count()
-        total_leads_tagged_and_controlled_count = leads.annotate(
-            entries_count=models.Count('entry'),
-            controlled_entries_count=models.Count(
-                'entry', filter=models.Q(entry__controlled=True)
-            ),
-        ).filter(entries_count__gt=0, entries_count=models.F('controlled_entries_count')).count()
-        # Entries activity
-        recent_projects_id = list(
-            projects.annotate(
-                entries_count=Cast(KeyTextTransform('entries_activity', 'stats_cache'), models.IntegerField())
-            ).filter(entries_count__gt=0).order_by('-entries_count').values_list('id', flat=True)[:3])
-        recent_entries = Entry.objects.filter(
-            project__in=recent_projects_id,
-            created_at__gte=(timezone.now() + relativedelta(months=-3))
-        )
-        recent_entries_activity = {
-            'projects': (
-                recent_entries.order_by().values('project')
-                .annotate(count=models.Count('*'))
-                .filter(count__gt=0)
-                .values('count', id=models.F('project'), title=models.F('project__title'))
-            ),
-            'activities': (
-                recent_entries.order_by('project', 'created_at__date').values('project', 'created_at__date')
-                .annotate(count=models.Count('*'))
-                .values('project', 'count', date=models.Func(models.F('created_at__date'), function='DATE'))
-            ),
-        }
-        return response.Response({
-            'projects_count': projects.count(),
-            'total_leads_count': leads.count(),
-            'total_leads_tagged_count': total_leads_tagged_count,
-            'total_leads_tagged_and_controlled_count': total_leads_tagged_and_controlled_count,
-            'recent_entries_activity': recent_entries_activity,
         })
 
 

@@ -55,7 +55,6 @@ from project.views import (
     ProjectUserGroupViewSet,
     ProjectOptionsView,
     ProjectViewSet,
-    ProjectStatViewSet,
     accept_project_confirm,
 )
 from geo.views import (
@@ -242,8 +241,6 @@ router.register(r'group-memberships', GroupMembershipViewSet,
 # Project routers
 router.register(r'projects', ProjectViewSet,
                 basename='project')
-router.register(r'projects-stat', ProjectStatViewSet,
-                basename='project-stat')
 router.register(r'projects/(?P<project_id>\d+)/project-memberships', ProjectMembershipViewSet,
                 basename='project_membership')
 router.register(r'projects/(?P<project_id>\d+)/project-usergroups', ProjectUserGroupViewSet,
