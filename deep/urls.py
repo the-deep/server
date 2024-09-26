@@ -54,7 +54,6 @@ from project.views import (
     ProjectMembershipViewSet,
     ProjectUserGroupViewSet,
     ProjectOptionsView,
-    ProjectRoleViewSet,
     ProjectViewSet,
     ProjectStatViewSet,
     accept_project_confirm,
@@ -170,10 +169,6 @@ from deep.views import (
     get_frontend_url,
     graphql_docs
 )
-from organization.views import (
-    OrganizationViewSet,
-    OrganizationTypeViewSet,
-)
 from lang.views import (
     LanguageViewSet,
 )
@@ -249,8 +244,6 @@ router.register(r'projects', ProjectViewSet,
                 basename='project')
 router.register(r'projects-stat', ProjectStatViewSet,
                 basename='project-stat')
-router.register(r'project-roles', ProjectRoleViewSet,
-                basename='project_role')
 router.register(r'projects/(?P<project_id>\d+)/project-memberships', ProjectMembershipViewSet,
                 basename='project_membership')
 router.register(r'projects/(?P<project_id>\d+)/project-usergroups', ProjectUserGroupViewSet,
@@ -348,10 +341,6 @@ router.register(r'connector-users', ConnectorUserViewSet,
                 basename='connector_users')
 router.register(r'connector-projects', ConnectorProjectViewSet,
                 basename='connector_projects')
-
-# Organization routers
-router.register(r'organizations', OrganizationViewSet, basename='organization')
-router.register(r'organization-types', OrganizationTypeViewSet, basename='organization-type')
 
 # Export routers
 router.register(r'exports', ExportViewSet, basename='export')

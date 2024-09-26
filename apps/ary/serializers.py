@@ -18,7 +18,7 @@ from geo.models import Region
 from organization.models import Organization, OrganizationType
 from organization.serializers import (
     ArySourceOrganizationSerializer,
-    OrganizationTypeSerializer,
+    OrganizationGqSerializer,
 )
 from gallery.serializers import SimpleFileSerializer
 
@@ -322,7 +322,7 @@ class AssessmentTemplateSerializer(RemoveNullFieldsMixin,
                 context=self.context,
             ).data
             if have_source(Field.ORGANIZATIONS or Field.DONORS) else [],
-            'organization_type': OrganizationTypeSerializer(
+            'organization_type': OrganizationGqSerializer(
                 OrganizationType.objects.all(),
                 many=True,
             ).data

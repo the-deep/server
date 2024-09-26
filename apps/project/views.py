@@ -66,7 +66,6 @@ from .models import (
 from .serializers import (
     ProjectSerializer,
     ProjectStatSerializer,
-    ProjectRoleSerializer,
     ProjectMembershipSerializer,
     ProjectJoinRequestSerializer,
     ProjectUserGroupSerializer,
@@ -911,12 +910,6 @@ def accept_project_confirm(
         context['success'] = False
 
     return TemplateResponse(request, template_name, context)
-
-
-class ProjectRoleViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = ProjectRoleSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    queryset = ProjectRole.objects.order_by('level')
 
 
 class ProjectUserGroupViewSet(viewsets.ModelViewSet):
