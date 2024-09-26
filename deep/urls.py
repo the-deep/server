@@ -183,7 +183,6 @@ from client_page_meta.views import (
 
 from notification.views import (
     NotificationViewSet,
-    AssignmentViewSet
 )
 
 from jwt_auth.views import (
@@ -193,11 +192,6 @@ from jwt_auth.views import (
 )
 from commons.views import (
     RenderChart,
-)
-
-from django.conf.urls import (
-    handler404
-    # handler403, handler400, handler500
 )
 
 
@@ -365,9 +359,6 @@ router.register(r'exports', ExportViewSet, basename='export')
 # Notification routers
 router.register(r'notifications',
                 NotificationViewSet, basename='notification')
-router.register(r'assignments',
-                AssignmentViewSet, basename='assignments')
-
 # Language routers
 router.register(r'languages', LanguageViewSet, basename='language')
 
