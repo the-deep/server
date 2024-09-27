@@ -55,7 +55,6 @@ from .serializers import (
     LeadGroupSerializer,
     SimpleLeadGroupSerializer,
     LeadSerializer,
-    LeadPreviewSerializer,
     check_if_url_exists,
     LeadOptionsSerializer,
     LeadOptionsBodySerializer,
@@ -235,15 +234,6 @@ class LeadViewSet(viewsets.ModelViewSet):
         response = self.get_paginated_response(serializer.data)
 
         return response
-
-
-class LeadPreviewViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = LeadPreviewSerializer
-    permission_classes = [permissions.IsAuthenticated,
-                          ModifyPermission]
-
-    def get_queryset(self):
-        return Lead.get_for(self.request.user)
 
 
 class LeadOptionsView(views.APIView):
