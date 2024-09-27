@@ -25,7 +25,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 import django_filters
 
-from deep.permissions import ModifyPermission, CreateLeadPermission, DeleteLeadPermission
+from deep.permissions import ModifyPermission, CreateLeadPermission
 from deep.paginations import AutocompleteSetPagination
 from deep.authentication import CSRFExemptSessionAuthentication
 
@@ -235,34 +235,6 @@ class LeadViewSet(viewsets.ModelViewSet):
         response = self.get_paginated_response(serializer.data)
 
         return response
-
-
-class LeadBulkDeleteViewSet(viewsets.GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated, DeleteLeadPermission]
-
-    def get_serializer_class(self):
-        # required by ViewSchema generator
-        return serializers.Serializer
-
-    @action(
-        detail=False,
-        methods=['post'],
-        url_path='dry-bulk-delete',
-    )
-    def dry_bulk_delete(self, request, project_id, version=None):
-        lead_ids = request.data.get('leads', [])
-        tbd_entities = Lead.get_associated_entities(project_id, lead_ids)
-        return response.Response(tbd_entities, status=status.HTTP_200_OK)
-
-    @action(
-        detail=False,
-        methods=['post'],
-        url_path='bulk-delete',
-    )
-    def bulk_delete(self, request, project_id, version=None):
-        lead_ids = request.data.get('leads', [])
-        Lead.objects.filter(project_id=project_id, id__in=lead_ids).delete()
-        return response.Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class LeadPreviewViewSet(viewsets.ReadOnlyModelViewSet):
