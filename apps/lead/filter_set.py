@@ -575,7 +575,7 @@ class LeadPreviewAttachmentGQFilterSet(UserResourceGqlFilterSet):
 
     def filter_exclude_with_entries(self, qs, _, value):
         if value:
-            qs = qs.exclude(lead__entry_isnull=False)
+            qs = qs.exclude(lead__entry__isnull=False)
             return qs
         return qs
 
