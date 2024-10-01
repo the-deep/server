@@ -50,6 +50,7 @@ class AFRelatedAdmin(JFModelAdmin):
         '__str__', linkify('analysis_framework'),
     )
     autocomplete_fields = ('analysis_framework',)
+    list_filter = ['analysis_framework']
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('analysis_framework')

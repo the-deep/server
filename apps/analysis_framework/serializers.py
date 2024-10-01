@@ -386,7 +386,7 @@ class SectionGqlSerializer(TempClientIdMixin, WritableNestedModelSerializer):
             section=self.instance,  # NOTE: Adding this additional filter just to make sure
             pk__in=pks_to_delete
         )
-        qs.delete()
+        qs.update(is_deleted=True)
 
     # NOTE: This is a custom function (apps/user_resource/serializers.py::UserResourceSerializer)
     # This makes sure only scoped (individual AF) instances (widgets) are updated.
@@ -561,7 +561,7 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
                 analysis_framework=af,
                 section__isnull=True,  # NOTE: section are null for secondary taggings
             ).exclude(pk__in=current_ids)  # Exclude current provided widgets
-        qs_to_delete.delete()
+        qs_to_delete.update(is_deleted=True)
 
     def _save_secondary_taggings(self, af, secondary_tagging):
         # Create secondary tagging widgets (Primary/Section widgets are created using WritableNestedModelSerializer)
