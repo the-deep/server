@@ -196,13 +196,18 @@ class AnalysisPillarType(ClientIdMixin, UserResourceMixin, DjangoObjectType):
             'title',
             'main_statement',
             'information_gap',
-            'filters',
         )
 
     assignee = graphene.Field(UserType, required=True)
     analysis_id = graphene.ID(source='analysis_id', required=True)
     cloned_from = graphene.ID(source='cloned_from_id')
     analyzed_entries_count = graphene.Int(required=True)
+    filters = graphene.List(graphene.NonNull(
+        type('FilterDataType', (graphene.ObjectType,), {
+            'id': graphene.String(),
+            'key': graphene.String(),
+            'unique_id': graphene.String()
+        })))
 
     # XXX: N+1 and No pagination
     statements = graphene.List(graphene.NonNull(AnalyticalStatementType))
