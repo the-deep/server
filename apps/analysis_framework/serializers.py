@@ -656,6 +656,7 @@ class AnalysisFrameworkGqlSerializer(UserResourceSerializer):
         if instance.created_by_id and not instance.members.filter(id=instance.created_by_id).exists():
             owner_role = instance.get_or_create_owner_role()
             instance.add_member(instance.created_by, owner_role)
+
         ProjectChangeManager.log_framework_update(instance.pk, self.context['request'].user)
         self._post_save(instance)
         return instance

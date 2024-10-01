@@ -8,8 +8,14 @@ class JsonExporter:
         self.is_preview = is_preview
         self.data = {}
 
-    def load_exportables(self, exportables):
-        self.exportables = exportables
+    def load_exportables(self, exportables, analysis_framework):
+        # get all widget key name in list
+        widgets_key = Widget.objects.filter(analysis_framework=analysis_framework).values_list(
+            'key',
+            flat=True
+        )
+        # exclude widgets_key which are not in exportables table
+        self.exportables = exportables.filter(widget_key__in=widgets_key)
         self.widget_ids = []
 
         self.data['widgets'] = []
