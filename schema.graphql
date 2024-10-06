@@ -5351,7 +5351,7 @@ type ProjectDetailType {
   leadGroups(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): LeadGroupListType
   emmEntities(name: String, page: Int = 1, ordering: String, pageSize: Int): EmmEntityListType
   leadEmmTriggers(lead: ID, emmKeyword: String, emmRiskFactor: String, count: Int, page: Int = 1, ordering: String, pageSize: Int): LeadEmmTriggerListType
-  leadPreviewAttachments(lead: ID, pageNumber: Int, excludeAttachmentIds: [ID!], createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], type: [LeadPreviewAttachmentTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): LeadPreviewAttachmentListType
+  leadPreviewAttachments(lead: ID, pageNumber: Int, excludeAttachmentIds: [ID!], excludeWithEntries: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], type: [LeadPreviewAttachmentTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): LeadPreviewAttachmentListType
   emmKeywords: [EmmKeyWordType!]
   emmRiskFactors: [EmmKeyRiskFactorType!]
   userSavedLeadFilter: UserSavedLeadFilterType
