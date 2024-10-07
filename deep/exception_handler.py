@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 standard_error_string = (
     'Something unexpected has occured. '
-    'Please contact an admin to fix this issue.'
+    'Please report the issue on https://deephelp.zendesk.com/hc/en-us/requests/new'
 )
 
 
