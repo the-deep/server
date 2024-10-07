@@ -462,6 +462,8 @@ class AnalysisTopicModelSerializer(UserResourceSerializer, serializers.ModelSeri
     def validate_analysis_pillar(self, analysis_pillar):
         if analysis_pillar.analysis.project != self.context['request'].active_project:
             raise serializers.ValidationError('Invalid analysis pillar')
+        if self.context['request'].active_project.is_private:
+            raise serializers.ValidationError('Topic model is not allowed for private projects')
         return analysis_pillar
 
     def validate_additional_filters(self, additional_filters):
@@ -520,6 +522,12 @@ class EntriesCollectionNlpTriggerBaseSerializer(UserResourceSerializer, serializ
 class AnalysisAutomaticSummarySerializer(EntriesCollectionNlpTriggerBaseSerializer):
     trigger_task_func = trigger_automatic_summary
     widget_tags = StringListField()
+
+    def validate(self, data):
+        project = self.context['request'].active_project
+        if project.is_private:
+            raise serializers.ValidationError('Automatic summary is not allowed for private projects')
+        return data
 
     class Meta:
         model = AutomaticSummary
