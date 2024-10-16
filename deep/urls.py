@@ -173,7 +173,8 @@ from deep.views import (
     ProjectPublicVizView,
     PasswordChanged,
     get_frontend_url,
-    graphql_docs
+    graphql_docs,
+    HealthCheckView,
 )
 from organization.views import (
     OrganizationViewSet,
@@ -647,6 +648,8 @@ if settings.DEBUG:
         re_path(r'^ec-email/$', EntryCommentEmail.as_view()),
         re_path(r'^erc-email/$', EntryReviewCommentEmail.as_view()),
         re_path(r'^render-debug/$', RenderChart.as_view()),
+        re_path(r'celery-health/$', HealthCheckView.as_view(), name='celery_health_check'),
+
     ]
 
 handler404 = Api_404View.as_view()
