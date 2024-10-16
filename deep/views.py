@@ -6,6 +6,7 @@ from rest_framework import (
     status,
     response,
 )
+from celery import current_app
 
 from django.core.exceptions import PermissionDenied as DjPermissionDenied
 from django.views.decorators.clickjacking import xframe_options_exempt
@@ -278,3 +279,11 @@ class CustomGraphQLView(FileUploadGraphQLView):
                 extensions['errorCode'] = str(status.HTTP_500_INTERNAL_SERVER_ERROR)
         formatted_error['extensions'] = extensions
         return formatted_error
+
+
+class HealthCheckView(views.APIView):
+    def get(self, request):
+        active_worker = current_app.control.ping()
+        if active_worker:
+            return response.Response({"status": "healthy"}, status=200)
+        return response.Response({"status": "unhealthy"}, status=503)

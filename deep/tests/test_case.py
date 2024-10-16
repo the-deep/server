@@ -7,9 +7,13 @@ from rest_framework import (
 )
 
 import datetime
+from django.urls import reverse
 from django.test import override_settings
 from django.utils import timezone
 from django.conf import settings
+
+from unittest.mock import patch
+
 
 from deep.middleware import _set_current_request as _set_middleware_current_request
 from user.models import User
@@ -354,3 +358,21 @@ class TestCase(test.APITestCase):
 
     def get_aware_datetime_str(self, *args, **kwargs):
         return self.get_datetime_str(self.get_aware_datetime(*args, **kwargs))
+
+
+class HealthCheckViewTests(test.APITestCase):
+    @patch('deep.views.current_app.control.ping')
+    def test_health_check_healthy(self, mock_ping):
+        mock_ping.return_value = [{'celery@worker1': {'ok': 'pong'}}]
+
+        response = self.client.get(reverse('celery_health_check'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {"status": "healthy"})
+
+    @patch('deep.views.current_app.control.ping')
+    def test_health_check_unhealthy(self, mock_ping):
+        mock_ping.return_value = []
+
+        response = self.client.get(reverse('celery_health_check'))
+        self.assertEqual(response.status_code, status.HTTP_503_SERVICE_UNAVAILABLE)
+        self.assertEqual(response.data, {"status": "unhealthy"})
