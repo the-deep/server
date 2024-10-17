@@ -206,7 +206,7 @@ class AnalysisPillarType(ClientIdMixin, UserResourceMixin, DjangoObjectType):
         type('FilterDataType', (graphene.ObjectType,), {
             'id': graphene.String(),
             'key': graphene.String(),
-            'unique_id': graphene.String()
+            'uniqueId': graphene.String()
         })))
 
     # XXX: N+1 and No pagination

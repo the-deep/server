@@ -333,6 +333,7 @@ class AnalyticalStatementGqlSerializer(
 class AnalysisPillarGqlSerializer(TempClientIdMixin, UserResourceSerializer):
     id = IntegerIDField(required=False)
     statements = AnalyticalStatementGqlSerializer(many=True, source='analyticalstatement_set', required=False)
+    analysis = serializers.PrimaryKeyRelatedField(queryset=Analysis.objects.all(), required=False)
 
     class Meta:
         model = AnalysisPillar
@@ -445,6 +446,7 @@ class AnalysisGqlSerializer(UserResourceSerializer, ProjectPropertySerializerMix
             "title": pillar_data.get('title'),
             "assignee": pillar_data.get('assignee').id,
             "analysis": instance.id,
+            "filters": pillar_data.get('filters'),
         }
         pillar_id = pillar_data.get('id', None)
         if pillar_id:

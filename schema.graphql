@@ -340,7 +340,7 @@ input AnalysisPillarGqlInputType {
   informationGap: String
   filters: GenericScalar
   assignee: ID!
-  analysis: ID!
+  analysis: ID
   clonedFrom: ID
   statements: [AnalyticalStatementGqlInputType!]
   clientId: String
