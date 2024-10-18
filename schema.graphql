@@ -3739,6 +3739,12 @@ type DeleteAnalysis {
   result: AnalysisType
 }
 
+type DeleteAnalysisPillar {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisPillarType
+}
+
 type DeleteAnalysisPillarDiscardedEntry {
   errors: [GenericScalar!]
   ok: Boolean
@@ -5500,6 +5506,7 @@ type ProjectMutationType {
   updateAssessmentRegistry(data: AssessmentRegistryCreateInputType!, id: ID!): UpdateAssessmentRegistry
   deleteAssessmentRegistry(id: ID!): DeleteAssessmentRegistry
   analysisPillarUpdate(data: AnalysisPillarUpdateInputType!, id: ID!): UpdateAnalysisPillar
+  analysisPillarDelete(id: ID!): DeleteAnalysisPillar
   discardedEntryCreate(data: DiscardedEntryCreateInputType!): CreateAnalysisPillarDiscardedEntry
   discardedEntryUpdate(data: DiscardedEntryUpdateInputType!, id: ID!): UpdateAnalysisPillarDiscardedEntry
   discardedEntryDelete(id: ID!): DeleteAnalysisPillarDiscardedEntry

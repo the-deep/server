@@ -307,9 +307,17 @@ class DeleteAnalysis(AnalysisMutationMixin, PsDeleteMutation):
     result = graphene.Field(AnalysisType)
 
 
+class DeleteAnalysisPillar(AnalysisPillarMutationMixin, PsDeleteMutation):
+    class Arguments:
+        id = graphene.ID(required=True)
+    model = AnalysisPillar
+    result = graphene.Field(AnalysisPillarType)
+
+
 class Mutation():
     # Analysis Pillar
     analysis_pillar_update = UpdateAnalysisPillar.Field()
+    analysis_pillar_delete = DeleteAnalysisPillar.Field()
     # Discarded Entry
     discarded_entry_create = CreateAnalysisPillarDiscardedEntry.Field()
     discarded_entry_update = UpdateAnalysisPillarDiscardedEntry.Field()
