@@ -349,6 +349,9 @@ class AnalysisPillar(UserResource):
                 analyzed_entries=models.F('dragged_entries') + models.F('discarded_entries'),
             )
 
+    def can_delete(self, user):
+        return self.can_modify(user)
+
 
 class DiscardedEntry(models.Model):
     """

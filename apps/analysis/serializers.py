@@ -331,11 +331,14 @@ class AnalyticalStatementGqlSerializer(
 
 
 class AnalysisPillarGqlSerializer(TempClientIdMixin, UserResourceSerializer):
+    id = IntegerIDField(required=False)
     statements = AnalyticalStatementGqlSerializer(many=True, source='analyticalstatement_set', required=False)
+    analysis = serializers.PrimaryKeyRelatedField(queryset=Analysis.objects.all(), required=False)
 
     class Meta:
         model = AnalysisPillar
         fields = (
+            'id',
             'title',
             'main_statement',
             'information_gap',
@@ -409,21 +412,18 @@ class DiscardedEntryGqlSerializer(serializers.ModelSerializer):
         return data
 
 
-class AnalysisGqlSerializer(UserResourceSerializer):
-    id = IntegerIDField(required=False)
+class AnalysisGqlSerializer(UserResourceSerializer, ProjectPropertySerializerMixin):
     analysis_pillar = AnalysisPillarGqlSerializer(many=True, source='analysispillar_set', required=False)
     start_date = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = Analysis
         fields = (
-            'id',
             'title',
             'team_lead',
-            'project',
             'start_date',
             'end_date',
-            'cloned_from',
+            'analysis_pillar',
         )
 
     def validate_project(self, project):
@@ -432,6 +432,7 @@ class AnalysisGqlSerializer(UserResourceSerializer):
         return project
 
     def validate(self, data):
+        data['project'] = self.project
         start_date = data.get('start_date')
         end_date = data.get('end_date')
         if start_date and start_date > end_date:
@@ -439,6 +440,44 @@ class AnalysisGqlSerializer(UserResourceSerializer):
                 {'end_date': 'End date must occur after start date'}
             )
         return data
+
+    def create_or_update_pillar(self, pillar_data, instance):
+        data = {
+            "title": pillar_data.get('title'),
+            "assignee": pillar_data.get('assignee').id,
+            "analysis": instance.id,
+            "filters": pillar_data.get('filters'),
+        }
+        pillar_id = pillar_data.get('id', None)
+        if pillar_id:
+            data["id"] = pillar_id
+            analysis_pillar = get_object_or_404(AnalysisPillar, pk=pillar_id)
+            analysis_pillar_serializer = AnalysisPillarGqlSerializer(
+                analysis_pillar,
+                data=data,
+                context=self.context
+            )
+        else:
+            analysis_pillar_serializer = AnalysisPillarGqlSerializer(data=data, context=self.context)
+
+        return analysis_pillar_serializer
+
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            if 'analysispillar_set' in validated_data:
+                pillars = validated_data.pop('analysispillar_set')
+                errors = {}
+                for pillar in pillars:
+                    analysis_pillar_serializer = self.create_or_update_pillar(pillar, instance)
+                    if analysis_pillar_serializer.is_valid():
+                        analysis_pillar_serializer.save()
+                    else:
+                        errors[pillar.get('id', 'new')] = analysis_pillar_serializer.errors
+
+                if errors:
+                    raise serializers.ValidationError(errors)
+
+        return super().update(instance, validated_data)
 
 
 AnalysisCloneGqlSerializer = AnalysisCloneInputSerializer
