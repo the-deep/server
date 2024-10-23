@@ -111,6 +111,7 @@ class AdminLevelSerializer(RemoveNullFieldsMixin,
         admin_level.save()
 
         region = admin_level.region
+        region.status = Region.Status.INITIATED
         region.modified_by = self.context['request'].user
         region.save()
 

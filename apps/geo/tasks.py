@@ -181,26 +181,31 @@ def _load_geo_areas(region_id):
     Basically, it  starts with root admin level and iterate through all the
     children.
     """
+    region = Region.objects.get(pk=region_id)
+    try:
+        with reversion.create_revision():
+            if AdminLevel.objects.filter(region=region).count() == 0:
+                return True
 
-    with reversion.create_revision():
-        region = Region.objects.get(pk=region_id)
+            parent_admin_levels = AdminLevel.objects.filter(
+                region=region, parent=None
+            )
+            completed_levels = []
+            _extract_from_admin_levels(
+                parent_admin_levels,
+                None,
+                completed_levels,
+            )
 
-        if AdminLevel.objects.filter(region=region).count() == 0:
-            return True
+            region.calc_cache()
+            region.status = Region.Status.COMPLETED
+            region.save()
+        return True
 
-        parent_admin_levels = AdminLevel.objects.filter(
-            region=region, parent=None
-        )
-        completed_levels = []
-        _extract_from_admin_levels(
-            parent_admin_levels,
-            None,
-            completed_levels,
-        )
-
-        region.calc_cache()
-
-    return True
+    except Exception:
+        logger.error('Load Geo Areas', exc_info=True)
+        region.status = Region.Status.FAILED
+        region.save()
 
 
 @shared_task
