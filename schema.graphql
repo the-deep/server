@@ -5124,6 +5124,7 @@ type Mutation {
   publishRegion(id: ID!): PublishRegion
   updateAdminLevel(data: AdminLevelInputType!, id: ID!): UpdateAdminLevel
   deleteAdminLevel(adminLevelId: ID!): DeleteAdminLevel
+  retriggerRegion(regionId: ID!): ReTriggeredFailedRegion
   organizationCreate(data: OrganizationInputType!): OrganizationCreate
   createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType!): AssessmentRegistryCreateIssue
   fileUpload(data: FileUploadInputType!): UploadFile
@@ -5970,6 +5971,12 @@ type QuestionType {
   subSectorDisplay: EnumDescription
 }
 
+type ReTriggeredFailedRegion {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: RegionType
+}
+
 type RecentActivityType {
   id: ID!
   createdAt: DateTime
@@ -6004,6 +6011,7 @@ type RegionDetailType {
   mediaSources: GenericScalar
   centroid: PointScalar
   clientId: ID!
+  status: RegionStatusEnum
   adminLevels: [AdminLevelType!]!
 }
 
@@ -6043,6 +6051,13 @@ input RegionProjectFilterData {
   isTest: Boolean
 }
 
+enum RegionStatusEnum {
+  INITIATED
+  PENDING
+  COMPLETED
+  FAILED
+}
+
 type RegionType {
   id: ID!
   title: String!
@@ -6053,6 +6068,7 @@ type RegionType {
   populationData: GenericScalar
   mediaSources: GenericScalar
   centroid: PointScalar
+  status: RegionStatusEnum
   clientId: ID!
 }
 

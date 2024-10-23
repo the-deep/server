@@ -1,3 +1,4 @@
+from geo.tasks import load_geo_areas
 import graphene
 
 from geo.models import Region, AdminLevel
@@ -134,6 +135,44 @@ class PublishRegion(graphene.Mutation):
         return PublishRegion(result=instance, errors=None, ok=True)
 
 
+class ReTriggeredFailedRegion(graphene.Mutation):
+    class Arguments:
+        region_id = graphene.ID(required=True)
+    model = Region
+    errors = graphene.List(graphene.NonNull(CustomErrorType))
+    ok = graphene.Boolean()
+    result = graphene.Field(RegionType)
+
+    @staticmethod
+    def mutate(root, info, region_id):
+        instance = Region.objects.filter(
+            id=region_id
+        ).first()
+        error_data = []
+        if instance is None:
+            error_data.append('Region does\'t exist')
+        elif instance.status == Region.Status.COMPLETED:
+            error_data.append('Geo Area already generated')
+        elif instance.created_by != info.context.user:
+            error_data.append('Authorized User only update region')
+        elif instance.is_published:
+            error_data.append("Published Region cannot be retiggered")
+
+        if error_data:
+            return ReTriggeredFailedRegion(errors=[
+                dict(
+                    field='nonFieldErrors',
+                    messages=error_data
+                )
+            ], ok=False)
+        load_geo_areas(region_id)
+        return ReTriggeredFailedRegion(
+            result=instance,
+            error=None,
+            ok=True
+        )
+
+
 class Mutation():
     create_region = CreateRegion.Field()
     update_region = UpdateRegion.Field()
@@ -141,3 +180,4 @@ class Mutation():
     publish_region = PublishRegion.Field()
     update_admin_level = UpdateAdminLevel.Field()
     delete_admin_level = DeleteAdminLevel.Field()
+    retrigger_region = ReTriggeredFailedRegion.Field()

@@ -14,6 +14,11 @@ from gallery.models import File
 
 
 class Region(UserResource):
+    class Status(models.IntegerChoices):
+        INITIATED = 0, 'Initiated'
+        PENDING = 1, 'Pending'
+        COMPLETED = 2, 'Completed'
+        FAILED = 3, 'Failed'
     """
     Region model
 
@@ -35,6 +40,7 @@ class Region(UserResource):
     cache_index = models.SmallIntegerField(default=0)  # Used to track cache update.
     centroid = models.PointField(blank=True, null=True)  # Admin level 0 centroid
     geo_options = models.JSONField(default=None, blank=True, null=True)
+    status = models.PositiveSmallIntegerField(choices=Status.choices, default=Status.PENDING)
 
     def __init__(self, *args, **kwargs):
         self.id: Union[int, None]
