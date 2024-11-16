@@ -2,11 +2,12 @@
 
 .venv
 .vscode/
+.idea/
 # dependencies
 /node_modules
 vendor/
 src/public/
-
+/media/
 celery-worker.state
 
 # testing

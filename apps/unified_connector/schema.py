@@ -32,6 +32,7 @@ from .enums import (
 
 
 def get_unified_connector_qs(info):
+
     qs = UnifiedConnector.objects.filter(project=info.context.active_project)
     if PP.check_permission(info, PP.Permission.VIEW_UNIFIED_CONNECTOR):
         return qs
@@ -72,11 +73,20 @@ class ConnectorLeadType(DjangoObjectType):
         )
 
     @staticmethod
+    def resolve_url(root, info, **_):
+        print('the root title is', root.url.split('amazonaws.com/')[-1])
+        pdf_url = root.url.split('amazonaws.com/')[-1]
+        csv_url = pdf_url.replace('pdf', 'csv')
+        return {"pdf": get_presigned_url(pdf_url), "csv":get_presigned_url(csv_url)} if root.source.title=="KoboToolbox" else root.url
+
+    @staticmethod
     def resolve_source(root, info, **_):
+
         return root.source_id and info.context.dl.unified_connector.connector_lead_source.load(root.source_id)
 
     @staticmethod
     def resolve_authors(root, info, **_):
+
         return info.context.dl.unified_connector.connector_lead_authors.load(root.pk)
 
 
@@ -92,6 +102,7 @@ class ConnectorSourceLeadType(DjangoObjectType):
             'already_added',
         )
 
+
     @staticmethod
     def get_custom_queryset(queryset, info, **_):
         return get_connector_source_lead_qs(info)
@@ -105,6 +116,7 @@ class ConnectorSourceLeadListType(CustomDjangoListObjectType):
     class Meta:
         model = ConnectorSourceLead
         filterset_class = ConnectorSourceLeadGQFilterSet
+
 
 
 class ConnectorSourceStatsType(graphene.ObjectType):
@@ -143,14 +155,17 @@ class ConnectorSourceType(UserResourceMixin, ClientIdMixin, DjangoObjectType):
 
     @staticmethod
     def get_custom_queryset(queryset, info, **_):
+
         return get_connector_source_qs(info)
 
     @staticmethod
     def resolve_stats(root, info, **_):
+
         return (root.stats or {}).get('published_dates') or []
 
     @staticmethod
     def resolve_leads_count(root, info, **_):
+
         return info.context.dl.unified_connector.connector_source_leads_count.load(root.pk)
 
 
@@ -240,7 +255,8 @@ class UnifiedConnectorQueryType(graphene.ObjectType):
 
     @staticmethod
     def resolve_connector_source_leads(root, info, **kwargs) -> QuerySet:
-        return get_connector_source_lead_qs(info)
+        qs = get_connector_source_lead_qs(info)
+        return qs
 
 
 class RssFieldType(graphene.ObjectType):
@@ -264,3 +280,20 @@ class Query:
     @staticmethod
     def resolve_atom_feed_fields(root, info, url):
         return AtomFeed().query_fields({"feed-url": url})
+
+def get_presigned_url(object_key, expiration=3600):
+	import boto3
+	from botocore.exceptions import NoCredentialsError, PartialCredentialsError
+	from deep import settings
+	s3_client = boto3.client('s3', region_name=settings.AWS_S3_REGION_NAME,
+	                         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+	                         aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY, )
+	try:
+		return s3_client.generate_presigned_url(
+			'get_object',
+			Params={'Bucket': settings.AWS_STORAGE_BUCKET_NAME, 'Key': object_key},
+			ExpiresIn=expiration
+		)
+	except (NoCredentialsError, PartialCredentialsError) as e:
+		print(f"Error generating presigned URL: {e}")
+		return None

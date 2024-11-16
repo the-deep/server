@@ -22,7 +22,6 @@ class EMM(RssFeed):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Sets up conf
         self.has_emm_entities = False
         self.has_emm_triggers = False
         self.initialize()
@@ -92,6 +91,7 @@ class EMM(RssFeed):
         return real_fields
 
     def get_content(self, url, params):
+
         resp = requests.get(url)
         return resp.content
 

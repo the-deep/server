@@ -581,6 +581,7 @@ class LeadExtractionHandler(BaseHandler):
             'request_type': NlpRequestType.USER if high_priority else NlpRequestType.SYSTEM,
         }
         response_content = None
+        print('the extraction endpoint is ', DeeplServiceEndpoint.DOCS_EXTRACTOR_ENDPOINT)
         try:
             response = requests.post(
                 DeeplServiceEndpoint.DOCS_EXTRACTOR_ENDPOINT,
@@ -610,6 +611,7 @@ class LeadExtractionHandler(BaseHandler):
             return True
         # Get the lead to be extracted
         url_to_extract = None
+        print('is lead url', lead.url, "is lead attachment", lead.attachment)
         if lead.attachment:
             url_to_extract = generate_file_url_for_legacy_deepl_server(lead.attachment)
         elif lead.url:

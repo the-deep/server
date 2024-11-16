@@ -413,6 +413,8 @@ GALLERY_FILE_EXPIRE = 60 * 60 * 24 * 2
 
 if env('DJANGO_USE_S3'):
     # AWS S3 Bucket Credentials
+    AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
+    AWS_S3_REGION_NAME = env('AWS_S3_REGION_NAME')
     AWS_STORAGE_BUCKET_NAME_STATIC = env('AWS_STORAGE_BUCKET_NAME_STATIC')
     AWS_STORAGE_BUCKET_NAME_MEDIA = env('AWS_STORAGE_BUCKET_NAME_MEDIA')
     # If environment variable are not provided, then EC2 Role will be used.
@@ -434,7 +436,7 @@ if env('DJANGO_USE_S3'):
     AWS_S3_FILE_OVERWRITE = False
     AWS_DEFAULT_ACL = 'private'
     AWS_QUERYSTRING_AUTH = True
-    AWS_S3_CUSTOM_DOMAIN = None
+    AWS_S3_CUSTOM_DOMAIN =  None
     AWS_QUERYSTRING_EXPIRE = GALLERY_FILE_EXPIRE
     AWS_S3_SIGNATURE_VERSION = 's3v4'
     AWS_IS_GZIPPED = True
@@ -452,6 +454,7 @@ if env('DJANGO_USE_S3'):
     MEDIAFILES_LOCATION = 'media'
     MEDIA_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, MEDIAFILES_LOCATION)
     DEFAULT_FILE_STORAGE = 'deep.s3_storages.MediaStorage'
+
 else:
     STATIC_URL = '/static/'
     STATIC_ROOT = '/static'
