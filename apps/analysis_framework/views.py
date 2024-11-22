@@ -3,31 +3,26 @@ from datetime import timedelta
 import django_filters
 from django.db import models
 from rest_framework import (
-    exceptions,
     permissions,
     response,
     status,
     filters,
-    views,
     viewsets,
 )
 from rest_framework.decorators import action
 from deep.permissions import ModifyPermission
 from deep.paginations import SmallSizeSetPagination
 
-from project.models import Project
 from entry.models import Entry
 from .models import (
     AnalysisFramework, Widget, Filter, Exportable,
     AnalysisFrameworkMembership,
-    AnalysisFrameworkRole,
 )
 from .serializers import (
     AnalysisFrameworkSerializer,
     WidgetSerializer,
     FilterSerializer, ExportableSerializer,
     AnalysisFrameworkMembershipSerializer,
-    AnalysisFrameworkRoleSerializer,
 )
 from .filter_set import AnalysisFrameworkFilterSet
 from .permissions import FrameworkMembershipModifyPermission
@@ -85,57 +80,6 @@ class AnalysisFrameworkViewSet(viewsets.ModelViewSet):
         return self.get_paginated_response(serializer.data)
 
 
-class AnalysisFrameworkCloneView(views.APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, af_id, version=None):
-        if not AnalysisFramework.objects.filter(
-            id=af_id
-        ).exists():
-            raise exceptions.NotFound()
-
-        analysis_framework = AnalysisFramework.objects.get(
-            id=af_id
-        )
-        if not analysis_framework.can_clone(request.user):
-            raise exceptions.PermissionDenied()
-
-        cloned_title = request.data.get('title')
-        if not cloned_title:
-            raise exceptions.ValidationError({
-                'title': 'Title should be present',
-            })
-
-        new_af = analysis_framework.clone(
-            request.user,
-            title=cloned_title,
-            description=request.data.get('description'),
-        )
-        # Set the requesting user as owner member, don't create other memberships of old framework
-        new_af.add_member(request.user, new_af.get_or_create_owner_role())
-
-        serializer = AnalysisFrameworkSerializer(
-            new_af,
-            context={'request': request},
-        )
-
-        project = request.data.get('project')
-        if project:
-            project = Project.objects.get(id=project)
-            if not project.can_modify(request.user):
-                raise exceptions.ValidationError({
-                    'project': 'Invalid project',
-                })
-            project.analysis_framework = new_af
-            project.modified_by = request.user
-            project.save()
-
-        return response.Response(
-            serializer.data,
-            status=status.HTTP_201_CREATED,
-        )
-
-
 class WidgetViewSet(viewsets.ModelViewSet):
     serializer_class = WidgetSerializer
     permission_classes = [permissions.IsAuthenticated,
@@ -185,25 +129,3 @@ class AnalysisFrameworkMembershipViewSet(viewsets.ModelViewSet):
 
         self.perform_destroy(instance)
         return response.Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class PrivateAnalysisFrameworkRoleViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = AnalysisFrameworkRoleSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return AnalysisFrameworkRole.objects.filter(is_private_role=True)
-
-
-class PublicAnalysisFrameworkRoleViewSet(viewsets.ReadOnlyModelViewSet):
-    serializer_class = AnalysisFrameworkRoleSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        no_default_role = self.request.query_params.get('is_default_role', 'true') == 'false'
-        extra = {} if not no_default_role else {'is_default_role': False}
-
-        return AnalysisFrameworkRole.objects.filter(
-            is_private_role=False,
-            **extra,
-        )

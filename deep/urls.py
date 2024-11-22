@@ -54,15 +54,11 @@ from project.views import (
     ProjectMembershipViewSet,
     ProjectUserGroupViewSet,
     ProjectOptionsView,
-    ProjectRoleViewSet,
     ProjectViewSet,
-    ProjectStatViewSet,
     accept_project_confirm,
 )
 from geo.views import (
-    AdminLevelViewSet,
     RegionCloneView,
-    RegionViewSet,
     GeoAreasLoadTriggerView,
     GeoJsonView,
     GeoBoundsView,
@@ -79,8 +75,6 @@ from questionnaire.views import (
 from lead.views import (
     LeadGroupViewSet,
     LeadViewSet,
-    LeadBulkDeleteViewSet,
-    LeadPreviewViewSet,
     LeadOptionsView,
     LeadExtractionTriggerView,
     LeadWebsiteFetch,
@@ -114,10 +108,7 @@ from quality_assurance.views import (
     EntryReviewCommentViewSet,
 )
 from analysis_framework.views import (
-    AnalysisFrameworkCloneView,
     AnalysisFrameworkViewSet,
-    PrivateAnalysisFrameworkRoleViewSet,
-    PublicAnalysisFrameworkRoleViewSet,
     AnalysisFrameworkMembershipViewSet,
     ExportableViewSet,
     FilterViewSet,
@@ -175,10 +166,6 @@ from deep.views import (
     get_frontend_url,
     graphql_docs
 )
-from organization.views import (
-    OrganizationViewSet,
-    OrganizationTypeViewSet,
-)
 from lang.views import (
     LanguageViewSet,
 )
@@ -188,7 +175,6 @@ from client_page_meta.views import (
 
 from notification.views import (
     NotificationViewSet,
-    AssignmentViewSet
 )
 
 from jwt_auth.views import (
@@ -198,11 +184,6 @@ from jwt_auth.views import (
 )
 from commons.views import (
     RenderChart,
-)
-
-from django.conf.urls import (
-    handler404
-    # handler403, handler400, handler500
 )
 
 
@@ -258,20 +239,12 @@ router.register(r'group-memberships', GroupMembershipViewSet,
 # Project routers
 router.register(r'projects', ProjectViewSet,
                 basename='project')
-router.register(r'projects-stat', ProjectStatViewSet,
-                basename='project-stat')
-router.register(r'project-roles', ProjectRoleViewSet,
-                basename='project_role')
 router.register(r'projects/(?P<project_id>\d+)/project-memberships', ProjectMembershipViewSet,
                 basename='project_membership')
 router.register(r'projects/(?P<project_id>\d+)/project-usergroups', ProjectUserGroupViewSet,
                 basename='project_usergroup')
 
 # Geo routers
-router.register(r'regions', RegionViewSet,
-                basename='region')
-router.register(r'admin-levels', AdminLevelViewSet,
-                basename='admin_level')
 router.register(r'projects/(?P<project_id>\d+)/geo-area', GeoAreaView,
                 basename='geo_area')
 
@@ -280,10 +253,6 @@ router.register(r'lead-groups', LeadGroupViewSet,
                 basename='lead_group')
 router.register(r'leads', LeadViewSet,
                 basename='lead')
-router.register(r'project/(?P<project_id>\d+)/leads', LeadBulkDeleteViewSet,
-                basename='leads-bulk')
-router.register(r'lead-previews', LeadPreviewViewSet,
-                basename='lead_preview')
 
 # Questionnaire routers
 router.register(r'questionnaires/(?P<questionnaire_id>\d+)/questions',
@@ -337,11 +306,6 @@ router.register(r'analysis-framework-exportables', ExportableViewSet,
                 basename='analysis_framework_exportable')
 router.register(r'framework-memberships', AnalysisFrameworkMembershipViewSet,
                 basename='framework_memberships')
-router.register(r'private-framework-roles', PrivateAnalysisFrameworkRoleViewSet,
-                basename='framework_roles')
-router.register(r'public-framework-roles', PublicAnalysisFrameworkRoleViewSet,
-                basename='framework_roles')
-
 # Assessment registry
 router.register(r'assessments', AssessmentViewSet,
                 basename='assessment')
@@ -369,19 +333,12 @@ router.register(r'connector-users', ConnectorUserViewSet,
 router.register(r'connector-projects', ConnectorProjectViewSet,
                 basename='connector_projects')
 
-# Organization routers
-router.register(r'organizations', OrganizationViewSet, basename='organization')
-router.register(r'organization-types', OrganizationTypeViewSet, basename='organization-type')
-
 # Export routers
 router.register(r'exports', ExportViewSet, basename='export')
 
 # Notification routers
 router.register(r'notifications',
                 NotificationViewSet, basename='notification')
-router.register(r'assignments',
-                AssignmentViewSet, basename='assignments')
-
 # Language routers
 router.register(r'languages', LanguageViewSet, basename='language')
 
@@ -553,8 +510,6 @@ urlpatterns = [
     # Clone apis
     re_path(get_api_path(r'clone-region/(?P<region_id>\d+)/$'),
             RegionCloneView.as_view()),
-    re_path(get_api_path(r'clone-analysis-framework/(?P<af_id>\d+)/$'),
-            AnalysisFrameworkCloneView.as_view()),
     re_path(get_api_path(r'clone-category-editor/(?P<ce_id>\d+)/$'),
             CategoryEditorCloneView.as_view()),
 

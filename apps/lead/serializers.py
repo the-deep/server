@@ -304,29 +304,6 @@ class LeadPreviewAttachmentSerializer(
         fields = ('id', 'file',)
 
 
-class LeadPreviewSerializer(RemoveNullFieldsMixin,
-                            DynamicFieldsMixin, serializers.ModelSerializer):
-    """
-    Serializer for lead preview
-    """
-
-    text = serializers.CharField(source='leadpreview.text_extract',
-                                 read_only=True)
-    images = LeadPreviewAttachmentSerializer(many=True, read_only=True)
-    classified_doc_id = serializers.IntegerField(
-        source='leadpreview.classified_doc_id',
-        read_only=True,
-    )
-    preview_id = serializers.IntegerField(
-        source='leadpreview.pk',
-        read_only=True,
-    )
-
-    class Meta:
-        model = Lead
-        fields = ('id', 'preview_id', 'text', 'images', 'classified_doc_id')
-
-
 class LeadGroupSerializer(RemoveNullFieldsMixin,
                           DynamicFieldsMixin, UserResourceSerializer):
     leads = LeadSerializer(source='lead_set',

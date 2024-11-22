@@ -41,66 +41,6 @@ class TestAnalysisFrameworkRoles(TestCase):
             key='text-widget-002',
         )
 
-    def test_get_private_roles(self):
-        url = '/api/v1/private-framework-roles/'
-        self.authenticate()
-        response = self.client.get(url)
-        self.assert_200(response)
-
-        data = response.data
-        for role in data['results']:
-            assert role['is_private_role'] is True, "Must be a private role"
-
-    def test_get_public_roles_all(self):
-        url = '/api/v1/public-framework-roles/'
-        self.authenticate()
-        response = self.client.get(url)
-        self.assert_200(response)
-
-        data = response.data
-        for role in data['results']:
-            assert role['is_private_role'] is not True, "Must be a public role"
-
-        assert any(x['is_default_role'] for x in data['results']), "A default role should be present"
-
-    def test_get_public_roles_no_default(self):
-        url = '/api/v1/public-framework-roles/?is_default_role=false'
-        self.authenticate()
-        response = self.client.get(url)
-        self.assert_200(response)
-
-        data = response.data
-        for role in data['results']:
-            assert role['is_private_role'] is not True, "Must be a public role"
-
-        print([x['is_default_role'] for x in data['results']])
-        assert not any(x['is_default_role'] for x in data['results']), "No default role should be present"
-
-    def test_owner_role(self):
-        self.private_framework.add_member(
-            self.user,
-            self.private_framework.get_or_create_owner_role()
-        )
-        self.public_framework.add_member(
-            self.user,
-            self.public_framework.get_or_create_owner_role()
-        )
-        # CLONING THE FRAMEWORK
-        response = self._clone_framework_test(self.private_framework)
-        self.assert_403(response)
-
-        response = self._clone_framework_test(self.public_framework)
-        self.assert_201(response)
-
-        # EDITING THE FRAMEWORK OWNED
-        self._edit_framework_test(self.private_framework, self.user, 200)
-        self._edit_framework_test(self.public_framework, self.user, 200)
-
-        # Can use the framework in other projects
-
-        self._add_user_test(self.public_framework, self.user, 201)
-        self._add_user_test(self.private_framework, self.user, 201)
-
     def test_patch_membership(self):
         self.private_framework.add_member(
             self.user,
@@ -135,47 +75,6 @@ class TestAnalysisFrameworkRoles(TestCase):
         resp = self.client.get(url)
 
         self.assert_200(resp)
-
-    def test_editor_role(self):
-        editor_user = self.create(User)
-        self.private_framework.add_member(
-            editor_user,
-            self.private_framework.get_or_create_editor_role()
-        )
-        self.public_framework.add_member(
-            editor_user,
-            self.public_framework.get_or_create_editor_role()
-        )
-
-        # CLONING  FRAMEWORK
-        response = self._clone_framework_test(self.private_framework, editor_user)
-        self.assert_403(response)
-
-        # EDITING FRAMEWORK
-        self._edit_framework_test(self.private_framework, editor_user, status=200)
-        self._edit_framework_test(self.public_framework, editor_user, status=200)
-
-        # ADDING USER and ASSIGNING ROLES
-        self._add_user_test(self.public_framework, editor_user, 403)
-        self._add_user_test(self.private_framework, editor_user, 403)
-
-    def test_no_role(self):
-        normal_user = self.create(User)
-        # CLONING  FRAMEWORK
-        # private framework
-        response = self._clone_framework_test(self.private_framework, normal_user)
-        self.assert_403(response)
-        # public framework
-        response = self._clone_framework_test(self.public_framework, normal_user)
-        self.assert_201(response)
-
-        # EDITING FRAMEWORK
-        self._edit_framework_test(self.public_framework, normal_user, status=403)
-        self._edit_framework_test(self.private_framework, normal_user, status=404)
-
-        # ADDING USER and ASSIGNING ROLES
-        self._add_user_test(self.public_framework, normal_user, 403)
-        self._add_user_test(self.private_framework, normal_user, 404)
 
     def test_add_user_with_public_role_to_private_framework(self):
         private_framework = self.create(AnalysisFramework, is_private=True)
@@ -285,12 +184,6 @@ class TestAnalysisFrameworkRoles(TestCase):
         url = f'/api/v1/analysis-frameworks/{framework.id}/'
         response = self.client.put(url, edit_data)
         self.assertEqual(response.status_code, status)
-
-    def _clone_framework_test(self, framework, user=None):
-        clone_url = f'/api/v1/clone-analysis-framework/{framework.id}/'
-        self.authenticate(user)
-        data = {'title': 'Cloned'}
-        return self.client.post(clone_url, data=data)
 
     def _add_user_test(self, framework, user, status=201, role=None):
         add_user_url = '/api/v1/framework-memberships/'

@@ -49,7 +49,6 @@ from organization.serializers import (
     SimpleOrganizationSerializer
 )
 
-from .permissions import PROJECT_PERMISSIONS
 from .activity import project_activity_log
 
 
@@ -64,55 +63,6 @@ class ProjectNotificationSerializer(RemoveNullFieldsMixin, serializers.ModelSeri
     class Meta:
         model = Project
         fields = ('id', 'title')
-
-
-class ProjectRoleSerializer(RemoveNullFieldsMixin,
-                            DynamicFieldsMixin,
-                            serializers.ModelSerializer):
-    lead_permissions = serializers.SerializerMethodField()
-    entry_permissions = serializers.SerializerMethodField()
-    setup_permissions = serializers.SerializerMethodField()
-    export_permissions = serializers.SerializerMethodField()
-    assessment_permissions = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ProjectRole
-        fields = '__all__'
-
-    def get_lead_permissions(self, roleobj):
-        return [
-            k
-            for k, v in PROJECT_PERMISSIONS['lead'].items()
-            if roleobj.lead_permissions & v != 0
-        ]
-
-    def get_entry_permissions(self, roleobj):
-        return [
-            k
-            for k, v in PROJECT_PERMISSIONS['entry'].items()
-            if roleobj.entry_permissions & v != 0
-        ]
-
-    def get_setup_permissions(self, roleobj):
-        return [
-            k
-            for k, v in PROJECT_PERMISSIONS['setup'].items()
-            if roleobj.setup_permissions & v != 0
-        ]
-
-    def get_export_permissions(self, roleobj):
-        return [
-            k
-            for k, v in PROJECT_PERMISSIONS['export'].items()
-            if roleobj.export_permissions & v != 0
-        ]
-
-    def get_assessment_permissions(self, roleobj):
-        return [
-            k
-            for k, v in PROJECT_PERMISSIONS['assessment'].items()
-            if roleobj.assessment_permissions & v != 0
-        ]
 
 
 class SimpleProjectRoleSerializer(RemoveNullFieldsMixin,

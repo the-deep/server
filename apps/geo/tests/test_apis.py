@@ -6,64 +6,6 @@ from project.models import Project
 
 
 class RegionTests(TestCase):
-    def test_create_region(self):
-        region_count = Region.objects.count()
-
-        project = self.create(Project, role=self.admin_role)
-        url = '/api/v1/regions/'
-        data = {
-            'code': 'NLP',
-            'title': 'Nepal',
-            'data': {'testfield': 'testfile'},
-            'public': True,
-            'project': project.id,
-        }
-
-        self.authenticate()
-        response = self.client.post(url, data)
-        self.assert_201(response)
-
-        self.assertEqual(Region.objects.count(), region_count + 1)
-        self.assertEqual(response.data['code'], data['code'])
-        self.assertIn(Region.objects.get(id=response.data['id']),
-                      project.regions.all())
-
-    def test_region_published_status(self):
-        """
-        Once published is set to True for region don't allow it to modify
-        """
-        project = self.create(Project, role=self.admin_role)
-        region = self.create(Region, is_published=True)
-        project.regions.add(region)
-
-        data = {
-            'is_published': False
-        }
-        url = f'/api/v1/regions/{region.id}/'
-        self.authenticate()
-        response = self.client.patch(url, data)
-        self.assert_403(response)
-
-    def test_publish_region(self):
-        user = self.create_user()
-        user1 = self.create_user()
-        project = self.create(Project, role=self.admin_role)
-        region = self.create(Region, created_by=user)
-        project.regions.add(region)
-
-        url = f'/api/v1/regions/{region.id}/publish/'
-        data = {}
-
-        # authenticated with user that has not created region
-        self.authenticate(user1)
-        response = self.client.post(url, data)
-        self.assert_400(response)
-
-        self.authenticate(user)
-        response = self.client.post(url, data)
-        self.assert_200(response)
-        self.assertEqual(response.data['is_published'], True)
-
     def test_clone_region(self):
         project = self.create(Project, role=self.admin_role)
         region = self.create(Region)
@@ -85,35 +27,6 @@ class RegionTests(TestCase):
         new_region = Region.objects.get(id=response.data['id'])
         self.assertTrue(new_region in project.regions.all())
 
-    def test_region_filter_not_in_project(self):
-        project_1 = self.create(Project, role=self.admin_role)
-        project_2 = self.create(Project, role=self.admin_role)
-        region_1 = self.create(Region)
-        region_2 = self.create(Region)
-        region_3 = self.create(Region)
-        project_1.regions.add(region_1)
-        project_1.regions.add(region_2)
-        project_2.regions.add(region_3)
-
-        # filter regions in project
-        url = f'/api/v1/regions/?project={project_1.id}'
-        self.authenticate()
-        response = self.client.get(url)
-        self.assert_200(response)
-        self.assertEqual(len(response.data['results']), 2)
-        self.assertEqual(
-            set(rg['id'] for rg in response.data['results']),
-            set([region_1.id, region_2.id])
-        )
-
-        # filter the region that are not in project
-        url = f'/api/v1/regions/?exclude_project={project_1.id}'
-        self.authenticate()
-        response = self.client.get(url)
-        self.assert_200(response)
-        self.assertEqual(len(response.data['results']), 1)
-        self.assertEqual(response.data['results'][0]['id'], region_3.id)
-
     def test_trigger_api(self):
         region = self.create(Region)
         url = '/api/v1/geo-areas-load-trigger/{}/'.format(region.id)
@@ -121,29 +34,6 @@ class RegionTests(TestCase):
         self.authenticate()
         response = self.client.get(url)
         self.assert_200(response)
-
-
-class AdminLevelTests(TestCase):
-    def test_create_admin_level(self):
-        admin_level_count = AdminLevel.objects.count()
-
-        region = self.create(Region)
-        url = '/api/v1/admin-levels/'
-        data = {
-            'region': region.pk,
-            'title': 'test',
-            'name_prop': 'test',
-            'pcode_prop': 'test',
-            'parent_name_prop': 'test',
-            'parent_pcode_prop': 'test',
-        }
-
-        self.authenticate()
-        response = self.client.post(url, data)
-        self.assert_201(response)
-
-        self.assertEqual(AdminLevel.objects.count(), admin_level_count + 1)
-        self.assertEqual(response.data['title'], data['title'])
 
 
 class GeoOptionsApi(TestCase):
