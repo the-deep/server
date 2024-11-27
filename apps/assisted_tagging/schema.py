@@ -7,6 +7,7 @@ from assisted_tagging.filters import DraftEntryFilterSet
 from utils.graphene.enums import EnumDescription
 from user_resource.schema import UserResourceMixin
 from deep.permissions import ProjectPermissions as PP
+from graphene.types.generic import GenericScalar
 
 from geo.schema import (
     ProjectGeoAreaType,
@@ -20,6 +21,7 @@ from .models import (
     AssistedTaggingModelVersion,
     AssistedTaggingModelPredictionTag,
     AssistedTaggingPrediction,
+    LLMAssistedTaggingPredication,
     MissingPredictionReview,
     WrongPredictionReview,
 )
@@ -145,6 +147,22 @@ class AssistedTaggingPredictionType(DjangoObjectType):
     '''
 
 
+class LLMAssistedTaggingPredictionType(DjangoObjectType):
+    model_version = graphene.ID(source='model_version_id', required=True)
+    draft_entry = graphene.ID(source='draft_entry_id', required=True)
+    model_tags = GenericScalar()
+
+    class Meta:
+        model = LLMAssistedTaggingPredication
+        only_fields = (
+            'id',
+            'model_tags'
+        )
+    '''
+    NOTE: model_version_deepl_model_id and wrong_prediction_review are not included here because they are not used in client
+    '''
+
+
 class MissingPredictionReviewType(UserResourceMixin, DjangoObjectType):
     category = graphene.ID(source='category_id', required=True)
     tag = graphene.ID(source='tag_id', required=True)
@@ -160,9 +178,7 @@ class MissingPredictionReviewType(UserResourceMixin, DjangoObjectType):
 class DraftEntryType(DjangoObjectType):
     prediction_status = graphene.Field(DraftEntryPredictionStatusEnum, required=True)
     prediction_status_display = EnumDescription(source='get_prediction_status_display', required=True)
-    prediction_tags = graphene.List(
-        graphene.NonNull(AssistedTaggingPredictionType)
-    )
+    tags = graphene.Field(LLMAssistedTaggingPredictionType)
     geo_areas = graphene.List(
         graphene.NonNull(ProjectGeoAreaType)
     )
@@ -186,6 +202,10 @@ class DraftEntryType(DjangoObjectType):
     @staticmethod
     def resolve_geo_areas(root, info, **_):
         return info.context.dl.geo.draft_entry_geo_area.load(root.pk)
+
+    @staticmethod
+    def resolve_tags(root, info, **_):
+        return info.context.dl.assisted_tagging.llm_draft_entry_predications.load(root.pk)
 
 
 class DraftEntryListType(CustomDjangoListObjectType):

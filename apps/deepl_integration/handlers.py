@@ -27,6 +27,7 @@ from assisted_tagging.models import (
     AssistedTaggingModelVersion,
     AssistedTaggingModelPredictionTag,
     AssistedTaggingPrediction,
+    LLMAssistedTaggingPredication,
 )
 from unified_connector.models import (
     ConnectorLead,
@@ -1128,3 +1129,269 @@ class AnalyticalStatementGeoHandler(NewNlpServerBaseHandler):
         else:
             geo_task.status = AnalyticalStatementGeoTask.Status.FAILED
         geo_task.save(update_fields=('status',))
+
+
+class LlmAssistedTaggingDraftEntryHandler(BaseHandler):
+    model = DraftEntry
+    callback_url_name = 'llm-assisted_tagging_draft_entry_prediction_callback'
+
+    @classmethod
+    def send_trigger_request_to_extractor(cls, draft_entry):
+        source_organization = draft_entry.lead.source
+        author_organizations = [
+            author.data.title
+            for author in draft_entry.lead.authors.all()
+        ]
+        payload = {
+            'entries': [
+                {
+                    'client_id': cls.get_client_id(draft_entry),
+                    'entry': draft_entry.excerpt,
+                }
+            ],
+
+            'project_id': draft_entry.project_id,
+            'af_id': draft_entry.project.analysis_framework.id,
+            'publishing_organization': source_organization and source_organization.data.title,
+            'authoring_organization': author_organizations,
+            'callback_url': cls.get_callback_url(),
+        }
+        response_content = None
+        try:
+            response = requests.post(
+                DeeplServiceEndpoint.LLM_ASSISTED_TAGGING_ENTRY_PREDICT_ENDPOINT,
+                headers=cls.REQUEST_HEADERS,
+                json=payload
+            )
+            response_content = response.content
+            if response.status_code == 202:
+                return True
+        except Exception:
+            logger.error('Assisted tagging send failed, Exception occurred!!', exc_info=True)
+            draft_entry.prediction_status = DraftEntry.PredictionStatus.SEND_FAILED
+            draft_entry.save(update_fields=('prediction_status',))
+        logger.error(
+            'Assisted tagging send failed!!',
+            extra={
+                'data': {
+                    'payload': payload,
+                    'response': response_content,
+                },
+            },
+        )
+
+    # --- Callback logics
+    @staticmethod
+    def _get_or_create_models_version(models_data):
+        def get_versions_map():
+            return {
+                (model_version.model.model_id, model_version.version): model_version
+                for model_version in AssistedTaggingModelVersion.objects.filter(
+                    reduce(
+                        lambda acc, item: acc | item,
+                        [
+                            models.Q(
+                                model__model_id=model_data['id'],
+                                version=model_data['version'],
+                            )
+                            for model_data in models_data
+                        ],
+                    )
+                ).select_related('model').all()
+            }
+
+        existing_model_versions = get_versions_map()
+        new_model_versions = [
+            model_data
+            for model_data in models_data
+            if (model_data['id'], model_data['version']) not in existing_model_versions
+        ]
+
+        if new_model_versions:
+            AssistedTaggingModelVersion.objects.bulk_create([
+                AssistedTaggingModelVersion(
+                    model=AssistedTaggingModel.objects.get_or_create(
+                        model_id=model_data['id'],
+                        defaults=dict(
+                            name=model_data['id'],
+                        ),
+                    )[0],
+                    version=model_data['version'],
+                )
+                for model_data in models_data
+            ])
+            existing_model_versions = get_versions_map()
+        return existing_model_versions
+
+    @classmethod
+    def _process_model_preds(cls, model_version, draft_entry, model_prediction):
+        LLMAssistedTaggingPredication.objects.create(
+            model_tags=model_prediction['model_tags'],
+            draft_entry=draft_entry,
+            model_version=model_version
+        )
+
+    @classmethod
+    def save_data(cls, draft_entry, data):
+        model_preds = data
+        models_version_map = cls._get_or_create_models_version(
+            [
+                model_preds['model_info']
+            ]
+        )
+        with transaction.atomic():
+            draft_entry.clear_data()  # Clear old data if exists
+            draft_entry.calculated_at = timezone.now()
+            model_version = models_version_map[(model_preds['model_info']['id'], model_preds['model_info']['version'])]
+            cls._process_model_preds(model_version, draft_entry, model_preds)
+            draft_entry.prediction_status = DraftEntry.PredictionStatus.DONE
+            draft_entry.save_geo_data()
+            draft_entry.save()
+        return draft_entry
+
+
+class LLMAutoAssistedTaggingDraftEntryHandler(BaseHandler):
+    model = Lead
+    callback_url_name = 'auto-llm-assisted_tagging_draft_entry_prediction_callback'
+
+    @classmethod
+    def auto_trigger_request_to_extractor(cls, lead):
+        lead_preview = LeadPreview.objects.get(lead=lead)
+        payload = {
+            "documents": [
+                {
+                    "client_id": cls.get_client_id(lead),
+                    "text_extraction_id": str(lead_preview.text_extraction_id),
+                }
+            ],
+            'project_id': lead.project_id,
+            'af_id': lead.project.analysis_framework_id,
+            "callback_url": cls.get_callback_url()
+        }
+        response_content = None
+        try:
+            response = requests.post(
+                url=DeeplServiceEndpoint.LLM_ENTRY_EXTRACTION_CLASSIFICATION,
+                headers=cls.REQUEST_HEADERS,
+                json=payload
+            )
+            response_content = response.content
+            if response.status_code == 202:
+                lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.PENDING
+                lead.save(update_fields=('auto_entry_extraction_status',))
+                return True
+
+        except Exception:
+            logger.error('Entry Extraction send failed, Exception occurred!!', exc_info=True)
+            lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.FAILED
+            lead.save(update_fields=('auto_entry_extraction_status',))
+        logger.error(
+            'Entry Extraction send failed!!',
+            extra={
+                'data': {
+                    'payload': payload,
+                    'response': response_content,
+                },
+            },
+        )
+
+    # --- Callback logics
+    @staticmethod
+    def _get_or_create_models_version(models_data):
+        def get_versions_map():
+            return {
+                (model_version.model.model_id, model_version.version): model_version
+                for model_version in AssistedTaggingModelVersion.objects.filter(
+                    reduce(
+                        lambda acc, item: acc | item,
+                        [
+                            models.Q(
+                                model__model_id=model_data['name'],
+                                version=model_data['version'],
+                            )
+                            for model_data in models_data
+                        ],
+                    )
+                ).select_related('model').all()
+            }
+
+        existing_model_versions = get_versions_map()
+        new_model_versions = [
+            model_data
+            for model_data in models_data
+            if (model_data['name'], model_data['version']) not in existing_model_versions
+        ]
+
+        if new_model_versions:
+            AssistedTaggingModelVersion.objects.bulk_create([
+                AssistedTaggingModelVersion(
+                    model=AssistedTaggingModel.objects.get_or_create(
+                        model_id=model_data['name'],
+                        defaults=dict(
+                            name=model_data['name'],
+                        ),
+                    )[0],
+                    version=model_data['version'],
+                )
+                for model_data in models_data
+            ])
+            existing_model_versions = get_versions_map()
+        return existing_model_versions
+
+    @classmethod
+    def _process_model_preds(cls, model_version, draft_entry, model_prediction):
+        prediction_status = model_prediction['prediction_status']
+        if not prediction_status:  # If False  no tags are provided
+            return
+
+        tags = model_prediction.get('classification', {})  # NLP TagId
+
+        common_attrs = dict(
+            model_version=model_version,
+            draft_entry_id=draft_entry.id,
+        )
+        LLMAssistedTaggingPredication.objects.create(
+            **common_attrs,
+            model_tags=tags
+        )
+        # draft_entry.prediction_status = DraftEntry.PredictionStatus.DONE
+        # draft_entry.save(update_fields='prediction_status')
+
+    @classmethod
+    @transaction.atomic
+    def save_data(cls, lead, data_url):
+        # NOTE: Schema defined here
+        # - https://docs.google.com/document/d/1NmjOO5sOrhJU6b4QXJBrGAVk57_NW87mLJ9wzeY_NZI/edit#heading=h.t3u7vdbps5pt
+        data = RequestHelper(url=data_url, ignore_error=True).json()
+        draft_entry_qs = DraftEntry.objects.filter(lead=lead, type=DraftEntry.Type.AUTO)
+        if draft_entry_qs.exists():
+            raise serializers.ValidationError('Draft entries already exit')
+        for model_preds in data['blocks']:
+            if not model_preds['relevant']:
+                continue
+            models_version_map = cls._get_or_create_models_version([
+                data['classification_model_info']
+            ])
+            draft = DraftEntry.objects.create(
+                page=model_preds['page'],
+                text_order=model_preds['textOrder'],
+                project=lead.project,
+                lead=lead,
+                excerpt=model_preds['text'],
+                prediction_status=DraftEntry.PredictionStatus.STARTED,
+                type=DraftEntry.Type.AUTO
+            )
+            if model_preds['geolocations']:
+                geo_areas_qs = GeoAreaGqlFilterSet(
+                    data={'titles': [geo['entity'] for geo in model_preds['geolocations']]},
+                    queryset=GeoArea.get_for_project(lead.project)
+                ).qs.distinct('title')
+                draft.related_geoareas.set(geo_areas_qs)
+
+            model_version = models_version_map[
+                (data['classification_model_info']['name'], data['classification_model_info']['version'])
+            ]
+            cls._process_model_preds(model_version, draft, model_preds)
+        lead.auto_entry_extraction_status = Lead.AutoExtractionStatus.SUCCESS
+        lead.save(update_fields=('auto_entry_extraction_status',))
+        return lead

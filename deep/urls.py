@@ -150,7 +150,9 @@ from export.views import (
 )
 from deepl_integration.views import (
     AssistedTaggingDraftEntryPredictionCallbackView,
+    LlmAssistedTaggingDraftEntryPredictionCallbackView,
     AutoTaggingDraftEntryPredictionCallbackView,
+    AutoLLMTaggingDraftEntryPredictionCallbackView,
     LeadExtractCallbackView,
     UnifiedConnectorLeadExtractCallbackView,
     AnalysisTopicModelCallbackView,
@@ -578,6 +580,18 @@ urlpatterns = [
         get_api_path(r'callback/auto-assisted-tagging-draft-entry-prediction/$'),
         AutoTaggingDraftEntryPredictionCallbackView.as_view(),
         name='auto-assisted_tagging_draft_entry_prediction_callback',
+    ),
+
+    re_path(
+        get_api_path(r'callback/llm-assisted-tagging-draft-entry-prediction/$'),
+        LlmAssistedTaggingDraftEntryPredictionCallbackView.as_view(),
+        name='llm-assisted_tagging_draft_entry_prediction_callback',
+    ),
+
+    re_path(
+        get_api_path(r'callback/auto-llm-assisted-tagging-draft-entry-prediction/$'),
+        AutoLLMTaggingDraftEntryPredictionCallbackView.as_view(),
+        name='auto-llm-assisted_tagging_draft_entry_prediction_callback',
     ),
 
     re_path(

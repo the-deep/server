@@ -3238,20 +3238,6 @@ enum AssistedTaggingPredictionDataTypeEnum {
   TAG
 }
 
-type AssistedTaggingPredictionType {
-  id: ID!
-  value: String!
-  prediction: Decimal
-  threshold: Decimal
-  isSelected: Boolean!
-  modelVersion: ID!
-  draftEntry: ID!
-  dataType: AssistedTaggingPredictionDataTypeEnum!
-  dataTypeDisplay: EnumDescription!
-  category: ID
-  tag: ID
-}
-
 type AssistedTaggingQueryType {
   draftEntry(id: ID!): DraftEntryType
   draftEntries(lead: ID, draftEntryTypes: [DraftEntryTypeEnum!], ignoreIds: [ID!], isDiscarded: Boolean, page: Int = 1, pageSize: Int): DraftEntryListType
@@ -3725,8 +3711,6 @@ type DateCountType {
 
 scalar DateTime
 
-scalar Decimal
-
 type DeleteAdminLevel {
   errors: [GenericScalar!]
   ok: Boolean
@@ -3907,7 +3891,7 @@ type DraftEntryType {
   predictionReceivedAt: DateTime
   predictionStatus: DraftEntryPredictionStatusEnum!
   predictionStatusDisplay: EnumDescription!
-  predictionTags: [AssistedTaggingPredictionType!]
+  tags: LLMAssistedTaggingPredictionType
   geoAreas: [ProjectGeoAreaType!]
 }
 
@@ -4626,6 +4610,13 @@ input HIDLoginInputType {
 type JwtTokenType {
   accessToken: String
   expiresIn: String
+}
+
+type LLMAssistedTaggingPredictionType {
+  id: ID!
+  modelTags: GenericScalar
+  modelVersion: ID!
+  draftEntry: ID!
 }
 
 enum LeadAutoEntryExtractionTypeEnum {
