@@ -959,3 +959,27 @@ class BulkProjectPinnedSerializer(TempClientIdMixin, UserResourceSerializer):
 
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
+
+
+class UserProjectLeaveSerializer(ProjectPropertySerializerMixin, serializers.Serializer):
+
+    def validate(self, data):
+        membership = ProjectMembership.objects.filter(
+            project=self.project,
+        )
+        if membership.count() == 1:
+            raise serializers.ValidationError('Last member of project can\'t leave')
+
+        owner_memberships = membership.filter(role=ProjectRole.get_owner_role())
+        if (
+            owner_memberships.count() == 1 and
+            owner_memberships.filter(member=self.current_user)
+        ):
+            raise serializers.ValidationError('Last owner of project can\'t leave')
+        return data
+
+    def create(self, data):
+        ProjectJoinRequest.objects.filter(project=self.project, requested_by=self.current_user).delete()
+        ProjectPinned.objects.filter(project=self.project, user=self.current_user).delete()
+        ProjectMembership.objects.filter(project=self.project, member=self.current_user).delete()
+        return data
