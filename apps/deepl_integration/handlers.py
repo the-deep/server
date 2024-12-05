@@ -1354,8 +1354,6 @@ class LLMAutoAssistedTaggingDraftEntryHandler(BaseHandler):
             **common_attrs,
             model_tags=tags
         )
-        # draft_entry.prediction_status = DraftEntry.PredictionStatus.DONE
-        # draft_entry.save(update_fields='prediction_status')
 
     @classmethod
     @transaction.atomic
