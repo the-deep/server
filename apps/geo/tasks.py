@@ -210,13 +210,19 @@ def load_geo_areas(region_id):
     have_lock = lock.acquire(blocking=False)
     if not have_lock:
         return False
-
+    region = Region.objects.filter(id=region_id).first()
+    if not region:
+        logger.error("Region not found", exc_info=True)
+        return False
     try:
         return_value = _load_geo_areas(region_id)
+        region.status = Region.Status.COMPLETED
     except Exception:
         logger.error('Load Geo Areas', exc_info=True)
         return_value = False
+        region.status = Region.Status.FAILED
 
+    region.save()
     lock.release()
     return return_value
 
