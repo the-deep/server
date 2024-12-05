@@ -11,6 +11,7 @@ from django.test import override_settings
 from django.utils import timezone
 from django.conf import settings
 
+
 from deep.middleware import _set_current_request as _set_middleware_current_request
 from user.models import User
 from project.models import ProjectRole, Project

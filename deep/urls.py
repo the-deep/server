@@ -173,7 +173,7 @@ from deep.views import (
     ProjectPublicVizView,
     PasswordChanged,
     get_frontend_url,
-    graphql_docs
+    graphql_docs,
 )
 from organization.views import (
     OrganizationViewSet,
@@ -619,6 +619,8 @@ urlpatterns = [
             name="favicon"),
 
     re_path('ses-bounce/?$', ses_bounce_handler_view, name='ses_bounce'),
+    re_path(r'health-check/', include('health_check.urls')),
+
 ] + [
     # graphql patterns
     re_path('^graphql/?$', csrf_exempt(CustomGraphQLView.as_view())),

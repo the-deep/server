@@ -72,6 +72,7 @@ django-environ = "^0.8.1"
 uwsgi = "*"
 django-admin-autocomplete-filter = "^0.7.1"
 aws-sns-message-validator = "0.0.5 "
+django-health-check = "^3.18.3"
 
 # Thumbnail
 # Shapely = "==1.7.1"
