@@ -4980,6 +4980,12 @@ type LeadsFilterDataType {
   duplicatesOf: ID
 }
 
+type LeaveProject {
+  ok: Boolean
+  result: ProjectType
+  errors: [GenericScalar!]
+}
+
 type Login {
   result: UserMeType
   errors: [GenericScalar!]
@@ -5552,6 +5558,7 @@ type ProjectMutationType {
   projectVizConfigurationUpdate(data: ProjectVizConfigurationInputType!): UpdateProjectVizConfiguration
   unifiedConnector: UnifiedConnectorMutationType
   assistedTagging: AssistedTaggingMutationType
+  leaveProject: LeaveProject
 }
 
 enum ProjectOrderingEnum {

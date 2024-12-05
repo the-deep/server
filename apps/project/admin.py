@@ -24,9 +24,8 @@ from .models import (
     ProjectJoinRequest,
     ProjectOrganization,
     ProjectChangeLog,
-    ProjectPinned
+    ProjectPinned,
 )
-
 TRIGGER_LIMIT = 5
 
 
@@ -221,7 +220,20 @@ class ProjectMembershipAdmin(admin.ModelAdmin):
     list_filter = (
         AutocompleteFilterFactory('Project', 'project'),
     )
-    list_display = ['project', 'member']
+    list_display = ['project', 'member', 'role', 'added_by']
+
+    def get_readonly_fields(self, request, obj=None):
+        # editing an existing object
+        if obj:
+            return self.readonly_fields + ('project', )
+        return self.readonly_fields
+
+
+@admin.register(ProjectJoinRequest)
+class ProjectJoinAdmin(admin.ModelAdmin):
+    search_fields = ['project__title']
+    autocomplete_fields = ('requested_by', 'responded_by', 'project')
+    list_display = ['project', 'requested_by', 'responded_by', 'status']
 
     def get_readonly_fields(self, request, obj=None):
         # editing an existing object
