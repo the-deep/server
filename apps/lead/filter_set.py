@@ -556,6 +556,9 @@ class LeadGroupGQFilterSet(UserResourceGqlFilterSet):
 class LeadPreviewAttachmentGQFilterSet(UserResourceGqlFilterSet):
     type = MultipleInputFilter(LeadPreviewAttachmentTypeEnum, field_name='type')
     exclude_attachment_ids = IDListFilter(method='filter_exclude_lead_attachment_ids')
+    exclude_leadattachment_created_entries = django_filters.BooleanFilter(
+        method='filter_exclude_leadattachment_created_entries'
+    )
 
     class Meta:
         model = LeadPreviewAttachment
@@ -563,11 +566,18 @@ class LeadPreviewAttachmentGQFilterSet(UserResourceGqlFilterSet):
             'lead',
             'page_number',
             'exclude_attachment_ids',
+            'exclude_leadattachment_created_entries'
         ]
 
     def filter_exclude_lead_attachment_ids(self, qs, _, value):
         if value:
             qs = qs.exclude(id__in=value)
+            return qs
+        return qs
+
+    def filter_exclude_leadattachment_created_entries(self, qs, _, value):
+        if value:
+            qs = qs.exclude(lead__entry__isnull=value)
             return qs
         return qs
 
