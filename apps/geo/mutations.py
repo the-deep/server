@@ -101,13 +101,6 @@ class DeleteAdminLevel(DeleteMutation):
             ], ok=False)
         admin_level.delete()
         # check boundsfile is empty or not in Region
-        region = admin_level.region
-        if region.adminlevel_set.filter(bounds_file__isnull=True).count() == 0:
-            region.status = Region.Status.COMPLETED
-            region.save(update_fields=['status'])
-            return DeleteAdminLevel(errors=None, ok=True)
-        region.status = Region.Status.FAILED
-        region.save(update_fields=['status'])
         return DeleteAdminLevel(errors=None, ok=True)
 
 
