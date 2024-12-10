@@ -189,6 +189,18 @@ class AssistedTaggingPrediction(models.Model):
         return str(self.id)
 
 
+class LLMAssistedTaggingPredication(models.Model):
+    model_version = models.ForeignKey(AssistedTaggingModelVersion, on_delete=models.CASCADE, related_name='+')
+    draft_entry = models.ForeignKey(DraftEntry, on_delete=models.CASCADE, related_name='llmpredictions')
+    value = models.CharField(max_length=255, blank=True)
+    model_tags = models.JSONField(null=True, blank=True)
+
+    id: int
+
+    def __str__(self):
+        return str(self.id)
+
+
 class WrongPredictionReview(UserResource):
     prediction = models.ForeignKey(
         AssistedTaggingPrediction,

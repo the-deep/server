@@ -223,8 +223,9 @@ class AdminLevelGqlSerializer(UserResourceSerializer, TempClientIdMixin):
             validated_data,
         )
         region = admin_level.region
+        region.status = Region.Status.INITIATED
         region.modified_by = self.context['request'].user
-        region.save(update_fields=('modified_by', 'modified_at',))
+        region.save(update_fields=('modified_by', 'modified_at', 'status'))
 
         transaction.on_commit(lambda: load_geo_areas.delay(region.id))
 

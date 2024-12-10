@@ -2,8 +2,15 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib import admin
 
-from assisted_tagging.models import AssistedTaggingModelPredictionTag, AssistedTaggingPrediction, DraftEntry
+from assisted_tagging.models import (
+    AssistedTaggingModelPredictionTag,
+    AssistedTaggingPrediction,
+    DraftEntry,
+    LLMAssistedTaggingPredication
+)
 from deep.admin import VersionAdmin
+
+admin.site.register(LLMAssistedTaggingPredication)
 
 
 @admin.register(DraftEntry)

@@ -100,6 +100,7 @@ class DeleteAdminLevel(DeleteMutation):
                 )
             ], ok=False)
         admin_level.delete()
+        # check boundsfile is empty or not in Region
         return DeleteAdminLevel(errors=None, ok=True)
 
 

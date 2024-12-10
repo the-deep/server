@@ -19,3 +19,5 @@ class DeeplServiceEndpoint():
     ANALYSIS_GEO = f'{DEEPL_SERVER_DOMAIN}/api/v1/geolocation/'
     ASSISTED_TAGGING_ENTRY_PREDICT_ENDPOINT = f'{DEEPL_SERVER_DOMAIN}/api/v1/entry-classification/'
     ENTRY_EXTRACTION_CLASSIFICATION = f'{DEEPL_SERVER_DOMAIN}/api/v1/entry-extraction-classification/'
+    LLM_ASSISTED_TAGGING_ENTRY_PREDICT_ENDPOINT = f'{DEEPL_SERVER_DOMAIN}/api/v1/entry-classification-llm/'
+    LLM_ENTRY_EXTRACTION_CLASSIFICATION = f'{DEEPL_SERVER_DOMAIN}/api/v1/entry-extraction-classification-llm/'

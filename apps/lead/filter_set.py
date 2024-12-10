@@ -18,7 +18,7 @@ from utils.graphene.filters import (
 from project.models import Project
 from organization.models import OrganizationType
 from user.models import User
-from entry.models import Entry
+from entry.models import Entry, EntryAttachment
 from entry.filter_set import EntryGQFilterSet, EntriesFilterDataInputType, EntriesFilterDataType
 from user_resource.filters import UserResourceGqlFilterSet
 
@@ -577,7 +577,18 @@ class LeadPreviewAttachmentGQFilterSet(UserResourceGqlFilterSet):
 
     def filter_exclude_leadattachment_created_entries(self, qs, _, value):
         if value:
-            qs = qs.exclude(lead__entry__isnull=value)
+            ids = qs.values_list('id', flat=True)
+
+            entry_attachment_qs = EntryAttachment.objects.filter(
+                lead_attachment__in=ids,
+                lead_attachment__lead__project=self.request.active_project
+            ).values_list('lead_attachment__id', flat=True).distinct()
+
+            entry_qs = Entry.objects.filter(
+                project=self.request.active_project,
+                entry_attachment__in=entry_attachment_qs
+            ).values_list('entry_attachment__id', flat=True).distinct()
+            qs = qs.exclude(id__in=entry_qs)
             return qs
         return qs
 
