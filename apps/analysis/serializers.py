@@ -479,7 +479,37 @@ class AnalysisGqlSerializer(UserResourceSerializer, ProjectPropertySerializerMix
         return super().update(instance, validated_data)
 
 
-AnalysisCloneGqlSerializer = AnalysisCloneInputSerializer
+class AnalysisCloneGqlSerializer(serializers.Serializer):
+    analysis_id = IntegerIDField()
+    title = serializers.CharField(required=True, write_only=True)
+    start_date = serializers.DateField(write_only=True, required=False, allow_null=True)
+    end_date = serializers.DateField(required=True, write_only=True)
+
+    def validate(self, data):
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        if start_date and start_date > end_date:
+            raise serializers.ValidationError(
+                {'end_date': 'End date must occur after start date'}
+            )
+        return data
+
+    def validate_analysis_id(self, analysis_id):
+        analysis = Analysis.objects.filter(
+            project=self.context['request'].active_project,
+            pk=analysis_id
+        ).first()
+        if analysis is None:
+            raise serializers.ValidationError("Analysis does not exists")
+        return analysis
+
+    def create(self, validated_data):
+        title = validated_data['title']
+        end_date = validated_data['end_date']
+        # NOTE validated_data['analysis_id'] is an object of analysis
+        analysis = validated_data['analysis_id']
+        analysis.clone_analysis(title, end_date)
+        return analysis
 
 
 class AnalysisTopicModelSerializer(UserResourceSerializer, serializers.ModelSerializer):

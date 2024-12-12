@@ -71,6 +71,19 @@ type AnalysisAutomaticSummaryType {
   status: AutomaticSummaryStatusEnum!
 }
 
+type AnalysisClone {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisType
+}
+
+input AnalysisCloneInputType {
+  analysisId: ID!
+  title: String!
+  startDate: Date
+  endDate: Date!
+}
+
 input AnalysisFrameworkCloneInputType {
   afId: ID!
   title: String!
@@ -5521,6 +5534,7 @@ type ProjectMutationType {
   analysisCreate(data: AnalysisInputType!): CreateAnalysis
   analysisUpdate(data: AnalysisInputType!, id: ID!): UpdateAnalysis
   analysisDelete(id: ID!): DeleteAnalysis
+  analysisClone(data: AnalysisCloneInputType!): AnalysisClone
   exportCreate(data: ExportCreateInputType!): CreateUserExport
   exportUpdate(data: ExportUpdateInputType!, id: ID!): UpdateUserExport
   exportCancel(id: ID!): CancelUserExport
