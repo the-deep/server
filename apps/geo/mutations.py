@@ -100,7 +100,6 @@ class DeleteAdminLevel(DeleteMutation):
                 )
             ], ok=False)
         admin_level.delete()
-        # check boundsfile is empty or not in Region
         return DeleteAdminLevel(errors=None, ok=True)
 
 
@@ -169,7 +168,7 @@ class ReTriggeredFailedRegion(graphene.Mutation):
         load_geo_areas(region_id)
         return ReTriggeredFailedRegion(
             result=instance,
-            error=None,
+            errors=None,
             ok=True
         )
 
