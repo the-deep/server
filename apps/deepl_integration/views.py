@@ -8,7 +8,6 @@ from rest_framework import (
 )
 
 from .serializers import (
-    AssistedTaggingDraftEntryPredictionCallbackSerializer,
     AutoLLMAssistedTaggingDraftEntryCallbackSerializer,
     LlmAssistedTaggingDraftEntryPredictionCallbackSerializer,
     LeadExtractCallbackSerializer,
@@ -17,7 +16,6 @@ from .serializers import (
     AnalysisAutomaticSummaryCallbackSerializer,
     AnalyticalStatementNGramCallbackSerializer,
     AnalyticalStatementGeoCallbackSerializer,
-    AutoAssistedTaggingDraftEntryCallbackSerializer,
 )
 
 
@@ -32,16 +30,8 @@ class BaseCallbackView(views.APIView):
         return response.Response("Request successfully completed", status=status.HTTP_200_OK)
 
 
-class AssistedTaggingDraftEntryPredictionCallbackView(BaseCallbackView):
-    serializer = AssistedTaggingDraftEntryPredictionCallbackSerializer
-
-
 class LlmAssistedTaggingDraftEntryPredictionCallbackView(BaseCallbackView):
     serializer = LlmAssistedTaggingDraftEntryPredictionCallbackSerializer
-
-
-class AutoTaggingDraftEntryPredictionCallbackView(BaseCallbackView):
-    serializer = AutoAssistedTaggingDraftEntryCallbackSerializer
 
 
 class AutoLLMTaggingDraftEntryPredictionCallbackView(BaseCallbackView):

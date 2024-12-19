@@ -6,7 +6,6 @@ from django.db import transaction, models
 
 from deepl_integration.handlers import (
     BaseHandler,
-    AssistedTaggingDraftEntryHandler,
     LeadExtractionHandler,
     LlmAssistedTaggingDraftEntryHandler,
     UnifiedConnectorLeadHandler,
@@ -14,13 +13,11 @@ from deepl_integration.handlers import (
     AnalysisAutomaticSummaryHandler,
     AnalyticalStatementNGramHandler,
     AnalyticalStatementGeoHandler,
-    AutoAssistedTaggingDraftEntryHandler,
     LLMAutoAssistedTaggingDraftEntryHandler,
 )
 
 from deduplication.tasks.indexing import index_lead_and_calculate_duplicates
 from assisted_tagging.models import (
-    AssistedTaggingPrediction,
     DraftEntry,
 )
 from unified_connector.models import ConnectorLead
@@ -190,79 +187,6 @@ class UnifiedConnectorLeadExtractCallbackSerializer(DeeplServerBaseCallbackSeria
         return connector_lead
 
 
-# --- AssistedTagging
-class AssistedTaggingModelPredictionCallbackSerializer(serializers.Serializer):
-
-    class ModelPredictionCallbackSerializerTagValue(serializers.Serializer):
-        prediction = serializers.DecimalField(
-            # From apps/assisted_tagging/models.py::AssistedTaggingPrediction::prediction
-            max_digits=AssistedTaggingPrediction.prediction.field.max_digits,
-            decimal_places=AssistedTaggingPrediction.prediction.field.decimal_places,
-            required=False,
-        )
-        threshold = serializers.DecimalField(
-            # From apps/assisted_tagging/models.py::AssistedTaggingPrediction::threshold
-            max_digits=AssistedTaggingPrediction.threshold.field.max_digits,
-            decimal_places=AssistedTaggingPrediction.threshold.field.decimal_places,
-            required=False,
-        )
-        is_selected = serializers.BooleanField()
-
-    # model_info = ModelInfoCallbackSerializer() removed from the DEEPL TODO Use different api for model information
-    values = serializers.ListSerializer(
-        child=serializers.CharField(),
-        required=False,
-    )
-    tags = serializers.DictField(
-        child=serializers.DictField(
-            child=ModelPredictionCallbackSerializerTagValue(),
-        ),
-        required=False,
-    )
-
-
-class AutoAssistedTaggingModelPredicationCallBackSerializer(serializers.Serializer):
-    class ModelPredictionCallbackSerializerTagValue(serializers.Serializer):
-        predication = serializers.DecimalField(
-            max_digits=AssistedTaggingPrediction.prediction.field.max_digits,
-            decimal_places=AssistedTaggingPrediction.prediction.field.decimal_places,
-            required=False,
-        )
-        threshold = serializers.DecimalField(
-            # From apps/assisted_tagging/models.py::AssistedTaggingPrediction::threshold
-            max_digits=AssistedTaggingPrediction.threshold.field.max_digits,
-            decimal_places=AssistedTaggingPrediction.threshold.field.decimal_places,
-            required=False,
-        )
-        is_selected = serializers.BooleanField()
-    values = serializers.ListSerializer(
-        child=serializers.CharField(),
-        required=False,
-    )
-    tags = serializers.DictField(
-        child=serializers.DictField(
-            child=ModelPredictionCallbackSerializerTagValue(),
-        ),
-        required=False,
-    )
-
-
-class AssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializer):
-    model_tags = serializers.DictField(child=serializers.DictField())
-    prediction_status = serializers.BooleanField()
-    model_info = serializers.DictField()
-    nlp_handler = AssistedTaggingDraftEntryHandler
-
-    def create(self, validated_data):
-        draft_entry = validated_data['object']
-        if draft_entry.prediction_status == DraftEntry.PredictionStatus.DONE:
-            return draft_entry
-        return self.nlp_handler.save_data(
-            draft_entry,
-            validated_data,
-        )
-
-
 class LlmAssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializer):
     model_tags = serializers.DictField(child=serializers.DictField())
     prediction_status = serializers.BooleanField()
@@ -276,30 +200,6 @@ class LlmAssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSeria
         return self.nlp_handler.save_data(
             draft_entry,
             validated_data,
-        )
-
-
-class AutoAssistedBlockPredicationCallbackSerializer(serializers.Serializer):
-    page = serializers.IntegerField()
-    textOrder = serializers.IntegerField()
-    text = serializers.CharField()
-    relevant = serializers.BooleanField()
-    prediction_status = serializers.BooleanField()
-    classification = serializers.DictField(child=serializers.DictField())
-    geolocations = serializers.DictField(child=serializers.DictField())
-
-
-class AutoAssistedTaggingDraftEntryCallbackSerializer(BaseCallbackSerializer):
-    entry_extraction_classification_path = serializers.URLField(required=True)
-    text_extraction_id = serializers.CharField(required=True)
-    status = serializers.IntegerField()
-    nlp_handler = AutoAssistedTaggingDraftEntryHandler
-
-    def create(self, validated_data):
-        obj = validated_data['object']
-        return self.nlp_handler.save_data(
-            obj,
-            validated_data['entry_extraction_classification_path'],
         )
 
 
