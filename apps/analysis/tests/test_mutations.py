@@ -19,9 +19,12 @@ from analysis.factories import (
     AnalysisPillarFactory,
     AnalysisReportFactory,
     AnalysisReportUploadFactory,
+    AnalyticalStatementFactory,
+    DiscardedEntryFactory,
 )
 
 from analysis.models import (
+    DiscardedEntry,
     TopicModel,
     TopicModelCluster,
     AutomaticSummary,
@@ -1732,3 +1735,84 @@ class TestAnalysisPillarMutationSchema(GraphQLTestCase):
         self.assertEqual(analysis_pillar_resp_data['title'], self.update_minput['analysisPillarUpdate']['title'])
         self.assertEqual(analysis_pillar_resp_data['id'], str(self.update_minput['analysisPillarID']))
         self.assertEqual(analysis_pillar_resp_data['analysisId'], str(self.analysis.id))
+
+
+class TestCloneAnalysisMutationSchema(GraphQLTestCase):
+    ANALYSIS_CLONE_MUTATION = '''
+        mutation AnalysisClone($projectId: ID!, $data: AnalysisCloneInputType!) {
+        project(id: $projectId) {
+            analysisClone(data: $data) {
+            ok
+            errors
+            result {
+                id
+                title
+                endDate
+            }
+            __typename
+            }
+            __typename
+        }
+        }
+    '''
+
+    def setUp(self):
+        super().setUp()
+        self.project = ProjectFactory.create()
+        self.member_user = UserFactory.create()
+        self.non_member_user = UserFactory.create()
+        self.readonly_member_user = UserFactory.create()
+        self.project.add_member(self.readonly_member_user, role=self.project_role_reader_non_confidential)
+        af = AnalysisFrameworkFactory.create()
+        project = ProjectFactory.create(analysis_framework=af)
+        lead = LeadFactory.create(project=project)
+        self.project.add_member(self.member_user, role=self.project_role_member)
+        entry = EntryFactory.create(project=project, lead=lead)
+        EntryFactory.create(project=project, lead=lead)
+        self.analysis = AnalysisFactory.create(
+            project=project,
+            team_lead=self.member_user,
+            end_date=datetime.date(2022, 4, 1),
+
+        )
+        pillar = AnalysisPillarFactory.create(analysis=self.analysis, title='title1', assignee=self.member_user)
+        AnalyticalStatementFactory.create(
+            analysis_pillar=pillar,
+            statement='Hello from here',
+            client_id='1',
+        )
+        DiscardedEntryFactory.create(
+            entry=entry,
+            analysis_pillar=pillar,
+            tag=DiscardedEntry.TagType.REDUNDANT
+        )
+
+    def test_clone_analysis(self):
+        def _query_check(**kwargs):
+            return self.query_check(
+                self.ANALYSIS_CLONE_MUTATION,
+                variables=self.minput,
+                **kwargs
+            )
+        self.minput = dict(
+            data=dict(
+                analysisId=self.analysis.id,
+                title='cloned_title',
+                endDate="2022-04-01",
+            ),
+            projectId=self.project.id,
+        )
+        # without login
+        _query_check(assert_for_error=True)
+
+        # With login (non-member)
+        self.force_login(self.non_member_user)
+        _query_check(assert_for_error=True)
+
+        # member user (read-only)
+        self.force_login(self.readonly_member_user)
+        _query_check(assert_for_error=True)
+
+        # member user
+        self.force_login(self.member_user)
+        _query_check(assert_for_error=False)

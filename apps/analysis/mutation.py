@@ -35,6 +35,7 @@ from .schema import (
     AnalysisType,
 )
 from .serializers import (
+    AnalysisCloneGqlSerializer,
     AnalysisPillarGqlSerializer,
     DiscardedEntryGqlSerializer,
     AnalysisTopicModelSerializer,
@@ -111,6 +112,11 @@ AnalysisReportUploadInputType = generate_input_type_for_serializer(
 AnalysisInputType = generate_input_type_for_serializer(
     'AnalysisInputType',
     serializer_class=AnalysisGqlSerializer,
+)
+
+AnalysisCloneInputType = generate_input_type_for_serializer(
+    'AnalysisCloneInputType',
+    serializer_class=AnalysisCloneGqlSerializer
 )
 
 
@@ -314,6 +320,14 @@ class DeleteAnalysisPillar(AnalysisPillarMutationMixin, PsDeleteMutation):
     result = graphene.Field(AnalysisPillarType)
 
 
+class AnalysisClone(AnalysisMutationMixin, PsGrapheneMutation):
+    class Arguments:
+        data = AnalysisCloneInputType(required=True)
+    model = Analysis
+    serializer_class = AnalysisCloneGqlSerializer
+    result = graphene.Field(AnalysisType)
+
+
 class Mutation():
     # Analysis Pillar
     analysis_pillar_update = UpdateAnalysisPillar.Field()
@@ -339,3 +353,6 @@ class Mutation():
     analysis_create = CreateAnalysis.Field()
     analysis_update = UpdateAnalysis.Field()
     analysis_delete = DeleteAnalysis.Field()
+
+    # AnalysisClone
+    analysis_clone = AnalysisClone.Field()
