@@ -1,0 +1,33 @@
+{{ if .Values.ingress.enabled -}}
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ template "the-deep.fullname" . }}-api
+  labels:
+    app: {{ include "the-deep.fullname" . }}
+    component: api
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  ingressClassName: {{ required "ingress.className" .Values.ingress.className | quote }}
+  rules:
+    - host: {{ required "ingress.host" .Values.ingress.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ template "the-deep.fullname" . }}-api
+                port:
+                  number: 80
+
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ required "ingress.host" .Values.ingress.host | quote }}
+      secretName: {{ template "the-deep.fullname" . }}-api-tls
+  {{- end }}
+
+{{- end }}

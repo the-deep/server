@@ -1,0 +1,57 @@
+{{- if .Values.worker.enabled }}
+
+{{- range $queue_name, $config := .Values.worker.queues }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "the-deep.fullname" $ }}-worker-{{ $queue_name }}
+  labels:
+    app: {{ include "the-deep.fullname" $ }}
+    component: worker
+    queue: {{ $queue_name }}
+    environment: {{ $.Values.environment }}
+    release: {{ $.Release.Name }}
+  annotations:
+    reloader.stakater.com/auto: "true"
+spec:
+  replicas: {{ $config.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "the-deep.fullname" $ }}
+      component: worker
+      queue: {{ $queue_name }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/config/secret.yaml") $ | sha256sum }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/config/configmap.yaml") $ | sha256sum }}
+      labels:
+        app: {{ include "the-deep.fullname" $ }}
+        component: worker
+        queue: {{ $queue_name }}
+    spec:
+      containers:
+        - name: worker
+          image: "{{ $.Values.image.name }}:{{ $.Values.image.tag }}"
+          command: ["/code/deploy/scripts/run_worker.sh"]
+          resources:
+            {{- toYaml $config.resources | nindent 12 }}
+          env:
+            - name: celery_args
+              value: {{ required "worker.queues.*.celeryArgs" $config.celeryArgs | quote }}
+          envFrom:
+            - secretRef:
+                name: {{ template "the-deep.secretname" $ }}
+            - configMapRef:
+                name: {{ template "the-deep.fullname" $ }}-api-configmap
+
+      {{- with $.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+{{- end }}
+
+{{- end }}
