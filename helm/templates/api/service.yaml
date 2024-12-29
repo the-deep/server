@@ -1,0 +1,21 @@
+{{- if .Values.api.enabled -}}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "the-deep.fullname" . }}-api
+  labels:
+    app: {{ include "the-deep.fullname" . }}
+    component: api
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ include "the-deep.fullname" . }}
+    component: api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: {{ .Values.api.containerPort }}
+{{- end }}

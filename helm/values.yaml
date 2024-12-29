@@ -1,0 +1,123 @@
+environment: prod
+
+image:
+  name: SET-BY-CICD-IMAGE
+  tag: SET-BY-CICD-TAG
+
+ingress:
+  enabled: false
+  host:
+  className:
+  tls:
+    enabled: false
+    secretName:
+
+redis:
+  enabled: true
+  architecture: standalone
+  fullnameOverride: the-deep-redis
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      size: .5Gi
+      storageClass:
+
+postgresql:
+  enabled: false
+  fullnameOverride: ""
+  architecture: standalone
+  auth:
+    postgresPassword: ""
+    username: ""
+    password: ""
+    database: ""
+  primary:
+    persistence:
+      enabled: true
+      storageClass: ""
+      size: 8G
+
+api:
+  enabled: true
+  replicaCount: 1
+  containerPort: 80
+  resources:
+    requests:
+      cpu: "2"
+      memory: 0.5Gi
+    limits:
+      cpu: "2"
+      memory: 1Gi
+
+argoHooks:
+  # NOTE: Make sure keys are lowercase
+  db-migrate:
+    enabled: true
+    hook: PostSync
+    preserveHistory: true
+    command: ["./manage.py", "migrate"]
+    requestsCpu: 0.1
+    requestsMemory: 1G
+    limitsCpu: 4
+    limitsMemory: 2G
+  collect-static:
+    enabled: true
+    hook: PostSync
+    command: ["./manage.py", "collectstatic", "--noinput"]
+
+env:
+  # APP_RELEASE: using .image.tag
+  # DEEP_ENVIRONMENT: using .environment
+  DJANGO_DEBUG: false
+
+  # Domain
+  DEEP_FRONTEND_HOST:
+  DEEP_BACKEND_HOST:
+  DEEP_HTTPS: https
+  DEEP_FRONTEND_ARY_HOST:
+  DJANGO_ALLOWED_HOST:
+  SESSION_COOKIE_DOMAIN:
+  CSRF_COOKIE_DOMAIN:
+
+  # cors
+  CORS_ALLOWED_ORIGINS:
+
+  # Sentry
+  SENTRY_SAMPLE_RATE: 0.2
+
+  envAdditional:
+    # Additional configs
+    # EXAMPLE: MY_CONFIG: "my-value"
+
+secrets:
+  DJANGO_SECRET_KEY:
+
+  # Database
+  DATABASE_NAME:
+  DATABASE_USER:
+  DATABASE_PASSWORD:
+  DATABASE_PORT:
+  DATABASE_HOST:
+
+  # Sentry
+  SENTRY_DSN:
+  
+  # Redis
+  CELERY_REDIS_URL:
+  DJANGO_CACHE_REDIS_URL:
+  TEST_DJANGO_CACHE_REDIS_URL:
+  
+  #Email
+  SMTP_EMAIL_HOST:
+  SMTP_EMAIL_PORT:
+  SMTP_EMAIL_USERNAME:
+  SMTP_EMAIL_PASSWORD:
+  
+  # Hcaptcha
+  HCAPTCHA_SECRET:
+  
+  secretsAdditional:
+    # Additional secrets
+    # EXAMPLE: MY_SECRET: "my-secret-value"

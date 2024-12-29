@@ -1,0 +1,65 @@
+environment: test
+
+image:
+  name: test
+  tag: test
+
+ingress:
+  enabled: true
+  host: test.the-deep.com
+  className: "nginx"
+
+env:
+  APP_RELEASE: test
+  # DEEP_ENVIRONMENT: using .environment
+  DJANGO_DEBUG: false
+
+  # Domain
+  DEEP_FRONTEND_HOST: dummy
+  DEEP_BACKEND_HOST: dummy
+  DEEP_HTTPS: https
+  DEEP_FRONTEND_ARY_HOST: dummy
+  DJANGO_ALLOWED_HOST: dummy
+  SESSION_COOKIE_DOMAIN: dummy
+  CSRF_COOKIE_DOMAIN: dummy
+
+  # cors
+  CORS_ALLOWED_ORIGINS: dummy
+
+  # Sentry
+  SENTRY_SAMPLE_RATE: 0.2
+
+  envAdditional:
+    # Additional configs
+    # EXAMPLE: MY_CONFIG: "my-value"
+
+secrets:
+  DJANGO_SECRET_KEY: asdasdasdasdasd
+
+  # Database
+  DATABASE_NAME: dummy
+  DATABASE_USER: dummy
+  DATABASE_PASSWORD: dummy
+  DATABASE_PORT: dummy
+  DATABASE_HOST: dummy
+
+  # Sentry
+  SENTRY_DSN: dummy
+  
+  # Redis
+  CELERY_REDIS_URL: dummy
+  DJANGO_CACHE_REDIS_URL: dummy
+  TEST_DJANGO_CACHE_REDIS_URL: dummy
+  
+  #Email
+  SMTP_EMAIL_HOST: dummy
+  SMTP_EMAIL_PORT: dummy
+  SMTP_EMAIL_USERNAME: dummy
+  SMTP_EMAIL_PASSWORD: dummy
+  
+  # Hcaptcha
+  HCAPTCHA_SECRET: dummy
+  
+  secretsAdditional:
+    # Additional secrets
+    # EXAMPLE: MY_SECRET: "my-secret-value"

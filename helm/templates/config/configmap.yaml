@@ -1,0 +1,33 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ template "the-deep.fullname" . }}-api-configmap
+  labels:
+    app: {{ include "the-deep.fullname" . }}
+    environment: {{ .Values.environment }}
+    release: {{ .Release.Name }}
+
+data:
+  APP_RELEASE: {{ .Values.image.tag | quote }}
+  DEEP_ENVIRONMENT: {{ .Values.environment | quote | upper }}
+  DJANGO_DEBUG: {{ required "env.DJANGO_DEBUG" .Values.env.DJANGO_DEBUG | quote }}
+
+  # Domain
+  DEEP_FRONTEND_HOST: {{ required "env.DEEP_FRONTEND_HOST" .Values.env.DEEP_FRONTEND_HOST | quote }}
+  DEEP_BACKEND_HOST: {{ required "env.DEEP_BACKEND_HOST" .Values.env.DEEP_BACKEND_HOST | quote }}
+  DEEP_FRONTEND_ARY_HOST: {{ required "env.DEEP_FRONTEND_ARY_HOST" .Values.env.DEEP_FRONTEND_ARY_HOST | quote }}
+  DEEP_HTTPS: {{ required "env.DEEP_HTTPS" .Values.env.DEEP_HTTPS | quote }}
+  DJANGO_ALLOWED_HOST: {{ required "env.DJANGO_ALLOWED_HOST" .Values.env.DJANGO_ALLOWED_HOST | quote }}
+  SESSION_COOKIE_DOMAIN: {{ required "env.SESSION_COOKIE_DOMAIN" .Values.env.SESSION_COOKIE_DOMAIN | quote }}
+  CSRF_COOKIE_DOMAIN: {{ required "env.CSRF_COOKIE_DOMAIN" .Values.env.CSRF_COOKIE_DOMAIN | quote }}
+
+  # cors
+  CORS_ALLOWED_ORIGINS: {{ required "env.CORS_ALLOWED_ORIGINS" .Values.env.CORS_ALLOWED_ORIGINS | quote }}
+
+  # Sentry
+  SENTRY_SAMPLE_RATE: {{ required "env.SENTRY_SAMPLE_RATE" .Values.env.SENTRY_SAMPLE_RATE | quote }}
+
+  # Additional configs
+  {{- range $name, $value := .Values.envAdditional }}
+  {{ $name }}: {{ $value | quote }}
+  {{- end }}

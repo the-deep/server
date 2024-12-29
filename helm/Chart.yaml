@@ -1,0 +1,18 @@
+apiVersion: v2
+name: the-deep-helm
+description: "Helm Chart to deploy the deep server Infrastructure"
+
+type: application
+version: 0.0.1-SET-BY-CICD
+sources:
+  - https://github.com/the-deep/server
+
+dependencies:
+  - name: redis
+    version: "20.2.1"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+  - name: postgresql
+    version: 15.5.32
+    condition: postgresql.enabled
+    repository: https://charts.bitnami.com/bitnami
