@@ -264,7 +264,7 @@ class AssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializ
 
 
 class LlmAssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializer):
-    model_tags = serializers.DictField(child=serializers.DictField())
+    model_tags = serializers.DictField()
     prediction_status = serializers.BooleanField()
     model_info = serializers.DictField()
     nlp_handler = LlmAssistedTaggingDraftEntryHandler
