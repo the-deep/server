@@ -1376,10 +1376,10 @@ class LLMAutoAssistedTaggingDraftEntryHandler(BaseHandler):
                 project=lead.project,
                 lead=lead,
                 excerpt=model_preds['text'],
-                prediction_status=DraftEntry.PredictionStatus.STARTED,
+                prediction_status=DraftEntry.PredictionStatus.DONE,
                 type=DraftEntry.Type.AUTO
             )
-            if model_preds['geolocations']:
+            if model_preds.get('geolocations'):
                 geo_areas_qs = GeoAreaGqlFilterSet(
                     data={'titles': [geo['entity'] for geo in model_preds['geolocations']]},
                     queryset=GeoArea.get_for_project(lead.project)
