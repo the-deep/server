@@ -349,6 +349,9 @@ class AnalysisPillar(UserResource):
                 analyzed_entries=models.F('dragged_entries') + models.F('discarded_entries'),
             )
 
+    def can_delete(self, user):
+        return self.can_modify(user)
+
 
 class DiscardedEntry(models.Model):
     """
@@ -470,6 +473,9 @@ class TopicModel(UserResource, DeeplTrackBaseModel):
         ).qs
 
     def get_entries_qs(self):
+        additional_filters = copy.deepcopy(self.additional_filters)
+        # NOTE: NLP is using LLM, to avoid data leakage we only pass UNPROTECTED
+        additional_filters['lead_confidentialities'] = [Lead.Confidentiality.UNPROTECTED]
         return self._get_entries_qs(self.analysis_pillar, self.additional_filters)
 
 

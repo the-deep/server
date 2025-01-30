@@ -36,17 +36,8 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
     ENABLE_NOW_PATCHER = True
 
     ASSISTED_TAGGING_NLP_DATA = '''
-        query MyQuery ($taggingModelId: ID!, $predictionTag: ID!) {
+        query MyQuery ($taggingModelId: ID! ) {
           assistedTagging {
-            predictionTags {
-              id
-              group
-              isCategory
-              isDeprecated
-              hideInAnalysisFrameworkMapping
-              parentTag
-              tagId
-            }
             taggingModels {
               id
               modelId
@@ -65,15 +56,6 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
                 version
               }
             }
-            predictionTag(id: $predictionTag) {
-              id
-              group
-              isCategory
-              isDeprecated
-              hideInAnalysisFrameworkMapping
-              parentTag
-              tagId
-            }
           }
         }
     '''
@@ -88,15 +70,6 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
                 predictionStatus
                 predictionStatusDisplay
                 predictionReceivedAt
-                predictionTags {
-                  id
-                  modelVersion
-                  dataType
-                  dataTypeDisplay
-                  value
-                  category
-                  tag
-                }
                 geoAreas {
                     title
                 }
@@ -111,14 +84,12 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
 
         model1, *other_models = AssistedTaggingModelFactory.create_batch(2)
         AssistedTaggingModelVersionFactory.create_batch(2, model=model1)
-        tag1, *other_tags = AssistedTaggingModelPredictionTagFactory.create_batch(5)
 
         # -- without login
         content = self.query_check(
             self.ASSISTED_TAGGING_NLP_DATA,
             variables=dict(
                 taggingModelId=model1.id,
-                predictionTag=tag1.id,
             ),
             assert_for_error=True,
         )
@@ -129,31 +100,8 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
             self.ASSISTED_TAGGING_NLP_DATA,
             variables=dict(
                 taggingModelId=model1.id,
-                predictionTag=tag1.id,
             )
         )['data']['assistedTagging']
-        self.assertEqual(content['predictionTags'], [
-            dict(
-                id=str(tag.id),
-                tagId=tag.tag_id,
-                isDeprecated=tag.is_deprecated,
-                isCategory=tag.is_category,
-                group=tag.group,
-                hideInAnalysisFrameworkMapping=tag.hide_in_analysis_framework_mapping,
-                parentTag=tag.parent_tag_id and str(tag.parent_tag_id),
-            )
-            for tag in [tag1, *other_tags]
-        ])
-        self.assertEqual(content['predictionTag'], dict(
-            id=str(tag1.id),
-            tagId=tag1.tag_id,
-            isDeprecated=tag1.is_deprecated,
-            isCategory=tag1.is_category,
-            group=tag1.group,
-            hideInAnalysisFrameworkMapping=tag1.hide_in_analysis_framework_mapping,
-            parentTag=tag1.parent_tag_id and str(tag1.parent_tag_id),
-        ))
-
         self.assertEqual(content['taggingModels'], [
             dict(
                 id=str(_model.id),
@@ -196,38 +144,8 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
         GeoAreaFactory.create(admin_level=admin_level, title='Nepal')
         GeoAreaFactory.create(admin_level=admin_level, title='Bagmati')
         GeoAreaFactory.create(admin_level=admin_level, title='Kathmandu')
-        model1 = AssistedTaggingModelFactory.create()
-        geo_model = AssistedTaggingModelFactory.create(model_id=AssistedTaggingModel.ModelID.GEO)
-        latest_model1_version = AssistedTaggingModelVersionFactory.create_batch(2, model=model1)[0]
-        latest_geo_model_version = AssistedTaggingModelVersionFactory.create(model=geo_model)
-        category1, tag1, *other_tags = AssistedTaggingModelPredictionTagFactory.create_batch(5)
-
         draft_entry1 = DraftEntryFactory.create(project=project, lead=lead, excerpt='sample excerpt')
 
-        prediction1 = AssistedTaggingPredictionFactory.create(
-            data_type=AssistedTaggingPrediction.DataType.TAG,
-            model_version=latest_model1_version,
-            draft_entry=draft_entry1,
-            category=category1,
-            tag=tag1,
-            prediction=0.1,
-            threshold=0.05,
-            is_selected=True,
-        )
-        prediction2 = AssistedTaggingPredictionFactory.create(
-            data_type=AssistedTaggingPrediction.DataType.RAW,
-            model_version=latest_geo_model_version,
-            draft_entry=draft_entry1,
-            value='Nepal',
-            is_selected=True,
-        )
-        prediction3 = AssistedTaggingPredictionFactory.create(
-            data_type=AssistedTaggingPrediction.DataType.RAW,
-            model_version=latest_geo_model_version,
-            draft_entry=draft_entry1,
-            value='Kathmandu',
-            is_selected=True,
-        )
         draft_entry1.save_geo_data()
 
         def _query_check(**kwargs):
@@ -257,44 +175,7 @@ class TestAssistedTaggingQuery(GraphQLTestCase):
             predictionReceivedAt=None,
             predictionStatus=self.genum(draft_entry1.prediction_status),
             predictionStatusDisplay=draft_entry1.get_prediction_status_display(),
-            predictionTags=[
-                dict(
-                    id=str(prediction1.pk),
-                    modelVersion=str(prediction1.model_version_id),
-                    dataType=self.genum(prediction1.data_type),
-                    dataTypeDisplay=prediction1.get_data_type_display(),
-                    value='',
-                    category=str(prediction1.category_id),
-                    tag=str(prediction1.tag_id),
-                ),
-                dict(
-                    id=str(prediction2.id),
-                    modelVersion=str(prediction2.model_version.id),
-                    dataType=self.genum(prediction2.data_type),
-                    dataTypeDisplay=prediction2.get_data_type_display(),
-                    value=prediction2.value,
-                    category=None,
-                    tag=None,
-                ),
-                dict(
-                    id=str(prediction3.id),
-                    modelVersion=str(prediction3.model_version.id),
-                    dataType=self.genum(prediction3.data_type),
-                    dataTypeDisplay=prediction3.get_data_type_display(),
-                    value=prediction3.value,
-                    category=None,
-                    tag=None,
-                )
-            ],
-            geoAreas=[
-                dict(
-                    title='Nepal',
-                ),
-                dict(
-                    title='Kathmandu',
-                )
-
-            ],
+            geoAreas=[]
         ))
 
 

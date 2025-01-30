@@ -7,8 +7,8 @@ from lead.models import Lead
 from utils.common import redis_lock
 from deep.deepl import DeeplServiceEndpoint
 from deepl_integration.handlers import (
-    AssistedTaggingDraftEntryHandler,
-    AutoAssistedTaggingDraftEntryHandler,
+    LlmAssistedTaggingDraftEntryHandler,
+    LLMAutoAssistedTaggingDraftEntryHandler,
     BaseHandler as DeepHandler
 )
 
@@ -95,14 +95,14 @@ def sync_models_with_deepl():
 @redis_lock('trigger_request_for_draft_entry_task_{0}', 60 * 60 * 0.5)
 def trigger_request_for_draft_entry_task(draft_entry_id):
     draft_entry = DraftEntry.objects.get(pk=draft_entry_id)
-    return AssistedTaggingDraftEntryHandler.send_trigger_request_to_extractor(draft_entry)
+    return LlmAssistedTaggingDraftEntryHandler.send_trigger_request_to_extractor(draft_entry)
 
 
 @shared_task
 @redis_lock('trigger_request_for_auto_draft_entry_task_{0}', 60 * 60 * 0.5)
 def trigger_request_for_auto_draft_entry_task(lead_id):
     lead = Lead.objects.get(id=lead_id)
-    return AutoAssistedTaggingDraftEntryHandler.auto_trigger_request_to_extractor(lead)
+    return LLMAutoAssistedTaggingDraftEntryHandler.auto_trigger_request_to_extractor(lead)
 
 
 @shared_task

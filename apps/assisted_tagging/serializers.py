@@ -23,7 +23,7 @@ class DraftEntryBaseSerializer(serializers.Serializer):
         if lead.project != self.project:
             raise serializers.ValidationError('Only lead from current project are allowed.')
         af = lead.project.analysis_framework
-        if af is None or not af.assisted_tagging_enabled:
+        if af is None:
             raise serializers.ValidationError('Assisted tagging is disabled for the Framework used by this project.')
         return lead
 

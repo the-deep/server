@@ -8,12 +8,14 @@ from deepl_integration.handlers import (
     BaseHandler,
     AssistedTaggingDraftEntryHandler,
     LeadExtractionHandler,
+    LlmAssistedTaggingDraftEntryHandler,
     UnifiedConnectorLeadHandler,
     AnalysisTopicModelHandler,
     AnalysisAutomaticSummaryHandler,
     AnalyticalStatementNGramHandler,
     AnalyticalStatementGeoHandler,
-    AutoAssistedTaggingDraftEntryHandler
+    AutoAssistedTaggingDraftEntryHandler,
+    LLMAutoAssistedTaggingDraftEntryHandler,
 )
 
 from deduplication.tasks.indexing import index_lead_and_calculate_duplicates
@@ -261,6 +263,22 @@ class AssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializ
         )
 
 
+class LlmAssistedTaggingDraftEntryPredictionCallbackSerializer(BaseCallbackSerializer):
+    model_tags = serializers.DictField()
+    prediction_status = serializers.BooleanField()
+    model_info = serializers.DictField()
+    nlp_handler = LlmAssistedTaggingDraftEntryHandler
+
+    def create(self, validated_data):
+        draft_entry = validated_data['object']
+        if draft_entry.prediction_status == DraftEntry.PredictionStatus.DONE:
+            return draft_entry
+        return self.nlp_handler.save_data(
+            draft_entry,
+            validated_data,
+        )
+
+
 class AutoAssistedBlockPredicationCallbackSerializer(serializers.Serializer):
     page = serializers.IntegerField()
     textOrder = serializers.IntegerField()
@@ -276,6 +294,20 @@ class AutoAssistedTaggingDraftEntryCallbackSerializer(BaseCallbackSerializer):
     text_extraction_id = serializers.CharField(required=True)
     status = serializers.IntegerField()
     nlp_handler = AutoAssistedTaggingDraftEntryHandler
+
+    def create(self, validated_data):
+        obj = validated_data['object']
+        return self.nlp_handler.save_data(
+            obj,
+            validated_data['entry_extraction_classification_path'],
+        )
+
+
+class AutoLLMAssistedTaggingDraftEntryCallbackSerializer(BaseCallbackSerializer):
+    entry_extraction_classification_path = serializers.URLField(required=True)
+    text_extraction_id = serializers.CharField(required=True)
+    status = serializers.IntegerField()
+    nlp_handler = LLMAutoAssistedTaggingDraftEntryHandler
 
     def create(self, validated_data):
         obj = validated_data['object']

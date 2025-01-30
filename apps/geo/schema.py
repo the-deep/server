@@ -1,3 +1,4 @@
+from geo.enums import RegionStatusEnum
 import graphene
 from graphene_django import DjangoObjectType
 from graphene_django_extras import DjangoObjectField, PageGraphqlPagination
@@ -53,12 +54,14 @@ class AdminLevelType(DjangoObjectType, ClientIdMixin):
 
 
 class RegionType(DjangoObjectType, ClientIdMixin):
+    status = graphene.Field(RegionStatusEnum)
+
     class Meta:
         model = Region
         only_fields = (
             'id', 'title', 'public', 'regional_groups',
             'key_figures', 'population_data', 'media_sources',
-            'centroid', 'is_published',
+            'centroid', 'is_published', 'status'
         )
 
     @staticmethod

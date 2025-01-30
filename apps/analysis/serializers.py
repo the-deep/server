@@ -331,11 +331,14 @@ class AnalyticalStatementGqlSerializer(
 
 
 class AnalysisPillarGqlSerializer(TempClientIdMixin, UserResourceSerializer):
+    id = IntegerIDField(required=False)
     statements = AnalyticalStatementGqlSerializer(many=True, source='analyticalstatement_set', required=False)
+    analysis = serializers.PrimaryKeyRelatedField(queryset=Analysis.objects.all(), required=False)
 
     class Meta:
         model = AnalysisPillar
         fields = (
+            'id',
             'title',
             'main_statement',
             'information_gap',
@@ -409,27 +412,78 @@ class DiscardedEntryGqlSerializer(serializers.ModelSerializer):
         return data
 
 
-class AnalysisGqlSerializer(UserResourceSerializer):
-    id = IntegerIDField(required=False)
+class AnalysisGqlSerializer(UserResourceSerializer, ProjectPropertySerializerMixin):
     analysis_pillar = AnalysisPillarGqlSerializer(many=True, source='analysispillar_set', required=False)
     start_date = serializers.DateField(required=False, allow_null=True)
 
     class Meta:
         model = Analysis
         fields = (
-            'id',
             'title',
             'team_lead',
-            'project',
             'start_date',
             'end_date',
-            'cloned_from',
+            'analysis_pillar',
         )
 
     def validate_project(self, project):
         if project != self.context['request'].active_project:
             raise serializers.ValidationError('Invalid project')
         return project
+
+    def validate(self, data):
+        data['project'] = self.project
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        if start_date and start_date > end_date:
+            raise serializers.ValidationError(
+                {'end_date': 'End date must occur after start date'}
+            )
+        return data
+
+    def create_or_update_pillar(self, pillar_data, instance):
+        data = {
+            "title": pillar_data.get('title'),
+            "assignee": pillar_data.get('assignee').id,
+            "analysis": instance.id,
+            "filters": pillar_data.get('filters'),
+        }
+        pillar_id = pillar_data.get('id', None)
+        if pillar_id:
+            data["id"] = pillar_id
+            analysis_pillar = get_object_or_404(AnalysisPillar, pk=pillar_id)
+            analysis_pillar_serializer = AnalysisPillarGqlSerializer(
+                analysis_pillar,
+                data=data,
+                context=self.context
+            )
+            return analysis_pillar_serializer
+        analysis_pillar_serializer = AnalysisPillarGqlSerializer(data=data, context=self.context)
+        return analysis_pillar_serializer
+
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            if 'analysispillar_set' in validated_data:
+                pillars = validated_data.pop('analysispillar_set')
+                errors = {}
+                for pillar in pillars:
+                    analysis_pillar_serializer = self.create_or_update_pillar(pillar, instance)
+                    if analysis_pillar_serializer.is_valid():
+                        analysis_pillar_serializer.save()
+                    else:
+                        errors[pillar.get('id', 'new')] = analysis_pillar_serializer.errors
+
+                if errors:
+                    raise serializers.ValidationError(errors)
+
+        return super().update(instance, validated_data)
+
+
+class AnalysisCloneGqlSerializer(serializers.Serializer):
+    analysis_id = IntegerIDField()
+    title = serializers.CharField(required=True, write_only=True)
+    start_date = serializers.DateField(write_only=True, required=False, allow_null=True)
+    end_date = serializers.DateField(required=True, write_only=True)
 
     def validate(self, data):
         start_date = data.get('start_date')
@@ -440,8 +494,22 @@ class AnalysisGqlSerializer(UserResourceSerializer):
             )
         return data
 
+    def validate_analysis_id(self, analysis_id):
+        analysis = Analysis.objects.filter(
+            project=self.context['request'].active_project,
+            pk=analysis_id
+        ).first()
+        if analysis is None:
+            raise serializers.ValidationError("Analysis does not exists")
+        return analysis
 
-AnalysisCloneGqlSerializer = AnalysisCloneInputSerializer
+    def create(self, validated_data):
+        title = validated_data['title']
+        end_date = validated_data['end_date']
+        # NOTE validated_data['analysis_id'] is an object of analysis
+        analysis = validated_data['analysis_id']
+        analysis.clone_analysis(title, end_date)
+        return analysis
 
 
 class AnalysisTopicModelSerializer(UserResourceSerializer, serializers.ModelSerializer):
@@ -462,6 +530,8 @@ class AnalysisTopicModelSerializer(UserResourceSerializer, serializers.ModelSeri
     def validate_analysis_pillar(self, analysis_pillar):
         if analysis_pillar.analysis.project != self.context['request'].active_project:
             raise serializers.ValidationError('Invalid analysis pillar')
+        if self.context['request'].active_project.is_private:
+            raise serializers.ValidationError('Topic model is not allowed for private projects')
         return analysis_pillar
 
     def validate_additional_filters(self, additional_filters):
@@ -520,6 +590,12 @@ class EntriesCollectionNlpTriggerBaseSerializer(UserResourceSerializer, serializ
 class AnalysisAutomaticSummarySerializer(EntriesCollectionNlpTriggerBaseSerializer):
     trigger_task_func = trigger_automatic_summary
     widget_tags = StringListField()
+
+    def validate(self, data):
+        project = self.context['request'].active_project
+        if project.is_private:
+            raise serializers.ValidationError('Automatic summary is not allowed for private projects')
+        return data
 
     class Meta:
         model = AutomaticSummary

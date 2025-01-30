@@ -13,6 +13,7 @@ from utils.graphene.mutation import (
     PsGrapheneMutation,
     PsBulkGrapheneMutation,
     DeleteMutation,
+    ProjectScopeMixin
 )
 from utils.graphene.error_types import mutation_is_not_valid, CustomErrorType
 
@@ -48,12 +49,14 @@ from .serializers import (
     ProjectUserGroupMembershipGqlSerializer as ProjectUserGroupMembershipSerializer,
     ProjectVizConfigurationSerializer,
     UserPinnedProjectSerializer,
-    BulkProjectPinnedSerializer
+    BulkProjectPinnedSerializer,
+    UserProjectLeaveSerializer
 )
 from .schema import (
     ProjectDetailType,
     ProjectJoinRequestType,
     ProjectMembershipType,
+    ProjectType,
     ProjectUserGroupMembershipType,
     ProjectVizDataType,
     UserPinnedProjectType
@@ -104,6 +107,11 @@ ProjectPinnedInputType = generate_input_type_for_serializer(
 UserPinnedProjectReOrderInputType = generate_input_type_for_serializer(
     'UserPinnedProjectReOrderInputType',
     serializer_class=BulkProjectPinnedSerializer,
+)
+
+UserProjectLeaveInputType = generate_input_type_for_serializer(
+    'UserProjectLeaveInputType',
+    serializer_class=UserProjectLeaveSerializer,
 )
 
 
@@ -340,6 +348,23 @@ class CreateUserPinnedProject(PsGrapheneMutation):
     permissions = []
 
 
+class LeaveProject(ProjectScopeMixin, graphene.Mutation):
+    ok = graphene.Boolean()
+    result = graphene.Field(ProjectType)
+    errors = graphene.List(graphene.NonNull(CustomErrorType))
+    serializer_class = UserProjectLeaveSerializer
+    permissions = []
+
+    @classmethod
+    def mutate(cls, root, info, **kwargs):
+        project = info.context.active_project
+        serializer = UserProjectLeaveSerializer(data={}, context={'request': info.context.request})
+        if errors := mutation_is_not_valid(serializer):
+            return LeaveProject(errors=errors, ok=False)
+        serializer.save()
+        return LeaveProject(result=project, errors=None, ok=True)
+
+
 class ProjectMutationType(
     # --Begin Project Scoped Mutation
     LeadMutation,
@@ -369,6 +394,7 @@ class ProjectMutationType(
     project_viz_configuration_update = UpdateProjectVizConfiguration.Field()
     unified_connector = graphene.Field(UnifiedConnectorMutationType)
     assisted_tagging = graphene.Field(AssistedTaggingMutationType)
+    leave_project = LeaveProject.Field()
 
     @staticmethod
     def get_custom_node(_, info, id):

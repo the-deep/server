@@ -71,6 +71,19 @@ type AnalysisAutomaticSummaryType {
   status: AutomaticSummaryStatusEnum!
 }
 
+type AnalysisClone {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisType
+}
+
+input AnalysisCloneInputType {
+  analysisId: ID!
+  title: String!
+  startDate: Date
+  endDate: Date!
+}
+
 input AnalysisFrameworkCloneInputType {
   afId: ID!
   title: String!
@@ -281,6 +294,14 @@ type AnalysisFrameworkVisibleProjectType {
   isPrivate: Boolean!
 }
 
+input AnalysisInputType {
+  title: String!
+  teamLead: ID!
+  startDate: Date
+  endDate: Date!
+  analysisPillar: [AnalysisPillarGqlInputType!]
+}
+
 type AnalysisListType {
   results: [AnalysisType!]
   totalCount: Int
@@ -325,6 +346,19 @@ type AnalysisPillarEntryListType {
   pageSize: Int
 }
 
+input AnalysisPillarGqlInputType {
+  id: ID
+  title: String!
+  mainStatement: String
+  informationGap: String
+  filters: GenericScalar
+  assignee: ID!
+  analysis: ID
+  clonedFrom: ID
+  statements: [AnalyticalStatementGqlInputType!]
+  clientId: String
+}
+
 type AnalysisPillarListType {
   results: [AnalysisPillarType!]
   totalCount: Int
@@ -337,22 +371,23 @@ type AnalysisPillarType {
   title: String!
   mainStatement: String!
   informationGap: String!
-  filters: GenericScalar
   createdAt: DateTime!
   modifiedAt: DateTime!
   createdBy: UserType
   modifiedBy: UserType
   clientId: ID!
   assignee: UserType!
-  analysis: ID!
+  analysisId: ID!
   clonedFrom: ID
   analyzedEntriesCount: Int!
+  filters: [FilterDataType!]
   statements: [AnalyticalStatementType!]
   discardedEntries(tags: [DiscardedEntryTagTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarDiscardedEntryListType
   entries(id: ID, excerpt: String, controlled: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], leads: [ID!], leadCreatedBy: [ID!], leadPublishedOn: Date, leadPublishedOnGte: Date, leadPublishedOnLte: Date, leadTitle: String, leadAssignees: [ID!], leadStatuses: [LeadStatusEnum!], leadPriorities: [LeadPriorityEnum!], leadConfidentialities: [LeadConfidentialityEnum!], leadAuthoringOrganizationTypes: [ID!], leadAuthorOrganizations: [ID!], leadSourceOrganizations: [ID!], leadHasAssessment: Boolean, leadIsAssessment: Boolean, search: String, entryTypes: [EntryTagTypeEnum!], projectEntryLabels: [ID!], entriesId: [ID!], geoCustomShape: String, leadGroupLabel: String, filterableData: [EntryFilterDataInputType!], hasComment: Boolean, isVerified: Boolean, discarded: Boolean, excludeEntries: [ID!], page: Int = 1, ordering: String, pageSize: Int): AnalysisPillarEntryListType
 }
 
 input AnalysisPillarUpdateInputType {
+  id: ID
   title: String
   mainStatement: String
   informationGap: String
@@ -3216,20 +3251,6 @@ enum AssistedTaggingPredictionDataTypeEnum {
   TAG
 }
 
-type AssistedTaggingPredictionType {
-  id: ID!
-  value: String!
-  prediction: Decimal
-  threshold: Decimal
-  isSelected: Boolean!
-  modelVersion: ID!
-  draftEntry: ID!
-  dataType: AssistedTaggingPredictionDataTypeEnum!
-  dataTypeDisplay: EnumDescription!
-  category: ID
-  tag: ID
-}
-
 type AssistedTaggingQueryType {
   draftEntry(id: ID!): DraftEntryType
   draftEntries(lead: ID, draftEntryTypes: [DraftEntryTypeEnum!], ignoreIds: [ID!], isDiscarded: Boolean, page: Int = 1, pageSize: Int): DraftEntryListType
@@ -3568,6 +3589,12 @@ type CreateAdminLevel {
   result: AdminLevelType
 }
 
+type CreateAnalysis {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisType
+}
+
 type CreateAnalysisFramework {
   errors: [GenericScalar!]
   ok: Boolean
@@ -3697,12 +3724,22 @@ type DateCountType {
 
 scalar DateTime
 
-scalar Decimal
-
 type DeleteAdminLevel {
   errors: [GenericScalar!]
   ok: Boolean
   result: AdminLevelType
+}
+
+type DeleteAnalysis {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisType
+}
+
+type DeleteAnalysisPillar {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisPillarType
 }
 
 type DeleteAnalysisPillarDiscardedEntry {
@@ -3867,7 +3904,7 @@ type DraftEntryType {
   predictionReceivedAt: DateTime
   predictionStatus: DraftEntryPredictionStatusEnum!
   predictionStatusDisplay: EnumDescription!
-  predictionTags: [AssistedTaggingPredictionType!]
+  tags: LLMAssistedTaggingPredictionType
   geoAreas: [ProjectGeoAreaType!]
 }
 
@@ -4511,6 +4548,12 @@ input FileUploadInputType {
   projects: [ID!]
 }
 
+type FilterDataType {
+  id: String
+  key: String
+  uniqueId: String
+}
+
 type GalleryFileType {
   id: ID!
   title: String!
@@ -4580,6 +4623,13 @@ input HIDLoginInputType {
 type JwtTokenType {
   accessToken: String
   expiresIn: String
+}
+
+type LLMAssistedTaggingPredictionType {
+  id: ID!
+  modelTags: GenericScalar
+  modelVersion: ID!
+  draftEntry: ID!
 }
 
 enum LeadAutoEntryExtractionTypeEnum {
@@ -4934,6 +4984,12 @@ type LeadsFilterDataType {
   duplicatesOf: ID
 }
 
+type LeaveProject {
+  ok: Boolean
+  result: ProjectType
+  errors: [GenericScalar!]
+}
+
 type Login {
   result: UserMeType
   errors: [GenericScalar!]
@@ -5078,6 +5134,7 @@ type Mutation {
   publishRegion(id: ID!): PublishRegion
   updateAdminLevel(data: AdminLevelInputType!, id: ID!): UpdateAdminLevel
   deleteAdminLevel(adminLevelId: ID!): DeleteAdminLevel
+  retriggerRegion(regionId: ID!): ReTriggeredFailedRegion
   organizationCreate(data: OrganizationInputType!): OrganizationCreate
   createAssessmentRegSummaryIssue(data: AssessmentRegistrySummaryIssueCreateInputType!): AssessmentRegistryCreateIssue
   fileUpload(data: FileUploadInputType!): UploadFile
@@ -5351,7 +5408,7 @@ type ProjectDetailType {
   leadGroups(createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): LeadGroupListType
   emmEntities(name: String, page: Int = 1, ordering: String, pageSize: Int): EmmEntityListType
   leadEmmTriggers(lead: ID, emmKeyword: String, emmRiskFactor: String, count: Int, page: Int = 1, ordering: String, pageSize: Int): LeadEmmTriggerListType
-  leadPreviewAttachments(lead: ID, pageNumber: Int, excludeAttachmentIds: [ID!], createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], type: [LeadPreviewAttachmentTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): LeadPreviewAttachmentListType
+  leadPreviewAttachments(lead: ID, pageNumber: Int, excludeAttachmentIds: [ID!], excludeLeadattachmentCreatedEntries: Boolean, createdAt: DateTime, createdAtGte: DateTime, createdAtLte: DateTime, modifiedAt: DateTime, modifiedAtGte: DateTime, modifiedAtLte: DateTime, createdBy: [ID!], modifiedBy: [ID!], type: [LeadPreviewAttachmentTypeEnum!], page: Int = 1, ordering: String, pageSize: Int): LeadPreviewAttachmentListType
   emmKeywords: [EmmKeyWordType!]
   emmRiskFactors: [EmmKeyRiskFactorType!]
   userSavedLeadFilter: UserSavedLeadFilterType
@@ -5460,6 +5517,7 @@ type ProjectMutationType {
   updateAssessmentRegistry(data: AssessmentRegistryCreateInputType!, id: ID!): UpdateAssessmentRegistry
   deleteAssessmentRegistry(id: ID!): DeleteAssessmentRegistry
   analysisPillarUpdate(data: AnalysisPillarUpdateInputType!, id: ID!): UpdateAnalysisPillar
+  analysisPillarDelete(id: ID!): DeleteAnalysisPillar
   discardedEntryCreate(data: DiscardedEntryCreateInputType!): CreateAnalysisPillarDiscardedEntry
   discardedEntryUpdate(data: DiscardedEntryUpdateInputType!, id: ID!): UpdateAnalysisPillarDiscardedEntry
   discardedEntryDelete(id: ID!): DeleteAnalysisPillarDiscardedEntry
@@ -5473,6 +5531,10 @@ type ProjectMutationType {
   analysisReportSnapshotCreate(data: AnalysisReportSnapshotInputType!): CreateAnalysisReportSnapshot
   analysisReportUploadCreate(data: AnalysisReportUploadInputType!): CreateAnalysisReportUpload
   analysisReportUploadDelete(id: ID!): DeleteAnalysisReportUpload
+  analysisCreate(data: AnalysisInputType!): CreateAnalysis
+  analysisUpdate(data: AnalysisInputType!, id: ID!): UpdateAnalysis
+  analysisDelete(id: ID!): DeleteAnalysis
+  analysisClone(data: AnalysisCloneInputType!): AnalysisClone
   exportCreate(data: ExportCreateInputType!): CreateUserExport
   exportUpdate(data: ExportUpdateInputType!, id: ID!): UpdateUserExport
   exportCancel(id: ID!): CancelUserExport
@@ -5501,6 +5563,7 @@ type ProjectMutationType {
   projectVizConfigurationUpdate(data: ProjectVizConfigurationInputType!): UpdateProjectVizConfiguration
   unifiedConnector: UnifiedConnectorMutationType
   assistedTagging: AssistedTaggingMutationType
+  leaveProject: LeaveProject
 }
 
 enum ProjectOrderingEnum {
@@ -5875,7 +5938,7 @@ type Query {
   notifications(timestamp: DateTime, timestampLte: DateTime, timestampGte: DateTime, isPending: Boolean, notificationType: NotificationTypeEnum, status: NotificationStatusEnum, page: Int = 1, ordering: String, pageSize: Int): NotificationListType
   assignments(project: ID, isDone: Boolean, page: Int = 1, ordering: String, pageSize: Int): AssignmentListType
   region(id: ID!): RegionDetailType
-  regions(id: Float, code: String, title: String, public: Boolean, project: [ID], createdAt: DateTime, createdBy: [ID], modifiedAt: DateTime, modifiedBy: [ID], createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, excludeProject: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): RegionListType
+  regions(id: Float, code: String, title: String, public: Boolean, project: [ID], isPublished: Boolean, createdAt: DateTime, createdBy: [ID], modifiedAt: DateTime, modifiedBy: [ID], createdAt_Lt: Date, createdAt_Gte: Date, modifiedAt_Lt: Date, modifiedAt_Gt: Date, excludeProject: [ID!], search: String, page: Int = 1, ordering: String, pageSize: Int): RegionListType
   organization(id: ID!): OrganizationType
   organizations(id: Float, verified: Boolean, search: String, usedInProjectByLead: ID, usedInProjectByAssesment: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): OrganizationListType
   publicOrganizations(id: Float, verified: Boolean, search: String, usedInProjectByLead: ID, usedInProjectByAssesment: ID, ordering: [OrganizationOrderingEnum!], page: Int = 1, pageSize: Int): PublicOrganizationListObjectType
@@ -5920,6 +5983,12 @@ type QuestionType {
   subSectorDisplay: EnumDescription
 }
 
+type ReTriggeredFailedRegion {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: RegionType
+}
+
 type RecentActivityType {
   id: ID!
   createdAt: DateTime
@@ -5954,6 +6023,7 @@ type RegionDetailType {
   mediaSources: GenericScalar
   centroid: PointScalar
   clientId: ID!
+  status: RegionStatusEnum
   adminLevels: [AdminLevelType!]!
 }
 
@@ -5993,6 +6063,13 @@ input RegionProjectFilterData {
   isTest: Boolean
 }
 
+enum RegionStatusEnum {
+  INITIATED
+  PENDING
+  COMPLETED
+  FAILED
+}
+
 type RegionType {
   id: ID!
   title: String!
@@ -6003,6 +6080,7 @@ type RegionType {
   populationData: GenericScalar
   mediaSources: GenericScalar
   centroid: PointScalar
+  status: RegionStatusEnum
   clientId: ID!
 }
 
@@ -6372,6 +6450,12 @@ type UpdateAdminLevel {
   errors: [GenericScalar!]
   ok: Boolean
   result: AdminLevelType
+}
+
+type UpdateAnalysis {
+  errors: [GenericScalar!]
+  ok: Boolean
+  result: AnalysisType
 }
 
 type UpdateAnalysisFramework {

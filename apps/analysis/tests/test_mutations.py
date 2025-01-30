@@ -9,6 +9,7 @@ from deepl_integration.serializers import DeeplServerBaseCallbackSerializer
 
 from commons.schema_snapshots import SnapshotQuery
 from user.factories import UserFactory
+from project.models import Project
 from project.factories import ProjectFactory
 from lead.factories import LeadFactory
 from entry.factories import EntryFactory
@@ -18,15 +19,19 @@ from analysis.factories import (
     AnalysisPillarFactory,
     AnalysisReportFactory,
     AnalysisReportUploadFactory,
+    AnalyticalStatementFactory,
+    DiscardedEntryFactory,
 )
 
 from analysis.models import (
+    DiscardedEntry,
     TopicModel,
     TopicModelCluster,
     AutomaticSummary,
     AnalyticalStatementNGram,
     AnalyticalStatementGeoTask,
     AnalysisReportSnapshot,
+    AnalysisPillar,
 )
 
 
@@ -215,11 +220,13 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         self.af = AnalysisFrameworkFactory.create()
         self.project = ProjectFactory.create(analysis_framework=self.af)
         self.another_project = ProjectFactory.create()
+        self.private_project = ProjectFactory.create(analysis_framework=self.af, is_private=True)
         # User with role
         self.non_member_user = UserFactory.create()
         self.readonly_member_user = UserFactory.create()
         self.member_user = UserFactory.create()
         self.project.add_member(self.member_user, role=self.project_role_member)
+        self.private_project.add_member(self.member_user, role=self.project_role_member)
 
     def _check_status(self, obj, status):
         obj.refresh_from_db()
@@ -235,6 +242,15 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         )
         analysis_pillar = AnalysisPillarFactory.create(
             analysis=analysis,
+            assignee=self.member_user,
+        )
+        private_analysis = AnalysisFactory.create(
+            project=self.private_project,
+            team_lead=self.member_user,
+            end_date=datetime.date(2022, 4, 1),
+        )
+        private_analysis_pillar = AnalysisPillarFactory.create(
+            analysis=private_analysis,
             assignee=self.member_user,
         )
 
@@ -283,6 +299,15 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
                 **kwargs
             )
 
+        def _private_project_mutation_check(minput, **kwargs):
+            return self.query_check(
+                self.TRIGGER_TOPIC_MODEL,
+                minput=minput,
+                mnested=['project'],
+                variables={'projectId': self.private_project.id},
+                **kwargs
+            )
+
         def _query_check(_id):
             return self.query_check(
                 self.QUERY_TOPIC_MODEL,
@@ -320,6 +345,13 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         # --- member user (error since input is empty)
         self.force_login(self.member_user)
         _mutation_check(minput, okay=False)
+
+        # using private_analysis_pillar for private project validation
+        minput['analysisPillar'] = str(private_analysis_pillar.id)
+
+        # --- member user (error since the project is private)
+        self.force_login(self.member_user)
+        _private_project_mutation_check(minput, okay=False)
 
         # Valid data
         minput['analysisPillar'] = str(analysis_pillar.id)
@@ -415,9 +447,11 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
         lead1 = LeadFactory.create(project=self.project)
         lead2 = LeadFactory.create(project=self.project)
         another_lead = LeadFactory.create(project=self.another_project)
+        lead3 = LeadFactory.create(project=self.private_project)
         lead1_entries = EntryFactory.create_batch(3, analysis_framework=self.af, lead=lead1)
         lead2_entries = EntryFactory.create_batch(4, analysis_framework=self.af, lead=lead2)
         another_lead_entries = EntryFactory.create_batch(4, analysis_framework=self.af, lead=another_lead)
+        lead3_entries = EntryFactory.create_batch(2, analysis_framework=self.af, lead=lead3)
 
         def nlp_validator_mock(url, data=None, json=None, **kwargs):
             if not json:
@@ -427,10 +461,15 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
             payload = self.get_json_media_file(
                 json['entries_url'].split('http://testserver/media/')[1],
             )
-            # TODO: Need to check the Child fields of data and File payload as well
-            expected_keys = ['data', 'tags']
-            if set(payload.keys()) != set(expected_keys):
-                return mock.MagicMock(status_code=400)
+
+            if 'data' in payload and isinstance(payload['data'], list):
+                entry_ids = [entry['entry_id'] for entry in payload['data']]
+
+                # NOTE: Confidential leads entries should not be included
+                for entry in lead3_entries:
+                    if str(entry.id) in entry_ids:
+                        assert False, 'Confidential entries should not be included'
+
             return mock.MagicMock(status_code=202)
 
         def nlp_fail_mock(*args, **kwargs):
@@ -444,6 +483,15 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
                 minput=minput,
                 mnested=['project'],
                 variables={'projectId': self.project.id},
+                **kwargs
+            )
+
+        def _private_project_mutation_check(minput, **kwargs):
+            return self.query_check(
+                self.TRIGGER_AUTOMATIC_SUMMARY,
+                minput=minput,
+                mnested=['project'],
+                variables={'projectId': self.private_project.id},
                 **kwargs
             )
 
@@ -476,7 +524,8 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
             for entries in [
                 lead1_entries,
                 lead2_entries,
-                another_lead_entries
+                another_lead_entries,
+                lead3_entries,
             ]
             for entry in entries
         ]
@@ -484,6 +533,10 @@ class TestAnalysisNlpMutationSchema(GraphQLTestCase):
             'tag1',
             'tag2',
         ]
+
+        # --- member user (error since the project is private)
+        self.force_login(self.member_user)
+        response = _private_project_mutation_check(minput, okay=False)
 
         # --- member user (All good)
         with self.captureOnCommitCallbacks(execute=True):
@@ -1326,3 +1379,440 @@ class TestAnalysisReportQueryAndMutationSchema(GraphQLTestCase):
             else:
                 self.force_login(user)
             assert _query_public_snapshot_check(snapshot_slug)['data']['publicAnalysisReportSnapshot'] is not None
+
+
+class TestAnalysisMutationSchema(GraphQLTestCase):
+    CREATE_MUTATION = '''
+        mutation MyMutation($analysisData: AnalysisInputType!, $projectId: ID!) {
+          project(id: $projectId) {
+            analysisCreate(
+              data: $analysisData
+            ) {
+              errors
+              ok
+              result {
+                id
+                endDate
+                title
+                teamLead {
+                  id
+                }
+                pillars {
+                  analysisId
+                  id
+                  title
+                }
+              }
+            }
+          }
+        }
+    '''
+
+    UPDATE_MUTATION = '''
+        mutation MyMutation($analysisUpdate: AnalysisInputType!, $analysisID: ID!, $projectId: ID!) {
+          project(id: $projectId) {
+            analysisUpdate(data: $analysisUpdate, id: $analysisID) {
+              errors
+              ok
+              result {
+                id
+                endDate
+                title
+                teamLead {
+                  id
+                }
+                pillars {
+                  analysisId
+                  id
+                  title
+                }
+              }
+            }
+          }
+        }
+    '''
+
+    DELETE_MUTATION = '''
+        mutation MyMutation($projectId: ID!, $deleteId: ID!) {
+          project(id: $projectId) {
+            analysisDelete(id: $deleteId) {
+              errors
+              result {
+                id
+                title
+                pillars {
+                  analysisId
+                  title
+                }
+              }
+            }
+          }
+        }
+    '''
+
+    def setUp(self):
+        super().setUp()
+        self.af = AnalysisFrameworkFactory.create()
+        self.project_with_af = ProjectFactory.create(analysis_framework=self.af, status=Project.Status.ACTIVE)
+        self.project_without_af = ProjectFactory.create()
+        # Users with different roles
+        self.non_member_user = UserFactory.create()
+        self.readonly_member_user = UserFactory.create()
+        self.member_user = UserFactory.create()
+        self.project_with_af.add_member(self.readonly_member_user, role=self.project_role_reader_non_confidential)
+        self.project_with_af.add_member(self.member_user, role=self.project_role_member)
+        self.analysis, self.analysis1 = AnalysisFactory.create_batch(
+            2,
+            project=self.project_with_af,
+            team_lead=self.member_user,
+            end_date=datetime.date(2022, 4, 1),
+        )
+        self.analysis_pillar1, self.analysis_pillar2, self.analysis_pillar3 = AnalysisPillarFactory.create_batch(
+            3,
+            analysis=self.analysis,
+            assignee=self.member_user,
+        )
+
+    def test_create_analysis_without_pillar(self):
+        def _query_check(**kwargs):
+            return self.query_check(
+                self.CREATE_MUTATION,
+                variables=self.minput,
+                **kwargs
+            )
+
+        self.minput = dict(
+            analysisData=dict(
+                title='Test Analysis', teamLead=self.member_user.id, endDate='2020-01-01'
+            ),
+            projectId=self.project_with_af.id,
+        )
+
+        # -- Without login
+        _query_check(assert_for_error=True)
+
+        # -- With login (non-member)
+        self.force_login(self.non_member_user)
+        _query_check(assert_for_error=True)
+
+        # --- member user (read-only)
+        self.force_login(self.readonly_member_user)
+        _query_check(assert_for_error=True)
+
+        # --- member user
+        self.force_login(self.member_user)
+        analysis_resp_data = _query_check()['data']['project']['analysisCreate']['result']
+        self.assertEqual(analysis_resp_data['title'], self.minput['analysisData']['title'])
+        self.assertEqual(analysis_resp_data['teamLead']['id'], str(self.member_user.id))
+        self.assertEqual(analysis_resp_data['endDate'], str(self.minput['analysisData']['endDate']))
+
+    def test_create_analysis_with_pillar(self):
+        def _query_check(**kwargs):
+            return self.query_check(
+                self.CREATE_MUTATION,
+                variables=self.minput,
+                **kwargs
+            )
+
+        self.minput = dict(
+            analysisData=dict(
+                title='Updated Analysis',
+                teamLead=self.member_user.id,
+                endDate='2022-01-01',
+                analysisPillar=[
+                    dict(
+                        title=str("Analysis pillar 1"),
+                        assignee=int(self.member_user.id),
+                        analysis=int(self.analysis.id)
+                    ),
+                    dict(
+                        title=str("Analysis Pillar 2"),
+                        assignee=int(self.member_user.id),
+                        analysis=int(self.analysis1.id)
+                    ),
+                    dict(
+                        title=str("Analysis Pillar 3"),
+                        assignee=int(self.member_user.id),
+                        analysis=int(self.analysis.id)
+                    ),
+                ]
+            ),
+            projectId=self.project_with_af.id,
+        )
+
+        # -- Without login
+        _query_check(assert_for_error=True)
+
+        # -- With login (non-member)
+        self.force_login(self.non_member_user)
+        _query_check(assert_for_error=True)
+
+        # --- member user (read-only)
+        self.force_login(self.readonly_member_user)
+        _query_check(assert_for_error=True)
+
+        # --- member user
+        self.force_login(self.member_user)
+        analysis_resp_data = _query_check()['data']['project']['analysisCreate']['result']
+        self.assertEqual(analysis_resp_data['title'], self.minput['analysisData']['title'])
+        self.assertEqual(analysis_resp_data['teamLead']['id'], str(self.member_user.id))
+        self.assertEqual(analysis_resp_data['endDate'], str(self.minput['analysisData']['endDate']))
+        for each in analysis_resp_data['pillars']:
+            self.assertEqual(each['analysisId'], str(analysis_resp_data['id']))
+
+    def test_create_analysis_without_analysis_framework(self):
+        minput = dict(
+            analysisData=dict(
+                title='Test Analysis', teamLead=self.member_user.id, endDate='2020-01-01'
+            ),
+            projectId=self.project_without_af.id,
+        )
+
+        self.force_login(self.member_user)
+        self.query_check(self.CREATE_MUTATION, variables=minput, assert_for_error=True)
+
+    def test_update_analysis(self):
+        def _query_check(**kwargs):
+            return self.query_check(
+                self.UPDATE_MUTATION,
+                variables=self.update_minput,
+                **kwargs
+            )
+
+        self.update_minput = dict(
+            analysisUpdate=dict(
+                title='Updated Analysis',
+                teamLead=self.member_user.id,
+                endDate='2022-01-01',
+                analysisPillar=[
+                    dict(
+                        id=int(self.analysis_pillar1.id),
+                        title=str("Updated Analysis pillar1"),
+                        assignee=int(self.member_user.id),
+                        analysis=int(self.analysis.id)
+                    ),
+                    dict(
+                        id=int(self.analysis_pillar3.id),
+                        title=str("Updated Analysis pillar3"),
+                        assignee=int(self.member_user.id),
+                        analysis=int(self.analysis1.id)
+                    ),
+                    dict(
+                        title=str("Analysis pillar5"),
+                        assignee=int(self.member_user.id),
+                        analysis=int(self.analysis.id)
+                    ),
+                ]
+            ),
+            analysisID=self.analysis.id,
+            projectId=self.project_with_af.id,
+        )
+
+        # --- member user
+        self.force_login(self.member_user)
+        analysis_resp_data = _query_check()['data']['project']['analysisUpdate']['result']
+        analysis_resp_data_pillars = [each["id"] for each in analysis_resp_data["pillars"]]
+        self.assertTrue(
+            all(
+                AnalysisPillar.objects.get(id=int(each["id"])).title == each["title"]
+                for each in analysis_resp_data["pillars"]
+            )
+        )
+        expected_analysis_pillar_ids_dict = {
+            str(self.analysis_pillar1.id),
+            str(self.analysis_pillar2.id),
+            str(self.analysis_pillar3.id)
+        }
+        self.assertGreaterEqual(
+            len(analysis_resp_data['pillars']),
+            len(self.update_minput['analysisUpdate']['analysisPillar'])
+        )
+        self.assertEqual(len(analysis_resp_data['pillars']), 4)
+        for item in expected_analysis_pillar_ids_dict:
+            self.assertIn(item, analysis_resp_data_pillars)
+        self.assertEqual(analysis_resp_data['title'], self.update_minput['analysisUpdate']['title'])
+        self.assertEqual(analysis_resp_data['teamLead']['id'], str(self.member_user.id))
+        self.assertEqual(analysis_resp_data['endDate'], str(self.update_minput['analysisUpdate']['endDate']))
+
+    def test_delete_analysis(self):
+        def _query_check(**kwargs):
+            return self.query_check(
+                self.DELETE_MUTATION,
+                variables=self.delete_minput,
+                **kwargs
+            )
+
+        self.delete_minput = dict(
+            projectId=self.project_with_af.id,
+            deleteId=self.analysis.id,
+        )
+        # -- Without login
+        self.logout()
+        _query_check(assert_for_error=True)
+
+        # -- With login (non-member)
+        self.force_login(self.non_member_user)
+        _query_check(assert_for_error=True)
+
+        # --- member user (read-only)
+        self.force_login(self.readonly_member_user)
+        _query_check(assert_for_error=True)
+
+        # --- member user
+        self.force_login(self.member_user)
+        analysis_resp_data = _query_check()['data']['project']['analysisDelete']['result']
+        self.assertEqual(analysis_resp_data['id'], str(self.delete_minput['deleteId']))
+        self.assertEqual(len(analysis_resp_data['pillars']), 0)
+
+
+class TestAnalysisPillarMutationSchema(GraphQLTestCase):
+    UPDATE_MUTATION = '''
+        mutation MyMutation($analysisPillarUpdate: AnalysisPillarUpdateInputType!, $analysisPillarID: ID!, $projectId: ID!) {
+          project(id: $projectId) {
+            analysisPillarUpdate(data: $analysisPillarUpdate, id: $analysisPillarID) {
+              errors
+              ok
+              result {
+                analysisId
+                title
+                id
+              }
+            }
+          }
+        }
+    '''
+
+    def setUp(self):
+        super().setUp()
+        self.af = AnalysisFrameworkFactory.create()
+        self.project_with_af = ProjectFactory.create(analysis_framework=self.af, status=Project.Status.ACTIVE)
+        # Users with different roles
+        self.non_member_user = UserFactory.create()
+        self.readonly_member_user = UserFactory.create()
+        self.member_user = UserFactory.create()
+        self.project_with_af.add_member(self.readonly_member_user, role=self.project_role_reader_non_confidential)
+        self.project_with_af.add_member(self.member_user, role=self.project_role_member)
+        self.analysis = AnalysisFactory.create(
+            project=self.project_with_af,
+            team_lead=self.member_user,
+            end_date=datetime.date(2022, 4, 1),
+        )
+        self.analysis_pillar = AnalysisPillarFactory.create(
+            analysis=self.analysis,
+            assignee=self.member_user,
+        )
+
+    def test_update_analysis_pillar(self):
+        def _query_check(**kwargs):
+            return self.query_check(
+                self.UPDATE_MUTATION,
+                variables=self.update_minput,
+                **kwargs
+            )
+
+        self.update_minput = dict(
+            analysisPillarUpdate=dict(
+                title="Updated Analysis Pillar",
+            ),
+            analysisPillarID=self.analysis_pillar.id,
+            projectId=self.project_with_af.id,
+        )
+
+        # -- Without login
+        _query_check(assert_for_error=True)
+
+        # -- With login (non-member)
+        self.force_login(self.non_member_user)
+        _query_check(assert_for_error=True)
+
+        # --- member user (read-only)
+        self.force_login(self.readonly_member_user)
+        _query_check(assert_for_error=True)
+
+        # --- member user
+        self.force_login(self.member_user)
+        analysis_pillar_resp_data = _query_check()['data']['project']['analysisPillarUpdate']['result']
+        self.assertEqual(analysis_pillar_resp_data['title'], self.update_minput['analysisPillarUpdate']['title'])
+        self.assertEqual(analysis_pillar_resp_data['id'], str(self.update_minput['analysisPillarID']))
+        self.assertEqual(analysis_pillar_resp_data['analysisId'], str(self.analysis.id))
+
+
+class TestCloneAnalysisMutationSchema(GraphQLTestCase):
+    ANALYSIS_CLONE_MUTATION = '''
+        mutation AnalysisClone($projectId: ID!, $data: AnalysisCloneInputType!) {
+        project(id: $projectId) {
+            analysisClone(data: $data) {
+            ok
+            errors
+            result {
+                id
+                title
+                endDate
+            }
+            __typename
+            }
+            __typename
+        }
+        }
+    '''
+
+    def setUp(self):
+        super().setUp()
+        self.project = ProjectFactory.create()
+        self.member_user = UserFactory.create()
+        self.non_member_user = UserFactory.create()
+        self.readonly_member_user = UserFactory.create()
+        self.project.add_member(self.readonly_member_user, role=self.project_role_reader_non_confidential)
+        af = AnalysisFrameworkFactory.create()
+        project = ProjectFactory.create(analysis_framework=af)
+        lead = LeadFactory.create(project=project)
+        self.project.add_member(self.member_user, role=self.project_role_member)
+        entry = EntryFactory.create(project=project, lead=lead)
+        EntryFactory.create(project=project, lead=lead)
+        self.analysis = AnalysisFactory.create(
+            project=project,
+            team_lead=self.member_user,
+            end_date=datetime.date(2022, 4, 1),
+
+        )
+        pillar = AnalysisPillarFactory.create(analysis=self.analysis, title='title1', assignee=self.member_user)
+        AnalyticalStatementFactory.create(
+            analysis_pillar=pillar,
+            statement='Hello from here',
+            client_id='1',
+        )
+        DiscardedEntryFactory.create(
+            entry=entry,
+            analysis_pillar=pillar,
+            tag=DiscardedEntry.TagType.REDUNDANT
+        )
+
+    def test_clone_analysis(self):
+        def _query_check(**kwargs):
+            return self.query_check(
+                self.ANALYSIS_CLONE_MUTATION,
+                variables=self.minput,
+                **kwargs
+            )
+        self.minput = dict(
+            data=dict(
+                analysisId=self.analysis.id,
+                title='cloned_title',
+                endDate="2022-04-01",
+            ),
+            projectId=self.project.id,
+        )
+        # without login
+        _query_check(assert_for_error=True)
+
+        # With login (non-member)
+        self.force_login(self.non_member_user)
+        _query_check(assert_for_error=True)
+
+        # member user (read-only)
+        self.force_login(self.readonly_member_user)
+        _query_check(assert_for_error=True)
+
+        # member user
+        self.force_login(self.member_user)
+        _query_check(assert_for_error=False)

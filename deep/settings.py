@@ -218,6 +218,14 @@ INSTALLED_APPS = [
     'drf_yasg',  # API Documentation
     'graphene_django',
     'graphene_graphiql_explorer',
+    # heath check
+    'health_check',
+    'health_check.db',                          # stock Django health checkers
+    'health_check.cache',
+    'health_check.storage',
+    'health_check.contrib.migrations',
+    'health_check.contrib.celery',              # requires celery
+    'health_check.contrib.celery_ping',         # requires celery
 ] + [
     '{}.{}.apps.{}Config'.format(
         APPS_DIR.split('/')[-1],

@@ -150,7 +150,9 @@ from export.views import (
 )
 from deepl_integration.views import (
     AssistedTaggingDraftEntryPredictionCallbackView,
+    LlmAssistedTaggingDraftEntryPredictionCallbackView,
     AutoTaggingDraftEntryPredictionCallbackView,
+    AutoLLMTaggingDraftEntryPredictionCallbackView,
     LeadExtractCallbackView,
     UnifiedConnectorLeadExtractCallbackView,
     AnalysisTopicModelCallbackView,
@@ -173,7 +175,7 @@ from deep.views import (
     ProjectPublicVizView,
     PasswordChanged,
     get_frontend_url,
-    graphql_docs
+    graphql_docs,
 )
 from organization.views import (
     OrganizationViewSet,
@@ -581,6 +583,18 @@ urlpatterns = [
     ),
 
     re_path(
+        get_api_path(r'callback/llm-assisted-tagging-draft-entry-prediction/$'),
+        LlmAssistedTaggingDraftEntryPredictionCallbackView.as_view(),
+        name='llm-assisted_tagging_draft_entry_prediction_callback',
+    ),
+
+    re_path(
+        get_api_path(r'callback/auto-llm-assisted-tagging-draft-entry-prediction/$'),
+        AutoLLMTaggingDraftEntryPredictionCallbackView.as_view(),
+        name='auto-llm-assisted_tagging_draft_entry_prediction_callback',
+    ),
+
+    re_path(
         get_api_path(r'callback/analysis-topic-model/$'),
         AnalysisTopicModelCallbackView.as_view(),
         name='analysis_topic_model_callback',
@@ -619,6 +633,8 @@ urlpatterns = [
             name="favicon"),
 
     re_path('ses-bounce/?$', ses_bounce_handler_view, name='ses_bounce'),
+    re_path(r'health-check/', include('health_check.urls')),
+
 ] + [
     # graphql patterns
     re_path('^graphql/?$', csrf_exempt(CustomGraphQLView.as_view())),
