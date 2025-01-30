@@ -726,7 +726,7 @@ if DEBUG and not CORS_ALLOWED_ORIGINS:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
     CORS_ALLOWED_ORIGIN_REGEXES = [
-        r"^https://[\w-]+\.thedeep\.io$",
+        r"^https://[\w.-]+\.thedeep\.io$",
     ]
 
 CORS_URLS_REGEX = r'(^/api/.*$)|(^/media/.*$)|(^/graphql$)'
