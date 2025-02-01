@@ -1,4 +1,5 @@
 import graphene
+import requests
 
 from utils.graphene.mutation import (
     generate_input_type_for_serializer,
@@ -36,6 +37,51 @@ ConnectorSourceLeadInputType = generate_input_type_for_serializer(
     serializer_class=ConnectorSourceLeadGqSerializer,
 )
 
+class KoboValPsGrapheneMutation(PsGrapheneMutation):
+    @classmethod
+    def perform_mutate(cls, root, info, **kwargs):
+        from graphql import GraphQLError
+        data = kwargs['data']
+        print('data is ', data)
+        if not cls.validate_kobo(data):
+            raise GraphQLError("Invalid Kobo data: 'project_id' and 'token' combination did not retrieve any valid data")
+        instance, errors = cls._save_item(data, info, **kwargs)
+        return cls(result=instance, errors=errors, ok=not errors)
+
+    @classmethod
+    def validate_kobo(cls, data):
+        #TODO validate all sources
+        sources = data.get('sources', [])
+        source = sources[0] if sources else {}
+        if source and source.get('title') != 'KoboToolbox':
+            return True
+
+        params = source.get("params", {})
+        project_id = params.get('project_id')
+        token = params.get('token')
+
+        if not project_id or not token:
+            return False
+
+        # Validate Kobo API fetch
+        return cls.valid_kobo_fetch(project_id, token)
+
+    @classmethod
+    def valid_kobo_fetch(cls, project_id, token):
+        URL = 'https://kf.kobotoolbox.org/api/v2/assets/'
+        api_url = f"{URL}{project_id}/data/?format=json"
+        headers = {"Authorization": f"Token {token}"}
+
+        try:
+            response = requests.get(api_url, headers=headers, stream=True)
+            if response.status_code == 200:
+                return True
+            else:
+                # logger.error("Failed to fetch data from API, Status code: %d", response.status_code)
+                return False
+        except requests.RequestException as e:
+            # logger.critical("A critical error occurred while fetching data: %s", e)
+            return False
 
 class UnifiedConnectorMixin():
     @classmethod
@@ -43,7 +89,7 @@ class UnifiedConnectorMixin():
         return qs.filter(project=info.context.active_project)
 
 
-class CreateUnifiedConnector(UnifiedConnectorMixin, PsGrapheneMutation):
+class CreateUnifiedConnector(UnifiedConnectorMixin, KoboValPsGrapheneMutation):
     class Arguments:
         data = UnifiedConnectorWithSourceInputType(required=True)
     model = UnifiedConnector
@@ -52,7 +98,8 @@ class CreateUnifiedConnector(UnifiedConnectorMixin, PsGrapheneMutation):
     permissions = [PP.Permission.CREATE_UNIFIED_CONNECTOR]
 
 
-class UpdateUnifiedConnector(UnifiedConnectorMixin, PsGrapheneMutation):
+
+class UpdateUnifiedConnector(UnifiedConnectorMixin, KoboValPsGrapheneMutation):
     class Arguments:
         id = graphene.ID(required=True)
         data = UnifiedConnectorInputType(required=True)
@@ -62,7 +109,9 @@ class UpdateUnifiedConnector(UnifiedConnectorMixin, PsGrapheneMutation):
     permissions = [PP.Permission.UPDATE_UNIFIED_CONNECTOR]
 
 
-class UpdateUnifiedConnectorWithSource(UnifiedConnectorMixin, PsGrapheneMutation):
+
+
+class UpdateUnifiedConnectorWithSource(UnifiedConnectorMixin, KoboValPsGrapheneMutation):
     class Arguments:
         id = graphene.ID(required=True)
         data = UnifiedConnectorWithSourceInputType(required=True)

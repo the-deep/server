@@ -1,5 +1,7 @@
 import json
 import copy
+import logging
+
 import requests
 import datetime
 
@@ -9,7 +11,7 @@ from utils.common import deep_date_format
 from connector.utils import ConnectorWrapper
 
 from .base import Source
-
+logger = logging.Logger(__name__)
 
 COUNTRIES_OPTIONS = [
     {"label": "All", "key": ""},
@@ -314,6 +316,7 @@ class UNHCRPortal(Source):
                     'source_type': '',
                 }
                 results.append(data)
+            logger.info(f'the resulted data of unhcr is: {results}')
             footer = soup.find('div', {'class': 'pgSearch_results_footer'})
             if not footer:
                 break

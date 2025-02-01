@@ -35,6 +35,8 @@ class ConnectorSourceGqSerializer(ProjectPropertySerializerMixin, TempClientIdMi
         )
 
 
+
+
 class UnifiedConnectorGqSerializer(ProjectPropertySerializerMixin, TempClientIdMixin, UserResourceSerializer):
     class Meta:
         model = UnifiedConnector
@@ -56,6 +58,8 @@ class UnifiedConnectorGqSerializer(ProjectPropertySerializerMixin, TempClientIdM
         return instance
 
 
+
+
 class UnifiedConnectorWithSourceGqSerializer(UnifiedConnectorGqSerializer):
     sources = ConnectorSourceGqSerializer(required=False, many=True)
 
@@ -71,17 +75,17 @@ class UnifiedConnectorWithSourceGqSerializer(UnifiedConnectorGqSerializer):
     def _get_prefetch_related_instances_qs(self, qs):
         if self.instance:
             return qs.filter(unified_connector=self.instance)
-        return qs.none()  # On create throw error if existing id is provided
+        return qs.none()
 
     def validate_sources(self, sources):
         source_found = set()
-        # Only allow unique source per unified connectors
         for source in sources:
             source_type = source['source']
             if source_type in source_found:
                 raise serializers.ValidationError(f'Multiple connector found for {source_type}')
             source_found.add(source_type)
         return sources
+
 
 
 class ConnectorSourceLeadGqSerializer(serializers.ModelSerializer):

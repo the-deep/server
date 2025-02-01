@@ -17,7 +17,6 @@ from django_otp.admin import OTPAdminSite
 
 from . import converters
 
-# import autofixture
 
 from user.views import (
     UserViewSet,
@@ -644,9 +643,11 @@ urlpatterns = [
             ),
             name="favicon"),
 ] + static.static(
-    settings.MEDIA_URL, view=xframe_options_exempt(serve),
+    settings.MEDIA_URL,
+    view=xframe_options_exempt(serve),
     document_root=settings.MEDIA_ROOT
 )
+
 
 if settings.DEBUG:
     import debug_toolbar
@@ -663,7 +664,9 @@ if settings.DEBUG:
         re_path(r'^ec-email/$', EntryCommentEmail.as_view()),
         re_path(r'^erc-email/$', EntryReviewCommentEmail.as_view()),
         re_path(r'^render-debug/$', RenderChart.as_view()),
+
     ]
+
 
 handler404 = Api_404View.as_view()
 

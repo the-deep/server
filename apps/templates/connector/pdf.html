@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Data PDF</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4; /* Light background for better contrast */
+        }
+        h1 {
+            text-align: center; /* Center the main heading */
+            color: #333;
+        }
+        .data-report {
+            max-width: 800px; /* Limit the width for better readability */
+            margin: 0 auto; /* Center the report */
+            background-color: #ffffff; /* White background for the report */
+            border-radius: 8px; /* Rounded corners for the report container */
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+            padding: 20px;
+        }
+        .entry {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f9f9f9; /* Slightly different background for each entry */
+        }
+        .entry h3 {
+            margin-top: 0;
+            font-size: 20px; /* Increased font size for better visibility */
+            color: #555; /* Slightly darker color for the entry title */
+        }
+        .entry ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .entry li {
+            padding: 10px 0; /* Increased padding for each item */
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid #ddd; /* Bold line between entries */
+        }
+        .entry li:last-child {
+            border-bottom: none; /* Remove border from the last item */
+        }
+        .key {
+            font-weight: bold;
+            color: #333;
+            flex-basis: 30%;
+        }
+        .value {
+            text-align: right;
+            flex-basis: 65%;
+            color: #666; /* Lighter color for the value text */
+        }
+    </style>
+</head>
+<body>
+    <h1>Data Report</h1>
+    <div class="data-report">
+        {% load filter %}  <!-- Ensure you have loaded your custom filters -->
+        {% for row in rows %}
+            <div class="entry">
+                <h3>Entry {{ forloop.counter }}</h3>
+                <ul>
+                    {% for key, value in columns|zipl:row %}
+                        <li>
+                            <div class="key">{{ key }}</div>
+                            <div class="value">{{ value }}</div>  <!-- Accessing the value directly -->
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

@@ -15,6 +15,7 @@ from .sources import (
     humanitarian_response,
     pdna,
     emm,
+    kobo,
 )
 
 
@@ -120,6 +121,7 @@ class ConnectorSource(UserResource):
         HUMANITARIAN_RESP = 'humanitarian-resp', 'Humanitarian Response'
         PDNA = 'pdna', 'Post Disaster Needs Assessments'
         EMM = 'emm', 'European Media Monitor'
+        KOBO = 'kobo', 'KoboToolbox'
 
     class Status(models.IntegerChoices):
         PENDING = 0, 'Pending'
@@ -135,6 +137,7 @@ class ConnectorSource(UserResource):
         Source.HUMANITARIAN_RESP: humanitarian_response.HumanitarianResponse,
         Source.PDNA: pdna.PDNA,
         Source.EMM: emm.EMM,
+        Source.KOBO: kobo.Kobo,
     }
 
     title = models.CharField(max_length=255)
@@ -228,3 +231,4 @@ class ConnectorSourceLead(models.Model):  # ConnectorSource's Leads
             connector_lead=lead.connector_lead,
             source__unified_connector__project=lead.project,
         ).update(already_added=added)
+

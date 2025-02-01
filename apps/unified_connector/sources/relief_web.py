@@ -317,7 +317,7 @@ class ReliefWeb(Source):
 
     def parse_filter_params(self, params):
         filters = []
-
+        print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
         if params.get('country'):
             filters.append({'field': 'country.iso3', 'value': params['country']})
         if params.get('primary-country'):
