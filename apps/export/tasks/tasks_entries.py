@@ -4,7 +4,7 @@ from django.db import models
 
 from deep.permissions import ProjectPermissions as PP
 from deep.filter_set import get_dummy_request
-from analysis_framework.models import Exportable
+from analysis_framework.models import Exportable, Widget
 from entry.models import Entry
 from export.models import Export
 from export.entries.excel_exporter import ExcelExporter
@@ -67,9 +67,14 @@ def export_entries(export):
             ),
         ),
     )
+    widget = Widget.objects.filter(
+        analysis_framework__project=project,
+        is_deleted=False
+    ).values('key')
 
     exportables = Exportable.objects.filter(
         analysis_framework__project=project,
+        widget_key__in=widget
     ).distinct()
     regions = Region.objects.filter(project=project).distinct()
 

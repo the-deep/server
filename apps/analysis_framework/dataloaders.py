@@ -25,7 +25,8 @@ class WidgetLoader(DataLoaderWithContext):
                 **{
                     f'{parent}__in': keys,
                     **filters,
-                }
+                },
+                is_deleted=False
             ).exclude(widget_id__in=Widget.DEPRECATED_TYPES)\
             .annotate(conditional_parent_widget_type=models.F('conditional_parent_widget__widget_id'))\
             .order_by('order', 'id')
